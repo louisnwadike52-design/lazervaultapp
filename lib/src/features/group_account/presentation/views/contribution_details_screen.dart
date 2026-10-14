@@ -30,6 +30,7 @@ import '../widgets/payment_group_widgets.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../widgets/mention_picker.dart';
 import '../utils/group_funds_palette.dart';
+import '../widgets/full_text_details_dialog.dart';
 part 'contribution_details_sheets.dart';
 part 'contribution_details_banners.dart';
 part 'contribution_details_payment_widgets.dart';
@@ -823,23 +824,48 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  contribution.title,
-                  style: GoogleFonts.inter(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    height: 1.15,
+                // Tapping the header title opens the name and description in
+                // full. The header clips to one line so the action icons fit,
+                // which makes the one piece of text identifying this circle
+                // the piece you cannot finish reading. This is the only place
+                // the affordance lives — on the list it stole the tap that
+                // opens the contribution.
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => showFullTextDetailsDialog(
+                    context,
+                    title: contribution.title,
+                    description: contribution.description,
+                    subtitle: contribution.isRotatingSavings
+                        ? 'Esusu · Rotating'
+                        : 'One-time goal',
+                    icon: contribution.isRotatingSavings
+                        ? Icons.sync
+                        : Icons.flag_outlined,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  'Contribution Details',
-                  style: GoogleFonts.inter(
-                    fontSize: 10.5.sp,
-                    color: Colors.grey[400],
-                    height: 1.2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        contribution.title,
+                        style: GoogleFonts.inter(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          height: 1.15,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Contribution Details',
+                        style: GoogleFonts.inter(
+                          fontSize: 10.5.sp,
+                          color: Colors.grey[400],
+                          height: 1.2,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 // ROSCA / one-time pill in the header — surfaces the
@@ -1143,6 +1169,21 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         .where((m) => m.membershipStatus == ContributionMembershipStatus.active)
         .length;
 
+    // Who is currently down to collect, resolved to a name off the roster.
+    //
+    // null means genuinely nobody is set — not merely that we could not name
+    // them — so a receiver whose roster row is missing still reports as set
+    // rather than silently offering to "set" one that already exists.
+    final receiverId = contribution.currentPayoutRecipient;
+    final String? receiverName = receiverId == null
+        ? null
+        : (contribution.members
+                .where((m) => m.userId == receiverId)
+                .map((m) => m.userName.trim())
+                .where((n) => n.isNotEmpty)
+                .firstOrNull ??
+            'Selected');
+
     if (!canStart && !isAdmin) {
       // A member who can do neither gets the sentence, not two dead buttons.
       return Container(
@@ -1213,11 +1254,23 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           if (isAdmin)
             Expanded(
               child: _compactAction(
-                icon: Icons.person_add_alt_1,
+                icon: receiverName == null
+                    ? Icons.person_add_alt_1
+                    : Icons.how_to_reg_rounded,
                 label: 'Receiver',
-                sub: 'Who gets paid',
-                color: const Color(0xFFFB923C),
-                onTap: () => _showReceiverDialog(contribution),
+                // Say WHO, not what the control is for.
+                //
+                // This read "Who gets paid" whether or not a receiver had been
+                // chosen, and tapping it always opened an empty picker — so
+                // setting a receiver looked like it had done nothing, and the
+                // only way to change one was a menu item three taps away.
+                sub: receiverName ?? 'Not set yet',
+                color: receiverName == null
+                    ? const Color(0xFFFB923C)
+                    : const Color(0xFF10B981),
+                onTap: () => receiverName == null
+                    ? _showReceiverDialog(contribution)
+                    : _showChangeReceiverFlow(contribution),
               ),
             ),
         ],
@@ -1406,7 +1459,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       cycleIndex: contribution.type == ContributionType.rotatingSavings
           ? (contribution.currentCycle ?? 1)
           : 0,
-      currentReceiverUserId: null,
+      // Pass the real value rather than a hardcoded null. The caller only
+      // reaches here when nothing is set, but a stale snapshot would
+      // otherwise present an already-chosen receiver as an empty picker.
+      currentReceiverUserId: contribution.currentPayoutRecipient,
     );
     if (res != null && mounted) _loadContributionDetails(force: true);
   }
@@ -2371,6 +2427,23 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     final hasMembers =
         contributionMembers.isNotEmpty || userPayments.isNotEmpty;
 
+    // Count the two states apart.
+    //
+    // This line said "2 members assigned" while the Start tile two inches
+    // above said "Needs 1 more member", and both were reading the same list:
+    // one counted every row, the other counted only those who had accepted.
+    // A pending_invite row is a person who has been asked, not a person who
+    // is in, so it is reported as an invite — which is also the thing the
+    // creator can act on.
+    final acceptedCount =
+        contributionMembers.where((m) => m.isActiveParticipant).length;
+    final pendingInviteCount =
+        contributionMembers.where((m) => m.isPendingInvite).length;
+    final rosterSubtitle = pendingInviteCount == 0
+        ? '$acceptedCount member${acceptedCount == 1 ? '' : 's'}'
+        : '$acceptedCount member${acceptedCount == 1 ? '' : 's'} · '
+            '$pendingInviteCount invite${pendingInviteCount == 1 ? '' : 's'} pending';
+
     // ContributionMember doesn't carry user_username — that field
     // lives on GroupMember. Pull the parent group's roster from the
     // cubit's cached snapshot so the member card / detail sheet can
@@ -2413,7 +2486,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     SizedBox(height: 4.h),
                     Text(
                       hasMembers
-                          ? '${contributionMembers.length} member${contributionMembers.length == 1 ? '' : 's'} assigned'
+                          ? rosterSubtitle
                           : 'Add group members to track their contributions',
                       style: GoogleFonts.inter(
                         fontSize: 13.sp,

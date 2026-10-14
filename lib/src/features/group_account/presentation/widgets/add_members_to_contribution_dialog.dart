@@ -54,7 +54,23 @@ class _AddMembersToContributionDialogState
   /// [_skippedPartial] because the remedy differs: a partial account is the
   /// person's to finish, an unresolved row is ours to repair.
   final List<String> _skippedUnresolved = [];
-  Set<String> _existingMemberUserIds = {};
+
+  /// Contribution members who have ACCEPTED and actually participate.
+  ///
+  /// Keyed separately from [_pendingInviteUserIds] because the two states look
+  /// identical in the table (both are contribution_members rows) and mean
+  /// opposite things to the creator: an active row is a person who counts
+  /// toward the start gate, a pending row is a person who does not.
+  Set<String> _activeMemberUserIds = {};
+
+  /// Contribution members whose parent GROUP invite has not been accepted.
+  ///
+  /// These are `membership_status='pending_invite'` shadow rows. They are in
+  /// the table, so they must not be offered for re-adding — but calling them
+  /// "Already in contribution" is what made the roster claim two members
+  /// while Start insisted it needed one more.
+  Set<String> _pendingInviteUserIds = {};
+
   bool _isLoading = true;
   bool _isAdding = false;
   bool _selectAll = false;
@@ -206,8 +222,23 @@ class _AddMembersToContributionDialogState
         ?.where((c) => c.id == widget.contribution.id)
         .firstOrNull;
     final source = live?.members ?? widget.contribution.members;
-    _existingMemberUserIds =
-        source.map((m) => m.userId).where((id) => id.isNotEmpty).toSet();
+    // Three states, not two.
+    //
+    // DECLINED rows are deliberately NOT treated as existing: the cubit
+    // pre-clears a declined shadow before re-adding, so someone who turned an
+    // invite down must stay selectable or they can never be invited back —
+    // the recovery path existed server-side and this screen was the thing
+    // blocking it.
+    _activeMemberUserIds = source
+        .where((m) => m.isActiveParticipant)
+        .map((m) => m.userId)
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    _pendingInviteUserIds = source
+        .where((m) => m.isPendingInvite)
+        .map((m) => m.userId)
+        .where((id) => id.isNotEmpty)
+        .toSet();
   }
 
   void _showError(String message) {
@@ -226,7 +257,7 @@ class _AddMembersToContributionDialogState
       _selectAll = !_selectAll;
       if (_selectAll) {
         _selectedMemberIds = _groupMembers
-            .where((m) => !_existingMemberUserIds.contains(m.userId))
+            .where((m) => !_isAlreadyOnContribution(m.userId))
             .map((m) => m.id)
             .toSet();
       } else {
@@ -525,8 +556,16 @@ class _AddMembersToContributionDialogState
     });
   }
 
+  /// Has a live row on this contribution in EITHER state.
+  ///
+  /// Both block a re-add; only the wording differs. Declined rows are
+  /// excluded on purpose — see [_refreshExistingMemberIds].
+  bool _isAlreadyOnContribution(String userId) =>
+      _activeMemberUserIds.contains(userId) ||
+      _pendingInviteUserIds.contains(userId);
+
   bool _isUserAlreadyInContribution(UserSearchResultEntity user) {
-    return _existingMemberUserIds.contains(user.userId);
+    return _isAlreadyOnContribution(user.userId);
   }
 
   /// Already picked in THIS session's "add new" list.
@@ -1016,7 +1055,11 @@ class _AddMembersToContributionDialogState
   }
 
   Widget _buildGroupMemberItem(GroupMember member) {
-    final isAlreadyAdded = _existingMemberUserIds.contains(member.userId);
+    final isAlreadyAdded = _activeMemberUserIds.contains(member.userId);
+    // Already has a shadow row on THIS contribution from an earlier add, and
+    // still has not accepted the group invite. Re-adding is a server-side
+    // no-op, so the row stays unselectable — but it must say the truth.
+    final invitedToContribution = _pendingInviteUserIds.contains(member.userId);
     // Somebody who has not accepted their GROUP invite yet, or whose row never
     // resolved to a real account. Either way they cannot join a contribution.
     //
@@ -1029,7 +1072,7 @@ class _AddMembersToContributionDialogState
     final hasNoUserId = member.userId.trim().isEmpty ||
         member.userId == '00000000-0000-0000-0000-000000000000';
     final notJoinedYet = member.isPartial || hasNoUserId;
-    final blocked = isAlreadyAdded || notJoinedYet;
+    final blocked = isAlreadyAdded || invitedToContribution || notJoinedYet;
     final isSelected = !blocked && _selectedMemberIds.contains(member.id);
 
     return Opacity(
@@ -1106,8 +1149,33 @@ class _AddMembersToContributionDialogState
                         'Already in contribution',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
-                          color: const Color(0xFFFB923C),
+                          color: const Color(0xFF10B981),
                         ),
+                      )
+                    // On the contribution, but not counting.
+                    //
+                    // This used to read "Already in contribution" — the same
+                    // sentence as a fully accepted member — because the only
+                    // question asked was whether a contribution_members row
+                    // existed. It does exist; it is a pending_invite shadow.
+                    // So the roster said two members were in while Start said
+                    // it still needed one, and both were right.
+                    else if (invitedToContribution)
+                      Row(
+                        children: [
+                          Icon(Icons.hourglass_empty,
+                              size: 12.sp, color: const Color(0xFFFB923C)),
+                          SizedBox(width: 4.w),
+                          Expanded(
+                            child: Text(
+                              'Added — waiting for them to accept',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5.sp,
+                                color: const Color(0xFFFB923C),
+                              ),
+                            ),
+                          ),
+                        ],
                       )
                     // The reason ON the row, before the tap. Two different
                     // causes with two different remedies: an invite nobody has
@@ -1614,7 +1682,14 @@ class _AddMembersToContributionDialogState
                   if (isAlreadyInContribution) ...[
                     SizedBox(height: 4.h),
                     Text(
-                      'Already in this contribution',
+                      // Same distinction the Group Members tab makes: a
+                      // pending row is somebody who has been asked, not
+                      // somebody who is in, and saying "already in" about
+                      // them is what made the roster and the Start gate
+                      // contradict each other.
+                      _pendingInviteUserIds.contains(user.userId)
+                          ? 'Added — waiting for them to accept'
+                          : 'Already in this contribution',
                       style: GoogleFonts.inter(
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w500,

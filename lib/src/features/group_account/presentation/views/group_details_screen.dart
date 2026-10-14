@@ -33,6 +33,7 @@ import '../../../../../core/services/account_manager.dart';
 import '../../../../../core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../utils/group_funds_palette.dart';
+import '../widgets/full_text_details_dialog.dart';
 part 'group_details_screen_widgets.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
@@ -818,27 +819,48 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 // pushed a two-line description below it — four lines of
                 // header before any of the group's actual numbers. Sized to
                 // fit the common case on one line, capped at two for the rest.
-                Text(
-                  group.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
+                // Both lines cap at two and ellipsise, so tapping the header
+                // opens them in full. This is the only home for that
+                // affordance — on the Group Funds list it intercepted the tap
+                // that opens the group.
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => showFullTextDetailsDialog(
+                    context,
+                    title: group.name,
+                    description: group.description,
+                    subtitle: group.visibility == GroupVisibility.public
+                        ? 'Public group'
+                        : 'Private group',
+                    icon: Icons.groups_rounded,
                   ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  group.description,
-                  style: GoogleFonts.inter(
-                    color: Colors.grey[400],
-                    fontSize: 12.5.sp,
-                    height: 1.25,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        group.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                          height: 1.2,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        group.description,
+                        style: GoogleFonts.inter(
+                          color: Colors.grey[400],
+                          fontSize: 12.5.sp,
+                          height: 1.25,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

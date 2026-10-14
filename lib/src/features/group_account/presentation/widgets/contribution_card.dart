@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
 import 'contribution_type_badge.dart';
-import 'full_text_details_dialog.dart';
 import 'created_by_you_badge.dart';
 import 'group_funds_avatar.dart';
 import '../utils/group_funds_palette.dart';
@@ -78,36 +77,20 @@ class ContributionCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Tapping the title shows it and the description in
-                      // full — same affordance as the group card above it in
-                      // the hierarchy. The description clips to one line so
-                      // four of these fit on a screen, which makes the title
-                      // the only thing identifying the goal, and it clips
-                      // too. Its own gesture detector inside the card's, so
-                      // everywhere else still opens the contribution.
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => showFullTextDetailsDialog(
-                          context,
-                          title: contribution.title,
-                          description: contribution.description,
-                          subtitle: contribution.isRotatingSavings
-                              ? 'Esusu · Rotating'
-                              : 'One-time goal',
-                          icon: contribution.isRotatingSavings
-                              ? Icons.sync
-                              : Icons.flag_outlined,
-                        ),
-                        child: Text(
-                          contribution.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 14.5.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            height: 1.2,
-                          ),
+                      // Not separately tappable — the whole card opens the
+                      // contribution. The full title and description are
+                      // one tap away on the detail screen's header, which is
+                      // where reading them does not compete with the tap
+                      // that gets you there.
+                      Text(
+                        contribution.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 14.5.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          height: 1.2,
                         ),
                       ),
                       // Both badges on ONE row.
