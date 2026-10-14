@@ -47,6 +47,17 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Repaint when a fresh admin snapshot lands, so withdrawing a Lifestyle
+    // service takes it off the tab within one poll rather than at next launch.
+    // The gates are read synchronously from the cache; nothing here awaits the
+    // network.
+    return ValueListenableBuilder<int>(
+      valueListenable: FeatureFlags.revision,
+      builder: (context, _, __) => _buildLifestyle(context),
+    );
+  }
+
+  Widget _buildLifestyle(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
