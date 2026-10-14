@@ -12,16 +12,29 @@
 library;
 
 class GroupValidators {
-  /// Group name. Lower bound: prevents accidental empty / "x" submissions.
-  /// Upper bound: comfortably accommodates names like "Lagos University
-  /// Alumni Class of 2018 - Engineering Faculty" without truncating.
+  /// Group / contribution name. Lower bound: prevents accidental empty or "x"
+  /// submissions.
+  ///
+  /// Upper bound 50, down from 80. The name is rendered on one clipped line
+  /// almost everywhere it appears — the group card, the contribution card, the
+  /// details header, the picker rows, the push notifications — so anything
+  /// past roughly this length was never actually read by anyone; it was
+  /// ellipsised at every call site and only reachable by opening the
+  /// full-text dialog. 50 is the common ceiling for a title field for exactly
+  /// this reason, and it is what the UI can show without truncating.
   static const int nameMinLength = 3;
-  static const int nameMaxLength = 80;
+  static const int nameMaxLength = 50;
 
   /// Description. Lower bound: forces enough context for other members to
-  /// understand the group's purpose. Upper bound: ~one paragraph.
+  /// understand the purpose.
+  ///
+  /// Upper bound 200, down from 500. Descriptions are shown clipped to one or
+  /// two lines in every list, so 500 characters bought a paragraph nobody saw
+  /// and a text field that scrolled away under the keyboard while being typed.
+  /// 200 is about two sentences — enough to say what the thing is for, short
+  /// enough to render whole.
   static const int descriptionMinLength = 10;
-  static const int descriptionMaxLength = 500;
+  static const int descriptionMaxLength = 200;
 
   /// External link upper bound (used when an actual URL is supplied).
   static const int linkMaxLength = 200;

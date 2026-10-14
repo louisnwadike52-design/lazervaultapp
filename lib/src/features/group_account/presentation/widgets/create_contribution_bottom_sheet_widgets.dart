@@ -528,11 +528,20 @@ class _AddMemberForContributionSheetState
 
   /// The group's existing roster, minus whoever is already in the rotation.
   ///
-  /// Members whose GROUP invite is still outstanding are listed but NOT
-  /// selectable, with a badge saying so. They used to be selectable, and the
-  /// server then refused the whole contribution with a sentence about an
-  /// unaccepted invite — a refusal the user could have been shown before
-  /// choosing, from information already on this screen.
+  /// Members whose GROUP invite is still outstanding ARE listed and ARE
+  /// selectable, with a badge saying the invite has not been accepted.
+  ///
+  /// They were previously listed but locked, on the reasoning that the server
+  /// refused a contribution containing an unaccepted invite. That is not what
+  /// happens: adding them creates a pending_invite shadow row, which is a
+  /// perfectly valid state — the person simply does not count toward the
+  /// start gate until they accept. Locking them meant a creator could not
+  /// build the circle they intended in one pass, and had to come back and add
+  /// each person again after they accepted.
+  ///
+  /// The real constraint is at START, not at build time: an esusu refuses to
+  /// open while any invite is outstanding, so the creator settles it there —
+  /// by waiting, or by removing the person deliberately.
   Widget _buildGroupRoster() {
     final already = widget.rotationOrder.toSet();
     final roster = widget.existingMembers
@@ -583,20 +592,24 @@ class _AddMemberForContributionSheetState
   }
 
   Widget _rosterRow(GroupMember m) {
-    // An outstanding GROUP invite is the one state that blocks adding
-    // somebody to a contribution inside it: they have not agreed to be in the
-    // group, so they cannot be enrolled in its circle.
-    final pending = m.status == GroupMemberStatus.pending;
+    // Read through isPendingInvite, not `status == pending`.
+    //
+    // A pending invitee reaches the app as a SHADOW row — the server
+    // synthesises it as `status=inactive, isPartial=true` with the invitation
+    // id on permissions, because there is no group_members row until they
+    // accept. Comparing against `pending` alone missed every one of them, so
+    // the badge never appeared even when the row did.
+    final pending = m.isPendingInvite;
     final name = m.userName.trim().isNotEmpty ? m.userName.trim() : 'Member';
     final selected =
-        !pending && _selectedUser != null && _selectedUser!.userId == m.userId;
+        _selectedUser != null && _selectedUser!.userId == m.userId;
 
     return Opacity(
-      opacity: pending ? 0.55 : 1,
+      // Slightly dimmed to carry the status at a glance, but NOT disabled —
+      // the badge says what is going on and the row is selectable.
+      opacity: pending ? 0.78 : 1,
       child: GestureDetector(
-        onTap: pending
-            ? null
-            : () => setState(() {
+        onTap: () => setState(() {
                   // The roster holds one display name; the entity wants it
                   // split. Split on the first space only, so "Praiz Onah
                   // Chidera" keeps its surname rather than losing the tail.

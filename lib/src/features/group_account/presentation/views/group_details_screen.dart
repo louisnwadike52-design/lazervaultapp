@@ -2036,7 +2036,19 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         value: cubit,
         child: CreateContributionBottomSheet(
           groupId: group.id,
-          groupMembers: group.members,
+          // The FULL roster, not group.members.
+          //
+          // group.members comes from GetGroup and carries only real
+          // group_members rows. GetGroupMembers additionally synthesises a
+          // shadow row for every pending invitation, which is how somebody who
+          // has been invited but has not accepted yet is represented at all —
+          // they have no group_members row until they accept.
+          //
+          // Passing the narrower list meant the wizard's "Group Members" tab
+          // said "Everyone in this group is already in" while three invitations
+          // sat outstanding: the only members it could see were the active ones
+          // it had already auto-added to the rotation.
+          groupMembers: cubit.lastLoadedMembers ?? group.members,
           currency: userCurrency,
           currencySymbol: currencySymbol,
         ),

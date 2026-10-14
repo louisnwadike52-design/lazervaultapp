@@ -1368,7 +1368,56 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     });
   }
 
+  /// Members who were added but have not accepted their group invite yet.
+  List<ContributionMember> _pendingInviteMembers(Contribution contribution) =>
+      contribution.members.where((m) => m.isPendingInvite).toList();
+
+  /// Starting with invites outstanding would silently drop those people.
+  ///
+  /// Starting FREEZES the roster and fixes the rotation order, so an unanswered
+  /// invite has to be settled deliberately at that moment — the creator either
+  /// waits for them, or removes them on purpose. The server refuses the open
+  /// outright now; this asks the question before the tap, names exactly who is
+  /// outstanding, and offers the way out, so the creator is never left with a
+  /// refusal and no next step.
+  Future<void> _showPendingInvitesBlockDialog(
+      Contribution contribution, List<ContributionMember> pending) async {
+    final names = pending
+        .map((m) => m.userName.trim().isNotEmpty
+            ? m.userName.trim()
+            : (m.email.trim().isNotEmpty ? m.email.trim() : 'A member'))
+        .toList();
+    final shown = names.take(5).join('\n• ');
+    final more = names.length > 5 ? '\n• and ${names.length - 5} more' : '';
+    final go = await _actionDialog(
+      icon: Icons.hourglass_top_rounded,
+      color: const Color(0xFFFB923C),
+      title: names.length == 1
+          ? 'One invite is still unanswered'
+          : '${names.length} invites are still unanswered',
+      body: 'These people were added but have not accepted their group invite '
+          'yet:\n\n• $shown$more\n\n'
+          'Starting now would LOCK them out of the rotation — the roster '
+          'freezes and they could not join afterwards. Wait for them to '
+          'accept, or remove them first and start without them.',
+      cta: 'Review members',
+    );
+    if (go != true || !mounted) return;
+    // Straight to the roster, which is where removing them happens — rather
+    // than closing the dialog onto the screen they started from with nothing
+    // changed and no indication of where to go.
+    _tabController.animateTo(2);
+  }
+
   Future<void> _showStartDialog(Contribution contribution, int active) async {
+    // Checked HERE as well as on the server, because the server's refusal
+    // arrives after the creator has already chosen a schedule — three steps
+    // past the point where the problem could have been explained.
+    final pending = _pendingInviteMembers(contribution);
+    if (pending.isNotEmpty) {
+      await _showPendingInvitesBlockDialog(contribution, pending);
+      return;
+    }
     final go = await _actionDialog(
       icon: Icons.play_circle_outline,
       color: const Color(0xFFF59E0B),
@@ -1381,6 +1430,31 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     );
     if (go != true || !mounted) return;
     await _startEsusu(contribution);
+  }
+
+  /// Mirrors group-accounts' assertCanManageContribution for
+  /// ActionEditContribution: a group admin or moderator, or the person who
+  /// created this contribution while they are still an active member.
+  ///
+  /// Kept as one predicate so every surface that offers a roster change asks
+  /// the same question the server will — a control that is visible and then
+  /// refused teaches the user nothing except that the app is unreliable.
+  bool _canManageThisContribution(Contribution contribution) {
+    // The creator branch requires an ACTIVE membership, exactly as the server
+    // does — assertCanManageContribution re-reads the group member row and
+    // refuses a creator who has since been removed or suspended. Without that
+    // clause here, a removed creator would still be shown the button and
+    // refused on the tap, which is the failure this predicate exists to avoid.
+    final me = _currentGroupMember;
+    final myUserId = context.read<GroupAccountCubit>().currentUserId;
+    if (myUserId != null &&
+        myUserId.isNotEmpty &&
+        contribution.createdBy == myUserId &&
+        me != null &&
+        me.status == GroupMemberStatus.active) {
+      return true;
+    }
+    return GroupRolePermissions.canMember(me, GroupAction.editContribution);
   }
 
   /// Change who collects this cycle's pot, from the overflow menu.
@@ -2501,7 +2575,18 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               // server refuses the add. A visible button that always fails is
               // worse than no button — the creator taps it, picks people, and
               // only then learns it was never possible.
-              if (!contribution.isRotatingSavings || contribution.awaitingOpen)
+              //
+              // AND hidden from anyone who cannot actually add.
+              // group-accounts gates AddMembersToContribution behind
+              // assertCanManageContribution(ActionEditContribution), which
+              // admits group admins/moderators and the contribution's own
+              // creator — nobody else. The button was shown to every member
+              // regardless, so a plain member could open the sheet, search,
+              // pick people and only then be refused. Same predicate as the
+              // server, evaluated before the tap.
+              if ((!contribution.isRotatingSavings ||
+                      contribution.awaitingOpen) &&
+                  _canManageThisContribution(contribution))
                 ElevatedButton.icon(
                   onPressed: () => _showAddMembersDialog(contribution),
                   icon: Icon(Icons.person_add_alt_1, size: 18.sp),

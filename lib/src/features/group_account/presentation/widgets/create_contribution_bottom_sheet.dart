@@ -25,6 +25,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import '../utils/group_validators.dart';
 part 'create_contribution_bottom_sheet_widgets.dart';
 part 'create_contribution_payout_receiver.dart';
 
@@ -1352,7 +1353,11 @@ class _CreateContributionBottomSheetState
           _buildTextField(
             controller: _titleController,
             hint: 'e.g., Monthly Savings Goal',
-            maxLength: 100,
+            // The SAME ceiling the group name uses, from the one place both
+            // read it. These were hardcoded at 100/500 here while groups used
+            // GroupValidators, so the two creation flows disagreed about what
+            // fits the identical card and header layouts.
+            maxLength: GroupValidators.nameMaxLength,
             showCounter: true,
             hasError: _fieldErrors.containsKey('title'),
           ),
@@ -1370,7 +1375,7 @@ class _CreateContributionBottomSheetState
             controller: _descriptionController,
             hint: 'Describe the purpose of this contribution...',
             maxLines: 3,
-            maxLength: 500,
+            maxLength: GroupValidators.descriptionMaxLength,
             showCounter: true,
             hasError: _fieldErrors.containsKey('description'),
           ),
