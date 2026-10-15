@@ -3484,6 +3484,15 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     final currency = (d['currency'] ?? '').toString();
     final summary = (d['recipient_summary'] ?? '').toString().trim();
 
+    // The THIRD door. A transfer that skips the summary event and arrives
+    // straight at request_pin_entry would copyWith over a terminal context and
+    // inherit the previous transfer's receipt reference and closing balance —
+    // briefly showing a finished transfer's receipt beside a live PIN prompt.
+    // Same guard as show_user_search and _applyTransferSummary.
+    if (_transferContext.isTerminal) {
+      _updateTransferContext(VoiceTransferContext.idle);
+    }
+
     _updateTransferContext(_transferContext.copyWith(
       status: VoiceTransferStatus.awaitingPin,
       amountNaira: amount,

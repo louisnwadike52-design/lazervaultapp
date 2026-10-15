@@ -59,14 +59,15 @@ void main() {
           reason: 'the narrow status check is the defect');
     });
 
-    test('both doors into a second transfer are guarded', () {
-      // A user search is one. The other is a summary arriving with no search
-      // at all — a saved beneficiary, or "send another 500 to the same
-      // person".
+    test('every door into a second transfer is guarded', () {
+      // Three of them: a new user search; a summary arriving with no search at
+      // all (a saved beneficiary, or "send another 500 to the same person");
+      // and a request_pin_entry that skips the summary event entirely.
       final src = code(cubit);
       expect(src.split('if (_transferContext.isTerminal) {').length - 1,
-          greaterThanOrEqualTo(2),
-          reason: 'show_user_search AND _applyTransferSummary must both reset');
+          greaterThanOrEqualTo(3),
+          reason: 'show_user_search, _applyTransferSummary AND '
+              '_applyPinPayload must each reset a terminal context');
     });
 
     test('isTerminal covers all three endings', () {
