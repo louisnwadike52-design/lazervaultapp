@@ -1229,7 +1229,15 @@ class UpCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: kUpCard,
           borderRadius: BorderRadius.circular(radius),
-          border: Border.all(color: borderColor ?? kUpDivider),
+          // Bordered only when a caller asks for one. Every card carried a
+          // 1px kUpDivider rule by default, which on a dark surface against a
+          // dark page reads as an artefact rather than an edge — and when
+          // cards stack, as they do down this detail page, it draws a ladder
+          // of faint lines. The fill plus the shadow already separate a card
+          // from the page; an explicit borderColor is still honoured for the
+          // few places where the outline MEANS something.
+          border:
+              borderColor == null ? null : Border.all(color: borderColor!),
           boxShadow: const [
             BoxShadow(
                 color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
@@ -1252,30 +1260,45 @@ class UpStatChip extends StatelessWidget {
   final String value;
   final String label;
   final Color color;
+
+  // NO OUTLINE. A 1px rule at 25% opacity around an already-tinted fill is
+  // the "tiny borders" in the report: at phone density it reads as a
+  // rendering artefact rather than an edge, and the tint alone already
+  // separates the chip from the page. Dropping it also stops four chips in a
+  // row looking like a table.
+  //
+  // Laid out to survive being STRETCHED: these now sit in Expanded on a 2x2
+  // grid rather than hugging their content, so the value and label must
+  // ellipsise instead of overflowing when a number is long.
   @override
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withOpacity(0.12),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.25)),
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
+        child: Row(children: [
           Icon(icon, size: 16, color: color),
           const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(value,
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700)),
-              Text(label,
-                  style:
-                      GoogleFonts.inter(color: kUpTextSecondary, fontSize: 10)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700)),
+                Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        color: kUpTextSecondary, fontSize: 10)),
+              ],
+            ),
           ),
         ]),
       );

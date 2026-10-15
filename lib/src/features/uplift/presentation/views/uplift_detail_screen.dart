@@ -662,60 +662,132 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
     );
   }
 
+  /// THE POOL, AS ONE FIGURE PLUS ITS BREAKDOWN.
+  ///
+  /// This was five full-width rows stacked — Committed, Released, Refunded,
+  /// Available to allocate, Pool wallet (live) — each spending the whole
+  /// width of a phone on a label and about twelve characters of money. Five
+  /// rows of near-nothing is why the page did not fit, and nothing in it was
+  /// emphasised: the number a funder actually looks for (what is in the pool)
+  /// sat in the same type as the number they rarely do.
+  ///
+  /// Now: the committed total is the headline, and the rest is a two-column
+  /// grid underneath. Same information, roughly a third of the height, with
+  /// the important figure visibly the important one.
   Widget _escrowCard(up.UpliftFundMessage f) {
     final committed = f.committedPool.toInt();
     final released = f.releasedTotal.toInt();
     final progress =
         committed > 0 ? (released / committed).clamp(0.0, 1.0) : 0.0;
+
+    final pairs = <(String, String)>[
+      ('Released', upNaira(released, f.currency)),
+      if (f.isFunder)
+        ('Refunded', upNaira(f.refundedTotal.toInt(), f.currency)),
+      if (f.isFunder)
+        ('Available', upNaira(f.escrowAvailable.toInt(), f.currency)),
+      if (f.isFunder && _escrow != null)
+        ('Pool wallet', upNaira(_escrow!.balance.toInt(), f.currency)),
+    ];
+
     return UpCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: const [
-            Icon(Icons.account_balance_wallet_outlined,
+          Row(children: [
+            const Icon(Icons.account_balance_wallet_outlined,
                 size: 16, color: kUpPrimarySoft),
-            SizedBox(width: 6),
-            Text('Pool & holdings',
+            const SizedBox(width: 6),
+            const Text('Pool',
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700)),
+            const Spacer(),
+            Text(upNaira(committed, f.currency),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800)),
           ]),
-          const SizedBox(height: 12),
-          _row('Committed', upNaira(committed, f.currency)),
-          _row('Released', upNaira(released, f.currency)),
-          // Refunded / allocation / live balance are funder operations — keep them
-          // off the applicant + community view to reduce clutter.
-          if (f.isFunder) ...[
-            _row('Refunded', upNaira(f.refundedTotal.toInt(), f.currency)),
-            _row('Available to allocate',
-                upNaira(f.escrowAvailable.toInt(), f.currency)),
-            if (_escrow != null)
-              _row('Pool wallet (live)',
-                  upNaira(_escrow!.balance.toInt(), f.currency)),
+          if (committed > 0) ...[
+            const SizedBox(height: 10),
+            UpProgressBar(value: progress, height: 5),
+            const SizedBox(height: 4),
+            Text('${upNaira(released, f.currency)} released',
+                style:
+                    const TextStyle(color: kUpTextSecondary, fontSize: 11)),
           ],
-          const SizedBox(height: 12),
-          UpProgressBar(value: progress),
+          if (pairs.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _pairGrid(pairs),
+          ],
         ],
       ),
     );
   }
 
-  Widget _row(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text(k, style: const TextStyle(color: kUpTextSecondary)),
+  /// Label/value pairs two to a row.
+  ///
+  /// A money value is short and a label is short; giving each pair the full
+  /// width of the screen was the single biggest reason this page scrolled.
+  /// An odd count leaves the last pair alone on its row rather than stretched
+  /// across it, so the columns stay aligned down the card.
+  Widget _pairGrid(List<(String, String)> pairs) {
+    final rows = <Widget>[];
+    for (var i = 0; i < pairs.length; i += 2) {
+      final left = pairs[i];
+      final right = i + 1 < pairs.length ? pairs[i + 1] : null;
+      rows.add(Padding(
+        padding: EdgeInsets.only(top: i == 0 ? 0 : 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _pair(left.$1, left.$2)),
+            const SizedBox(width: 12),
+            Expanded(
+                child: right == null
+                    ? const SizedBox.shrink()
+                    : _pair(right.$1, right.$2)),
+          ],
+        ),
+      ));
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: rows);
+  }
+
+  Widget _pair(String k, String v) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(k,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: kUpTextSecondary, fontSize: 11.5)),
+          const SizedBox(height: 2),
           Text(v,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600)),
-        ]),
+                  color: Colors.white,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600)),
+        ],
       );
 
   Widget _equityCard(up.UpliftFundMessage f) {
     final eq = UpEquityTerms.fromMetadata(f.metadata);
     if (!eq.enabled) return const SizedBox.shrink();
+    final pairs = <(String, String)>[
+      (
+        'Type',
+        upInvestmentTypeLabel(eq.investmentType).isEmpty
+            ? 'Equity'
+            : upInvestmentTypeLabel(eq.investmentType)
+      ),
+      if (eq.offeredPct > 0) ('Per business', upPct(eq.offeredPct)),
+      if (eq.valuation > 0) ('Valuation', upNaira(eq.valuation, f.currency)),
+    ];
     return UpCard(
       margin: const EdgeInsets.only(top: 12),
-      borderColor: kUpPrimary.withOpacity(0.3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -727,52 +799,61 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
                     color: Colors.white, fontWeight: FontWeight.w700)),
           ]),
           const SizedBox(height: 10),
-          _row(
-              'Type',
-              upInvestmentTypeLabel(eq.investmentType).isEmpty
-                  ? 'Equity'
-                  : upInvestmentTypeLabel(eq.investmentType)),
-          if (eq.offeredPct > 0)
-            _row('Equity per business', upPct(eq.offeredPct)),
-          if (eq.valuation > 0)
-            _row('Valuation', upNaira(eq.valuation, f.currency)),
+          _pairGrid(pairs),
           if (eq.terms.isNotEmpty) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 10),
             Text(eq.terms,
-                style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                style: const TextStyle(
+                    color: Colors.white70, fontSize: 12.5, height: 1.35)),
           ],
         ],
       ),
     );
   }
 
+  /// Four stats on a FIXED 2x2 grid.
+  ///
+  /// This was a Wrap, which fits three chips on a phone and drops the fourth
+  /// onto a line of its own — so "Days left" sat alone under a row of three,
+  /// looking like an afterthought rather than a peer. A fixed grid is the
+  /// same four facts in two tidy rows, and it cannot re-flow differently on a
+  /// narrower device.
   Widget _statsStrip(up.GetUpliftStatisticsResponse s) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        UpStatChip(
-            icon: Icons.savings,
-            value: '${s.fundedPercentage.toStringAsFixed(0)}%',
-            label: 'Funded',
-            color: kUpPrimary),
-        UpStatChip(
-            icon: Icons.check_circle_outline,
-            value: '${s.completedCount}/${s.selectedCount}',
-            label: 'Completed',
-            color: kUpSuccess),
-        UpStatChip(
-            icon: Icons.groups_outlined,
-            value: '${s.applicationCount}',
-            label: 'Applicants',
-            color: kUpPrimarySoft),
-        UpStatChip(
-            icon: Icons.schedule,
-            value: s.daysRemaining > 0 ? '${s.daysRemaining}' : '—',
-            label: 'Days left',
-            color: kUpWarning),
-      ],
-    );
+    final chips = <Widget>[
+      UpStatChip(
+          icon: Icons.savings,
+          value: '${s.fundedPercentage.toStringAsFixed(0)}%',
+          label: 'Funded',
+          color: kUpPrimary),
+      UpStatChip(
+          icon: Icons.check_circle_outline,
+          value: '${s.completedCount}/${s.selectedCount}',
+          label: 'Completed',
+          color: kUpSuccess),
+      UpStatChip(
+          icon: Icons.groups_outlined,
+          value: '${s.applicationCount}',
+          label: 'Applicants',
+          color: kUpPrimarySoft),
+      UpStatChip(
+          icon: Icons.schedule,
+          value: s.daysRemaining > 0 ? '${s.daysRemaining}' : '—',
+          label: 'Days left',
+          color: kUpWarning),
+    ];
+    return Column(children: [
+      Row(children: [
+        Expanded(child: chips[0]),
+        const SizedBox(width: 8),
+        Expanded(child: chips[1]),
+      ]),
+      const SizedBox(height: 8),
+      Row(children: [
+        Expanded(child: chips[2]),
+        const SizedBox(width: 8),
+        Expanded(child: chips[3]),
+      ]),
+    ]);
   }
 
   bool _fundEditable(up.UpliftFundStatus s) =>

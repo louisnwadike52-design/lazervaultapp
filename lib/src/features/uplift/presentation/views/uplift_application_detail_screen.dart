@@ -244,19 +244,63 @@ class _UpliftApplicationDetailScreenState
     );
   }
 
+  /// The application's figures, side by side.
+  ///
+  /// Two or three full-width rows for values of about eight characters each —
+  /// the same shape that made the fund page scroll. A funder skimming a list
+  /// of applications wants Requested and Endorsements in one glance, not one
+  /// above the other with the width of a phone between them.
   Widget _amountsCard() {
     final a = _app;
+    final pairs = <(String, String)>[
+      ('Requested', upNaira(a.requestedAmount.toInt(), a.currency)),
+      if (a.approvedAmount > 0)
+        ('Approved', upNaira(a.approvedAmount.toInt(), a.currency)),
+      ('Endorsements', '❤ ${a.endorsementCount}'),
+    ];
     return UpCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _row('Requested', upNaira(a.requestedAmount.toInt(), a.currency)),
-          if (a.approvedAmount > 0)
-            _row('Approved', upNaira(a.approvedAmount.toInt(), a.currency)),
-          _row('Endorsements', '❤ ${a.endorsementCount}'),
+          for (var i = 0; i < pairs.length; i += 2)
+            Padding(
+              padding: EdgeInsets.only(top: i == 0 ? 0 : 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: _pair(pairs[i].$1, pairs[i].$2)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: i + 1 < pairs.length
+                        ? _pair(pairs[i + 1].$1, pairs[i + 1].$2)
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
   }
+
+  Widget _pair(String k, String v) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(k,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: kUpTextSecondary, fontSize: 11.5)),
+          const SizedBox(height: 2),
+          Text(v,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600)),
+        ],
+      );
 
   Widget _dealTermsCard() {
     final a = _app;
