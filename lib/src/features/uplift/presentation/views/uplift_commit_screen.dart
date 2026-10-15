@@ -15,8 +15,32 @@ import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
 /// dashboard's ACTIVE account + locale — shown read-only, with no pickers (the
 /// user chooses those on the dashboard, not here). Confirms with the PIN modal.
 class UpliftCommitScreen extends StatefulWidget {
-  const UpliftCommitScreen({required this.fund, super.key});
+  const UpliftCommitScreen({
+    required this.fund,
+    this.isFundingNewFund = false,
+    super.key,
+  });
   final up.UpliftFundMessage fund;
+
+  /// True when this is the funding step of CREATING a fund, rather than a
+  /// later top-up. Changes the copy and the exit — a funder here has not
+  /// opened anything yet, and leaving means the fund stays a draft.
+  final bool isFundingNewFund;
+
+  /// What the fund promises in total: the per-business cap times the number
+  /// of businesses. This is the figure the fund advertises, so it is the one
+  /// the pool has to reach.
+  int get requiredPoolKobo =>
+      fund.perBusinessCap.toInt() * fund.targetCount;
+
+  /// What is still missing, after whatever has already been committed.
+  /// Never negative: an over-funded pool needs nothing, it does not owe the
+  /// difference back.
+  int get shortfallKobo {
+    final have = fund.committedPool.toInt();
+    final gap = requiredPoolKobo - have;
+    return gap > 0 ? gap : 0;
+  }
 
   @override
   State<UpliftCommitScreen> createState() => _UpliftCommitScreenState();
@@ -35,6 +59,17 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
   @override
   void initState() {
     super.initState();
+    // PREFILLED WITH WHAT THE FUND ACTUALLY NEEDS.
+    //
+    // The field opened empty, so a funder had to work out their own total —
+    // cap times count, minus whatever was already in — on a screen that knew
+    // both numbers. Prefilling the shortfall makes the common case one tap,
+    // and it is only a default: the field stays editable, because committing
+    // less (and topping up later) is a legitimate thing to do.
+    final gap = widget.shortfallKobo;
+    if (gap > 0) {
+      _amount.text = (gap / 100).toStringAsFixed(2);
+    }
     // The button's state has to follow the amount as it is typed; without
     // this the screen only re-renders when something else happens to rebuild
     // it, and an over-balance amount still looks submittable.
@@ -157,7 +192,11 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
     final locale = serviceLocator<LocaleManager>();
     return Scaffold(
       backgroundColor: kUpBg,
-      appBar: upAppBar('Commit funds'),
+      // Named for what this step IS in each context. During creation it is
+      // the last thing between a filled-in form and an open fund; later it
+      // is a top-up.
+      appBar: upAppBar(
+          widget.isFundingNewFund ? 'Fund the pool' : 'Commit funds'),
       body: UpGradientScaffoldBody(
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -181,6 +220,33 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
                         'Pool available: ${upNaira(widget.fund.escrowAvailable.toInt(), widget.fund.currency)}',
                         style: const TextStyle(
                             color: Colors.white70, fontSize: 12)),
+                    // WHAT THE FUND PROMISES, AND HOW FAR OFF IT IS.
+                    //
+                    // The amount field asked for a number without ever saying
+                    // which number. A fund advertising "up to ₦500 each · 2
+                    // businesses" needs ₦1,000, and the funder was left to do
+                    // that arithmetic on a screen holding both figures.
+                    const SizedBox(height: 8),
+                    Text(
+                      'Needs ${upNaira(widget.requiredPoolKobo, widget.fund.currency)}'
+                      ' in total — ${upNaira(widget.fund.perBusinessCap.toInt(), widget.fund.currency)}'
+                      ' × ${widget.fund.targetCount} businesses',
+                      style: const TextStyle(
+                          color: Colors.white70, fontSize: 12),
+                    ),
+                    if (widget.shortfallKobo > 0 &&
+                        widget.fund.committedPool.toInt() > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          'Still short '
+                          '${upNaira(widget.shortfallKobo, widget.fund.currency)}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
                   ]),
             ),
             const SizedBox(height: 16),
@@ -250,13 +316,22 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
                       width: 20,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : const Text('Confirm & enter PIN'),
+                  : Text(widget.isFundingNewFund
+                      ? 'Fund & open this raise'
+                      : 'Confirm & enter PIN'),
             ),
             const SizedBox(height: 10),
-            const Text(
-                'Funds are held in the fund pool and released to businesses per approved milestone.',
+            Text(
+                widget.isFundingNewFund
+                    ? 'Your fund opens to applications once the pool is '
+                        'funded. Money is held in the pool and released per '
+                        'approved milestone — you can withdraw anything not '
+                        'yet promised to a business.'
+                    : 'Funds are held in the fund pool and released to '
+                        'businesses per approved milestone.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
+                style: const TextStyle(
+                    color: kUpTextSecondary, fontSize: 12)),
           ],
         ),
       ),

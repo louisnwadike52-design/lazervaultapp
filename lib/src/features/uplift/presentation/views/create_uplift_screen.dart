@@ -5,6 +5,7 @@ import 'package:lazervault/src/features/uplift/data/uplift_repository.dart';
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/uplift/presentation/views/uplift_commit_screen.dart';
 
 /// Funder flow: open a new Uplift fund, or edit an existing one when [existing]
 /// is provided. Create mode can publish immediately or save as a draft.
@@ -50,6 +51,16 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
   final _equityTerms = TextEditingController();
 
   bool get _isEdit => widget.existing != null;
+
+  /// What this fund promises in total — the per-business cap times the number
+  /// of businesses. The pool has to reach it for the raise to be real, so it
+  /// is the figure shown on review and prefilled on the funding step.
+  int get _requiredPoolKobo {
+    final cap = double.tryParse(_cap.text.trim());
+    final count = int.tryParse(_count.text.trim());
+    if (cap == null || count == null || cap <= 0 || count <= 0) return 0;
+    return (cap * 100).round() * count;
+  }
 
   @override
   void initState() {
@@ -269,6 +280,17 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
             snackPosition: SnackPosition.BOTTOM);
         return;
       }
+      // A FUND IS CREATED AS A DRAFT AND OPENED ONLY ONCE IT IS FUNDED.
+      //
+      // Publishing straight away produced an open fund with an EMPTY pool: it
+      // advertised "up to ₦500 each · 2 businesses", businesses applied
+      // against that promise, and there was no money behind it. The funder
+      // had to find "Commit funds" afterwards, and nothing made them.
+      //
+      // So the create call always makes a draft, the commit step runs next,
+      // and publish happens after the money is actually in. A funder who
+      // chose "Save as draft" skips the commit entirely — that is what a
+      // draft is for.
       final fund = await _repo.createFund(
         title: _title.text.trim(),
         description: _desc.text.trim(),
@@ -279,19 +301,65 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
         fundingDeadline: _fundingDeadline,
         coverImageUrl: _gallery.isNotEmpty ? _gallery.first : '',
         gallery: _gallery,
-        publishNow: !asDraft,
+        publishNow: false,
         metadata: _buildMetadata(),
       );
-      Get.back(result: true);
-      Get.snackbar(
-        asDraft ? 'Draft saved' : 'Fund opened',
-        asDraft
-            ? '${fund.title} saved as a draft — publish it when ready'
-            : '${fund.title} is now accepting applications',
-        backgroundColor: kUpCard,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+
+      if (asDraft) {
+        Get.back(result: true);
+        Get.snackbar('Draft saved',
+            '${fund.title} saved as a draft — publish it when ready',
+            backgroundColor: kUpCard,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+
+      if (!mounted) return;
+      // Hand over to the commit screen, prefilled with what this fund needs.
+      // It owns the PIN, the balance checks and the refusals — duplicating
+      // any of that here would be a second implementation of a money step.
+      final funded = await Get.to<bool>(
+            () => UpliftCommitScreen(fund: fund, isFundingNewFund: true),
+          ) ??
+          false;
+      if (!mounted) return;
+
+      if (!funded) {
+        // They backed out of funding. The fund EXISTS as a draft rather than
+        // being discarded — they filled in a whole form, and throwing it away
+        // to punish an abandoned payment step would be worse than leaving it
+        // where they can finish it.
+        Get.back(result: true);
+        Get.snackbar('Saved as a draft',
+            '${fund.title} is not open yet — commit the pool to start taking '
+            'applications',
+            backgroundColor: kUpCard,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+
+      try {
+        await _repo.publishFund(fund.id);
+        Get.back(result: true);
+        Get.snackbar('Fund opened',
+            '${fund.title} is now accepting applications',
+            backgroundColor: kUpCard,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM);
+      } catch (e) {
+        // The money landed; only the publish failed. Say exactly that —
+        // "could not open fund" after a successful debit reads as a lost
+        // payment.
+        Get.back(result: true);
+        Get.snackbar('Pool funded — not published yet',
+            'Your commitment went through. Open ${fund.title} from My Funds '
+            'to start taking applications.',
+            backgroundColor: kUpWarning,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM);
+      }
     } catch (e) {
       Get.snackbar(_isEdit ? 'Could not save changes' : 'Could not open fund',
           upFriendlyError(e),
@@ -359,7 +427,8 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
         onNext: _submitting ? null : _next,
         nextLabel: _step < _lastStep
             ? 'Continue'
-            : (_isEdit ? 'Save changes' : 'Publish fund'),
+            // Names the money step rather than hiding it behind "Publish".
+            : (_isEdit ? 'Save changes' : 'Fund & publish'),
         isLast: _step == _lastStep,
         loading: _submitting,
       ),
@@ -508,6 +577,55 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
           ],
         ),
       ),
+      // SAY WHAT PUBLISHING WILL COST, BEFORE THE BUTTON IS PRESSED.
+      //
+      // Opening a fund now moves money — the pool has to be funded for the
+      // raise to be real — and a Publish button that silently leads to a PIN
+      // sheet is the kind of surprise a funder should never get. The figure
+      // is the fund's own promise: the cap times the number of businesses.
+      if (!_isEdit && _requiredPoolKobo > 0) ...[
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: kUpCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: kUpDivider),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.savings_outlined,
+                  color: kUpPrimary, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'You will fund ${upNaira(_requiredPoolKobo, 'NGN')}',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'The pool is funded from your account on the next '
+                      'step, and the fund opens to applications once it is. '
+                      'Anything not promised to a business can be withdrawn '
+                      'later.',
+                      style: TextStyle(
+                          color: kUpTextSecondary,
+                          fontSize: 12,
+                          height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
       if (!_isEdit) ...[
         const SizedBox(height: 12),
         Center(

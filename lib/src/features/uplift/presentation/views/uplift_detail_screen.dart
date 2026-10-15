@@ -912,7 +912,13 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
                   minimumSize: const Size.fromHeight(48)),
               onPressed: _commitPool,
               icon: const Icon(Icons.savings),
-              label: const Text('Commit funds'),
+              // The same control does two jobs, and the label should say
+              // which one. "Commit funds" on a pool that already holds money
+              // reads as starting over; a funder topping up to cover a bigger
+              // raise is UPDATING what they committed.
+              label: Text(f.committedPool.toInt() > 0
+                  ? 'Add to pool'
+                  : 'Commit funds'),
             ),
           ),
           const SizedBox(width: 12),
