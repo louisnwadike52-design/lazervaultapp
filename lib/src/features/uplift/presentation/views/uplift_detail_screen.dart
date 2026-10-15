@@ -409,7 +409,34 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
     if (changed == true) await _load();
   }
 
+  /// Opens a draft — funding the pool first when it is empty.
+  ///
+  /// This is the OTHER door into publishing. The create wizard funds before
+  /// it publishes, and this button did not, so a fund could still open with
+  /// nothing behind it — businesses pitching against a promise with no money.
+  /// The server refuses an empty pool now, but bouncing the user off a
+  /// refusal would be a worse answer than taking them to the thing that
+  /// fixes it.
   Future<void> _publishFund() async {
+    final fund = _fund!;
+    if (fund.committedPool.toInt() <= 0) {
+      final funded = await Get.to<bool>(
+            () => UpliftCommitScreen(fund: fund, isFundingNewFund: true),
+          ) ??
+          false;
+      if (!mounted) return;
+      if (!funded) {
+        // They declined to fund. The draft is untouched and still theirs to
+        // finish; saying nothing here would read as the button being broken.
+        Get.snackbar('Still a draft',
+            'Commit money to the pool to start taking applications',
+            backgroundColor: kUpCard,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM);
+        await _load();
+        return;
+      }
+    }
     try {
       await _repo.publishFund(_fund!.id);
       await _load();
@@ -928,7 +955,11 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
               minimumSize: const Size.fromHeight(48)),
           onPressed: _publishFund,
           icon: const Icon(Icons.publish),
-          label: const Text('Publish — start accepting applications'),
+          // Names the money step when there is one, so the PIN sheet that
+          // follows is not a surprise.
+          label: Text(f.committedPool.toInt() > 0
+              ? 'Publish — start accepting applications'
+              : 'Fund & publish — start accepting applications'),
         ),
         const SizedBox(height: 12),
       ],
