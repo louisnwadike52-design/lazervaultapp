@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
+import '../../services/id_pay_pdf_service.dart';
 import '../../domain/entities/id_pay_fee_rule_entity.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
@@ -206,11 +207,34 @@ class IDPayCreatedScreen extends StatelessWidget {
               _buildActionChip(
                 icon: Icons.share,
                 label: 'Share',
-                onTap: () {
-                  Share.share(
-                    'Pay me using PayID: ${idPay.displayPayId}\n\n${idPay.description.isNotEmpty ? idPay.description : "Send payment via Lazervault"}',
-                    subject: 'PayID Payment Request',
-                  );
+                onTap: () async {
+                  // The legacy Share.share passed NO anchor, and share_plus on
+                  // iOS throws PlatformException on a zero rect — the sheet
+                  // simply never opened. Capture the tapped chip's rect here,
+                  // before any navigation, because the render box dies on pop.
+                  final origin =
+                      IDPayPdfService.shareOriginFromContext(context);
+                  try {
+                    // The invoice PDF, not a bare line of text: this is the
+                    // same document the details page offers, so a PayID shared
+                    // from the created screen is not a poorer artefact than one
+                    // shared a minute later.
+                    await IDPayPdfService.shareInvoice(
+                      idPay: idPay,
+                      sharePositionOrigin: origin,
+                    );
+                  } catch (_) {
+                    // Generating or attaching the PDF can fail (storage, a
+                    // font, no space). Falling back to the legible request
+                    // message still shares something the recipient can act on,
+                    // rather than failing silently as the old call did.
+                    await SharePlus.instance.share(ShareParams(
+                      text: IDPayPdfService.shareMessageFor(idPay),
+                      subject: 'Lazervault PayID Payment Request',
+                      sharePositionOrigin:
+                          origin ?? const Rect.fromLTWH(0, 0, 1, 1),
+                    ));
+                  }
                 },
               ),
             ],

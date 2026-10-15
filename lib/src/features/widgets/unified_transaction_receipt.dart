@@ -1120,6 +1120,17 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // backend in rmb_receipt_screen's metadata (nothing hardcoded, account
       // numbers masked), so they flow straight into the branded PDF.
       tx.serviceType == TransactionServiceType.rmb ||
+      // Lazerspray: funding the spray wallet, and withdrawing back out of it,
+      // are movements between the user's OWN main account and their spray
+      // balance — real money, with a SPRAY-FUND / SPRAY-WD reference. Share
+      // and Download were exporting a flat screenshot of this dark page, which
+      // is the same gap every type above it once had.
+      //
+      // A withdrawal is the one people keep: it is the proof that party money
+      // they put in came back out. The spray rows (_sprayRows) carry what the
+      // movement actually was and which pots it drew from, so the document is
+      // not a bare "Transfer Received".
+      tx.serviceType == TransactionServiceType.sprayme ||
       tx.serviceType == TransactionServiceType.withdrawal;
 
   /// Invoice-payload rows for the PDF body — mirrored from the metadata the
@@ -1156,6 +1167,80 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   ///
   /// Only non-empty values are emitted, so a bill type that does not carry a
   /// given field simply omits the row rather than printing a blank one.
+  /// Lazerspray identity rows for the PDF body.
+  ///
+  /// A spray movement is between the user's OWN main account and their spray
+  /// balance, so the generic document would otherwise print "Transfer
+  /// Received" with no indication of what happened — which is what the
+  /// on-screen receipt showed before this.
+  ///
+  /// Two sources, in order. The backend now writes structured metadata
+  /// (movement, and for a withdrawal the split between unspent top-up and
+  /// earnings), and that is what a new transaction carries. Rows already in
+  /// the ledger have `metadata = {}` — measured on prod — so the movement and
+  /// the reference are recovered from the DESCRIPTION, which has always
+  /// carried both. Without that fallback every existing receipt would still
+  /// export a bare transfer.
+  List<MapEntry<String, String>> get _sprayRows {
+    if (tx.serviceType != TransactionServiceType.sprayme) return const [];
+    final md = tx.metadata ?? {};
+    final rows = <MapEntry<String, String>>[];
+
+    String pick(List<String> keys) {
+      for (final k in keys) {
+        final v = (md[k] ?? '').toString().trim();
+        if (v.isNotEmpty && v != 'null') return v;
+      }
+      return '';
+    }
+
+    final desc = (tx.description ?? '').trim();
+    // "Lazerspray wallet withdrawal. Ref SPRAY-WD-<uuid>" — and the older
+    // "SprayMe …" spelling, which is still in the ledger.
+    final movement = pick(['spray_movement', 'movement']).isNotEmpty
+        ? pick(['spray_movement', 'movement'])
+        : desc.toLowerCase().contains('withdraw')
+            ? 'Wallet withdrawal'
+            : desc.toLowerCase().contains('top-up') ||
+                    desc.toLowerCase().contains('top up')
+                ? 'Wallet top-up'
+                : desc.toLowerCase().contains('gift')
+                    ? 'Gift'
+                    : desc.toLowerCase().contains('spray')
+                        ? 'Spray'
+                        : '';
+    if (movement.isNotEmpty) {
+      rows.add(MapEntry('Movement', movement));
+    }
+
+    // The SPRAY-* reference is the handle support searches by. It is inside
+    // the description today, so lift it out rather than making somebody read
+    // a sentence to find it.
+    var ref = pick(['spray_reference', 'reference']);
+    if (ref.isEmpty) {
+      final m = RegExp(r'\b(SPRAY-[A-Z]+-[0-9a-fA-F-]+)').firstMatch(desc);
+      if (m != null) ref = m.group(1) ?? '';
+    }
+    if (ref.isNotEmpty) rows.add(MapEntry('Lazerspray reference', ref));
+
+    // A withdrawal draws from two pots that are NOT interchangeable: money the
+    // user topped up and never sprayed, and money they earned from others.
+    // Saying which is the difference between a receipt and a number.
+    final fromDeposit = pick(['withdrawn_from_deposit', 'from_deposit']);
+    final fromEarnings = pick(['withdrawn_from_earnings', 'from_earnings']);
+    if (fromDeposit.isNotEmpty) {
+      rows.add(MapEntry('From unspent top-up', fromDeposit));
+    }
+    if (fromEarnings.isNotEmpty) {
+      rows.add(MapEntry('From earnings', fromEarnings));
+    }
+
+    final session = pick(['session_code', 'session_id', 'spray_session']);
+    if (session.isNotEmpty) rows.add(MapEntry('Session', session));
+
+    return rows;
+  }
+
   List<MapEntry<String, String>> get _billRows {
     if (!_billServiceTypes.contains(tx.serviceType)) return const [];
     final md = tx.metadata ?? {};
@@ -1710,6 +1795,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                   _invoiceRows +
                       _contributionRows +
                       _billRows +
+                      _sprayRows +
                       _escrowRows,
               currentUserName: _currentUserName,
             );
@@ -1744,6 +1830,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                   _invoiceRows +
                       _contributionRows +
                       _billRows +
+                      _sprayRows +
                       _escrowRows,
           currentUserName: _currentUserName,
           // Anchors the iPad share popover; omitted it anchored top-left.

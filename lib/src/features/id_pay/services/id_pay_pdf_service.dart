@@ -1,16 +1,16 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:lazervault/core/utils/receipt_download.dart';
 import '../domain/entities/id_pay_entity.dart';
 import '../domain/entities/id_pay_transaction_entity.dart';
-import 'dart:ui' show Rect;
 import 'package:lazervault/core/config/receipt_footer.dart';
 
 class IDPayPdfService {
@@ -542,6 +542,7 @@ class IDPayPdfService {
   static Future<void> shareReceipt({
     required IDPayTransactionEntity transaction,
     required IDPayEntity idPay,
+    Rect? sharePositionOrigin,
   }) async {
     try {
       final file =
@@ -553,7 +554,7 @@ class IDPayPdfService {
       await SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
         // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
         files: [XFile(file.path)],
         text:
             'PayID Transfer Receipt - $currencySymbol$amount to ${transaction.recipientName}',
@@ -562,6 +563,69 @@ class IDPayPdfService {
     } catch (e) {
       throw Exception('Failed to share receipt: $e');
     }
+  }
+
+  /// Money for the share MESSAGE, which is plain text in somebody's chat app
+  /// rather than PDF content.
+  ///
+  /// `receiptCurrencySymbol` deliberately degrades to "NGN " until the PDF
+  /// font is embedded, because the glyph does not exist in the document
+  /// before then. The share text has no such constraint — and the fallback
+  /// path calls this precisely when PDF generation FAILED — so the gated
+  /// helper made one request read "₦2,500.00" and the next "NGN 2,500.00"
+  /// depending only on whether an invoice happened to be built first.
+  static String _shareAmount(double v, String code) {
+    final upper = code.toUpperCase();
+    final symbol = CurrencySymbols.symbols[upper];
+    // An unmapped currency must not borrow the dollar sign: CurrencySymbols
+    // defaults to '$', which would price a CNY request in USD.
+    return symbol == null ? '$upper ${_amount(v)}' : '$symbol${_amount(v)}';
+  }
+
+  /// The message that travels with a shared PayID.
+  ///
+  /// The old Share button sent the code and the description and nothing else,
+  /// so whoever received it could not see what they were being asked for, how
+  /// much, or by when — they had to open the app to find out. A payment
+  /// request is only useful if it is legible in the message itself.
+  static String shareMessageFor(IDPayEntity idPay) {
+    final lines = <String>[];
+
+    final who = idPay.creatorName.trim();
+    lines.add(who.isNotEmpty
+        ? '$who is requesting a payment via Lazervault.'
+        : 'Payment request via Lazervault.');
+    lines.add('');
+
+    if (idPay.description.trim().isNotEmpty) {
+      lines.add('For: ${idPay.description.trim()}');
+    }
+    // A flexible PayID genuinely has no amount — say so rather than printing
+    // a zero, which reads as "nothing to pay".
+    lines.add(idPay.isFixed
+        ? 'Amount: ${_shareAmount(idPay.amount, idPay.currency)}'
+        : 'Amount: you choose');
+    lines.add('PayID: ${idPay.displayPayId}');
+
+    final expiry = _shareExpiryLine(idPay);
+    if (expiry.isNotEmpty) lines.add(expiry);
+
+    lines.add('');
+    lines.add('Pay it in the Lazervault app: enter the PayID above.');
+    return lines.join('\n');
+  }
+
+  /// "Expires: …" for the share message, or "" when it never expires.
+  static String _shareExpiryLine(IDPayEntity idPay) {
+    // `expiresAt` is non-nullable and carries a far-future placeholder when
+    // the PayID never expires, so the flag is the only honest check — a date
+    // comparison would print "Expires in 36500 day(s)".
+    if (idPay.neverExpires) return '';
+    final left = idPay.expiresAt.difference(DateTime.now());
+    if (left.isNegative) return 'Expired';
+    if (left.inHours >= 24) return 'Expires in ${left.inDays} day(s)';
+    if (left.inMinutes >= 60) return 'Expires in ${left.inHours} hour(s)';
+    return 'Expires in ${left.inMinutes} minute(s)';
   }
 
   /// Download creation invoice to device storage
@@ -579,25 +643,44 @@ class IDPayPdfService {
     }
   }
 
+  /// Build a share-sheet anchor from the tapped widget's global bounds.
+  ///
+  /// Capture it BEFORE any navigation: the render box dies on pop and the rect
+  /// then comes back null.
+  static Rect? shareOriginFromContext(BuildContext context) {
+    final obj = context.findRenderObject();
+    if (obj is RenderBox && obj.hasSize) {
+      return obj.localToGlobal(Offset.zero) & obj.size;
+    }
+    return null;
+  }
+
+  /// A non-zero anchor, always.
+  ///
+  /// share_plus on iOS REQUIRES one: a zero rect throws
+  /// `PlatformException(sharePositionOrigin: argument must be set …)` and the
+  /// sheet never opens — which is exactly how the PayID Share button failed.
+  static Rect _resolveShareOrigin(Rect? origin) {
+    if (origin != null && origin.width > 0 && origin.height > 0) {
+      return origin;
+    }
+    return const Rect.fromLTWH(0, 0, 1, 1);
+  }
+
   /// Share creation invoice via system share sheet
   static Future<void> shareInvoice({
     required IDPayEntity idPay,
+    Rect? sharePositionOrigin,
   }) async {
     try {
       final file = await generateCreationInvoice(idPay: idPay);
 
-      final currencySymbol = _currencySymbolFor(idPay.currency);
-      final amountText = idPay.isFixed
-          ? '$currencySymbol${_amount(idPay.amount)}'
-          : 'Flexible amount';
-
       await SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
         // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
         files: [XFile(file.path)],
-        text:
-            'PayID Invoice - ${idPay.displayPayId} - $amountText from ${idPay.creatorName}',
+        text: shareMessageFor(idPay),
         subject: 'Lazervault PayID Invoice',
       ));
     } catch (e) {

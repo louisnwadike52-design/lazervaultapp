@@ -370,8 +370,19 @@ bool upApplicationsClosed(up.UpliftFundMessage f) {
 }
 
 /// True when the fund can still take an application from this user right now.
-/// The single predicate behind every Apply control, so a hidden button and a
-/// server refusal cannot disagree.
+///
+/// NOT the control flow of the Apply surfaces, and the comment here used to
+/// claim it was — it had ZERO call sites while saying it was "the single
+/// predicate behind every Apply control". Both surfaces branch on the three
+/// conditions SEPARATELY, on purpose: each refusal needs its own words ("Your
+/// fund", the application's status, "Applications closed"), and collapsing
+/// them to one boolean would replace three accurate labels with a missing
+/// button and no explanation.
+///
+/// It survives as the single place the RULE is written down, used by the
+/// guard test that pins every Apply surface against it
+/// (test/features/uplift_apply_is_gated_test.dart). Keep the two in step: a
+/// new condition here is a condition every surface must grow.
 bool upCanApply(up.UpliftFundMessage f) =>
     !f.isFunder &&
     f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_OPEN &&

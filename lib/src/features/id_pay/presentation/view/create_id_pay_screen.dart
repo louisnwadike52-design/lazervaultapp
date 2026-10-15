@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/locale_gating.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,7 +18,6 @@ import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class CreateIDPayScreen extends StatefulWidget {
@@ -43,7 +43,13 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
   // Step 3: Details
   final TextEditingController _descriptionController = TextEditingController();
   String _selectedExpiry = '24hr';
-  String _selectedCurrency = 'NGN';
+  // NOT a user choice. A PayID collects into the dashboard-active wallet, so
+  // its currency is that wallet's currency. The old picker offered
+  // NGN/USD/GBP/EUR regardless of what the profile actually holds, so a USD
+  // request could be minted on an NGN-only profile — and then `_onCreate`'s
+  // currency match silently dropped the receiving account, so the money
+  // landed wherever the server's primary-account fallback pointed.
+  String _selectedCurrency = LocaleGating.currentCurrency;
   final TextEditingController _customExpiryController = TextEditingController();
 
   // Organization (for business accounts)
@@ -61,12 +67,28 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
     'Custom': -1,
   };
 
-  static const List<String> _currencies = ['NGN', 'USD', 'GBP', 'EUR'];
 
   @override
   void initState() {
     super.initState();
     _checkBusinessAccountAndLoadOrgs();
+    _syncCurrencyFromActiveAccount();
+  }
+
+  /// Correct the seeded currency to the dashboard-active wallet's.
+  ///
+  /// The field is seeded from the locale because the synchronous snapshot
+  /// answers null whenever the account summaries have not loaded — normal
+  /// when this screen is reached by deep link or notification tap rather than
+  /// through the dashboard. Fetching them here means the amount field shows
+  /// the right symbol before anybody types into it.
+  Future<void> _syncCurrencyFromActiveAccount() async {
+    final active = await ensureActiveAccountSnapshot();
+    final resolved = active?.currency.trim().toUpperCase() ?? '';
+    // An empty currency is a half-loaded summary, not a reason to retarget the
+    // request at a currency nothing holds: keep the locale answer.
+    if (!mounted || resolved.isEmpty || resolved == _selectedCurrency) return;
+    setState(() => _selectedCurrency = resolved);
   }
 
   void _checkBusinessAccountAndLoadOrgs() {
@@ -614,7 +636,12 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Add a description and set the expiry duration',
+            // The description has ALWAYS been optional — _onNext gates on
+            // nothing, the create call sends null when it is blank, and the
+            // service does not require it. Only this screen implied otherwise,
+            // by instructing the user to "add a description" and labelling the
+            // field with no marker, so people filled it believing they had to.
+            'Set the expiry duration. A description is optional.',
             style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF),
               fontSize: 14.sp,
@@ -622,13 +649,30 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
             ),
           ),
           SizedBox(height: 24.h),
-          Text(
-            'Description',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                'Description',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(width: 6.w),
+              // Says what the flow already does, rather than leaving the user
+              // to discover it by pressing Next on an empty field.
+              Text(
+                '(optional)',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 8.h),
           TextField(
@@ -640,7 +684,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
               fontSize: 15.sp,
             ),
             decoration: InputDecoration(
-              hintText: 'What is this payment for?',
+              hintText: 'What is this payment for? (optional)',
               hintStyle: GoogleFonts.inter(
                 color: const Color(0xFF6B7280),
                 fontSize: 15.sp,
@@ -738,53 +782,6 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
               ),
             ),
           ],
-          SizedBox(height: 20.h),
-          Text(
-            'Currency',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(14.r),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedCurrency,
-                isExpanded: true,
-                dropdownColor: const Color(0xFF1F1F1F),
-                icon: Icon(
-                  Icons.keyboard_arrow_down,
-                  color: const Color(0xFF9CA3AF),
-                  size: 20.sp,
-                ),
-                items: _currencies.map((currency) {
-                  return DropdownMenuItem(
-                    value: currency,
-                    child: Text(
-                      '$currency (${_currencySymbol(currency)})',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedCurrency = value);
-                  }
-                },
-              ),
-            ),
-          ),
           if (_isBusinessAccount && _organizations.isNotEmpty) ...[
             SizedBox(height: 20.h),
             Text(
