@@ -1,3 +1,5 @@
+import 'package:lazervault/src/features/uplift/presentation/views/uplift_detail_screen.dart';
+import 'package:lazervault/src/features/uplift/presentation/views/uplift_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_search_screen.dart';
 import 'package:lazervault/src/features/contactless_payment/services/contactless_websocket_service.dart';
@@ -2184,6 +2186,36 @@ class AppRouter {
             contributionId: contributionId,
             contribution: contribution,
           ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    // ── Lazerfunds ────────────────────────────────────────────────────────
+    //
+    // Named routes exist so NOTIFICATIONS can land on the fund. The feature
+    // itself still pushes its screens directly; these are the doors a deep
+    // link comes through.
+    GetPage(
+      name: AppRoutes.lazerfunds,
+      page: () => const UpliftHomeScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.lazerfundDetails,
+      page: () {
+        // Guarded exactly like contributionDetails above: an unguarded cast
+        // throws inside the page builder for any caller passing something
+        // else, and a builder that throws paints a blank grey screen the user
+        // cannot navigate out of.
+        final args = safeArgs<Map<String, dynamic>>() ?? const {};
+        final fundId = (args['fundId'] as String? ?? '').trim();
+        if (fundId.isEmpty) {
+          popMissingArgs('this fund');
+          return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+        }
+        return UpliftDetailScreen(
+          fundId: fundId,
+          applicationId: args['applicationId'] as String?,
         );
       },
       transition: Transition.rightToLeft,

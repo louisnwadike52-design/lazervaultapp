@@ -239,12 +239,44 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   if (_is(type, 'inventory') || type.contains('low_stock')) {
     return _landing(AppRoutes.inventory);
   }
-  // uplift_disbursement / uplift_disbursement_rollback — money moving to a
-  // business. Uplift has no AppRoutes entry and no GetPage of its own, so this
-  // lands on the account's transaction history, where the disbursement shows
-  // up, rather than naming a route that would dead-end.
+  // Lazerfunds (uplift).
+  //
+  // EVERY uplift notice used to land on the transaction history, because the
+  // feature had no named route — so "Applications closing soon", "Pool
+  // committed", "Fund expired" and the rest all took the user to a list of
+  // transactions instead of the fund they were about. The routes exist now.
+  //
+  // Money-movement notices are the exception and still go to the history: a
+  // disbursement or a refund is a question about an amount landing in an
+  // account, and the history is where that is answered.
   if (_is(type, 'uplift')) {
-    return _landing(AppRoutes.dashboardTransactionHistory);
+    if (type.contains('disbursement') || type.contains('refund')) {
+      return _landing(AppRoutes.dashboardTransactionHistory);
+    }
+    final fundId = _first(data, const [
+      'fund_id',
+      'fundId',
+      // reference_id is folded into the payload by the client, and for every
+      // fund-scoped uplift notice it IS the fund id.
+      'reference_id',
+    ]);
+    // MUST LOOK LIKE AN ID.
+    //
+    // The deadline reminders used to smuggle their dedup key into the
+    // reference — `"<uuid>:appdl:2026-10-16"` — and that string arrives here
+    // as the only id on the payload. Handing it to the detail screen means
+    // asking the server for a fund that cannot exist, which renders as a
+    // screen that loads forever. The backend no longer sends that shape, but
+    // queued notifications and other callers still can.
+    if (fundId != null && _looksLikeId(fundId)) {
+      return _record(
+        AppRoutes.lazerfundDetails,
+        arguments: {'fundId': fundId},
+      );
+    }
+    // No id — the Lazerfunds landing still beats a transaction list, because
+    // the message was about a fund.
+    return _landing(AppRoutes.lazerfunds);
   }
 
   return null;

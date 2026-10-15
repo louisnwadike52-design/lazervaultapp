@@ -417,6 +417,16 @@ abstract class AppRoutes {
   static const String contributionDetails =
       '/group-account/contribution-details';
   static const String makePayment = '/group-account/make-payment';
+
+  // ── Lazerfunds (uplift) ────────────────────────────────────────────────
+  //
+  // LAZERFUNDS HAD NO NAMED ROUTE AT ALL. Both screens were only ever pushed
+  // with Get.to(() => ...) from inside the feature, so the notification
+  // resolver had no name to send anyone to — every uplift notice, including
+  // "Applications closing soon" and "Pool committed", landed on the
+  // transaction history instead of the fund it was about.
+  static const String lazerfunds = '/lazerfunds';
+  static const String lazerfundDetails = '/lazerfunds/details';
   static const String paymentReceipt = '/group-account/payment-receipt';
   static const String contributionTranscript =
       '/group-account/contribution-transcript';

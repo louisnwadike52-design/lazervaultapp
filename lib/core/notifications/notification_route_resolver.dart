@@ -87,6 +87,23 @@ class NotificationRouteResolver {
 // surface beyond NotificationRouteResolver itself.
 // ---------------------------------------------------------------------------
 
+/// Whether a payload value is plausibly an ENTITY ID rather than a composite
+/// key that happens to contain one.
+///
+/// Notification payloads have carried both. A dedup suffix appended to an id
+/// (`"<uuid>:appdl:2026-10-16"`) is not something any screen can fetch, and a
+/// screen handed one asks the server for a record that cannot exist and sits
+/// on its loading view.
+///
+/// Deliberately permissive about FORM — ids in this app are uuids, but some
+/// services mint prefixed references — and strict about the one thing that
+/// has actually gone wrong: separators that mean the value is a composite.
+bool _looksLikeId(String v) {
+  final s = v.trim();
+  if (s.isEmpty || s.length > 100) return false;
+  return !s.contains(':') && !s.contains(' ') && !s.contains(',');
+}
+
 /// Matches a type against a domain prefix, tolerating both the bare form and
 /// the dotted form. `split_bill.created`, `split_bill` and `split_bill.paid`
 /// all match the `split_bill` domain — the server emits both shapes, and a new
