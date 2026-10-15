@@ -206,9 +206,14 @@ class _UpliftApplicationDetailScreenState
   }
 
   Widget _messageButton() {
-    final name = (widget.chatTargetName?.trim().isNotEmpty ?? false)
-        ? widget.chatTargetName!.trim()
-        : 'the other party';
+    // "the investor" when we do not know their name — never the fund's title,
+    // which is what used to appear here ("Message Pilot Africa"). A funder
+    // viewing an application is messaging a business, so the generic word
+    // follows which side is looking.
+    final known = widget.chatTargetName?.trim() ?? '';
+    final name = known.isNotEmpty
+        ? known
+        : (widget.showFunderActions ? 'the business' : 'the investor');
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         backgroundColor: kUpPrimary,

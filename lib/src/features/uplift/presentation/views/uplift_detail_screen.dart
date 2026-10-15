@@ -484,8 +484,11 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
           fund: f,
           showFunderActions: false,
           chatTargetUserId: f.funder.userUuid,
-          chatTargetName:
-              f.funder.displayName.isNotEmpty ? f.funder.displayName : f.title,
+          // NEVER the fund's title. A title is not a person, and this value
+          // becomes the other party's name in Financial Connections — which
+          // is how "Pilot Africa" ended up listed there as though it were
+          // someone. Empty is honest; the button then says "the investor".
+          chatTargetName: f.funder.displayName,
           chatTargetAvatar: f.funder.profilePicture,
         ));
     await _load();
@@ -500,11 +503,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
           showFunderActions: false,
           // Own application in the community list ⇒ still allow messaging the investor.
           chatTargetUserId: own ? _fund!.funder.userUuid : null,
-          chatTargetName: own
-              ? (_fund!.funder.displayName.isNotEmpty
-                  ? _fund!.funder.displayName
-                  : _fund!.title)
-              : null,
+          chatTargetName: own ? _fund!.funder.displayName : null,
           chatTargetAvatar: own ? _fund!.funder.profilePicture : null,
         ));
     await _load();
@@ -588,6 +587,32 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
           Text(
               '${f.category} · up to ${upNaira(f.perBusinessCap.toInt(), f.currency)} each · ${f.targetCount} businesses',
               style: const TextStyle(color: kUpTextSecondary, fontSize: 13)),
+          // WHO IS BEHIND THIS FUND.
+          //
+          // A business deciding whether to pitch is deciding whether to pitch
+          // to a PERSON, and the page named everyone involved except them.
+          // Shown only when we actually know — an "Offered by" with nothing
+          // after it is worse than the line being absent.
+          if (f.funder.displayName.trim().isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(Icons.person_outline,
+                    size: 14, color: kUpTextSecondary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Offered by ${f.funder.displayName.trim()}'
+                    '${f.isFunder ? ' (you)' : ''}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: kUpTextSecondary, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 12),
           Text(f.description,
               style: const TextStyle(color: Colors.white70, height: 1.4)),
