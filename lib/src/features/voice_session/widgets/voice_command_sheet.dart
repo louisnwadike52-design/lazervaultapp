@@ -1940,7 +1940,20 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     return Column(
       children: [
         // THE single transfer surface — sci-fi HUD, always visible.
-        VoiceTransferHud(context: transfer),
+        //
+        // Dismissible on the terminal states and on a bare recipient pick (see
+        // VoiceTransferHud._canDismiss): a finished transfer used to sit pinned
+        // at the top of the screen with nothing left to do and no way to put it
+        // away short of ending the call.
+        //
+        // Compact once a recipient is chosen but before there is an amount —
+        // the longest-lived state, and the one that least needs to be large.
+        VoiceTransferHud(
+          context: transfer,
+          compact: transfer.status == VoiceTransferStatus.recipientSelected,
+          onDismiss: () =>
+              context.read<VoiceSessionCubit>().dismissTransferHud(),
+        ),
         SizedBox(height: 12.h),
         // Running transcript + live captions scroll INDEPENDENTLY below the pinned
         // HUD so older turns stay reachable while the transfer stays in view.

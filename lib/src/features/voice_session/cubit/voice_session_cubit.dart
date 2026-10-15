@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:async';
 import 'dart:io' show File, Platform;
 import 'dart:typed_data';
@@ -2648,42 +2649,98 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         },
       );
 
-      _wsReconnectAttempts = 0; // Reset on successful connect
-      print('VoiceSessionCubit: WebSocket connected to $_voiceWsUrl');
+      // NOT a successful connect — `IOWebSocketChannel.connect` is LAZY. It
+      // returns a channel before the socket is established, so zeroing the
+      // counter here made the backoff INERT: every attempt reset it to 0
+      // before the failure could arrive, the counter never passed 1, the
+      // "max attempts" ceiling was unreachable, and the cubit hammered a dead
+      // endpoint every 2 seconds for the life of the session.
+      //
+      // The counter is now reset by the FIRST MESSAGE on the channel
+      // (_onWebSocketMessage), which is the only evidence the socket actually
+      // opened.
+      _wsHandshakeConfirmed = false;
+      print('VoiceSessionCubit: WebSocket dialling $_voiceWsUrl');
     } catch (e) {
       print('VoiceSessionCubit: WebSocket connection failed: $e');
+      // A synchronous throw never reaches onError, so without this a dial that
+      // fails immediately (bad URI, no route) would never retry at all.
+      _scheduleWebSocketReconnect();
     }
   }
 
   int _wsReconnectAttempts = 0;
-  static const int _maxWsReconnectAttempts = 5;
+
+  /// Attempts after which the UI is told visual feedback is degraded.
+  ///
+  /// NOT a stop condition. Retries continue for as long as the LiveKit room is
+  /// connected: the voice session is still live, the user is still talking, and
+  /// every widget the agent wants to show — the recipient picker, the transfer
+  /// summary, the PIN sheet, the receipt — rides this socket. Giving up
+  /// permanently after a 40-second blip is what "after the first transfer the
+  /// whole thing breaks" looks like from the inside, because a transfer
+  /// round-trip is long enough to span one.
+  static const int _wsDegradedAfterAttempts = 5;
+
+  /// True once a message has arrived on the CURRENT channel. Until then the
+  /// socket is unproven and a failure must count against the backoff.
+  bool _wsHandshakeConfirmed = false;
+
+  /// Whether the degraded-visuals notice has already been shown for this
+  /// outage, so a long one does not re-emit on every attempt.
+  bool _wsDegradedNotified = false;
 
   Timer? _wsReconnectTimer;
 
   void _scheduleWebSocketReconnect() {
+    if (isClosed) return;
     _wsReconnectAttempts++;
-    if (_wsReconnectAttempts > _maxWsReconnectAttempts) {
-      print('VoiceSessionCubit: Max WebSocket reconnect attempts reached');
-      // Notify UI that visual feedback is unavailable
-      if (!isClosed && _room != null) {
-        emit(VoiceSessionWebSocketFailed(_room!));
-      }
-      return;
+
+    if (_wsReconnectAttempts == _wsDegradedAfterAttempts &&
+        !_wsDegradedNotified &&
+        _room != null) {
+      // Tell the user the visuals are behind, and keep trying.
+      _wsDegradedNotified = true;
+      emit(VoiceSessionWebSocketFailed(_room!));
     }
-    // Cancel any existing reconnect timer to prevent duplicates
+
+    // Cancel any existing reconnect timer to prevent duplicates.
     _wsReconnectTimer?.cancel();
-    // Exponential backoff: 2s, 4s, 8s, 16s, 32s
-    final delay = Duration(seconds: 2 * _wsReconnectAttempts);
+
+    // Exponential backoff CAPPED at 20s, plus jitter. The cap matters because
+    // this now runs indefinitely — an uncapped doubling would reach minutes
+    // and the session would appear dead long after the network came back. The
+    // jitter stops a fleet of clients retrying in lockstep after a gateway
+    // restart.
+    final exp = 1 << (_wsReconnectAttempts.clamp(1, 5) - 1); // 1,2,4,8,16
+    final seconds = (2 * exp).clamp(2, 20);
+    final jitterMs = _wsJitter.nextInt(900);
+    final delay = Duration(milliseconds: seconds * 1000 + jitterMs);
+
     _wsReconnectTimer = Timer(delay, () {
-      if (!isClosed &&
-          _currentSessionId != null &&
-          _room?.connectionState == ConnectionState.connected) {
-        _connectWebSocket();
-      }
+      if (isClosed) return;
+      if (_currentSessionId == null) return;
+      // Only while the voice session itself is alive. A closed room means the
+      // call ended and there is nothing left to feed.
+      if (_room?.connectionState != ConnectionState.connected) return;
+      _connectWebSocket();
     });
   }
 
+  /// Dedicated RNG so the jitter cannot be affected by, or affect, anything
+  /// else that seeds the global one.
+  final math.Random _wsJitter = math.Random();
+
   void _onWebSocketMessage(dynamic message) {
+    // The first message on a channel is the only PROOF the socket opened —
+    // IOWebSocketChannel.connect returns before the handshake completes. The
+    // counter used to be zeroed at dial time, which made the backoff inert.
+    if (!_wsHandshakeConfirmed) {
+      _wsHandshakeConfirmed = true;
+      _wsReconnectAttempts = 0;
+      _wsDegradedNotified = false;
+      print('VoiceSessionCubit: WebSocket handshake confirmed');
+    }
     try {
       final decoded = jsonDecode(message as String) as Map<String, dynamic>;
       final eventType = decoded['event'] as String?;
@@ -2706,8 +2763,18 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             // user's name / avatar for the HUD. If we are searching again
             // after a prior failure, reset the stale result fields.
             _lastSearchCandidates = users;
-            if (_transferContext.status == VoiceTransferStatus.failed ||
-                _transferContext.status == VoiceTransferStatus.cancelled) {
+            // A NEW search means a NEW transfer, whatever happened to the last
+            // one — including when the last one SUCCEEDED.
+            //
+            // This used to reset on `failed` and `cancelled` only, so the
+            // second transfer of a session inherited the first one's amount,
+            // fee, total, destination, reference and closing balance (every
+            // later write is a copyWith, which preserves anything it is not
+            // given). The HUD then showed the new recipient beside the old
+            // amount and the old receipt reference — "after the first transfer
+            // the whole thing breaks", measured from the code path rather than
+            // guessed.
+            if (_transferContext.isTerminal) {
               _updateTransferContext(VoiceTransferContext.idle);
             }
 
@@ -3264,6 +3331,42 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _lastSearchCandidates = const [];
   }
 
+  /// The user tapped the HUD's X.
+  ///
+  /// UI-only: it clears the surface, it does NOT cancel anything with the
+  /// agent. The HUD is only dismissible on states where there is nothing in
+  /// flight to cancel (see VoiceTransferHud._canDismiss), so there is no
+  /// outcome to undo — and sending a cancel from a close button would be a
+  /// money action behind a chrome affordance.
+  ///
+  /// Re-emits the current state so the sheet rebuilds; the HUD is read through
+  /// a getter rather than carried on the state, so a mutation alone paints
+  /// nothing.
+  void dismissTransferHud() {
+    if (isClosed) return;
+    if (!_transferContext.isActive) return;
+    _resetTransferContext();
+    emit(_rebuildCurrentState());
+  }
+
+  /// A state object equal-but-not-identical to the current one, so `emit`
+  /// is not swallowed by Bloc's equality check.
+  ///
+  /// VoiceSessionState subclasses are Equatable, so emitting the same instance
+  /// (or an equal one) is a no-op — which is exactly what happened the first
+  /// time this was wired with `emit(state)`: the context cleared and the HUD
+  /// stayed on screen. A nonce field would be cleaner, but it would have to be
+  /// threaded through every subclass; re-wrapping the room is local.
+  VoiceSessionState _rebuildCurrentState() {
+    final s = state;
+    if (_room != null) {
+      // Connected is the neutral "session is live, nothing pending" state and
+      // is what the sheet falls back to for rendering the transcript.
+      return VoiceSessionConnected(_room!);
+    }
+    return s;
+  }
+
   /// Pull a usable display name out of a user-search candidate map.
   String _candidateName(Map<String, dynamic> u) {
     final full = (u['full_name'] ?? u['fullName'] ?? '').toString().trim();
@@ -3333,6 +3436,15 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         .toString()
         .trim();
     final type = (d['transfer_type'] ?? 'internal').toString();
+
+    // The OTHER door into a second transfer. When the agent already knows the
+    // recipient — a saved beneficiary, or "send another 500 to the same
+    // person" — no user search fires, so the reset in `show_user_search`
+    // never runs and the copyWith below would carry the previous transfer's
+    // reference and closing balance into a live review.
+    if (_transferContext.isTerminal) {
+      _updateTransferContext(VoiceTransferContext.idle);
+    }
 
     _updateTransferContext(_transferContext.copyWith(
       status: VoiceTransferStatus.reviewing,

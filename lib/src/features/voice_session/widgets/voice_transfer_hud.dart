@@ -21,7 +21,29 @@ part 'voice_transfer_hud_widgets.dart';
 class VoiceTransferHud extends StatelessWidget {
   final VoiceTransferContext context;
 
-  const VoiceTransferHud({super.key, required this.context});
+  /// Dismisses the HUD. Null hides the control.
+  ///
+  /// The HUD is PINNED above the transcript, so on a finished transfer it sat
+  /// there occupying the top of the screen with nothing left to do — and there
+  /// was no way to put it away short of ending the call. It is offered on the
+  /// terminal states (the transfer is over) and on `recipientSelected` (the
+  /// user picked the wrong person and wants out), never while money is
+  /// actually in flight: a close button next to "AUTHORIZE • ENTER PIN" reads
+  /// as "cancel the payment", which it is not.
+  final VoidCallback? onDismiss;
+
+  /// Renders at roughly half scale — smaller avatar, smaller type, tighter
+  /// rows. Used once a recipient is chosen but before there is an amount to
+  /// read, which is the longest-lived state and the one that least needs to be
+  /// large.
+  final bool compact;
+
+  const VoiceTransferHud({
+    super.key,
+    required this.context,
+    this.onDismiss,
+    this.compact = false,
+  });
 
   // ── Palette ──
   static const Color _purple = Color(0xFF5B45C9);
@@ -92,10 +114,10 @@ class VoiceTransferHud extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildStatusBar(c, accent),
-        SizedBox(height: 12.h),
+        SizedBox(height: compact ? 8.h : 12.h),
         // Recipient panel — present from recipientSelected onward.
         if (c.recipientName != null || c.recipientUsername != null)
-          _RecipientPanel(context: c, accent: accent),
+          _RecipientPanel(context: c, accent: accent, compact: compact),
         // Money + destination rows — present once an amount exists.
         if (c.hasAmount) ...[
           SizedBox(height: 12.h),
@@ -157,8 +179,51 @@ class VoiceTransferHud extends StatelessWidget {
             letterSpacing: 1.5,
           ),
         ),
+        if (_canDismiss(c.status) && onDismiss != null) ...[
+          SizedBox(width: 6.w),
+          // 32dp of tap target around a 13sp glyph: the icon has to stay small
+          // to belong on a HUD strip, and a 13sp hit box would be unhittable.
+          SizedBox(
+            width: 28.w,
+            height: 28.w,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              visualDensity: VisualDensity.compact,
+              splashRadius: 16.r,
+              tooltip: 'Dismiss',
+              onPressed: onDismiss,
+              icon: Icon(
+                Icons.close_rounded,
+                size: 13.sp,
+                color: Colors.white.withValues(alpha: 0.55),
+              ),
+            ),
+          ),
+        ],
       ],
     );
+  }
+
+  /// Whether the HUD may be dismissed in this state.
+  ///
+  /// Not while the money is moving. `reviewing` and `awaitingPin` are live
+  /// steps the agent is waiting on, and an X beside them would read as
+  /// "cancel the payment" — which it is not, and which is what the voice
+  /// "cancel" command is for.
+  static bool _canDismiss(VoiceTransferStatus s) {
+    switch (s) {
+      case VoiceTransferStatus.success:
+      case VoiceTransferStatus.failed:
+      case VoiceTransferStatus.cancelled:
+      case VoiceTransferStatus.recipientSelected:
+        return true;
+      case VoiceTransferStatus.amountSet:
+      case VoiceTransferStatus.reviewing:
+      case VoiceTransferStatus.awaitingPin:
+      case VoiceTransferStatus.idle:
+        return false;
+    }
   }
 
   String _statusLabel(VoiceTransferStatus s) {

@@ -79,7 +79,19 @@ class _HudFrame extends StatelessWidget {
 class _RecipientPanel extends StatelessWidget {
   final VoiceTransferContext context;
   final Color accent;
-  const _RecipientPanel({required this.context, required this.accent});
+
+  /// Roughly half scale. The recipient row is the longest-lived part of the
+  /// HUD — it is on screen from the moment a person is chosen until the
+  /// transfer ends — and at full size it pushed the live transcript off a
+  /// small phone. Compact keeps the identity legible and gives the
+  /// conversation the room back.
+  final bool compact;
+
+  const _RecipientPanel({
+    required this.context,
+    required this.accent,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext ctx) {
@@ -98,8 +110,8 @@ class _RecipientPanel extends StatelessWidget {
             child: Opacity(opacity: t.clamp(0.0, 1.0), child: child),
           ),
           child: Container(
-            width: 46.w,
-            height: 46.w,
+            width: compact ? 26.w : 46.w,
+            height: compact ? 26.w : 46.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: VoiceTransferHud._purple.withValues(alpha: 0.18),
@@ -107,13 +119,17 @@ class _RecipientPanel extends StatelessWidget {
                 color: VoiceTransferHud._purple.withValues(alpha: 0.55),
                 width: 1.4,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: VoiceTransferHud._purple.withValues(alpha: 0.30),
-                  blurRadius: 12,
-                  spreadRadius: -2,
-                ),
-              ],
+              // No glow when compact — a bloom around a 26dp disc reads as a
+              // smudge rather than a highlight.
+              boxShadow: compact
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: VoiceTransferHud._purple.withValues(alpha: 0.30),
+                        blurRadius: 12,
+                        spreadRadius: -2,
+                      ),
+                    ],
             ),
             child: ClipOval(
               child: (avatarUrl != null && avatarUrl.isNotEmpty)
@@ -126,7 +142,7 @@ class _RecipientPanel extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(width: 12.w),
+        SizedBox(width: compact ? 8.w : 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,20 +154,20 @@ class _RecipientPanel extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
                   color: Colors.white,
-                  fontSize: 15.sp,
+                  fontSize: compact ? 12.sp : 15.sp,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
                 ),
               ),
               if ((c.recipientUsername ?? '').isNotEmpty) ...[
-                SizedBox(height: 2.h),
+                SizedBox(height: compact ? 1.h : 2.h),
                 Text(
                   '@${c.recipientUsername}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.robotoMono(
                     color: VoiceTransferHud._purple.withValues(alpha: 0.85),
-                    fontSize: 11.sp,
+                    fontSize: compact ? 9.sp : 11.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -171,7 +187,7 @@ class _RecipientPanel extends StatelessWidget {
         c.recipientInitials,
         style: GoogleFonts.inter(
           color: Colors.white,
-          fontSize: 16.sp,
+          fontSize: compact ? 10.sp : 16.sp,
           fontWeight: FontWeight.w700,
         ),
       ),
