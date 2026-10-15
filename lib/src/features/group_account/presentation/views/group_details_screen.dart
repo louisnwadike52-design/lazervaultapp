@@ -931,6 +931,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
               final canLeave = currentMember != null &&
                   currentMember.status == GroupMemberStatus.active &&
                   currentMember.userId != group.adminId;
+              // The one case that is refused rather than simply absent: the
+              // group's own admin. Tracked separately so the menu can say so.
+              final isCreatorOfGroup = currentMember != null &&
+                  currentMember.userId == group.adminId;
               return [
                 PopupMenuItem(
                   value: 'share_report',
@@ -1010,6 +1014,32 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                         Text(
                           'Leave Group',
                           style: GoogleFonts.inter(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  )
+                // SHOWN TO THE CREATOR TOO, AND EXPLAINED.
+                //
+                // The creator genuinely cannot leave — walking away from a pot
+                // holding other people's money would strand it, and the server
+                // refuses — but the item was simply ABSENT for them, so an
+                // admin looking for the exit found a menu with no mention of it
+                // and no idea whether the feature existed. Reported exactly
+                // that way.
+                //
+                // Present, dimmed, and it says what to do instead. Same rule
+                // this codebase applies everywhere else: explain, never vanish.
+                else if (isCreatorOfGroup)
+                  PopupMenuItem(
+                    value: 'leave_blocked',
+                    child: Row(
+                      children: [
+                        Icon(Icons.exit_to_app,
+                            color: Colors.grey[600], size: 20.sp),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'Leave Group',
+                          style: GoogleFonts.inter(color: Colors.grey[600]),
                         ),
                       ],
                     ),
@@ -1805,6 +1835,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       case 'leave':
         _showLeaveGroupDialog(group);
         break;
+      case 'leave_blocked':
+        _showCannotLeaveDialog(group);
+        break;
       case 'past_contributions':
         // Threading the same cubit through preserves auth + caches so the
         // list lands instantly instead of cold-loading.
@@ -1869,6 +1902,59 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         backgroundColor: const Color(0xFFEF4444),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+      ),
+    );
+  }
+
+  /// Why the group's own admin cannot leave, and what to do instead.
+  ///
+  /// The server refuses this outright — a group whose admin has walked away
+  /// has nobody who can approve requests, set a payout receiver or close a
+  /// cycle, and the pot may be holding other members' money. The restriction
+  /// is right; its invisibility was the bug.
+  void _showCannotLeaveDialog(GroupAccount group) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Row(
+          children: [
+            Icon(Icons.admin_panel_settings_outlined,
+                color: const Color(0xFFFB923C), size: 20.sp),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'You run this group',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'As the group\'s admin you cannot leave it. Someone has to be able '
+          'to approve join requests, set payout receivers and close cycles — '
+          'and the group may be holding other members\' money.\n\n'
+          'Make another active member an admin first, then you can leave. If '
+          'the group is finished and nothing is owed, delete it instead.',
+          style: GoogleFonts.inter(
+            color: const Color(0xFF9CA3AF),
+            fontSize: 12.5.sp,
+            height: 1.45,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('Got it',
+                style: GoogleFonts.inter(color: GroupFundsPalette.onDark)),
+          ),
+        ],
       ),
     );
   }

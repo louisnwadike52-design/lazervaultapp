@@ -72,7 +72,14 @@ class BasicInfoStep extends StatelessWidget {
           _buildTextField(
             controller: titleController,
             hint: 'e.g., Help Build a Community School',
-            maxLength: 255,
+            // 50, down from 255.
+            //
+            // The title renders on one clipped line on the campaign card, the
+            // detail header, the share sheet and the push notification, so
+            // anything past roughly this was never read — it was ellipsised at
+            // every call site. Matches the group/contribution ceiling so the
+            // whole product agrees on what a title is.
+            maxLength: 50,
           ),
           SizedBox(height: 4.h),
           _buildHint('Minimum 3 characters'),
@@ -85,7 +92,11 @@ class BasicInfoStep extends StatelessWidget {
             controller: descriptionController,
             hint: 'Briefly describe your campaign...',
             maxLines: 3,
-            maxLength: 500,
+            // 200, down from 500. Descriptions show clipped to one or two
+            // lines in every list; 500 bought a paragraph nobody saw and a
+            // field that scrolled away under the keyboard. The campaign STORY
+            // is the long-form field and keeps its own larger limit.
+            maxLength: 200,
           ),
           SizedBox(height: 4.h),
           _buildHint('Minimum 5 characters'),

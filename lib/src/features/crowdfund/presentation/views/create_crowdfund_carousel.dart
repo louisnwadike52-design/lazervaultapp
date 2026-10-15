@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:convert';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
@@ -352,7 +351,20 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
 
     Map<String, dynamic> metadata = {};
     if (_socialLinks.isNotEmpty) {
-      metadata['social_links'] = jsonEncode(_socialLinks);
+      // The MAP, not a JSON string of it.
+      //
+      // The whole metadata object is jsonEncode'd once more by the data source
+      // before it goes on the wire, so encoding here produced a JSON string
+      // nested inside a JSON object:
+      //   {"social_links":"{\"website\":\"example.com\"}"}
+      // Any reader asking for metadata.social_links.website got a string and
+      // had to decode a second time to find anything.
+      //
+      // Safe to correct because NOTHING reads these back today — not the app,
+      // not financial-products, not the admin dashboard. They are written and
+      // never shown. Storing the right shape now means whoever renders them
+      // first gets an object rather than inheriting the double encoding.
+      metadata['social_links'] = _socialLinks;
     }
 
     context.read<CrowdfundCubit>().createCrowdfund(

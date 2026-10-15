@@ -14,7 +14,32 @@ import 'package:lazervault/core/utils/friendly_error.dart';
 /// it does not look technical.
 String friendlyGrpcError(GrpcError e,
     [String fallback = 'Something went wrong. Please try again.']) {
-  // Connectivity / transport failures (incl. non-200 gateway responses) first.
+  // WHOSE FAULT IS IT — asked in the right order.
+  //
+  // This used to call isNetworkError first, which returns true for
+  // StatusCode.internal, unknown and aborted. Those are OUR failures: a
+  // service that panicked, a malformed response, a request the gateway could
+  // not complete. The user was told to "check your connection and try again"
+  // for a fault on our side, so they power-cycle their wifi and try again into
+  // the same broken call. That is what crowdfund campaign creation showed —
+  // the service never logged the attempt at all.
+  //
+  // isNetworkError still drives RETRY and offline behaviour at its other call
+  // sites, where "transport-class, retryable" is the right meaning. It is just
+  // the wrong question for choosing WORDS, which is what the narrower pair
+  // below exists for — they were written for this and never wired in here.
+  if (isDeviceTransportError(e)) {
+    return transportFailureMessage(e);
+  }
+  if (isServerError(e)) {
+    return serverErrorMessage;
+  }
+  // Still transport-class, but genuinely ambiguous — unavailable, aborted,
+  // deadlineExceeded. It could be us or the device, so transportFailureMessage
+  // names both possibilities rather than blaming either.
+  //
+  // Kept AFTER the two narrower questions, not before them: asking this first
+  // is what sent "internal" down the "check your connection" path.
   if (isNetworkError(e)) {
     return transportFailureMessage(e);
   }
