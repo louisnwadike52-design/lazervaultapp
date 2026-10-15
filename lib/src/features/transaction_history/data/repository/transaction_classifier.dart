@@ -155,6 +155,24 @@ String classifyDomain(String category, String description, String reference,
   if (svc.contains('group-accounts') && s.contains('payout')) {
     return 'group_contribution';
   }
+  // PIGGYVAULT. The money leaving a plan was invisible in this list.
+  //
+  // accounts-service books three categories for it — `lock_funds` (money in),
+  // `lock_funds_autosave` (the plan's own recurring debit) and `unlock_funds`
+  // (the payout, which is the single largest credit a plan ever makes). None
+  // was classified here, so a withdrawal landed in the account and the user
+  // could not find it in their history: the row fell through to the generic
+  // fallback with no name, no icon and no service filter.
+  //
+  // `unlock_funds` is also the one row whose service_name is empty, so the
+  // service_name rules below cannot reach it either. The CATEGORY is the only
+  // thing that identifies it, which is why this sits above them.
+  if (cat == 'unlock_funds' ||
+      cat == 'lock_funds' ||
+      cat == 'lock_funds_autosave') {
+    return cat;
+  }
+
   // Lazerfunds (uplift is its internal code name) writes through the same
   // multi-product service and sits in exactly the same trap.
   if (cat.startsWith('uplift')) {
@@ -237,6 +255,21 @@ String? titleForDomain(String domain, String typeLower) {
       return credit ? 'Crowdfund Withdrawal' : 'Crowdfund Payout';
     case 'crowdfund_fee':
       return credit ? 'Crowdfund Fee Refund' : 'Crowdfund Fee';
+    case 'unlock_funds':
+      // Always a credit in practice — it is the payout — but named for the
+      // direction the row actually carries rather than assuming.
+      return credit ? 'Piggyvault Withdrawal' : 'Piggyvault Unlock';
+    case 'lock_funds':
+      return credit ? 'Piggyvault Refund' : 'Piggyvault Deposit';
+    case 'lock_funds_autosave':
+      // NAMED FOR PIGGYVAULT, not "AutoSave".
+      //
+      // Piggyvault's recurring debit and the AutoSave product are different
+      // things that move money to different places — AutoSave to the savings
+      // account, Piggyvault into a locked plan — and calling both "AutoSave"
+      // in one list is how somebody concludes their AutoSave is taking money
+      // they cannot see.
+      return credit ? 'Piggyvault Auto-save Refund' : 'Piggyvault Auto-save';
     case 'uplift':
       return credit ? 'Lazerfunds Received' : 'Lazerfunds Commitment';
     case 'uplift_refund':
@@ -352,6 +385,12 @@ TransactionServiceType? serviceTypeForDomain(String domain) {
       return TransactionServiceType.fee;
     case 'group_contribution':
       return TransactionServiceType.groupContribution;
+    case 'unlock_funds':
+    case 'lock_funds':
+    case 'lock_funds_autosave':
+      // lockFunds, NOT autosave — the two are separate products and the
+      // filter has to be able to tell them apart.
+      return TransactionServiceType.lockFunds;
     case 'uplift':
     case 'uplift_refund':
       return TransactionServiceType.lazerfunds;

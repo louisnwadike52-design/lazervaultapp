@@ -23,7 +23,7 @@ const Map<String, String> _kServiceDisplayNames = {
   // Accounts
   'accounts': 'Accounts',
   'family_accounts': 'Family & Friends',
-  'lockfunds': 'PiggyVault',
+  'lockfunds': 'Piggyvault',
   'cards': 'Cards',
   'autosave': 'AutoSave',
   // Transfers

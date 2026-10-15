@@ -105,7 +105,7 @@ class TransactionCategoryLabels {
     'Exchange Proceeds',
     'AutoSave',
     'AutoSave Fees',
-    'PiggyVault Locks',
+    'Piggyvault Locks',
     'Matured Savings',
     'Savings',
     'Crowdfund Refunds',

@@ -399,7 +399,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           // invisible on the dark background — force the lighter purple so it
           // reads clearly at the top-right.
           MicroserviceChatIcon(
-            serviceName: 'PiggyVault',
+            serviceName: 'Piggyvault',
             sourceContext: 'lockfunds',
             iconColor: _kLightPurple,
           ),
