@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/utilities/safe_args.dart';
 import 'package:flutter/services.dart';
@@ -187,22 +188,15 @@ class IDPayCreatedScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildActionChip(
-                icon: Icons.copy,
-                label: 'Copy',
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: idPay.displayPayId));
-                  Get.snackbar(
-                    'Copied',
-                    'PayID code copied to clipboard',
-                    backgroundColor: const Color(0xFF10B981),
-                    colorText: Colors.white,
-                    snackPosition: SnackPosition.BOTTOM,
-                    margin: EdgeInsets.all(16.w),
-                    duration: const Duration(seconds: 2),
-                  );
-                },
-              ),
+              // Confirms IN PLACE, not with a toast.
+              //
+              // This screen is itself the success message — the tick, "Your
+              // PayID is Ready!" and the code in 36pt. A green bar sliding up
+              // from the bottom to announce a second success is the same
+              // news twice, in the place the eye is least likely to be. The
+              // chip says "Copied" where the finger just was, which is also
+              // where somebody looks to check it worked.
+              _CopyChip(text: idPay.displayPayId),
               SizedBox(width: 16.w),
               _buildActionChip(
                 icon: Icons.share,
@@ -421,5 +415,75 @@ class IDPayCreatedScreen extends StatelessWidget {
       default:
         return '$currency ';
     }
+  }
+}
+
+/// The Copy chip, which confirms itself.
+///
+/// Its own widget because the screen is stateless and this is the only thing
+/// on it that changes — making the whole page stateful to hold a two-second
+/// flag would be a worse trade.
+class _CopyChip extends StatefulWidget {
+  const _CopyChip({required this.text});
+
+  final String text;
+
+  @override
+  State<_CopyChip> createState() => _CopyChipState();
+}
+
+class _CopyChipState extends State<_CopyChip> {
+  bool _copied = false;
+  Timer? _revert;
+
+  @override
+  void dispose() {
+    // A timer that outlives the screen calls setState on a dead State.
+    _revert?.cancel();
+    super.dispose();
+  }
+
+  void _copy() {
+    Clipboard.setData(ClipboardData(text: widget.text));
+    setState(() => _copied = true);
+    _revert?.cancel();
+    // Long enough to read, short enough that the chip is a Copy button again
+    // by the time somebody wants to use it a second time.
+    _revert = Timer(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _copied = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _copy,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: _copied
+              ? const Color(0xFF10B981).withValues(alpha: 0.9)
+              : Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(24.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(_copied ? Icons.check : Icons.copy,
+                color: Colors.white, size: 18.sp),
+            SizedBox(width: 8.w),
+            Text(
+              _copied ? 'Copied' : 'Copy',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

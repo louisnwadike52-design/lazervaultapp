@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/id_pay/presentation/widgets/pay_id_input.dart';
 import 'package:lazervault/src/features/widgets/status_filter_chips.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -56,20 +57,34 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
 
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // The FAB's action depends on which tab is showing, and TabController
+    // does NOT rebuild the Scaffold on its own — it notifies its listeners.
+    // Without this the button keeps whatever label it was built with.
+    _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<IDPayCubit>().getMyIDPays();
     });
   }
 
+  void _onTabChanged() {
+    // indexIsChanging is true mid-swipe; index has already moved. Rebuilding
+    // on both keeps the button in step with the swipe rather than snapping
+    // at the end of it.
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _searchController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -78,23 +93,52 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
   }
 
   void _onSearchSubmitted(String payId) {
-    final trimmed = payId.trim();
+    // Same belt-and-braces as the lookup screen: the formatter cleans the
+    // field, this cleans every other route into a lookup.
+    final trimmed = stripPayIdPrefix(payId).trim();
     if (trimmed.isEmpty) return;
     Get.toNamed(AppRoutes.idPayLookup, arguments: {'payId': trimmed});
+  }
+
+  /// Tab 1 is "Pay". Read from the controller rather than a second copy of
+  /// the index, so a swipe and a tap cannot disagree.
+  bool get _isPayTab => _tabController.index == 1;
+
+  /// What the big button does, per tab.
+  ///
+  /// On Pay it submits the code already typed. With the field empty it
+  /// focuses it instead of searching for nothing — the button's job there is
+  /// to get the user to the next step, and the next step is typing a code.
+  void _onPrimaryAction() {
+    if (!_isPayTab) {
+      Get.toNamed(AppRoutes.createIdPay);
+      return;
+    }
+    final typed = stripPayIdPrefix(_searchController.text).trim();
+    if (typed.isEmpty) {
+      FocusScope.of(context).requestFocus(_searchFocus);
+      return;
+    }
+    _onSearchSubmitted(typed);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
+      // THE BUTTON FOLLOWS THE TAB.
+      //
+      // "Create PayID" sat over the Pay tab, whose entire job is to pay
+      // somebody else's code — so the one big coloured button on screen
+      // offered the opposite of what the user had just chosen to do, and the
+      // actual action was a small search icon inside the field.
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Get.toNamed(AppRoutes.createIdPay);
-        },
+        onPressed: _onPrimaryAction,
         backgroundColor: InvoiceThemeColors.primaryPurple,
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: Icon(_isPayTab ? Icons.arrow_outward : Icons.add,
+            color: Colors.white),
         label: Text(
-          'Create PayID',
+          _isPayTab ? 'Pay' : 'Create PayID',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 14.sp,
@@ -440,11 +484,13 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
           SizedBox(height: 16.h),
           TextField(
             controller: _searchController,
+            focusNode: _searchFocus,
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16.sp,
             ),
             textCapitalization: TextCapitalization.characters,
+            inputFormatters: const [PayIdInputFormatter()],
             decoration: InputDecoration(
               hintText: 'e.g. A3K9X2',
               hintStyle: GoogleFonts.inter(

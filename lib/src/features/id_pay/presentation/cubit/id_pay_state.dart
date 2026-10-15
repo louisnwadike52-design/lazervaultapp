@@ -98,5 +98,25 @@ class IDPayLookedUpWithOrg extends IDPayState {
 
 class IDPayError extends IDPayState {
   final String message;
-  IDPayError({required this.message});
+
+  /// The gRPC code name the failure carried — "NOT_FOUND", "UNAVAILABLE",
+  /// "DEADLINE_EXCEEDED" and so on. Empty when the caller did not pass one.
+  ///
+  /// The message alone cannot tell "that code does not exist" from "we could
+  /// not reach the server", and those need opposite things from the user:
+  /// re-read the code, or try again. The lookup screen showed the
+  /// check-your-code empty state for both, which sends somebody off to
+  /// re-type a code that was right all along.
+  final String code;
+
+  IDPayError({required this.message, this.code = ''});
+
+  /// True only when the server actually answered "no such PayID".
+  ///
+  /// Deliberately a positive test on NOT_FOUND rather than "anything that is
+  /// not a network error": an unrecognised code degrades to the generic
+  /// "something went wrong, try again", which is annoying but honest, where
+  /// the reverse would tell a user their code is wrong on evidence we do not
+  /// have.
+  bool get isNotFound => code.toUpperCase() == 'NOT_FOUND';
 }

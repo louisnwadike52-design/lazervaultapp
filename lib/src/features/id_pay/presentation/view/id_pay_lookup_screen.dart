@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/id_pay/presentation/widgets/pay_id_input.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -28,7 +29,11 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
     super.initState();
     final args = Get.arguments as Map<String, dynamic>?;
     if (args != null && args['payId'] != null) {
-      final payId = args['payId'] as String;
+      // A code arriving by route argument — from the home tab, a deep link,
+      // a QR scan — is set directly on the controller, which does NOT run the
+      // input formatter. Clean it here or the field opens showing the doubled
+      // prefix the formatter exists to prevent.
+      final payId = stripPayIdPrefix(args['payId'] as String);
       _searchController.text = payId;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _onSearch(payId);
@@ -43,7 +48,10 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
   }
 
   void _onSearch(String payId) {
-    final trimmed = payId.trim();
+    // Belt and braces. The formatter keeps the FIELD clean; this keeps the
+    // lookup clean for every other way a code can arrive here — a deep link,
+    // a QR scan, a voice or chat handoff — none of which pass through it.
+    final trimmed = stripPayIdPrefix(payId).trim();
     if (trimmed.isEmpty) return;
     setState(() => _hasSearched = true);
     context.read<IDPayCubit>().lookupIDPay(payId: trimmed);
@@ -82,6 +90,7 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
               child: TextField(
                 controller: _searchController,
                 textCapitalization: TextCapitalization.characters,
+                inputFormatters: const [PayIdInputFormatter()],
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 16.sp,
@@ -167,19 +176,15 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
   }
 
   Widget _buildResult() {
-    return BlocConsumer<IDPayCubit, IDPayState>(
-      listener: (context, state) {
-        if (state is IDPayError) {
-          Get.snackbar(
-            'Error',
-            state.message,
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white,
-            snackPosition: SnackPosition.BOTTOM,
-            margin: EdgeInsets.all(16.w),
-          );
-        }
-      },
+    // NO SNACKBAR. The failure already has a whole screen to itself.
+    //
+    // A lookup that fails rendered BOTH the in-page state and a red
+    // "Error / PayID not found" toast over it — the same fact twice, the
+    // second copy covering the bottom of the screen and timing out on its
+    // own schedule. The empty state is the better of the two: it is styled,
+    // it stays while the user re-reads the code they typed, and it is where
+    // the eye already is.
+    return BlocBuilder<IDPayCubit, IDPayState>(
       builder: (context, state) {
         if (state is IDPayLoading) {
           return const Center(
@@ -192,7 +197,7 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
         }
 
         if (state is IDPayError) {
-          return _buildNotFoundState();
+          return _buildLookupFailedState(state);
         }
 
         return const SizedBox.shrink();
@@ -448,43 +453,77 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
     );
   }
 
-  Widget _buildNotFoundState() {
+  /// The one place a failed lookup is shown — and it says WHICH failure.
+  ///
+  /// "PayID Not Found — check the code" is right only when the server
+  /// actually answered NOT_FOUND. For an unreachable server it is wrong in
+  /// the worst way: it sends somebody off to re-read a code that was correct,
+  /// and hides the one action that would work, which is to try again.
+  Widget _buildLookupFailedState(IDPayError state) {
+    final notFound = state.isNotFound;
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 72.w,
-            height: 72.w,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(36.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72.w,
+              height: 72.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(36.r),
+              ),
+              child: Icon(
+                notFound ? Icons.search_off : Icons.cloud_off_outlined,
+                size: 32.sp,
+                color: const Color(0xFFEF4444),
+              ),
             ),
-            child: Icon(
-              Icons.search_off,
-              size: 32.sp,
-              color: const Color(0xFFEF4444),
+            SizedBox(height: 16.h),
+            Text(
+              notFound ? 'PayID Not Found' : "We couldn't reach the server",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'PayID Not Found',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
+            SizedBox(height: 8.h),
+            Text(
+              notFound
+                  ? 'Please check the code and try again'
+                  // The server's own sentence, already humanised by
+                  // friendlyError on the way through — never raw gRPC text.
+                  : state.message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w400,
+                height: 1.4,
+              ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Please check the code and try again',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
+            // Retry only where retrying is the answer. Offering it on a
+            // genuinely unknown code just repeats the same refusal.
+            if (!notFound) ...[
+              SizedBox(height: 20.h),
+              TextButton.icon(
+                onPressed: () => _onSearch(_searchController.text),
+                icon: Icon(Icons.refresh, size: 18.sp),
+                label: Text('Try again',
+                    style: GoogleFonts.inter(
+                        fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF7C3AED),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

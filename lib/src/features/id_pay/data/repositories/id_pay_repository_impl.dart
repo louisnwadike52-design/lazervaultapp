@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:lazervault/src/features/id_pay/domain/pay_id_code.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/id_pay_entity.dart';
@@ -8,6 +9,18 @@ import '../../domain/entities/id_pay_transaction_entity.dart';
 import '../../domain/repositories/id_pay_repository.dart';
 import '../datasources/id_pay_remote_datasource.dart';
 
+/// A PayID arriving here may still carry its display prefix.
+///
+/// Every copyable form of a PayID renders `PAY-<code>` — the share message,
+/// the invoice PDF, the copy button, the receipt — and the wire format is the
+/// bare code. The screens strip it as it is typed, but a screen is not the
+/// only caller: the chat and voice agents, a deep link and a QR scan all
+/// reach these methods directly, and each of them would otherwise send a code
+/// the server can only answer NOT_FOUND to.
+///
+/// So it is stripped HERE as well, at the last point before the wire, where
+/// no caller can route around it. Stripping twice costs nothing: the helper
+/// is a no-op on a bare code.
 class IDPayRepositoryImpl implements IDPayRepository {
   final IDPayRemoteDataSource remoteDataSource;
 
@@ -56,7 +69,8 @@ class IDPayRepositoryImpl implements IDPayRepository {
     required String payId,
   }) async {
     try {
-      final result = await remoteDataSource.lookupIDPay(payId: payId);
+      final result =
+          await remoteDataSource.lookupIDPay(payId: stripPayIdPrefix(payId));
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
@@ -77,7 +91,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
   }) async {
     try {
       final result = await remoteDataSource.payIDPay(
-        payId: payId,
+        payId: stripPayIdPrefix(payId),
         amount: amount,
         transactionPin: transactionPin,
         sourceAccountId: sourceAccountId,
@@ -123,7 +137,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
   }) async {
     try {
       final result = await remoteDataSource.getIDPayTransactions(
-        payId: payId,
+        payId: stripPayIdPrefix(payId),
         limit: limit,
         offset: offset,
       );
@@ -279,7 +293,8 @@ class IDPayRepositoryImpl implements IDPayRepository {
     required String payId,
   }) async {
     try {
-      final result = await remoteDataSource.lookupIDPayWithOrg(payId: payId);
+      final result = await remoteDataSource.lookupIDPayWithOrg(
+          payId: stripPayIdPrefix(payId));
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
