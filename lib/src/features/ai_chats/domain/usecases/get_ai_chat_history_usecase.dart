@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:lazervault/core/chat/chat_history_page.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/ai_chats/domain/entities/ai_chat_message_entity.dart';
 import '../repositories/i_ai_chat_repository.dart';
@@ -21,6 +22,30 @@ class GetAIChatHistoryUseCase {
       sourceContext: sourceContext,
       limit: limit,
       offset: offset,
+    );
+  }
+
+  /// One page plus the cursor for the next OLDER page.
+  ///
+  /// The paginating caller wants this one: [call] above throws the cursor away
+  /// and leaves the caller to infer "is there more" from the page length,
+  /// which cannot tell "the conversation ends here" from "the server trimmed
+  /// the page".
+  Future<Either<Failure, ChatHistoryPage<ChatMessageEntity>>> page({
+    required String accessToken,
+    String? sessionId,
+    String? sourceContext,
+    int? limit,
+    int? offset,
+    String? before,
+  }) {
+    return _repository.getChatHistoryPage(
+      accessToken: accessToken,
+      sessionId: sessionId,
+      sourceContext: sourceContext,
+      limit: limit,
+      offset: offset,
+      before: before,
     );
   }
 

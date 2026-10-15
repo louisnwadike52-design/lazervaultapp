@@ -20,6 +20,7 @@ abstract class IAiChatDataSource {
     String? sourceContext,
     int? limit,
     int? offset,
+    String? before,
   });
 
   /// Report a thumbs up/down on one stored answer. `rating` is 'up', 'down',
@@ -91,6 +92,7 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
     String? sourceContext,
     int? limit, // unused on the gRPC path (HTTP carries pagination)
     int? offset, // unused on the gRPC path (HTTP carries pagination)
+    String? before, // ditto — the gRPC history has no cursor
   }) async {
     final request = GetAIChatHistoryRequest();
     // Note: Session ID is tracked server-side, so we don't need to send it for gRPC

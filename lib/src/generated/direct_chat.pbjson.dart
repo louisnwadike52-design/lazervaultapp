@@ -97,6 +97,7 @@ const GetDirectChatHistoryRequest$json = {
     {'1': 'locale', '3': 3, '4': 1, '5': 9, '10': 'locale'},
     {'1': 'limit', '3': 4, '4': 1, '5': 5, '10': 'limit'},
     {'1': 'offset', '3': 5, '4': 1, '5': 5, '10': 'offset'},
+    {'1': 'before', '3': 6, '4': 1, '5': 9, '10': 'before'},
   ],
 };
 
@@ -105,7 +106,7 @@ final $typed_data.Uint8List getDirectChatHistoryRequestDescriptor = $convert.bas
     'ChtHZXREaXJlY3RDaGF0SGlzdG9yeVJlcXVlc3QSHQoKc2Vzc2lvbl9pZBgBIAEoCVIJc2Vzc2'
     'lvbklkEiUKDnNvdXJjZV9jb250ZXh0GAIgASgJUg1zb3VyY2VDb250ZXh0EhYKBmxvY2FsZRgD'
     'IAEoCVIGbG9jYWxlEhQKBWxpbWl0GAQgASgFUgVsaW1pdBIWCgZvZmZzZXQYBSABKAVSBm9mZn'
-    'NldA==');
+    'NldBIWCgZiZWZvcmUYBiABKAlSBmJlZm9yZQ==');
 
 @$core.Deprecated('Use directChatHistoryMessageDescriptor instead')
 const DirectChatHistoryMessage$json = {
@@ -124,6 +125,7 @@ const DirectChatHistoryMessage$json = {
       '6': '.google.protobuf.Struct',
       '10': 'entities'
     },
+    {'1': 'message_id', '3': 7, '4': 1, '5': 3, '10': 'messageId'},
   ],
 };
 
@@ -132,7 +134,8 @@ final $typed_data.Uint8List directChatHistoryMessageDescriptor = $convert.base64
     'ChhEaXJlY3RDaGF0SGlzdG9yeU1lc3NhZ2USEgoEcm9sZRgBIAEoCVIEcm9sZRIYCgdjb250ZW'
     '50GAIgASgJUgdjb250ZW50EhgKB3NlcnZpY2UYAyABKAlSB3NlcnZpY2USJQoOc291cmNlX2Nv'
     'bnRleHQYBCABKAlSDXNvdXJjZUNvbnRleHQSHQoKY3JlYXRlZF9hdBgFIAEoCVIJY3JlYXRlZE'
-    'F0EjMKCGVudGl0aWVzGAYgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdFIIZW50aXRpZXM=');
+    'F0EjMKCGVudGl0aWVzGAYgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdFIIZW50aXRpZXMS'
+    'HQoKbWVzc2FnZV9pZBgHIAEoA1IJbWVzc2FnZUlk');
 
 @$core.Deprecated('Use getDirectChatHistoryResponseDescriptor instead')
 const GetDirectChatHistoryResponse$json = {
@@ -148,12 +151,14 @@ const GetDirectChatHistoryResponse$json = {
     },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'session_id', '3': 3, '4': 1, '5': 9, '10': 'sessionId'},
+    {'1': 'next_before', '3': 4, '4': 1, '5': 9, '10': 'nextBefore'},
+    {'1': 'has_more', '3': 5, '4': 1, '5': 8, '10': 'hasMore'},
   ],
 };
 
 /// Descriptor for `GetDirectChatHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDirectChatHistoryResponseDescriptor =
-    $convert.base64Decode(
-        'ChxHZXREaXJlY3RDaGF0SGlzdG9yeVJlc3BvbnNlEkAKCG1lc3NhZ2VzGAEgAygLMiQuZGlyZW'
-        'N0Y2hhdC5EaXJlY3RDaGF0SGlzdG9yeU1lc3NhZ2VSCG1lc3NhZ2VzEhQKBXRvdGFsGAIgASgF'
-        'UgV0b3RhbBIdCgpzZXNzaW9uX2lkGAMgASgJUglzZXNzaW9uSWQ=');
+final $typed_data.Uint8List getDirectChatHistoryResponseDescriptor = $convert.base64Decode(
+    'ChxHZXREaXJlY3RDaGF0SGlzdG9yeVJlc3BvbnNlEkAKCG1lc3NhZ2VzGAEgAygLMiQuZGlyZW'
+    'N0Y2hhdC5EaXJlY3RDaGF0SGlzdG9yeU1lc3NhZ2VSCG1lc3NhZ2VzEhQKBXRvdGFsGAIgASgF'
+    'UgV0b3RhbBIdCgpzZXNzaW9uX2lkGAMgASgJUglzZXNzaW9uSWQSHwoLbmV4dF9iZWZvcmUYBC'
+    'ABKAlSCm5leHRCZWZvcmUSGQoIaGFzX21vcmUYBSABKAhSB2hhc01vcmU=');

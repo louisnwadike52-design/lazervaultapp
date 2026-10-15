@@ -54,6 +54,24 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
   StreamSubscription<String>? _localeSub;
 
   List<GeneralChatMessageEntity> _currentMessages = [];
+
+  /// Messages per history page — the initial load and each scroll-up
+  /// "load older". Previously the whole history came back in one unpaged
+  /// request, so a long conversation cost a full-thread read on every open.
+  static const int historyPageSize = 30;
+
+  /// Keyset cursor for the next OLDER page, '' at the start of the thread.
+  /// A cursor rather than an offset because the window shifts: a message
+  /// arriving while the user is scrolled up moves every row one position.
+  String _nextBefore = '';
+
+  /// Whether an older page exists. The SERVER answers this, from a probe row.
+  bool _hasMoreHistory = false;
+  bool get hasMoreHistory => _hasMoreHistory;
+
+  /// Re-entrancy guard so a burst of scroll events fires at most one fetch.
+  bool _isLoadingOlder = false;
+  bool get isLoadingOlder => _isLoadingOlder;
   late String _sessionId;
 
   /// User-selected chatbot response language code (en/yo/ig/ha/pcm/fr/es).
@@ -135,6 +153,7 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
     _currentMessages = [];
     _currentService = null;
     _conversationServices.clear();
+    _resetPaging();
     _isSending = false;
     _watchLocaleChanges();
     emit(GeneralChatInitial(messages: _currentMessages));
@@ -152,6 +171,9 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
         _currentMessages = [];
         _currentService = null;
         _conversationServices.clear();
+        // A cursor outlives the messages it came from; one left behind names a
+        // position in the conversation that is no longer on screen.
+        _resetPaging();
         emit(GeneralChatInitial(messages: _currentMessages));
         // Reload the chosen session's transcript from the gateway.
         loadHistory();
@@ -194,11 +216,12 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
 
     final locale = serviceLocator<LocaleManager>().currentLocale;
 
-    final result = await loadHistoryUseCase!(
+    final result = await loadHistoryUseCase!.page(
       sourceContext: 'general',
       sessionId: _sessionId,
       accessToken: '', // Token injected by interceptor
       locale: locale,
+      limit: historyPageSize,
     );
 
     if (isClosed) return;
@@ -207,7 +230,13 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
         // History load failed — keep welcome message
         emit(GeneralChatInitial(messages: _currentMessages));
       },
-      (history) {
+      (page) {
+        final history = page.messages;
+        _hasMoreHistory = page.canLoadOlder;
+        _nextBefore = page.nextBefore;
+        // A fresh load invalidates any load-older still in flight; the cursor
+        // check in loadOlderHistory drops that page when it lands.
+        _isLoadingOlder = false;
         if (history.isNotEmpty) {
           // Map MicroserviceChatMessageEntity to GeneralChatMessageEntity
           final historyMessages = history
@@ -235,6 +264,86 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
         }
       },
     );
+  }
+
+  /// Fetch the next OLDER page and PREPEND it.
+  Future<void> loadOlderHistory() async {
+    if (isClosed || loadHistoryUseCase == null) return;
+    if (_isLoadingOlder || !_hasMoreHistory) return;
+    // No cursor means the first page has not landed, or the thread has reached
+    // its start. Asking without one would re-fetch the NEWEST page and prepend
+    // a duplicate of what is already on screen.
+    if (_nextBefore.isEmpty) {
+      _hasMoreHistory = false;
+      return;
+    }
+    _isLoadingOlder = true;
+
+    final locale = serviceLocator<LocaleManager>().currentLocale;
+    // Capture the session AND the cursor: a region switch re-keys the session
+    // and a reload moves the cursor, and prepending a page from a different
+    // point in a different conversation is worse than not prepending at all.
+    final sessionAtStart = _sessionId;
+    final cursorAtStart = _nextBefore;
+
+    final result = await loadHistoryUseCase!.page(
+      sourceContext: 'general',
+      sessionId: _sessionId,
+      accessToken: '',
+      locale: locale,
+      limit: historyPageSize,
+      before: cursorAtStart,
+    );
+
+    if (isClosed) {
+      _isLoadingOlder = false;
+      return;
+    }
+    if (_sessionId != sessionAtStart || _nextBefore != cursorAtStart) {
+      _isLoadingOlder = false;
+      return;
+    }
+
+    result.fold(
+      (failure) {
+        // Leave loaded history intact; scrolling up again retries.
+        _isLoadingOlder = false;
+      },
+      (page) {
+        if (page.messages.isNotEmpty) {
+          final older = page.messages
+              .map((msg) => GeneralChatMessageEntity(
+                    text: msg.isUser ? maskIfPin(msg.text) : msg.text,
+                    isUser: msg.isUser,
+                    timestamp: msg.timestamp,
+                    serviceRoutedTo: msg.serviceRoutedTo,
+                    metadata: msg.metadata,
+                    mediaType: msg.mediaType,
+                    mediaUrl: msg.mediaUrl,
+                    localMediaPath: msg.localMediaPath,
+                    audioDurationMs: msg.audioDurationMs,
+                    transcript: msg.transcript,
+                  ))
+              .toList();
+          _currentMessages = [...older, ..._currentMessages];
+        }
+        _hasMoreHistory = page.canLoadOlder;
+        _nextBefore = page.nextBefore;
+        _isLoadingOlder = false;
+        emit(GeneralChatSuccess(messages: List.from(_currentMessages)));
+      },
+    );
+  }
+
+  /// Forget where we were in the history.
+  ///
+  /// Must happen wherever [_currentMessages] is emptied: a cursor outlives the
+  /// messages it was derived from, and one left behind names a position in a
+  /// conversation that is no longer on screen.
+  void _resetPaging() {
+    _nextBefore = '';
+    _hasMoreHistory = false;
+    _isLoadingOlder = false;
   }
 
   /// Send a chat message. [replyToText] / [replyToIsUser] carry the
@@ -711,6 +820,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
     _sessionId = _resolveInitialSessionId();
     _currentService = null;
     _conversationServices.clear();
+    _resetPaging();
     emit(GeneralChatInitial(messages: _currentMessages));
     initializeChat();
   }
@@ -742,6 +852,9 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
         _currentMessages = [];
         _currentService = null;
         _conversationServices.clear();
+        // A cursor outlives the messages it came from; one left behind names a
+        // position in the conversation that is no longer on screen.
+        _resetPaging();
         emit(GeneralChatInitial(messages: _currentMessages));
         loadHistory();
       });

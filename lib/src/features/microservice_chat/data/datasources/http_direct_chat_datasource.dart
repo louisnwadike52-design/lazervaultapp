@@ -168,6 +168,8 @@ class HttpDirectChatDataSource implements MicroserviceChatDataSource {
     required String sessionId,
     required String accessToken,
     String? locale,
+    int limit = 30,
+    String? before,
   }) async {
     try {
       final options = await callOptionsHelper.withAuth();
@@ -175,9 +177,16 @@ class HttpDirectChatDataSource implements MicroserviceChatDataSource {
       final queryParams = <String, dynamic>{
         'session_id': sessionId,
         'source_context': sourceContext,
-        'limit': 50,
-        'offset': 0,
+        'limit': limit,
       };
+      // Cursor when we have one; otherwise the newest page. Never both — the
+      // server ignores offset beside a cursor, and sending the pair invites a
+      // future build to apply them together and skip a page.
+      if (before != null && before.isNotEmpty) {
+        queryParams['before'] = before;
+      } else {
+        queryParams['offset'] = 0;
+      }
 
       if (locale != null && locale.isNotEmpty) {
         queryParams['locale'] = locale;

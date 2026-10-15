@@ -115,18 +115,24 @@ class GrpcDirectChatDataSource implements MicroserviceChatDataSource {
     required String sessionId,
     required String accessToken,
     String? locale,
+    int limit = 30,
+    String? before,
   }) async {
     try {
       final response =
           await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
 
+        // Cursor when we have one; otherwise the newest page. `offset` is
+        // left unset alongside a cursor — the server ignores it, and sending
+        // both invites a future build to apply them together, which would
+        // skip a whole page past the cursor.
         final grpcReq = dc.GetDirectChatHistoryRequest(
           sessionId: sessionId,
           sourceContext: sourceContext,
           locale: locale ?? 'en-NG',
-          limit: 50,
-          offset: 0,
+          limit: limit,
+          before: before ?? '',
         );
 
         return await _client.getDirectChatHistory(
@@ -148,6 +154,10 @@ class GrpcDirectChatDataSource implements MicroserviceChatDataSource {
           }
         }
         return ChatHistoryMessage(
+          // The proto dropped the row id until it gained `message_id`, which
+          // is why a per-service message restored from history could not be
+          // rated: the id is the handle the feedback call rates by.
+          messageId: msg.messageId.toInt(),
           role: msg.role,
           content: msg.content,
           service: msg.service,
@@ -162,6 +172,8 @@ class GrpcDirectChatDataSource implements MicroserviceChatDataSource {
         totalCount: response.total,
         sessionId:
             response.sessionId.isNotEmpty ? response.sessionId : sessionId,
+        nextBefore: response.nextBefore,
+        hasMore: response.hasMore,
       );
     } on GrpcError catch (e) {
       throw _mapGrpcException(e);

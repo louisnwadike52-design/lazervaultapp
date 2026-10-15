@@ -87,29 +87,60 @@ class ChatResponse {
 }
 
 class ChatHistoryResponse {
+  /// Chronological ASC (oldest→newest) — the order the thread renders. The
+  /// NEWEST page comes back first; older pages are fetched with [nextBefore]
+  /// and prepended.
   final List<ChatHistoryMessage> history;
+
+  /// Count of the whole thread, not of this page.
   final int totalCount;
   final String sessionId;
+
+  /// Pass back as `before` to fetch the next OLDER page. Empty when this page
+  /// reached the start of the conversation.
+  final String nextBefore;
+
+  /// Whether an older page exists. A scroll-up loop must stop on false rather
+  /// than keep asking — and a server error answers false for exactly that
+  /// reason, so a failing query is not retried on every scroll event.
+  final bool hasMore;
 
   ChatHistoryResponse({
     required this.history,
     required this.totalCount,
     required this.sessionId,
+    this.nextBefore = '',
+    this.hasMore = false,
   });
 
   factory ChatHistoryResponse.fromJson(Map<String, dynamic> json) {
     final historyList = (json['history'] as List<dynamic>?) ?? [];
+    final total = json['total_count'] as int? ?? 0;
+    final messages = historyList
+        .map((e) => ChatHistoryMessage.fromJson(e as Map<String, dynamic>))
+        .toList();
+    // `has_more` is authoritative when the server sends it. An older gateway
+    // build does not, and the count comparison is the honest fallback: it is
+    // right for the first page (the only page such a build could serve, since
+    // it has no cursor to give) and conservative after that.
+    final serverHasMore = json['has_more'] as bool?;
     return ChatHistoryResponse(
-      history: historyList
-          .map((e) => ChatHistoryMessage.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      totalCount: json['total_count'] as int? ?? 0,
+      history: messages,
+      totalCount: total,
       sessionId: json['session_id'] as String? ?? '',
+      nextBefore: (json['next_before'] as String?) ?? '',
+      hasMore: serverHasMore ?? (messages.length < total),
     );
   }
 }
 
 class ChatHistoryMessage {
+  /// The row's own id, or 0 when the surface did not send one.
+  ///
+  /// It is the handle `POST /chat/feedback` rates by, so a message restored
+  /// from history with no id cannot be rated at all — the per-service gRPC
+  /// history dropped it entirely until the proto gained `message_id`.
+  final int messageId;
   final String role;
   final String content;
   final String service;
@@ -120,6 +151,7 @@ class ChatHistoryMessage {
   final Map<String, dynamic>? metadata;
 
   ChatHistoryMessage({
+    this.messageId = 0,
     required this.role,
     required this.content,
     required this.service,
@@ -133,6 +165,7 @@ class ChatHistoryMessage {
   factory ChatHistoryMessage.fromJson(Map<String, dynamic> json) {
     final metadata = json['metadata'] as Map<String, dynamic>?;
     return ChatHistoryMessage(
+      messageId: (json['message_id'] as num?)?.toInt() ?? 0,
       role: json['role'] as String? ?? '',
       content: json['content'] as String? ?? '',
       service: json['service'] as String? ?? '',
@@ -149,11 +182,21 @@ class ChatHistoryMessage {
 abstract class MicroserviceChatDataSource {
   Future<ChatResponse> processChat(ChatRequest request);
   Future<void> sendTypingIndicator(String sessionId, bool isTyping);
+  /// One page of a thread, newest page first.
+  ///
+  /// [before] is the `nextBefore` from the previous page and fetches the next
+  /// OLDER page. Prefer it over [offset]: OFFSET walks and discards rows to
+  /// reach the page, and the window SHIFTS when a new message arrives, so
+  /// sending a message while scrolled up makes the next "load older" page
+  /// start one row late and silently drops a message out of the middle of the
+  /// history.
   Future<ChatHistoryResponse> getHistory({
     required String sourceContext,
     required String sessionId,
     required String accessToken,
     String? locale,
+    int limit = 30,
+    String? before,
   });
 }
 
@@ -218,6 +261,8 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
     required String sessionId,
     required String accessToken,
     String? locale,
+    int limit = 30,
+    String? before,
   }) async {
     try {
       final options = await callOptionsHelper.withAuth();
@@ -227,9 +272,17 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
         'session_id': sessionId,
         'source_context': sourceContext,
         'access_token': accessToken,
-        'limit': 50,
-        'offset': 0,
+        'limit': limit,
       };
+      // Cursor when we have one; otherwise the newest page. `offset` is NOT
+      // sent alongside a cursor — the server ignores it, and sending both
+      // invites a future build to apply them together, which would skip a
+      // whole page past the cursor.
+      if (before != null && before.isNotEmpty) {
+        queryParams['before'] = before;
+      } else {
+        queryParams['offset'] = 0;
+      }
 
       // Filter history by locale when provided
       if (locale != null && locale.isNotEmpty) {

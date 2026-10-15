@@ -12,6 +12,7 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/struct.pb.dart' as $1;
@@ -316,6 +317,7 @@ class GetDirectChatHistoryRequest extends $pb.GeneratedMessage {
     $core.String? locale,
     $core.int? limit,
     $core.int? offset,
+    $core.String? before,
   }) {
     final result = create();
     if (sessionId != null) result.sessionId = sessionId;
@@ -323,6 +325,7 @@ class GetDirectChatHistoryRequest extends $pb.GeneratedMessage {
     if (locale != null) result.locale = locale;
     if (limit != null) result.limit = limit;
     if (offset != null) result.offset = offset;
+    if (before != null) result.before = before;
     return result;
   }
 
@@ -344,6 +347,7 @@ class GetDirectChatHistoryRequest extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'locale')
     ..a<$core.int>(4, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..a<$core.int>(5, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..aOS(6, _omitFieldNames ? '' : 'before')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -407,6 +411,13 @@ class GetDirectChatHistoryRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearLimit() => $_clearField(4);
 
+  /// Offset pagination. Kept for older clients; `before` is strictly better.
+  ///
+  /// OFFSET is wrong twice over on a live conversation: it walks and discards
+  /// rows to reach the page, and the window SHIFTS when a new message arrives,
+  /// so sending a message while scrolled up makes the next "load older" page
+  /// start one row late and silently drops a message out of the middle of the
+  /// history. The server IGNORES offset whenever `before` is supplied.
   @$pb.TagNumber(5)
   $core.int get offset => $_getIZ(4);
   @$pb.TagNumber(5)
@@ -415,6 +426,20 @@ class GetDirectChatHistoryRequest extends $pb.GeneratedMessage {
   $core.bool hasOffset() => $_has(4);
   @$pb.TagNumber(5)
   void clearOffset() => $_clearField(5);
+
+  /// Keyset cursor: the `next_before` from the previous page. Returns the
+  /// newest `limit` messages strictly OLDER than that point. Format is
+  /// "<RFC3339 timestamp>|<message_id>"; the id half is required because a
+  /// user turn and its assistant reply routinely share a millisecond, so a
+  /// cursor on the timestamp alone would skip one of them or serve it twice.
+  @$pb.TagNumber(6)
+  $core.String get before => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set before($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasBefore() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearBefore() => $_clearField(6);
 }
 
 class DirectChatHistoryMessage extends $pb.GeneratedMessage {
@@ -425,6 +450,7 @@ class DirectChatHistoryMessage extends $pb.GeneratedMessage {
     $core.String? sourceContext,
     $core.String? createdAt,
     $1.Struct? entities,
+    $fixnum.Int64? messageId,
   }) {
     final result = create();
     if (role != null) result.role = role;
@@ -433,6 +459,7 @@ class DirectChatHistoryMessage extends $pb.GeneratedMessage {
     if (sourceContext != null) result.sourceContext = sourceContext;
     if (createdAt != null) result.createdAt = createdAt;
     if (entities != null) result.entities = entities;
+    if (messageId != null) result.messageId = messageId;
     return result;
   }
 
@@ -456,6 +483,7 @@ class DirectChatHistoryMessage extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'createdAt')
     ..aOM<$1.Struct>(6, _omitFieldNames ? '' : 'entities',
         subBuilder: $1.Struct.create)
+    ..aInt64(7, _omitFieldNames ? '' : 'messageId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -536,6 +564,19 @@ class DirectChatHistoryMessage extends $pb.GeneratedMessage {
   void clearEntities() => $_clearField(6);
   @$pb.TagNumber(6)
   $1.Struct ensureEntities() => $_ensure(5);
+
+  /// The row's own id. The general chatbot's history has always returned this
+  /// and the per-service history dropped it, which is why a message restored
+  /// from a per-service thread could not be rated: the id IS the handle the
+  /// feedback call rates by.
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get messageId => $_getI64(6);
+  @$pb.TagNumber(7)
+  set messageId($fixnum.Int64 value) => $_setInt64(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasMessageId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMessageId() => $_clearField(7);
 }
 
 class GetDirectChatHistoryResponse extends $pb.GeneratedMessage {
@@ -543,11 +584,15 @@ class GetDirectChatHistoryResponse extends $pb.GeneratedMessage {
     $core.Iterable<DirectChatHistoryMessage>? messages,
     $core.int? total,
     $core.String? sessionId,
+    $core.String? nextBefore,
+    $core.bool? hasMore,
   }) {
     final result = create();
     if (messages != null) result.messages.addAll(messages);
     if (total != null) result.total = total;
     if (sessionId != null) result.sessionId = sessionId;
+    if (nextBefore != null) result.nextBefore = nextBefore;
+    if (hasMore != null) result.hasMore = hasMore;
     return result;
   }
 
@@ -569,6 +614,8 @@ class GetDirectChatHistoryResponse extends $pb.GeneratedMessage {
         subBuilder: DirectChatHistoryMessage.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
     ..aOS(3, _omitFieldNames ? '' : 'sessionId')
+    ..aOS(4, _omitFieldNames ? '' : 'nextBefore')
+    ..aOB(5, _omitFieldNames ? '' : 'hasMore')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -599,6 +646,7 @@ class GetDirectChatHistoryResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $pb.PbList<DirectChatHistoryMessage> get messages => $_getList(0);
 
+  /// Count of the whole thread, not of this page.
   @$pb.TagNumber(2)
   $core.int get total => $_getIZ(1);
   @$pb.TagNumber(2)
@@ -616,6 +664,28 @@ class GetDirectChatHistoryResponse extends $pb.GeneratedMessage {
   $core.bool hasSessionId() => $_has(2);
   @$pb.TagNumber(3)
   void clearSessionId() => $_clearField(3);
+
+  /// Pass as `before` to fetch the next OLDER page. Empty when this page
+  /// reached the start of the conversation.
+  @$pb.TagNumber(4)
+  $core.String get nextBefore => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set nextBefore($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasNextBefore() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNextBefore() => $_clearField(4);
+
+  /// Whether an older page exists. A client driving a scroll-up loop must stop
+  /// on false rather than keep asking.
+  @$pb.TagNumber(5)
+  $core.bool get hasMore => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasMore($core.bool value) => $_setBool(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasHasMore() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasMore() => $_clearField(5);
 }
 
 const $core.bool _omitFieldNames =

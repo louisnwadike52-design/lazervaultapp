@@ -244,6 +244,7 @@ class HttpAiChatDataSource implements IAiChatDataSource {
     String? sourceContext,
     int? limit,
     int? offset,
+    String? before,
   }) async {
     try {
       final userId = await _secureStorageService.getUserId() ?? '';
@@ -258,8 +259,15 @@ class HttpAiChatDataSource implements IAiChatDataSource {
         'user_id': userId,
         'access_token': token,
         'limit': limit ?? 50,
-        'offset': offset ?? 0,
       };
+      // Cursor when we have one; otherwise the newest page. Never both — the
+      // gateway ignores offset beside a cursor, and sending the pair invites a
+      // future build to apply them together, which skips a whole page.
+      if (before != null && before.isNotEmpty) {
+        queryParams['before'] = before;
+      } else {
+        queryParams['offset'] = offset ?? 0;
+      }
 
       // Scope history by the CHAT-language locale — the SAME value the send path
       // stores (ChatLanguagePreference, not the device locale) — so the chatbot

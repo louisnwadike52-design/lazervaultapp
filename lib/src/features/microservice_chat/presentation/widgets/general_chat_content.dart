@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'chat_load_older_mixin.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -43,7 +44,7 @@ class GeneralChatContent extends StatefulWidget {
 }
 
 class _GeneralChatContentState extends State<GeneralChatContent>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, ChatLoadOlderOnScrollTop<GeneralChatContent> {
   /// Drives the secure PIN pad open the moment a turn asks for one.
   ///
   /// NOVA used to render the confirm-transfer card and stop there: the message said
@@ -129,7 +130,25 @@ class _GeneralChatContentState extends State<GeneralChatContent>
       duration: const Duration(milliseconds: 1200),
     )..repeat();
     _loadUserAvatar();
+    _scrollController.addListener(maybeLoadOlderChat);
   }
+
+  // ── "Scroll to the top to load more" ──────────────────────────────────────
+  // The per-service chat had NO pagination: the datasources hardcoded
+  // `limit: 50, offset: 0`. A conversation longer than one page showed one
+  // page and the rest was unreachable from this screen.
+  @override
+  ScrollController get chatScrollController => _scrollController;
+
+  @override
+  bool get canLoadOlderChat {
+    if (!mounted) return false;
+    final cubit = context.read<GeneralChatCubit>();
+    return cubit.hasMoreHistory && !cubit.isLoadingOlder;
+  }
+
+  @override
+  Future<void> loadOlderChat() => context.read<GeneralChatCubit>().loadOlderHistory();
 
   Future<void> _loadUserAvatar() async {
     const storage = FlutterSecureStorage();
@@ -142,6 +161,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
   @override
   void dispose() {
     _textController.dispose();
+    _scrollController.removeListener(maybeLoadOlderChat);
     _scrollController.dispose();
     _typingDotsController.dispose();
     _recordingTimer?.cancel();
@@ -576,13 +596,18 @@ class _GeneralChatContentState extends State<GeneralChatContent>
         controller: _scrollController,
         padding: const EdgeInsets.all(16),
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        itemCount: messages.length + (isLoading ? 1 : 0),
+        // +1 for the load-older header at index 0.
+        itemCount: messages.length + (isLoading ? 1 : 0) + 1,
         itemBuilder: (context, index) {
-          if (index >= messages.length) {
+          if (index == 0) {
+            return ChatLoadOlderHeader(visible: isPrependingOlderChat);
+          }
+          final i = index - 1;
+          if (i >= messages.length) {
             return _buildTypingIndicator();
           }
 
-          final message = messages[index];
+          final message = messages[i];
           // Left-swipe any bubble to reply to it (grounds the AI's next reply).
           return ChatSwipeToReply(
             onReply: () => _startReply(message),

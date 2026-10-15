@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
+import 'package:lazervault/core/chat/chat_history_page.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/generated/ai_chat.pb.dart';
 import '../../domain/repositories/i_ai_chat_repository.dart';
@@ -147,12 +148,36 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     int? limit,
     int? offset,
   }) async {
+    // Delegates, so there is ONE mapping of a history payload. The two used to
+    // be separate and that is how the per-service thread lost its receipt and
+    // pin-prompt cards on reload while the general one kept them.
+    final page = await getChatHistoryPage(
+      accessToken: accessToken,
+      sessionId: sessionId,
+      sourceContext: sourceContext,
+      limit: limit,
+      offset: offset,
+    );
+    return page.map((p) => p.messages);
+  }
+
+  @override
+  Future<Either<Failure, ChatHistoryPage<ChatMessageEntity>>>
+      getChatHistoryPage({
+    required String accessToken,
+    String? sessionId,
+    String? sourceContext,
+    int? limit,
+    int? offset,
+    String? before,
+  }) async {
     try {
       final response = await _dataSource.getChatHistory(
         sessionId: sessionId,
         sourceContext: sourceContext,
         limit: limit,
         offset: offset,
+        before: before,
       );
 
       // Handle both gRPC proto response and HTTP JSON response
@@ -181,7 +206,11 @@ class AiChatRepositoryImpl implements IAiChatRepository {
         }).toList();
 
         chatEntities.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-        return Right(chatEntities);
+        // The gRPC history carries no cursor, so this is a single page.
+        // hasMore stays false and a paginating caller simply never asks for a
+        // second one, rather than looping against an endpoint that would keep
+        // returning the same page.
+        return Right(ChatHistoryPage<ChatMessageEntity>.single(chatEntities));
       } else if (response is Map<String, dynamic>) {
         // Handle HTTP JSON response
         final history = response['history'] as List<dynamic>? ?? [];
@@ -403,10 +432,22 @@ class AiChatRepositoryImpl implements IAiChatRepository {
             },
           );
         }
-        return Right(chatEntities);
+        final total = (response['total_count'] as num?)?.toInt() ?? 0;
+        final serverHasMore = response['has_more'] as bool?;
+        return Right(ChatHistoryPage<ChatMessageEntity>(
+          messages: chatEntities,
+          totalCount: total,
+          nextBefore: (response['next_before'] as String?) ?? '',
+          // `has_more` is authoritative when the gateway sends it. An older
+          // build does not, and the count comparison is the honest fallback:
+          // right for the first page (the only one such a build can serve,
+          // having no cursor to hand out) and conservative after that.
+          hasMore: serverHasMore ?? (chatEntities.length < total),
+        ));
       }
 
-      return Right(<ChatMessageEntity>[]);
+      return const Right(ChatHistoryPage<ChatMessageEntity>.single(
+          <ChatMessageEntity>[]));
     } catch (e) {
       return Left(Failure(message: e.toString(), statusCode: 500));
     }

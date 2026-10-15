@@ -36,7 +36,20 @@ message GetDirectChatHistoryRequest {
   string source_context = 2;
   string locale = 3;
   int32 limit = 4;
+  // Offset pagination. Kept for older clients; `before` is strictly better.
+  //
+  // OFFSET is wrong twice over on a live conversation: it walks and discards
+  // rows to reach the page, and the window SHIFTS when a new message arrives,
+  // so sending a message while scrolled up makes the next "load older" page
+  // start one row late and silently drops a message out of the middle of the
+  // history. The server IGNORES offset whenever `before` is supplied.
   int32 offset = 5;
+  // Keyset cursor: the `next_before` from the previous page. Returns the
+  // newest `limit` messages strictly OLDER than that point. Format is
+  // "<RFC3339 timestamp>|<message_id>"; the id half is required because a
+  // user turn and its assistant reply routinely share a millisecond, so a
+  // cursor on the timestamp alone would skip one of them or serve it twice.
+  string before = 6;
 }
 
 message DirectChatHistoryMessage {
@@ -46,10 +59,22 @@ message DirectChatHistoryMessage {
   string source_context = 4;
   string created_at = 5;
   google.protobuf.Struct entities = 6;
+  // The row's own id. The general chatbot's history has always returned this
+  // and the per-service history dropped it, which is why a message restored
+  // from a per-service thread could not be rated: the id IS the handle the
+  // feedback call rates by.
+  int64 message_id = 7;
 }
 
 message GetDirectChatHistoryResponse {
   repeated DirectChatHistoryMessage messages = 1;
+  // Count of the whole thread, not of this page.
   int32 total = 2;
   string session_id = 3;
+  // Pass as `before` to fetch the next OLDER page. Empty when this page
+  // reached the start of the conversation.
+  string next_before = 4;
+  // Whether an older page exists. A client driving a scroll-up loop must stop
+  // on false rather than keep asking.
+  bool has_more = 5;
 }

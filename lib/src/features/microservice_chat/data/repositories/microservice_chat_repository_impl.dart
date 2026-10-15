@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:lazervault/core/chat/chat_history_page.dart';
 import 'chat_widget_metadata_hydration.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
@@ -128,12 +129,33 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
     required String accessToken,
     String? locale,
   }) async {
+    final page = await getHistoryPage(
+      sourceContext: sourceContext,
+      sessionId: sessionId,
+      accessToken: accessToken,
+      locale: locale,
+    );
+    return page.map((p) => p.messages);
+  }
+
+  @override
+  Future<Either<Failure, ChatHistoryPage<MicroserviceChatMessageEntity>>>
+      getHistoryPage({
+    required String sourceContext,
+    required String sessionId,
+    required String accessToken,
+    String? locale,
+    int limit = 30,
+    String? before,
+  }) async {
     try {
       final response = await dataSource.getHistory(
         sourceContext: sourceContext,
         sessionId: sessionId,
         accessToken: accessToken,
         locale: locale,
+        limit: limit,
+        before: before,
       );
 
       final messages = response.history.map((msg) {
@@ -192,7 +214,12 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
         metadataOf: (m) => m.metadata,
       );
 
-      return Right(messages);
+      return Right(ChatHistoryPage<MicroserviceChatMessageEntity>(
+        messages: messages,
+        totalCount: response.totalCount,
+        nextBefore: response.nextBefore,
+        hasMore: response.hasMore,
+      ));
     } catch (e) {
       return Left(ServerFailure(
         message: e.toString(),
@@ -209,6 +236,25 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
     required String accessToken,
     String? locale,
   }) async {
+    final page = await getDirectHistoryPage(
+      sourceContext: sourceContext,
+      sessionId: sessionId,
+      accessToken: accessToken,
+      locale: locale,
+    );
+    return page.map((p) => p.messages);
+  }
+
+  @override
+  Future<Either<Failure, ChatHistoryPage<MicroserviceChatMessageEntity>>>
+      getDirectHistoryPage({
+    required String sourceContext,
+    required String sessionId,
+    required String accessToken,
+    String? locale,
+    int limit = 30,
+    String? before,
+  }) async {
     try {
       if (directDataSource == null) {
         return Left(ServerFailure(
@@ -222,6 +268,8 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
         sessionId: sessionId,
         accessToken: accessToken,
         locale: locale,
+        limit: limit,
+        before: before,
       );
 
       final messages = response.history.map((msg) {
@@ -283,7 +331,12 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
         metadataOf: (m) => m.metadata,
       );
 
-      return Right(messages);
+      return Right(ChatHistoryPage<MicroserviceChatMessageEntity>(
+        messages: messages,
+        totalCount: response.totalCount,
+        nextBefore: response.nextBefore,
+        hasMore: response.hasMore,
+      ));
     } catch (e) {
       return Left(ServerFailure(
         message: e.toString(),

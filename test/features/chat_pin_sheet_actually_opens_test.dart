@@ -107,6 +107,17 @@ class _FakePinService implements ITransactionPinService {
     required String confirmNewPin,
   }) async =>
       PinOTPVerifyResult(success: true, message: '');
+
+  /// Non-consuming pre-check: the real service does NOT mark the OTP verified
+  /// and does NOT burn a 2FA backup code, so the code still works at the real
+  /// step. This fake accepts any code, which is right for these tests — they
+  /// are about the PIN SHEET, not about OTP validation.
+  @override
+  Future<PinOTPVerifyResult> checkPinOtp({
+    required String otpCode,
+    required String operationType,
+  }) async =>
+      PinOTPVerifyResult(success: true, message: '');
 }
 
 Map<String, dynamic> _payload({

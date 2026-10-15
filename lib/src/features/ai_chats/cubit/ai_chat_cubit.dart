@@ -112,21 +112,37 @@ class AIChatCubit extends Cubit<AIChatState> {
   /// backwards from there.
   static const int historyPageSize = 30;
 
-  /// Whether an older page of history MIGHT still exist (a full page came back
-  /// last time). Drives the scroll-up "load older" trigger.
+  /// Whether an older page of history still exists. The SERVER says so now —
+  /// it fetches one row more than asked for and reports the answer — rather
+  /// than being inferred from the page length, which could not tell "the
+  /// conversation ends here" from "the server trimmed the page".
   bool _hasMoreHistory = true;
   bool get hasMoreHistory => _hasMoreHistory;
+
+  /// Keyset cursor for the next OLDER page, or '' at the start of the thread.
+  ///
+  /// This replaced the offset. OFFSET pagination on a live conversation has a
+  /// shifting window: a message arriving while the user is scrolled up moves
+  /// every row one position, so the next page starts one row late and a
+  /// message disappears from the middle of their history. The old code fought
+  /// that by refusing to paginate during its own send ([_isSending] below),
+  /// which did nothing about a message from another device or an assistant
+  /// reply landing between two page reads. A cursor names a position in the
+  /// conversation, so nothing arriving at the newest end can move it.
+  String _nextBefore = '';
 
   /// Re-entrancy guard so a burst of scroll events fires at most one
   /// "load older" fetch at a time.
   bool _isLoadingOlder = false;
   bool get isLoadingOlder => _isLoadingOlder;
 
-  /// True while a [sendMessage] round-trip is in flight. The user bubble is
-  /// appended optimistically BEFORE Postgres persists it, so the newest-end
-  /// count is momentarily ahead of the server — a "load older" fired in this
-  /// window would compute a drifted offset and skip/duplicate a boundary
-  /// message. Load-older is suppressed until the send completes.
+  /// True while a [sendMessage] round-trip is in flight.
+  ///
+  /// It no longer HAS to gate pagination — the cursor is immune to the
+  /// optimistic user bubble that made the offset drift — but load-older stays
+  /// suppressed during a send anyway: two concurrent prepend/append edits to
+  /// the same list is a race worth not having, and the user is looking at the
+  /// bottom of the thread in that moment regardless.
   bool _isSending = false;
 
   AIChatCubit({
@@ -167,7 +183,7 @@ class AIChatCubit extends Cubit<AIChatState> {
     }
 
     emit(AIChatHistoryLoading(messages: _currentMessages));
-    final result = await _getAIChatHistoryUseCase(
+    final result = await _getAIChatHistoryUseCase.page(
       accessToken: accessToken,
       sessionId: _sessionId,
       sourceContext: 'general',
@@ -180,11 +196,14 @@ class AIChatCubit extends Cubit<AIChatState> {
       (failure) {
         emit(AIChatHistoryError(failure.message, messages: _currentMessages));
       },
-      (history) {
-        _currentMessages = history;
-        // A full page implies older messages may still exist behind it, so the
-        // scroll-up "load older" trigger stays armed.
-        _hasMoreHistory = history.length >= historyPageSize;
+      (page) {
+        _currentMessages = page.messages;
+        // The SERVER answers this now, from a probe row. Inferring it from
+        // `length >= pageSize` was wrong at both edges: a conversation of
+        // exactly one page kept the trigger armed forever, and a page the
+        // gateway trimmed disarmed it with history still unread.
+        _hasMoreHistory = page.canLoadOlder;
+        _nextBefore = page.nextBefore;
         // Fresh session/history: drop any in-flight load-older guard so a late
         // older-page from a PREVIOUS session can't prepend onto this one (the
         // stale fetch is also dropped by the session-id check in
@@ -195,32 +214,40 @@ class AIChatCubit extends Cubit<AIChatState> {
     );
   }
 
-  /// Fetch the next OLDER page of history and PREPEND it (scroll-up reverse
-  /// pagination). The offset is the count of newest messages already loaded, so
-  /// live turns appended to the newest end are naturally accounted for and the
-  /// next page never overlaps or skips. Prior history is preserved — older
-  /// messages are prepended, never replacing what's already on screen.
+  /// Fetch the next OLDER page and PREPEND it (scroll-up reverse pagination).
+  ///
+  /// Driven by [_nextBefore], a cursor naming the oldest message on screen, so
+  /// a page can never overlap or skip however many messages arrive at the
+  /// newest end while the user is reading. Prior history is preserved — older
+  /// messages are prepended, never replacing what is already on screen.
   Future<void> loadOlderHistory({required String accessToken}) async {
-    // Never paginate mid-send: the optimistic user bubble makes the newest-end
-    // count run ahead of the server, so the computed offset would drift.
     if (isClosed || _isSending || _isLoadingOlder || !_hasMoreHistory) return;
+    // No cursor means the first page has not landed yet, or the thread has
+    // reached its start. Either way there is nothing to ask for, and asking
+    // without one would re-fetch the NEWEST page and prepend a duplicate of
+    // what is already on screen.
+    if (_nextBefore.isEmpty) {
+      _hasMoreHistory = false;
+      return;
+    }
     _isLoadingOlder = true;
 
     if (_sessionId == null && _chatSessionManager != null) {
       _sessionId = await _chatSessionManager!.getGeneralSessionId();
     }
 
-    // Capture the session this fetch belongs to. If the user switches sessions
-    // (loadChatHistory / clearChat) while the older page is in flight, the
-    // result is stale and must NOT prepend onto the now-active session.
+    // Capture the session AND the cursor this fetch belongs to. If the user
+    // switches sessions (loadChatHistory / clearChat) while the older page is
+    // in flight, the result is stale and must NOT prepend onto the now-active
+    // session.
     final sessionAtStart = _sessionId;
-    final offset = _currentMessages.length;
-    final result = await _getAIChatHistoryUseCase(
+    final cursorAtStart = _nextBefore;
+    final result = await _getAIChatHistoryUseCase.page(
       accessToken: accessToken,
       sessionId: _sessionId,
       sourceContext: 'general',
       limit: historyPageSize,
-      offset: offset,
+      before: cursorAtStart,
     );
 
     if (isClosed) {
@@ -232,16 +259,23 @@ class AIChatCubit extends Cubit<AIChatState> {
       _isLoadingOlder = false;
       return;
     }
+    // The cursor moved under us (a second load-older slipped past the guard,
+    // or the history was reloaded). Prepending now would duplicate a page.
+    if (_nextBefore != cursorAtStart) {
+      _isLoadingOlder = false;
+      return;
+    }
     result.fold(
       (failure) {
         // Leave loaded history intact; the user can retry by scrolling up again.
         _isLoadingOlder = false;
       },
-      (older) {
-        if (older.isNotEmpty) {
-          _currentMessages = [...older, ..._currentMessages];
+      (page) {
+        if (page.messages.isNotEmpty) {
+          _currentMessages = [...page.messages, ..._currentMessages];
         }
-        _hasMoreHistory = older.length >= historyPageSize;
+        _hasMoreHistory = page.canLoadOlder;
+        _nextBefore = page.nextBefore;
         _isLoadingOlder = false;
         emit(AIChatHistorySuccess(messages: List.from(_currentMessages)));
       },
@@ -674,6 +708,10 @@ class AIChatCubit extends Cubit<AIChatState> {
     _currentMessages = [];
     _sessionId = null;
     _hasMoreHistory = true;
+    // Must be cleared with the messages. A cursor left behind points into the
+    // conversation that was just cleared, so the first scroll-up in the NEW
+    // thread would prepend a page of the old one.
+    _nextBefore = '';
     _isLoadingOlder = false;
     if (isClosed) return true;
     emit(AIChatInitial(messages: _currentMessages, isTyping: false));

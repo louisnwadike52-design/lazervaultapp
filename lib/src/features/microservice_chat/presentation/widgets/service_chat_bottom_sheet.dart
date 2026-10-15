@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'chat_load_older_mixin.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -106,7 +107,7 @@ class ServiceChatBottomSheet extends StatefulWidget {
 }
 
 class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, ChatLoadOlderOnScrollTop<ServiceChatBottomSheet> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late AnimationController _typingDotsController;
@@ -159,7 +160,25 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
       CurvedAnimation(parent: _expandController, curve: Curves.easeInOut),
     );
     _loadUserAvatar();
+    _scrollController.addListener(maybeLoadOlderChat);
   }
+
+  // ── "Scroll to the top to load more" ──────────────────────────────────────
+  // The per-service chat had NO pagination: the datasources hardcoded
+  // `limit: 50, offset: 0`. A conversation longer than one page showed one
+  // page and the rest was unreachable from this screen.
+  @override
+  ScrollController get chatScrollController => _scrollController;
+
+  @override
+  bool get canLoadOlderChat {
+    if (!mounted) return false;
+    final cubit = context.read<MicroserviceChatCubit>();
+    return cubit.hasMoreHistory && !cubit.isLoadingOlder;
+  }
+
+  @override
+  Future<void> loadOlderChat() => context.read<MicroserviceChatCubit>().loadOlderHistory();
 
   Future<void> _loadUserAvatar() async {
     const storage = FlutterSecureStorage();
@@ -173,6 +192,7 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
   void dispose() {
     _releaseAutoLogout?.call();
     _messageController.dispose();
+    _scrollController.removeListener(maybeLoadOlderChat);
     _scrollController.dispose();
     _typingDotsController.dispose();
     _expandController.dispose();
@@ -627,16 +647,25 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
             controller: _scrollController,
             padding: EdgeInsets.all(20.w),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            itemCount: messages.length + (isTyping ? 1 : 0),
+            // +1 for the load-older header at index 0.
+            itemCount: messages.length + (isTyping ? 1 : 0) + 1,
             itemBuilder: (context, index) {
-              if (index == messages.length && isTyping) {
+              if (index == 0) {
+                return ChatLoadOlderHeader(visible: isPrependingOlderChat);
+              }
+              final i = index - 1;
+              if (i >= messages.length) {
+                // The typing row, or a frame where the count has grown ahead
+                // of the list. `>=` rather than `==`: the header shifted every
+                // index by one, and an exact match would read one past the end
+                // the moment isTyping is false.
                 return _buildTypingIndicator();
               }
               // Left-swipe any bubble to reply to it (grounds the AI's next
               // reply) — same gesture as the general + full-screen chat.
               // _startReply no-ops on empty snippets, so welcome/empty bubbles
               // can't become a reply target.
-              final message = messages[index];
+              final message = messages[i];
               return ChatSwipeToReply(
                 onReply: () => _startReply(message),
                 child: _buildMessageBubble(message),

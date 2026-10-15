@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dartz/dartz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/chat/chat_history_page.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import 'package:lazervault/core/services/app_activity_bus.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -34,6 +37,33 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
 
   List<MicroserviceChatMessageEntity> _currentMessages = [];
   late String _sessionId;
+
+  /// Messages per history page — the initial load and each scroll-up
+  /// "load older".
+  ///
+  /// The per-service chat had NO pagination: both datasources hardcoded
+  /// `limit: 50, offset: 0`, so a conversation longer than 50 messages showed
+  /// one page and the rest was unreachable. Worse, the Go gateway ordered that
+  /// page `created_at ASC`, so the one page you got was the OLDEST fifty —
+  /// open a long service chat and you were reading the start of the
+  /// conversation with the recent turns nowhere to be found.
+  static const int historyPageSize = 30;
+
+  /// Keyset cursor for the next OLDER page, '' at the start of the thread.
+  ///
+  /// A cursor rather than an offset because the window shifts: a message
+  /// arriving while the user is scrolled up moves every row one position, so
+  /// an offset page would start one row late and silently drop a message out
+  /// of the middle of the history.
+  String _nextBefore = '';
+
+  /// Whether an older page exists. The SERVER answers this, from a probe row.
+  bool _hasMoreHistory = false;
+  bool get hasMoreHistory => _hasMoreHistory;
+
+  /// Re-entrancy guard so a burst of scroll events fires at most one fetch.
+  bool _isLoadingOlder = false;
+  bool get isLoadingOlder => _isLoadingOlder;
 
   /// The conversation this cubit is bound to. Exposed read-only so the chat
   /// surface can scope per-answer feedback to it — a verdict with no session
@@ -73,6 +103,10 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
         if (rekeyed == _sessionId) return;
         _sessionId = rekeyed;
         _currentMessages = [];
+        // The cursor points into the OLD conversation. Left behind, the first
+        // scroll-up after a region switch would prepend a page of a thread the
+        // user has just navigated away from.
+        _resetPaging();
         emit(MicroserviceChatInitial(messages: _currentMessages));
         loadHistory();
       });
@@ -151,56 +185,25 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     emit(MicroserviceChatInitial(messages: _currentMessages));
   }
 
-  /// Load chat history from backend.
+  /// Load the NEWEST page of history.
   Future<void> loadHistory() async {
     emit(MicroserviceChatHistoryLoading(messages: _currentMessages));
 
     final locale = serviceLocator<LocaleManager>().currentLocale;
+    final result = await _fetchHistoryPage(locale: locale);
+    if (result == null || isClosed) return;
 
-    // Use direct history use case when in direct mode
-    if (isDirect && loadDirectHistoryUseCase != null) {
-      final result = await loadDirectHistoryUseCase!(
-        sourceContext: sourceContext,
-        sessionId: _sessionId,
-        accessToken: '',
-        locale: locale,
-      );
-
-      if (isClosed) return;
-      result.fold(
-        (failure) {
-          emit(MicroserviceChatInitial(messages: _currentMessages));
-        },
-        (history) {
-          _currentMessages = history;
-          if (_currentMessages.isEmpty) {
-            emit(MicroserviceChatInitial(messages: _currentMessages));
-          } else {
-            emit(MicroserviceChatMessageSuccess(
-                messages: List.from(_currentMessages)));
-          }
-        },
-      );
-      return;
-    }
-
-    // Fallback to standard history loading
-    if (loadHistoryUseCase == null) return;
-
-    final result = await loadHistoryUseCase!(
-      sourceContext: sourceContext,
-      sessionId: _sessionId,
-      accessToken: '',
-      locale: locale,
-    );
-
-    if (isClosed) return;
     result.fold(
       (failure) {
         emit(MicroserviceChatInitial(messages: _currentMessages));
       },
-      (history) {
-        _currentMessages = history;
+      (page) {
+        _currentMessages = page.messages;
+        _hasMoreHistory = page.canLoadOlder;
+        _nextBefore = page.nextBefore;
+        // A fresh load invalidates any load-older still in flight; the cursor
+        // check in loadOlderHistory drops that page when it lands.
+        _isLoadingOlder = false;
         if (_currentMessages.isEmpty) {
           emit(MicroserviceChatInitial(messages: _currentMessages));
         } else {
@@ -208,6 +211,91 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
               messages: List.from(_currentMessages)));
         }
       },
+    );
+  }
+
+  /// Fetch the next OLDER page and PREPEND it.
+  ///
+  /// Prior history is preserved — older messages are prepended, never
+  /// replacing what is already on screen.
+  Future<void> loadOlderHistory() async {
+    if (isClosed || _isLoadingOlder || !_hasMoreHistory) return;
+    // No cursor means the first page has not landed, or the thread has reached
+    // its start. Asking without one would re-fetch the NEWEST page and prepend
+    // a duplicate of what is already on screen.
+    if (_nextBefore.isEmpty) {
+      _hasMoreHistory = false;
+      return;
+    }
+    _isLoadingOlder = true;
+
+    final locale = serviceLocator<LocaleManager>().currentLocale;
+    // Capture the session AND the cursor: either can change during the await
+    // (a region switch re-keys the session, a reload moves the cursor), and
+    // prepending a page from a different point in a different conversation is
+    // worse than not prepending at all.
+    final sessionAtStart = _sessionId;
+    final cursorAtStart = _nextBefore;
+
+    final result = await _fetchHistoryPage(
+      locale: locale,
+      before: cursorAtStart,
+    );
+    if (result == null || isClosed) {
+      _isLoadingOlder = false;
+      return;
+    }
+    if (_sessionId != sessionAtStart || _nextBefore != cursorAtStart) {
+      _isLoadingOlder = false;
+      return;
+    }
+
+    result.fold(
+      (failure) {
+        // Leave loaded history intact; scrolling up again retries.
+        _isLoadingOlder = false;
+      },
+      (page) {
+        if (page.messages.isNotEmpty) {
+          _currentMessages = [...page.messages, ..._currentMessages];
+        }
+        _hasMoreHistory = page.canLoadOlder;
+        _nextBefore = page.nextBefore;
+        _isLoadingOlder = false;
+        emit(MicroserviceChatMessageSuccess(
+            messages: List.from(_currentMessages)));
+      },
+    );
+  }
+
+  /// One fetch, whichever path this cubit is on.
+  ///
+  /// Returns null when no use case is wired for the active path — the caller
+  /// then leaves the state alone, exactly as the old code did by returning
+  /// early.
+  Future<Either<Failure, ChatHistoryPage<MicroserviceChatMessageEntity>>?>
+      _fetchHistoryPage({
+    required String locale,
+    String? before,
+  }) async {
+    if (isDirect && loadDirectHistoryUseCase != null) {
+      return loadDirectHistoryUseCase!.page(
+        sourceContext: sourceContext,
+        sessionId: _sessionId,
+        accessToken: '',
+        locale: locale,
+        limit: historyPageSize,
+        before: before,
+      );
+    }
+    if (loadHistoryUseCase == null) return null;
+    return loadHistoryUseCase!.page(
+      sourceContext: sourceContext,
+      sessionId: _sessionId,
+      accessToken: '',
+      locale: locale,
+      limit: historyPageSize,
+      before: before,
     );
   }
 
@@ -928,7 +1016,19 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     _currentMessages = [];
     _entities = {};
     _isSending = false;
+    _resetPaging();
     emit(MicroserviceChatInitial(messages: _currentMessages));
+  }
+
+  /// Forget where we were in the history.
+  ///
+  /// Must happen wherever [_currentMessages] is emptied: a cursor outlives the
+  /// messages it was derived from, and one left behind names a position in a
+  /// conversation that is no longer on screen.
+  void _resetPaging() {
+    _nextBefore = '';
+    _hasMoreHistory = false;
+    _isLoadingOlder = false;
   }
 
   /// Cancel the region watcher so a closed sheet's cubit stops reacting to
