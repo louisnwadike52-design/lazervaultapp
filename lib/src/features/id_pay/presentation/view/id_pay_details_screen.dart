@@ -272,6 +272,24 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
+          // The creator's own name for this request, when they gave one.
+          // Above the code rather than below it: somebody arriving from a
+          // list tapped the NAME, and the first thing they should see is
+          // that they opened the right one.
+          if (_idPay.hasTitle) ...[
+            SizedBox(height: 6.h),
+            Text(
+              _idPay.title.trim(),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 17.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
           SizedBox(height: 12.h),
           Text(
             _idPay.displayPayId,

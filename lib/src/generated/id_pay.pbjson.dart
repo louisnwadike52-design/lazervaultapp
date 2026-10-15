@@ -134,6 +134,7 @@ const IDPay$json = {
       '5': 9,
       '10': 'recipientAccountId'
     },
+    {'1': 'title', '3': 22, '4': 1, '5': 9, '10': 'title'},
   ],
 };
 
@@ -153,7 +154,8 @@ final $typed_data.Uint8List iDPayDescriptor = $convert.base64Decode(
     'VudF9jb3VudBgRIAEoBVIMcGF5bWVudENvdW50EiMKDW5ldmVyX2V4cGlyZXMYEiABKAhSDG5l'
     'dmVyRXhwaXJlcxInCg9vcmdhbml6YXRpb25faWQYEyABKAlSDm9yZ2FuaXphdGlvbklkEisKEW'
     '9yZ2FuaXphdGlvbl9uYW1lGBQgASgJUhBvcmdhbml6YXRpb25OYW1lEjAKFHJlY2lwaWVudF9h'
-    'Y2NvdW50X2lkGBUgASgJUhJyZWNpcGllbnRBY2NvdW50SWQ=');
+    'Y2NvdW50X2lkGBUgASgJUhJyZWNpcGllbnRBY2NvdW50SWQSFAoFdGl0bGUYFiABKAlSBXRpdG'
+    'xl');
 
 @$core.Deprecated('Use iDPayTransactionDescriptor instead')
 const IDPayTransaction$json = {
@@ -304,6 +306,7 @@ const CreateIDPayRequest$json = {
     },
     {'1': 'never_expires', '3': 10, '4': 1, '5': 8, '10': 'neverExpires'},
     {'1': 'organization_id', '3': 11, '4': 1, '5': 9, '10': 'organizationId'},
+    {'1': 'title', '3': 12, '4': 1, '5': 9, '10': 'title'},
   ],
 };
 
@@ -316,7 +319,8 @@ final $typed_data.Uint8List createIDPayRequestDescriptor = $convert.base64Decode
     'bWF4QW1vdW50EiAKC2Rlc2NyaXB0aW9uGAcgASgJUgtkZXNjcmlwdGlvbhIpChB2YWxpZGl0eV'
     '9taW51dGVzGAggASgFUg92YWxpZGl0eU1pbnV0ZXMSMAoUcmVjaXBpZW50X2FjY291bnRfaWQY'
     'CSABKAlSEnJlY2lwaWVudEFjY291bnRJZBIjCg1uZXZlcl9leHBpcmVzGAogASgIUgxuZXZlck'
-    'V4cGlyZXMSJwoPb3JnYW5pemF0aW9uX2lkGAsgASgJUg5vcmdhbml6YXRpb25JZA==');
+    'V4cGlyZXMSJwoPb3JnYW5pemF0aW9uX2lkGAsgASgJUg5vcmdhbml6YXRpb25JZBIUCgV0aXRs'
+    'ZRgMIAEoCVIFdGl0bGU=');
 
 @$core.Deprecated('Use createIDPayResponseDescriptor instead')
 const CreateIDPayResponse$json = {

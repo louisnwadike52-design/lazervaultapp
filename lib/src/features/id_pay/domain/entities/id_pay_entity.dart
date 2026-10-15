@@ -82,6 +82,14 @@ class IDPayEntity extends Equatable {
   final double maxAmount;
   final String currency;
   final String description;
+
+  /// The creator's own name for this PayID ("October rent").
+  ///
+  /// Distinct from [description], which is shown to the PAYER and says what
+  /// they are paying for. Empty for every PayID created before the field
+  /// existed, so [displayTitle] falls back to the code rather than rendering
+  /// a blank row.
+  final String title;
   final IDPayStatus status;
   final DateTime expiresAt;
   final DateTime createdAt;
@@ -104,6 +112,7 @@ class IDPayEntity extends Equatable {
     required this.maxAmount,
     required this.currency,
     required this.description,
+    this.title = '',
     required this.status,
     required this.expiresAt,
     required this.createdAt,
@@ -125,6 +134,14 @@ class IDPayEntity extends Equatable {
 
   String get displayPayId => 'PAY-$payId';
 
+  /// What a list row calls this PayID: its name, or the code when unnamed.
+  String get displayTitle =>
+      title.trim().isNotEmpty ? title.trim() : displayPayId;
+
+  /// True when the creator gave it a name, so a row can show the code as a
+  /// subtitle instead of repeating the title.
+  bool get hasTitle => title.trim().isNotEmpty;
+
   IDPayEntity copyWith({
     String? id,
     String? payId,
@@ -138,6 +155,7 @@ class IDPayEntity extends Equatable {
     double? maxAmount,
     String? currency,
     String? description,
+    String? title,
     IDPayStatus? status,
     DateTime? expiresAt,
     DateTime? createdAt,
@@ -160,6 +178,7 @@ class IDPayEntity extends Equatable {
       maxAmount: maxAmount ?? this.maxAmount,
       currency: currency ?? this.currency,
       description: description ?? this.description,
+      title: title ?? this.title,
       status: status ?? this.status,
       expiresAt: expiresAt ?? this.expiresAt,
       createdAt: createdAt ?? this.createdAt,
@@ -185,6 +204,7 @@ class IDPayEntity extends Equatable {
         maxAmount,
         currency,
         description,
+        title,
         status,
         expiresAt,
         createdAt,

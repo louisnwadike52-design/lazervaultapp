@@ -14,6 +14,7 @@ abstract class IDPayRepository {
     double? minAmount,
     double? maxAmount,
     String? description,
+    String? title,
     required int validityMinutes,
     bool neverExpires = false,
     String? organizationId,

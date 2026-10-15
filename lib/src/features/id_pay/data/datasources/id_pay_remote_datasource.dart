@@ -15,6 +15,7 @@ abstract class IDPayRemoteDataSource {
     double? minAmount,
     double? maxAmount,
     String? description,
+    String? title,
     required int validityMinutes,
     bool neverExpires = false,
     String? organizationId,
@@ -101,6 +102,7 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
     double? minAmount,
     double? maxAmount,
     String? description,
+    String? title,
     required int validityMinutes,
     bool neverExpires = false,
     String? organizationId,
@@ -116,6 +118,7 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
       ..amount = amount
       ..currency = currency
       ..description = description ?? ''
+      ..title = title ?? ''
       ..validityMinutes = validityMinutes
       ..neverExpires = neverExpires;
 

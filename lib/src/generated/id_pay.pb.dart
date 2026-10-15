@@ -46,6 +46,7 @@ class IDPay extends $pb.GeneratedMessage {
     $core.String? organizationId,
     $core.String? organizationName,
     $core.String? recipientAccountId,
+    $core.String? title,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -70,6 +71,7 @@ class IDPay extends $pb.GeneratedMessage {
     if (organizationName != null) result.organizationName = organizationName;
     if (recipientAccountId != null)
       result.recipientAccountId = recipientAccountId;
+    if (title != null) result.title = title;
     return result;
   }
 
@@ -122,6 +124,7 @@ class IDPay extends $pb.GeneratedMessage {
     ..aOS(19, _omitFieldNames ? '' : 'organizationId')
     ..aOS(20, _omitFieldNames ? '' : 'organizationName')
     ..aOS(21, _omitFieldNames ? '' : 'recipientAccountId')
+    ..aOS(22, _omitFieldNames ? '' : 'title')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -336,6 +339,21 @@ class IDPay extends $pb.GeneratedMessage {
   $core.bool hasRecipientAccountId() => $_has(20);
   @$pb.TagNumber(21)
   void clearRecipientAccountId() => $_clearField(21);
+
+  /// Creator-chosen NAME for this PayID, e.g. "October rent", "Studio
+  /// session". Optional and distinct from `description`: the description
+  /// says what the PAYER is paying for and is shown to them, while the title
+  /// is how the CREATOR finds this row among their own. Empty for every PayID
+  /// created before this field existed, so every reader must fall back to the
+  /// code.
+  @$pb.TagNumber(22)
+  $core.String get title => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set title($core.String value) => $_setString(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasTitle() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearTitle() => $_clearField(22);
 }
 
 class IDPayTransaction extends $pb.GeneratedMessage {
@@ -874,6 +892,7 @@ class CreateIDPayRequest extends $pb.GeneratedMessage {
     $core.String? recipientAccountId,
     $core.bool? neverExpires,
     $core.String? organizationId,
+    $core.String? title,
   }) {
     final result = create();
     if (type != null) result.type = type;
@@ -888,6 +907,7 @@ class CreateIDPayRequest extends $pb.GeneratedMessage {
       result.recipientAccountId = recipientAccountId;
     if (neverExpires != null) result.neverExpires = neverExpires;
     if (organizationId != null) result.organizationId = organizationId;
+    if (title != null) result.title = title;
     return result;
   }
 
@@ -923,6 +943,7 @@ class CreateIDPayRequest extends $pb.GeneratedMessage {
     ..aOS(9, _omitFieldNames ? '' : 'recipientAccountId')
     ..aOB(10, _omitFieldNames ? '' : 'neverExpires')
     ..aOS(11, _omitFieldNames ? '' : 'organizationId')
+    ..aOS(12, _omitFieldNames ? '' : 'title')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1044,6 +1065,15 @@ class CreateIDPayRequest extends $pb.GeneratedMessage {
   $core.bool hasOrganizationId() => $_has(10);
   @$pb.TagNumber(11)
   void clearOrganizationId() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get title => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set title($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasTitle() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearTitle() => $_clearField(12);
 }
 
 class CreateIDPayResponse extends $pb.GeneratedMessage {

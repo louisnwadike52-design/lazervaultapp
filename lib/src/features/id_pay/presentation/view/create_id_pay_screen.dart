@@ -41,6 +41,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
   final TextEditingController _maxAmountController = TextEditingController();
 
   // Step 3: Details
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   String _selectedExpiry = '24hr';
   // NOT a user choice. A PayID collects into the dashboard-active wallet, so
@@ -122,6 +123,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
     _amountController.dispose();
     _minAmountController.dispose();
     _maxAmountController.dispose();
+    _titleController.dispose();
     _descriptionController.dispose();
     _customExpiryController.dispose();
     super.dispose();
@@ -189,6 +191,9 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           : null,
       maxAmount: _selectedAmountMode == IDPayAmountMode.flexible
           ? double.tryParse(_maxAmountController.text.trim())
+          : null,
+      title: _titleController.text.trim().isNotEmpty
+          ? _titleController.text.trim()
           : null,
       description: _descriptionController.text.trim().isNotEmpty
           ? _descriptionController.text.trim()
@@ -641,7 +646,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
             // service does not require it. Only this screen implied otherwise,
             // by instructing the user to "add a description" and labelling the
             // field with no marker, so people filled it believing they had to.
-            'Set the expiry duration. A description is optional.',
+            'Set the expiry duration. A name and description are optional.',
             style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF),
               fontSize: 14.sp,
@@ -649,6 +654,65 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
             ),
           ),
           SizedBox(height: 24.h),
+          // A NAME, which is a different thing from a description.
+          //
+          // The description is shown to the PAYER and says what they are
+          // paying for. The name is how the creator finds this row among
+          // their own: a list of "PAY-A3K9X2 / PAY-H786KF / PAY-RSW6DQ" is
+          // unreadable the moment somebody has more than two.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                'Name',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(width: 6.w),
+              Text(
+                '(optional)',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          TextField(
+            controller: _titleController,
+            // 60 to match the varchar(60) column and the service's own cap.
+            // Capping here means the refusal is a counter the user can see,
+            // not a failed create after they pressed the button.
+            maxLength: 60,
+            textCapitalization: TextCapitalization.sentences,
+            style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp),
+            decoration: InputDecoration(
+              hintText: 'e.g. October rent, Studio session',
+              hintStyle: GoogleFonts.inter(
+                color: const Color(0xFF6B7280),
+                fontSize: 15.sp,
+              ),
+              filled: true,
+              fillColor: const Color(0xFF1F1F1F),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14.r),
+                borderSide: BorderSide.none,
+              ),
+              counterStyle: GoogleFonts.inter(
+                color: const Color(0xFF6B7280),
+                fontSize: 12.sp,
+              ),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            ),
+          ),
+          SizedBox(height: 20.h),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -924,6 +988,10 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                           ? '${_customExpiryController.text} minutes'
                           : _selectedExpiry,
                 ),
+                if (_titleController.text.trim().isNotEmpty) ...[
+                  _buildReviewRow('Name', _titleController.text.trim()),
+                  SizedBox(height: 12.h),
+                ],
                 if (_descriptionController.text.trim().isNotEmpty) ...[
                   SizedBox(height: 16.h),
                   _buildReviewRow(

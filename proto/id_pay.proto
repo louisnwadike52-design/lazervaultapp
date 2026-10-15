@@ -80,6 +80,10 @@ message IDPay {
   string organization_name = 20;
   // Creator-chosen receiving account (empty = creator's primary account).
   string recipient_account_id = 21;
+  // Creator's own name for this PayID. Mirrors the SERVICE proto, which is
+  // the source of truth — this copy exists only so generating from it does
+  // not silently DELETE a field the app already uses.
+  string title = 22;
 }
 
 message IDPayTransaction {
@@ -140,6 +144,7 @@ message CreateIDPayRequest {
   string recipient_account_id = 9;   // Account to receive payment
   bool never_expires = 10;
   string organization_id = 11;       // Optional: link to organization
+  string title = 12;                 // Optional: creator's name for this PayID
 }
 
 message CreateIDPayResponse {

@@ -28,30 +28,64 @@ class IDPayCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: idPay.payId));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('PayID copied')),
-                        );
-                      },
-                      child: Text(
-                        idPay.displayPayId,
-                        style: TextStyle(
-                          color: InvoiceThemeColors.primaryPurpleLight,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
+                // THE NAME LEADS, THE CODE SUPPORTS IT.
+                //
+                // A list of "PAY-A3K9X2 / PAY-H786KF / PAY-RSW6DQ" is
+                // unreadable the moment somebody has more than two, and the
+                // code is not what they remember the request by. Named rows
+                // lead with the name; unnamed ones keep exactly the old
+                // layout, so nothing created before this field looks broken.
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Clipboard.setData(ClipboardData(text: idPay.payId));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('PayID copied')),
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (idPay.hasTitle)
+                          Text(
+                            idPay.title.trim(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                idPay.displayPayId,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color:
+                                      InvoiceThemeColors.primaryPurpleLight,
+                                  fontSize: idPay.hasTitle ? 13.sp : 16.sp,
+                                  fontWeight: idPay.hasTitle
+                                      ? FontWeight.w600
+                                      : FontWeight.w700,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Icon(Icons.copy,
+                                size: 14.sp, color: const Color(0xFF9CA3AF)),
+                          ],
                         ),
-                      ),
+                      ],
                     ),
-                    SizedBox(width: 8.w),
-                    Icon(Icons.copy,
-                        size: 14.sp, color: const Color(0xFF9CA3AF)),
-                  ],
+                  ),
                 ),
+                SizedBox(width: 8.w),
                 IDPayStatusBadge(status: idPay.status),
               ],
             ),
