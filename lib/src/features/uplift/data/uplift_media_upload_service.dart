@@ -36,11 +36,12 @@ class UpliftMediaUploadService {
   /// Video gets its own ceiling. 10MB suits an image or a PDF deck; even a
   /// minute of phone footage clears it.
   ///
-  /// 64MB, matching the gateway. NOT 100MB: prod uploads traverse the
-  /// Cloudflare tunnel, which caps request bodies at 100MB on our plan, so a
-  /// limit set at the edge value fails with Cloudflare's error page rather than
-  /// ours. Checked client-side too so the user is told BEFORE spending the
-  /// upload on mobile data.
+  /// 70MB by default, matching the gateway's `defaultVideoUploadMB`. NOT
+  /// 100MB: prod uploads traverse the Cloudflare tunnel, which caps request
+  /// bodies at 100MB on our plan, so a limit set at the edge value fails with
+  /// Cloudflare's error page rather than ours. Checked client-side too so the
+  /// user is told BEFORE spending the upload on mobile data — which is the
+  /// whole point, and is undone if this value exceeds the gateway's.
   static int get _maxVideoMb => FeatureFlags.mediaMaxVideoMb;
   static int get _maxVideoSize => _maxVideoMb * 1024 * 1024;
 

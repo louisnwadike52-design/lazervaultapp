@@ -60,7 +60,21 @@ void main() {
 
     test('size ceilings match the uploaders they replaced', () async {
       expect(FeatureFlags.mediaMaxImageMb, 10);
-      expect(FeatureFlags.mediaMaxVideoMb, 64);
+    });
+
+    test('the video default is the GATEWAY\'s default, not a second copy',
+        () async {
+      // This check exists so a founder is refused before spending mobile
+      // data on an upload. A client limit above the gateway's turns that
+      // saving into a 413 after the wait, so the two numbers are one number
+      // and are read from the gateway's source rather than transcribed.
+      final gw = _productsGatewayVideoLimits();
+      if (gw == null) {
+        markTestSkipped('gateway tree not present beside the app');
+        return;
+      }
+      expect(FeatureFlags.mediaMaxVideoMb, gw['defaultVideoUploadMB'],
+          reason: 'the picker would accept a video the gateway answers 413 to');
     });
   });
 
@@ -114,7 +128,8 @@ void main() {
 
     test('non-numeric', () async {
       await withSettings({'media_max_video_mb': 'sixty four'});
-      expect(FeatureFlags.mediaMaxVideoMb, 64);
+      final gw = _productsGatewayVideoLimits();
+      expect(FeatureFlags.mediaMaxVideoMb, gw?['defaultVideoUploadMB'] ?? 70);
     });
   });
 
@@ -128,7 +143,11 @@ void main() {
         'media_max_video_mb': '4096',
       });
       expect(FeatureFlags.mediaMaxImageMb, 100);
-      expect(FeatureFlags.mediaMaxVideoMb, 100);
+      // Video stops BELOW the edge limit: multipart overhead rides on top of
+      // the file, so a cap at 100 is a cap above what the tunnel accepts.
+      final gw = _productsGatewayVideoLimits();
+      expect(FeatureFlags.mediaMaxVideoMb, gw?['maxVideoUploadMB'] ?? 95);
+      expect(FeatureFlags.mediaMaxVideoMb, lessThan(100));
     });
 
     test('counts are capped where the admin validator bounds them', () async {
@@ -142,6 +161,30 @@ void main() {
       expect(FeatureFlags.upliftApplicationMaxDocuments, 20);
     });
   });
+}
+
+/// Parses the video ceilings out of products-gateway's upload_video_limit.go.
+/// Returns null when that tree is not checked out beside the app.
+Map<String, int>? _productsGatewayVideoLimits() {
+  const relative = '../services/products-gateway/upload_video_limit.go';
+  var dir = Directory.current;
+  for (var i = 0; i < 6; i++) {
+    final f = File('${dir.path}/$relative');
+    if (f.existsSync()) {
+      final src = f.readAsStringSync();
+      final out = <String, int>{};
+      for (final name in const ['defaultVideoUploadMB', 'maxVideoUploadMB']) {
+        final m = RegExp('$name\\s*=\\s*(\\d+)').firstMatch(src);
+        if (m == null) return null;
+        out[name] = int.parse(m.group(1)!);
+      }
+      return out;
+    }
+    final parent = dir.parent;
+    if (parent.path == dir.path) break;
+    dir = parent;
+  }
+  return null;
 }
 
 /// Parses `defaultXxx = N` out of financial-products' uplift_upload_limits.go.

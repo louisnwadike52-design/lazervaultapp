@@ -1163,8 +1163,20 @@ class FeatureFlags {
   /// produce uploads that die at the edge.
   static int get mediaMaxImageMb => _positiveSetting(mediaMaxImageMbKey, 10, cap: 100);
 
-  /// Largest video, in MB. Default 64, same ceiling and same reason.
-  static int get mediaMaxVideoMb => _positiveSetting(mediaMaxVideoMbKey, 64, cap: 100);
+  /// Largest video, in MB. Default 70.
+  ///
+  /// 70 is the products-gateway's own default (`defaultVideoUploadMB`), and
+  /// the pair must agree: this check exists only so a founder is refused
+  /// BEFORE spending mobile data on an upload, and a value above the
+  /// gateway's turns that saving into a 413 after the wait. Capped at 95 for
+  /// the same reason the gateway is — the Cloudflare tunnel refuses a body
+  /// over 100MB and multipart overhead rides on top of the file, so a limit
+  /// at the edge value fails with Cloudflare's page instead of ours.
+  ///
+  /// Setting it LOWER than the gateway is safe and sometimes right; setting
+  /// it higher is not, so raise `UPLOAD_MAX_VIDEO_MB` there first.
+  static int get mediaMaxVideoMb =>
+      _positiveSetting(mediaMaxVideoMbKey, 70, cap: 95);
 
   /// Registered company name printed on receipts. NOT "Technologies" —
   /// that word is not in the company registration.
