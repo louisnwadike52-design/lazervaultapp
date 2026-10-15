@@ -306,10 +306,34 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
             keyboard: TextInputType.number, validator: _num),
         _field(_count, 'How many businesses',
             keyboard: TextInputType.number, validator: _int),
-        _datePicker('Application deadline', _appDeadline,
-            (d) => setState(() => _appDeadline = d)),
-        _datePicker('Funding deadline', _fundingDeadline,
-            (d) => setState(() => _fundingDeadline = d)),
+        _dateTimePicker('Application deadline', _appDeadline, (d) {
+          // Applications cannot still be open after the funding window has
+          // shut — there would be nothing left to fund them from. Caught
+          // here rather than at submit so the field that is wrong is the
+          // one the user is looking at.
+          if (_fundingDeadline != null && d.isAfter(_fundingDeadline!)) {
+            _say('Applications must close on or before the funding deadline '
+                '(${_fmtDeadline(_fundingDeadline!)}).');
+            return;
+          }
+          setState(() => _appDeadline = d);
+        }),
+        _dateTimePicker('Funding deadline', _fundingDeadline, (d) {
+          if (_appDeadline != null && d.isBefore(_appDeadline!)) {
+            _say('Funding must close on or after the application deadline '
+                '(${_fmtDeadline(_appDeadline!)}).');
+            return;
+          }
+          setState(() => _fundingDeadline = d);
+        }),
+        const Padding(
+          padding: EdgeInsets.only(left: 4, bottom: 4),
+          child: Text(
+            'Both deadlines are optional. If you pick a date without a time, '
+            'it is set to 12:00 AM on that day.',
+            style: TextStyle(color: kUpTextSecondary, fontSize: 11.5),
+          ),
+        ),
       ];
 
   List<Widget> _dealStep() => [
@@ -345,12 +369,14 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
             _reviewRow('Max per business',
                 cap == null ? '—' : upNaira((cap * 100).round(), 'NGN')),
             _reviewRow('Businesses', _count.text.trim()),
+            // The time is part of the deadline, so the review — the last
+            // screen before the fund is created — has to show it. Splitting
+            // on a space to drop it is what let a 12:00 AM deadline read as
+            // "the whole of that day".
             if (_appDeadline != null)
-              _reviewRow('Applications close',
-                  _appDeadline!.toLocal().toString().split(' ').first),
+              _reviewRow('Applications close', _fmtDeadline(_appDeadline!)),
             if (_fundingDeadline != null)
-              _reviewRow('Funding deadline',
-                  _fundingDeadline!.toLocal().toString().split(' ').first),
+              _reviewRow('Funding deadline', _fmtDeadline(_fundingDeadline!)),
             _reviewRow(
                 'Deal terms',
                 _equityEnabled
@@ -522,38 +548,126 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
     );
   }
 
-  Widget _datePicker(
+  /// A deadline is a DATE **and a TIME**, and the time is the half that was
+  /// missing.
+  ///
+  /// `showDatePicker` returns midnight. So picking today — which `firstDate:
+  /// now` expressly allowed — produced 12:00 AM **today**, an instant already
+  /// in the past at the moment the fund was created. The fund was then born
+  /// closed: `ApplyToUpliftFund` refuses on
+  /// `time.Now().After(*f.ApplicationDeadline)`, so no business could ever
+  /// apply and nothing in the product explained why. That is the screen in
+  /// the report, with both deadlines reading today's date.
+  ///
+  /// So: pick the date, then the time. 12:00 AM when no time is chosen — said
+  /// out loud under the fields and confirmed when it is applied, because a
+  /// deadline the user did not type is one they are entitled to be told
+  /// about. And a resulting instant that is not in the future is refused with
+  /// the reason and the fix, never silently stored and never silently
+  /// nudged to some other time the funder did not choose.
+  Widget _dateTimePicker(
       String label, DateTime? value, ValueChanged<DateTime> onPick) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: InkWell(
-        onTap: () async {
-          final now = DateTime.now();
-          final d = await showDatePicker(
-              context: context,
-              initialDate: now.add(const Duration(days: 14)),
-              firstDate: now,
-              lastDate: now.add(const Duration(days: 365)));
-          if (d != null) onPick(d);
-        },
+        onTap: () => _pickDeadline(label, value, onPick),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
               color: kUpCard, borderRadius: BorderRadius.circular(12)),
           child: Row(
             children: [
-              const Icon(Icons.calendar_today,
-                  color: kUpTextSecondary, size: 18),
+              const Icon(Icons.event, color: kUpTextSecondary, size: 18),
               const SizedBox(width: 12),
-              Text(
-                  value == null
-                      ? label
-                      : '$label: ${value.toLocal().toString().split(' ').first}',
-                  style: const TextStyle(color: Colors.white)),
+              Expanded(
+                child: Text(
+                  value == null ? label : '$label: ${_fmtDeadline(value)}',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+              if (value != null)
+                const Icon(Icons.edit_outlined,
+                    color: kUpTextSecondary, size: 16),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _pickDeadline(
+      String label, DateTime? current, ValueChanged<DateTime> onPick) async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: current ?? now.add(const Duration(days: 14)),
+      firstDate: DateTime(now.year, now.month, now.day),
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (date == null || !mounted) return;
+
+    final isToday =
+        date.year == now.year && date.month == now.month && date.day == now.day;
+
+    final time = await showTimePicker(
+      context: context,
+      // On today, midnight is already gone, so opening on it would invite
+      // exactly the refusal below. Start an hour out instead — still the
+      // user's choice, just not a pre-filled impossibility.
+      initialTime: current != null
+          ? TimeOfDay.fromDateTime(current)
+          : (isToday
+              ? TimeOfDay.fromDateTime(now.add(const Duration(hours: 1)))
+              : const TimeOfDay(hour: 0, minute: 0)),
+      helpText: 'Deadline time — 12:00 AM if you skip this',
+    );
+    if (!mounted) return;
+
+    // Cancelling the time picker is a choice, not a failure: it means "the
+    // default is fine". Taking the whole date selection away for it would
+    // make the time step feel mandatory, which is the opposite of the ask.
+    final chosen = time ?? const TimeOfDay(hour: 0, minute: 0);
+    final at = DateTime(
+        date.year, date.month, date.day, chosen.hour, chosen.minute);
+
+    if (!at.isAfter(DateTime.now())) {
+      // The 12:00-AM-today case, and any other backwards pick. Name the
+      // instant that was produced so the message is about what they did.
+      _say(time == null
+          ? '12:00 AM today has already passed. Pick a time later today, or '
+              'choose another day.'
+          : '${_fmtDeadline(at)} has already passed. Pick a time in the '
+              'future.');
+      return;
+    }
+
+    onPick(at);
+    if (time == null) {
+      _say('$label set to ${_fmtDeadline(at)} — the default when no time is '
+          'chosen.');
+    }
+  }
+
+  /// "15 Oct 2026 · 12:00 AM" — the time is always shown, including when it
+  /// is the default, so a deadline is never ambiguous about which end of the
+  /// day it means.
+  String _fmtDeadline(DateTime d) {
+    final l = d.toLocal();
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    final hour12 = l.hour % 12 == 0 ? 12 : l.hour % 12;
+    final minute = l.minute.toString().padLeft(2, '0');
+    final meridiem = l.hour < 12 ? 'AM' : 'PM';
+    return '${l.day} ${months[l.month - 1]} ${l.year} · '
+        '$hour12:$minute $meridiem';
+  }
+
+  void _say(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 

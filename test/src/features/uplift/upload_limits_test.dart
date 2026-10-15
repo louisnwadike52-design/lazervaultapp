@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,11 +32,30 @@ void main() {
     setUp(() => withSettings({}));
 
     test('match what financial-products enforces', () async {
-      // If these drift from the Go defaults the picker shows one number and
-      // the RPC enforces another.
-      expect(FeatureFlags.upliftFundGalleryMaxImages, 8);
-      expect(FeatureFlags.upliftApplicationMaxImages, 8);
-      expect(FeatureFlags.upliftApplicationMaxDocuments, 5);
+      // READ the Go defaults rather than keeping a second copy of them.
+      //
+      // This used to assert three literals transcribed from
+      // uplift_upload_limits.go. That is not a cross-check, it is a second
+      // place to forget — and it behaved exactly like one: the fund gallery
+      // moved to 3 on the Go side and this test went on asserting 8, so the
+      // only thing that noticed was the mirror test over there.
+      //
+      // Both sides now parse the other's source, so a change to either fails
+      // on both. If the service tree is not beside the app (a Flutter-only
+      // checkout) the comparison is skipped rather than failed.
+      final goDefaults = _financialProductsDefaults();
+      if (goDefaults == null) {
+        markTestSkipped('service tree not present beside the app');
+        return;
+      }
+      expect(FeatureFlags.upliftFundGalleryMaxImages,
+          goDefaults['defaultFundGalleryMaxImages'],
+          reason: 'the fund gallery picker would stop at a different count '
+              'than CreateUpliftFund enforces');
+      expect(FeatureFlags.upliftApplicationMaxImages,
+          goDefaults['defaultApplicationMaxImages']);
+      expect(FeatureFlags.upliftApplicationMaxDocuments,
+          goDefaults['defaultApplicationMaxDocuments']);
     });
 
     test('size ceilings match the uploaders they replaced', () async {
@@ -114,4 +135,33 @@ void main() {
       expect(FeatureFlags.upliftApplicationMaxDocuments, 20);
     });
   });
+}
+
+/// Parses `defaultXxx = N` out of financial-products' uplift_upload_limits.go.
+/// Returns null when that tree is not checked out beside the app.
+Map<String, int>? _financialProductsDefaults() {
+  const relative = '../microservices/financial-products-service/'
+      'financial-products-microservice/internal/handler/uplift_upload_limits.go';
+  var dir = Directory.current;
+  for (var i = 0; i < 6; i++) {
+    final f = File('${dir.path}/$relative');
+    if (f.existsSync()) {
+      final src = f.readAsStringSync();
+      final out = <String, int>{};
+      for (final name in const [
+        'defaultFundGalleryMaxImages',
+        'defaultApplicationMaxImages',
+        'defaultApplicationMaxDocuments',
+      ]) {
+        final m = RegExp('$name\\s*=\\s*(\\d+)').firstMatch(src);
+        if (m == null) return null;
+        out[name] = int.parse(m.group(1)!);
+      }
+      return out;
+    }
+    final parent = dir.parent;
+    if (parent.path == dir.path) break;
+    dir = parent;
+  }
+  return null;
 }

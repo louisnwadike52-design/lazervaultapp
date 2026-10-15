@@ -1100,8 +1100,13 @@ class FeatureFlags {
 
   /// How many images a LazerFund fund gallery may carry (the first is the
   /// cover). Default 8.
+  // 3, down from 8. A fund gallery is a cover plus a couple of supporting
+  // shots — the detail page renders them in one row and the eighth was never
+  // looked at. Still admin-tunable: this is only the value when no row is
+  // set, and it matches defaultFundGalleryMaxImages in financial-products so
+  // the picker stops exactly where the server would refuse.
   static int get upliftFundGalleryMaxImages =>
-      _positiveSetting(upliftFundGalleryMaxImagesKey, 8, cap: 30);
+      _positiveSetting(upliftFundGalleryMaxImagesKey, 3, cap: 30);
 
   /// How many photos a LazerFund application may attach. Default 8.
   static int get upliftApplicationMaxImages =>
