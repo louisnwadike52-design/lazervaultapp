@@ -250,14 +250,18 @@ class HttpAiChatDataSource implements IAiChatDataSource {
       final userId = await _secureStorageService.getUserId() ?? '';
       // Use provided sessionId — don't generate random ones (breaks persistence)
       final effectiveSessionId = sessionId ?? '';
-      final token = await _secureStorageService.getAccessToken() ?? '';
 
       // offset 0 = newest page; a growing offset walks backwards into older
       // history (scroll-up "load older"). The gateway returns each page
       // chronological ASC with the true total_count.
       final queryParams = <String, dynamic>{
         'user_id': userId,
-        'access_token': token,
+      // NO `access_token` HERE. uvicorn prints the full request line, so a
+      // token in the query string was written into the gateway's access log
+      // in plaintext — a live JWT with 24h of full account access, in a file
+      // that persists. The Authorization header below authenticates the call
+      // (the gateway reads it first); the query parameter was pure
+      // duplication.
         'limit': limit ?? 50,
       };
       // Cursor when we have one; otherwise the newest page. Never both — the
