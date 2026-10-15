@@ -250,7 +250,7 @@ class GroupContributionPdfService {
         pw.Text(
           payment.userName.isNotEmpty
               ? payment.userName.toUpperCase()
-              : 'LAZERVAULT USER',
+              : 'Lazervault user',
           style: _getTextStyle(fontSize: 14, isBold: true),
         ),
         // No user id. A receipt identifies the payer by name; the internal

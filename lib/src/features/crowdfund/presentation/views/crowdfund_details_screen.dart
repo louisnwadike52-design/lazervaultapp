@@ -988,7 +988,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
     final reason = c.cancelReason?.trim() ?? '';
     if (reason.isNotEmpty) {
       final who = switch (c.cancelInitiatedBy) {
-        'admin' => 'Cancelled by LazerVault',
+        'admin' => 'Cancelled by Lazervault',
         'system' => 'Cancelled automatically',
         _ => 'Reason from the organiser',
       };

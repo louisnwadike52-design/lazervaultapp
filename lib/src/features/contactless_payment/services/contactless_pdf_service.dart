@@ -319,7 +319,7 @@ class ContactlessPdfService {
         pw.Text(
           transaction.payerName.isNotEmpty
               ? transaction.payerName.toUpperCase()
-              : 'LAZERVAULT USER',
+              : 'Lazervault user',
           style: _getTextStyle(fontSize: 14, isBold: true),
         ),
         // Only render the handle when there IS one — a bare "@" (empty username)
@@ -361,7 +361,7 @@ class ContactlessPdfService {
         pw.Text(
           transaction.payerName.isNotEmpty
               ? transaction.payerName.toUpperCase()
-              : 'LAZERVAULT USER',
+              : 'Lazervault user',
           style: _getTextStyle(fontSize: 14, isBold: true),
         ),
         if (transaction.payerUsername.isNotEmpty) ...[

@@ -121,7 +121,7 @@ class IDPayPdfService {
                         pw.Text(
                             transaction.payerName.isNotEmpty
                                 ? transaction.payerName.toUpperCase()
-                                : 'LAZERVAULT USER',
+                                : 'Lazervault user',
                             style: _getTextStyle(fontSize: 14, isBold: true)),
                         if (transaction.payerUsername.isNotEmpty)
                           pw.Text('@${transaction.payerUsername}',
@@ -215,7 +215,7 @@ class IDPayPdfService {
                         pw.Text(
                             idPay.creatorName.isNotEmpty
                                 ? idPay.creatorName.toUpperCase()
-                                : 'LAZERVAULT USER',
+                                : 'Lazervault user',
                             style: _getTextStyle(fontSize: 14, isBold: true)),
                         if (idPay.creatorUsername.isNotEmpty)
                           pw.Text('@${idPay.creatorUsername}',
