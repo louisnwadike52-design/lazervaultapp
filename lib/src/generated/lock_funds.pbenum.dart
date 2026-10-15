@@ -56,16 +56,24 @@ class LockStatus extends $pb.ProtobufEnum {
   static const LockStatus LOCK_STATUS_CANCELLED =
       LockStatus._(4, _omitEnumNames ? '' : 'LOCK_STATUS_CANCELLED');
 
+  /// Created on an approval-gated plan and waiting on a human. The deposit is
+  /// RESERVED against it — the owner's available balance has already dropped —
+  /// but the term has NOT started and it earns nothing, so a client must not
+  /// render it as active.
+  static const LockStatus LOCK_STATUS_PENDING_APPROVAL =
+      LockStatus._(5, _omitEnumNames ? '' : 'LOCK_STATUS_PENDING_APPROVAL');
+
   static const $core.List<LockStatus> values = <LockStatus>[
     LOCK_STATUS_UNSPECIFIED,
     LOCK_STATUS_ACTIVE,
     LOCK_STATUS_MATURED,
     LOCK_STATUS_UNLOCKED,
     LOCK_STATUS_CANCELLED,
+    LOCK_STATUS_PENDING_APPROVAL,
   ];
 
   static final $core.List<LockStatus?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 4);
+      $pb.ProtobufEnum.$_initByValueList(values, 5);
   static LockStatus? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 

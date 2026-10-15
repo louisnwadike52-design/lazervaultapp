@@ -148,6 +148,19 @@ class LockFundsServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// Choose what happens when the term ends.
+  ///
+  /// Settable WHILE THE PLAN RUNS, not only at creation: somebody decides what
+  /// to do with money as the date approaches, not a year ahead when they
+  /// opened it. A choice that could only be made at creation would be a choice
+  /// nobody makes.
+  $grpc.ResponseFuture<$0.SetMaturityActionResponse> setMaturityAction(
+    $0.SetMaturityActionRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$setMaturityAction, request, options: options);
+  }
+
   // method descriptors
 
   static final _$createLockFund =
@@ -220,6 +233,11 @@ class LockFundsServiceClient extends $grpc.Client {
       '/pb.LockFundsService/DeleteLockFundAutoSave',
       ($0.DeleteLockFundAutoSaveRequest value) => value.writeToBuffer(),
       $0.DeleteLockFundAutoSaveResponse.fromBuffer);
+  static final _$setMaturityAction = $grpc.ClientMethod<
+          $0.SetMaturityActionRequest, $0.SetMaturityActionResponse>(
+      '/pb.LockFundsService/SetMaturityAction',
+      ($0.SetMaturityActionRequest value) => value.writeToBuffer(),
+      $0.SetMaturityActionResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('pb.LockFundsService')
@@ -351,6 +369,15 @@ abstract class LockFundsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.DeleteLockFundAutoSaveRequest.fromBuffer(value),
         ($0.DeleteLockFundAutoSaveResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SetMaturityActionRequest,
+            $0.SetMaturityActionResponse>(
+        'SetMaturityAction',
+        setMaturityAction_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SetMaturityActionRequest.fromBuffer(value),
+        ($0.SetMaturityActionResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateLockFundResponse> createLockFund_Pre(
@@ -476,4 +503,13 @@ abstract class LockFundsServiceBase extends $grpc.Service {
 
   $async.Future<$0.DeleteLockFundAutoSaveResponse> deleteLockFundAutoSave(
       $grpc.ServiceCall call, $0.DeleteLockFundAutoSaveRequest request);
+
+  $async.Future<$0.SetMaturityActionResponse> setMaturityAction_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SetMaturityActionRequest> $request) async {
+    return setMaturityAction($call, await $request);
+  }
+
+  $async.Future<$0.SetMaturityActionResponse> setMaturityAction(
+      $grpc.ServiceCall call, $0.SetMaturityActionRequest request);
 }

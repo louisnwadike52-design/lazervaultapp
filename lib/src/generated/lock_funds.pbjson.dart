@@ -41,6 +41,7 @@ const LockStatus$json = {
     {'1': 'LOCK_STATUS_MATURED', '2': 2},
     {'1': 'LOCK_STATUS_UNLOCKED', '2': 3},
     {'1': 'LOCK_STATUS_CANCELLED', '2': 4},
+    {'1': 'LOCK_STATUS_PENDING_APPROVAL', '2': 5},
   ],
 };
 
@@ -48,7 +49,8 @@ const LockStatus$json = {
 final $typed_data.Uint8List lockStatusDescriptor = $convert.base64Decode(
     'CgpMb2NrU3RhdHVzEhsKF0xPQ0tfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFgoSTE9DS19TVEFUVV'
     'NfQUNUSVZFEAESFwoTTE9DS19TVEFUVVNfTUFUVVJFRBACEhgKFExPQ0tfU1RBVFVTX1VOTE9D'
-    'S0VEEAMSGQoVTE9DS19TVEFUVVNfQ0FOQ0VMTEVEEAQ=');
+    'S0VEEAMSGQoVTE9DS19TVEFUVVNfQ0FOQ0VMTEVEEAQSIAocTE9DS19TVEFUVVNfUEVORElOR1'
+    '9BUFBST1ZBTBAF');
 
 @$core.Deprecated('Use lockFundDescriptor instead')
 const LockFund$json = {
@@ -161,6 +163,24 @@ const LockFund$json = {
       '6': '.google.protobuf.Timestamp',
       '10': 'interestPaidThrough'
     },
+    {'1': 'maturity_action', '3': 29, '4': 1, '5': 9, '10': 'maturityAction'},
+    {
+      '1': 'maturity_settled_at',
+      '3': 30,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'maturitySettledAt'
+    },
+    {
+      '1': 'reinvested_into_id',
+      '3': 31,
+      '4': 1,
+      '5': 9,
+      '10': 'reinvestedIntoId'
+    },
+    {'1': 'maturity_note', '3': 32, '4': 1, '5': 9, '10': 'maturityNote'},
+    {'1': 'approval_note', '3': 33, '4': 1, '5': 9, '10': 'approvalNote'},
   ],
 };
 
@@ -187,7 +207,11 @@ final $typed_data.Uint8List lockFundDescriptor = $convert.base64Decode(
     'aW5hdGlvbl9hY2NvdW50X2lkGBkgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBIbCgljb25maW'
     'dfaWQYGiABKAlSCGNvbmZpZ0lkEioKEWludGVyZXN0X3BhaWRfb3V0GBsgASgBUg9pbnRlcmVz'
     'dFBhaWRPdXQSTgoVaW50ZXJlc3RfcGFpZF90aHJvdWdoGBwgASgLMhouZ29vZ2xlLnByb3RvYn'
-    'VmLlRpbWVzdGFtcFITaW50ZXJlc3RQYWlkVGhyb3VnaA==');
+    'VmLlRpbWVzdGFtcFITaW50ZXJlc3RQYWlkVGhyb3VnaBInCg9tYXR1cml0eV9hY3Rpb24YHSAB'
+    'KAlSDm1hdHVyaXR5QWN0aW9uEkoKE21hdHVyaXR5X3NldHRsZWRfYXQYHiABKAsyGi5nb29nbG'
+    'UucHJvdG9idWYuVGltZXN0YW1wUhFtYXR1cml0eVNldHRsZWRBdBIsChJyZWludmVzdGVkX2lu'
+    'dG9faWQYHyABKAlSEHJlaW52ZXN0ZWRJbnRvSWQSIwoNbWF0dXJpdHlfbm90ZRggIAEoCVIMbW'
+    'F0dXJpdHlOb3RlEiMKDWFwcHJvdmFsX25vdGUYISABKAlSDGFwcHJvdmFsTm90ZQ==');
 
 @$core.Deprecated('Use lockTransactionDescriptor instead')
 const LockTransaction$json = {
@@ -506,6 +530,7 @@ const GetLockFundsResponse$json = {
       '5': 5,
       '10': 'activeLocksCount'
     },
+    {'1': 'per_page', '3': 8, '4': 1, '5': 5, '10': 'perPage'},
   ],
 };
 
@@ -516,7 +541,7 @@ final $typed_data.Uint8List getLockFundsResponseDescriptor = $convert.base64Deco
     'ASgFUgRwYWdlEh8KC3RvdGFsX3BhZ2VzGAQgASgFUgp0b3RhbFBhZ2VzEi4KE3RvdGFsX2xvY2'
     'tlZF9hbW91bnQYBSABKAFSEXRvdGFsTG9ja2VkQW1vdW50EjQKFnRvdGFsX2FjY3J1ZWRfaW50'
     'ZXJlc3QYBiABKAFSFHRvdGFsQWNjcnVlZEludGVyZXN0EiwKEmFjdGl2ZV9sb2Nrc19jb3VudB'
-    'gHIAEoBVIQYWN0aXZlTG9ja3NDb3VudA==');
+    'gHIAEoBVIQYWN0aXZlTG9ja3NDb3VudBIZCghwZXJfcGFnZRgIIAEoBVIHcGVyUGFnZQ==');
 
 @$core.Deprecated('Use getLockFundRequestDescriptor instead')
 const GetLockFundRequest$json = {
@@ -1009,3 +1034,39 @@ final $typed_data.Uint8List deleteLockFundAutoSaveResponseDescriptor =
     $convert.base64Decode(
         'Ch5EZWxldGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
         'VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use setMaturityActionRequestDescriptor instead')
+const SetMaturityActionRequest$json = {
+  '1': 'SetMaturityActionRequest',
+  '2': [
+    {'1': 'lock_fund_id', '3': 1, '4': 1, '5': 9, '10': 'lockFundId'},
+    {'1': 'maturity_action', '3': 2, '4': 1, '5': 9, '10': 'maturityAction'},
+  ],
+};
+
+/// Descriptor for `SetMaturityActionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setMaturityActionRequestDescriptor =
+    $convert.base64Decode(
+        'ChhTZXRNYXR1cml0eUFjdGlvblJlcXVlc3QSIAoMbG9ja19mdW5kX2lkGAEgASgJUgpsb2NrRn'
+        'VuZElkEicKD21hdHVyaXR5X2FjdGlvbhgCIAEoCVIObWF0dXJpdHlBY3Rpb24=');
+
+@$core.Deprecated('Use setMaturityActionResponseDescriptor instead')
+const SetMaturityActionResponse$json = {
+  '1': 'SetMaturityActionResponse',
+  '2': [
+    {
+      '1': 'lock_fund',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.LockFund',
+      '10': 'lockFund'
+    },
+  ],
+};
+
+/// Descriptor for `SetMaturityActionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setMaturityActionResponseDescriptor =
+    $convert.base64Decode(
+        'ChlTZXRNYXR1cml0eUFjdGlvblJlc3BvbnNlEikKCWxvY2tfZnVuZBgBIAEoCzIMLnBiLkxvY2'
+        'tGdW5kUghsb2NrRnVuZA==');

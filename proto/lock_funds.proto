@@ -23,6 +23,11 @@ enum LockStatus {
   LOCK_STATUS_MATURED = 2;
   LOCK_STATUS_UNLOCKED = 3;
   LOCK_STATUS_CANCELLED = 4;
+  // Created on an approval-gated plan and waiting on a human. The deposit is
+  // RESERVED against it — the owner's available balance has already dropped —
+  // but the term has NOT started and it earns nothing, so a client must not
+  // render it as active.
+  LOCK_STATUS_PENDING_APPROVAL = 5;
 }
 
 // Lock fund message
@@ -57,8 +62,9 @@ message LockFund {
   string source_account_id = 24;
   string destination_account_id = 25;
 
-  // Stable plan identity (PiggyVaultConfig UUID). lock_type is a
-  // legacy display enum. Empty for legacy rows.
+  // UUID of the PiggyVaultConfig this lock was created from — the
+  // stable plan identity. `lock_type` above is a legacy display
+  // enum. Empty for legacy rows.
   string config_id = 26;
   // Lifetime ROI already PAID OUT on this lock (an ROI-only withdrawal
   // moves interest to the wallet while the principal keeps running).
@@ -69,6 +75,22 @@ message LockFund {
   // Instant through which interest has already been paid. Accrual for the
   // next payout restarts here, not at locked_at.
   google.protobuf.Timestamp interest_paid_through = 28;
+  // What happens when the term ends: "payout", "reinvest_all",
+  // "reinvest_principal", "reinvest_interest". EMPTY means the user has not
+  // chosen and the server falls back to auto_renew — a client must render
+  // that as UNDECIDED, not as "payout".
+  string maturity_action = 29;
+  // Set once the maturity settlement has actually run. Distinct from a plan
+  // merely being `matured`, which is only the status flip.
+  google.protobuf.Timestamp maturity_settled_at = 30;
+  // The plan this one rolled into, when a reinvestment was chosen.
+  string reinvested_into_id = 31;
+  // Why a reinvestment did NOT happen. Reinvesting interest alone routinely
+  // lands under a plan's minimum; the money was paid out instead, which is
+  // safe but not what was asked for, so the app has to be able to say why.
+  string maturity_note = 32;
+  // Why a plan awaiting review was approved or turned down.
+  string approval_note = 33;
 }
 
 // Lock transaction message
@@ -110,6 +132,10 @@ message PiggyVaultConfig {
   double fixed_amount = 21;
   string duration_options = 22;
   string quick_amount_options = 23;
+  // Newline-separated bullets shown on the Pay & confirm slide's
+  // "Before you confirm" panel. confirmation_notes is always shown;
+  // confirmation_notes_renew_on/off are appended based on the
+  // user's auto-renew toggle.
   string confirmation_notes = 24;
   string confirmation_notes_renew_on = 25;
   string confirmation_notes_renew_off = 26;
@@ -133,6 +159,8 @@ message LockFundAutoSave {
 
 // Create lock fund
 message CreateLockFundRequest {
+  // Legacy plan selector. Retained for old clients; when config_id
+  // is set it is ignored. New clients send config_id instead.
   LockType lock_type = 1;
   double amount = 2;
   string currency = 3;
@@ -143,12 +171,17 @@ message CreateLockFundRequest {
   string payment_method = 8;
   string source_account_id = 9;
   string transaction_pin = 10;
+  // Wallet that receives upfront interest when the plan's
+  // supports_upfront_interest flag is on. Empty falls back to the
+  // source account.
   string interest_destination_account_id = 11;
   // Dedup key for retries; same key returns the existing lock
   // instead of creating a duplicate.
   string idempotency_key = 12;
-  // Stable plan identity (PiggyVaultConfig UUID). When set,
-  // lock_type is ignored and the plan is resolved by this id.
+  // UUID of the chosen PiggyVaultConfig (from GetPiggyVaultConfigs).
+  // The stable plan identity — resolved by primary key, never by
+  // name. When set, lock_type is ignored. When set but no active
+  // plan matches, creation fails loudly.
   string config_id = 13;
 }
 
@@ -174,6 +207,7 @@ message GetLockFundsResponse {
   double total_locked_amount = 5;
   double total_accrued_interest = 6;
   int32 active_locks_count = 7;
+  int32 per_page = 8;
 }
 
 // Get single lock fund
@@ -246,8 +280,9 @@ message CalculateInterestRequest {
   LockType lock_type = 1;
   double amount = 2;
   int32 lock_duration_days = 3;
-  // Stable plan identity; when set, the estimate uses this exact
-  // plan's rates and lock_type is ignored.
+  // Stable plan identity. When set, the estimate uses this exact
+  // plan's rates; lock_type is ignored. Empty falls back to the
+  // legacy lock_type lookup.
   string config_id = 4;
 }
 
@@ -288,9 +323,10 @@ message CancelLockFundResponse {
 // PiggyVault configs
 message GetPiggyVaultConfigsRequest {
   string currency = 1;
-  // BCP-47 locale tag (e.g. "fr", "fr-CA"). When set, the backend
-  // returns localized display_name / description / confirmation_notes
-  // for admins that have published overrides for the locale.
+  // BCP-47 locale tag (e.g. "fr", "fr-CA"). Localized user-facing
+  // strings (display_name, description, confirmation_notes_*) come
+  // back in this locale when an admin has published an override;
+  // otherwise the base strings are returned.
   string locale = 2;
 }
 
@@ -446,4 +482,29 @@ service LockFundsService {
       delete: "/v1/lock-funds/autosave/{autosave_id}"
     };
   }
+
+  // Choose what happens when the term ends.
+  //
+  // Settable WHILE THE PLAN RUNS, not only at creation: somebody decides what
+  // to do with money as the date approaches, not a year ahead when they
+  // opened it. A choice that could only be made at creation would be a choice
+  // nobody makes.
+  rpc SetMaturityAction(SetMaturityActionRequest) returns (SetMaturityActionResponse) {
+    option (google.api.http) = {
+      post: "/v1/lock-funds/{lock_fund_id}/maturity-action"
+      body: "*"
+    };
+  }
+}
+
+message SetMaturityActionRequest {
+  string lock_fund_id = 1;
+  // "payout" | "reinvest_all" | "reinvest_principal" | "reinvest_interest".
+  // Empty CLEARS the choice and hands the plan back to auto_renew — the only
+  // way to undo a decision without closing the plan.
+  string maturity_action = 2;
+}
+
+message SetMaturityActionResponse {
+  LockFund lock_fund = 1;
 }

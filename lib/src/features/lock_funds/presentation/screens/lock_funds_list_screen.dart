@@ -1101,6 +1101,11 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
       case LockStatus.cancelled:
         color = const Color(0xFFEF4444);
         break;
+      case LockStatus.pendingApproval:
+        // Amber, not the active indigo: this plan is NOT earning, and giving
+        // it the live colour would say it is.
+        color = const Color(0xFFF59E0B);
+        break;
     }
 
     return Container(

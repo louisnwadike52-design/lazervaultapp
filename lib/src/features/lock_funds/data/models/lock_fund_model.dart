@@ -89,6 +89,8 @@ class LockFundModel {
         return pb.LockStatus.LOCK_STATUS_UNLOCKED;
       case LockStatus.cancelled:
         return pb.LockStatus.LOCK_STATUS_CANCELLED;
+      case LockStatus.pendingApproval:
+        return pb.LockStatus.LOCK_STATUS_PENDING_APPROVAL;
     }
   }
 
@@ -103,7 +105,14 @@ class LockFundModel {
         return LockStatus.unlocked;
       case pb.LockStatus.LOCK_STATUS_CANCELLED:
         return LockStatus.cancelled;
+      case pb.LockStatus.LOCK_STATUS_PENDING_APPROVAL:
+        return LockStatus.pendingApproval;
       default:
+        // UNSPECIFIED only. Still `active`, because that is what every
+        // pre-existing caller has always seen for it — but note that an
+        // unmapped status reading as "earning interest" is the reason
+        // pending_approval had to be mapped explicitly above rather than
+        // left to fall through here.
         return LockStatus.active;
     }
   }

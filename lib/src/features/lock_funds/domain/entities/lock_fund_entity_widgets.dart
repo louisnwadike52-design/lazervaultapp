@@ -116,10 +116,20 @@ enum LockStatus {
   active,
   matured,
   unlocked,
-  cancelled;
+  cancelled,
+
+  /// Created on an approval-gated plan and waiting on a human.
+  ///
+  /// The deposit is RESERVED — the available balance has already dropped —
+  /// but the term has not started and it earns nothing. It must never render
+  /// as [active]: telling somebody their money is "earning interest" while a
+  /// decision is still pending is a plain untruth about their money.
+  pendingApproval;
 
   String get displayName {
     switch (this) {
+      case LockStatus.pendingApproval:
+        return 'Awaiting approval';
       case LockStatus.active:
         return 'Active';
       case LockStatus.matured:
@@ -133,6 +143,9 @@ enum LockStatus {
 
   String get description {
     switch (this) {
+      case LockStatus.pendingApproval:
+        return 'Your deposit is held for review. It is set aside from your '
+            'spendable balance and starts earning once approved.';
       case LockStatus.active:
         return 'Your funds are locked and earning interest';
       case LockStatus.matured:
@@ -146,6 +159,18 @@ enum LockStatus {
 
   bool get isTerminal =>
       this == LockStatus.unlocked || this == LockStatus.cancelled;
+
+  /// Whether the plan's term is actually running.
+  ///
+  /// Distinct from "not terminal": a plan awaiting approval is neither
+  /// finished nor running, and anything that projects interest, counts down
+  /// to maturity or offers a withdrawal has to ask THIS rather than treating
+  /// every non-terminal plan as live.
+  bool get isEarning => this == LockStatus.active;
+
+  /// Whether the user can act on it at all. A plan under review is not
+  /// theirs to withdraw, top up or renew until somebody has decided.
+  bool get awaitingDecision => this == LockStatus.pendingApproval;
 }
 
 /// Backend-configurable PiggyVault product configuration

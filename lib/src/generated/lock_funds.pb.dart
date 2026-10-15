@@ -53,6 +53,11 @@ class LockFund extends $pb.GeneratedMessage {
     $core.String? configId,
     $core.double? interestPaidOut,
     $1.Timestamp? interestPaidThrough,
+    $core.String? maturityAction,
+    $1.Timestamp? maturitySettledAt,
+    $core.String? reinvestedIntoId,
+    $core.String? maturityNote,
+    $core.String? approvalNote,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -86,6 +91,11 @@ class LockFund extends $pb.GeneratedMessage {
     if (interestPaidOut != null) result.interestPaidOut = interestPaidOut;
     if (interestPaidThrough != null)
       result.interestPaidThrough = interestPaidThrough;
+    if (maturityAction != null) result.maturityAction = maturityAction;
+    if (maturitySettledAt != null) result.maturitySettledAt = maturitySettledAt;
+    if (reinvestedIntoId != null) result.reinvestedIntoId = reinvestedIntoId;
+    if (maturityNote != null) result.maturityNote = maturityNote;
+    if (approvalNote != null) result.approvalNote = approvalNote;
     return result;
   }
 
@@ -150,6 +160,12 @@ class LockFund extends $pb.GeneratedMessage {
         27, _omitFieldNames ? '' : 'interestPaidOut', $pb.PbFieldType.OD)
     ..aOM<$1.Timestamp>(28, _omitFieldNames ? '' : 'interestPaidThrough',
         subBuilder: $1.Timestamp.create)
+    ..aOS(29, _omitFieldNames ? '' : 'maturityAction')
+    ..aOM<$1.Timestamp>(30, _omitFieldNames ? '' : 'maturitySettledAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOS(31, _omitFieldNames ? '' : 'reinvestedIntoId')
+    ..aOS(32, _omitFieldNames ? '' : 'maturityNote')
+    ..aOS(33, _omitFieldNames ? '' : 'approvalNote')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -406,8 +422,9 @@ class LockFund extends $pb.GeneratedMessage {
   @$pb.TagNumber(25)
   void clearDestinationAccountId() => $_clearField(25);
 
-  /// Stable plan identity (PiggyVaultConfig UUID). lock_type is a
-  /// legacy display enum. Empty for legacy rows.
+  /// UUID of the PiggyVaultConfig this lock was created from — the
+  /// stable plan identity. `lock_type` above is a legacy display
+  /// enum. Empty for legacy rows.
   @$pb.TagNumber(26)
   $core.String get configId => $_getSZ(25);
   @$pb.TagNumber(26)
@@ -443,6 +460,64 @@ class LockFund extends $pb.GeneratedMessage {
   void clearInterestPaidThrough() => $_clearField(28);
   @$pb.TagNumber(28)
   $1.Timestamp ensureInterestPaidThrough() => $_ensure(27);
+
+  /// What happens when the term ends: "payout", "reinvest_all",
+  /// "reinvest_principal", "reinvest_interest". EMPTY means the user has not
+  /// chosen and the server falls back to auto_renew — a client must render
+  /// that as UNDECIDED, not as "payout".
+  @$pb.TagNumber(29)
+  $core.String get maturityAction => $_getSZ(28);
+  @$pb.TagNumber(29)
+  set maturityAction($core.String value) => $_setString(28, value);
+  @$pb.TagNumber(29)
+  $core.bool hasMaturityAction() => $_has(28);
+  @$pb.TagNumber(29)
+  void clearMaturityAction() => $_clearField(29);
+
+  /// Set once the maturity settlement has actually run. Distinct from a plan
+  /// merely being `matured`, which is only the status flip.
+  @$pb.TagNumber(30)
+  $1.Timestamp get maturitySettledAt => $_getN(29);
+  @$pb.TagNumber(30)
+  set maturitySettledAt($1.Timestamp value) => $_setField(30, value);
+  @$pb.TagNumber(30)
+  $core.bool hasMaturitySettledAt() => $_has(29);
+  @$pb.TagNumber(30)
+  void clearMaturitySettledAt() => $_clearField(30);
+  @$pb.TagNumber(30)
+  $1.Timestamp ensureMaturitySettledAt() => $_ensure(29);
+
+  /// The plan this one rolled into, when a reinvestment was chosen.
+  @$pb.TagNumber(31)
+  $core.String get reinvestedIntoId => $_getSZ(30);
+  @$pb.TagNumber(31)
+  set reinvestedIntoId($core.String value) => $_setString(30, value);
+  @$pb.TagNumber(31)
+  $core.bool hasReinvestedIntoId() => $_has(30);
+  @$pb.TagNumber(31)
+  void clearReinvestedIntoId() => $_clearField(31);
+
+  /// Why a reinvestment did NOT happen. Reinvesting interest alone routinely
+  /// lands under a plan's minimum; the money was paid out instead, which is
+  /// safe but not what was asked for, so the app has to be able to say why.
+  @$pb.TagNumber(32)
+  $core.String get maturityNote => $_getSZ(31);
+  @$pb.TagNumber(32)
+  set maturityNote($core.String value) => $_setString(31, value);
+  @$pb.TagNumber(32)
+  $core.bool hasMaturityNote() => $_has(31);
+  @$pb.TagNumber(32)
+  void clearMaturityNote() => $_clearField(32);
+
+  /// Why a plan awaiting review was approved or turned down.
+  @$pb.TagNumber(33)
+  $core.String get approvalNote => $_getSZ(32);
+  @$pb.TagNumber(33)
+  set approvalNote($core.String value) => $_setString(32, value);
+  @$pb.TagNumber(33)
+  $core.bool hasApprovalNote() => $_has(32);
+  @$pb.TagNumber(33)
+  void clearApprovalNote() => $_clearField(33);
 }
 
 /// Lock transaction message
@@ -958,6 +1033,10 @@ class PiggyVaultConfig extends $pb.GeneratedMessage {
   @$pb.TagNumber(23)
   void clearQuickAmountOptions() => $_clearField(23);
 
+  /// Newline-separated bullets shown on the Pay & confirm slide's
+  /// "Before you confirm" panel. confirmation_notes is always shown;
+  /// confirmation_notes_renew_on/off are appended based on the
+  /// user's auto-renew toggle.
   @$pb.TagNumber(24)
   $core.String get confirmationNotes => $_getSZ(23);
   @$pb.TagNumber(24)
@@ -1242,6 +1321,8 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
       $pb.GeneratedMessage.$_defaultFor<CreateLockFundRequest>(create);
   static CreateLockFundRequest? _defaultInstance;
 
+  /// Legacy plan selector. Retained for old clients; when config_id
+  /// is set it is ignored. New clients send config_id instead.
   @$pb.TagNumber(1)
   LockType get lockType => $_getN(0);
   @$pb.TagNumber(1)
@@ -1332,6 +1413,9 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   void clearTransactionPin() => $_clearField(10);
 
+  /// Wallet that receives upfront interest when the plan's
+  /// supports_upfront_interest flag is on. Empty falls back to the
+  /// source account.
   @$pb.TagNumber(11)
   $core.String get interestDestinationAccountId => $_getSZ(10);
   @$pb.TagNumber(11)
@@ -1353,8 +1437,10 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(12)
   void clearIdempotencyKey() => $_clearField(12);
 
-  /// Stable plan identity (PiggyVaultConfig UUID). When set,
-  /// lock_type is ignored and the plan is resolved by this id.
+  /// UUID of the chosen PiggyVaultConfig (from GetPiggyVaultConfigs).
+  /// The stable plan identity — resolved by primary key, never by
+  /// name. When set, lock_type is ignored. When set but no active
+  /// plan matches, creation fails loudly.
   @$pb.TagNumber(13)
   $core.String get configId => $_getSZ(12);
   @$pb.TagNumber(13)
@@ -1555,6 +1641,7 @@ class GetLockFundsResponse extends $pb.GeneratedMessage {
     $core.double? totalLockedAmount,
     $core.double? totalAccruedInterest,
     $core.int? activeLocksCount,
+    $core.int? perPage,
   }) {
     final result = create();
     if (lockFunds != null) result.lockFunds.addAll(lockFunds);
@@ -1565,6 +1652,7 @@ class GetLockFundsResponse extends $pb.GeneratedMessage {
     if (totalAccruedInterest != null)
       result.totalAccruedInterest = totalAccruedInterest;
     if (activeLocksCount != null) result.activeLocksCount = activeLocksCount;
+    if (perPage != null) result.perPage = perPage;
     return result;
   }
 
@@ -1592,6 +1680,7 @@ class GetLockFundsResponse extends $pb.GeneratedMessage {
         6, _omitFieldNames ? '' : 'totalAccruedInterest', $pb.PbFieldType.OD)
     ..a<$core.int>(
         7, _omitFieldNames ? '' : 'activeLocksCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, _omitFieldNames ? '' : 'perPage', $pb.PbFieldType.O3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1672,6 +1761,15 @@ class GetLockFundsResponse extends $pb.GeneratedMessage {
   $core.bool hasActiveLocksCount() => $_has(6);
   @$pb.TagNumber(7)
   void clearActiveLocksCount() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get perPage => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set perPage($core.int value) => $_setSignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasPerPage() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPerPage() => $_clearField(8);
 }
 
 /// Get single lock fund
@@ -2517,8 +2615,9 @@ class CalculateInterestRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearLockDurationDays() => $_clearField(3);
 
-  /// Stable plan identity; when set, the estimate uses this exact
-  /// plan's rates and lock_type is ignored.
+  /// Stable plan identity. When set, the estimate uses this exact
+  /// plan's rates; lock_type is ignored. Empty falls back to the
+  /// legacy lock_type lookup.
   @$pb.TagNumber(4)
   $core.String get configId => $_getSZ(3);
   @$pb.TagNumber(4)
@@ -3013,9 +3112,10 @@ class GetPiggyVaultConfigsRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearCurrency() => $_clearField(1);
 
-  /// BCP-47 locale tag (e.g. "fr", "fr-CA"). When set, the backend
-  /// returns localized display_name / description / confirmation_notes
-  /// for admins that have published overrides for the locale.
+  /// BCP-47 locale tag (e.g. "fr", "fr-CA"). Localized user-facing
+  /// strings (display_name, description, confirmation_notes_*) come
+  /// back in this locale when an admin has published an override;
+  /// otherwise the base strings are returned.
   @$pb.TagNumber(2)
   $core.String get locale => $_getSZ(1);
   @$pb.TagNumber(2)
@@ -3701,6 +3801,140 @@ class DeleteLockFundAutoSaveResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
   void clearMessage() => $_clearField(2);
+}
+
+class SetMaturityActionRequest extends $pb.GeneratedMessage {
+  factory SetMaturityActionRequest({
+    $core.String? lockFundId,
+    $core.String? maturityAction,
+  }) {
+    final result = create();
+    if (lockFundId != null) result.lockFundId = lockFundId;
+    if (maturityAction != null) result.maturityAction = maturityAction;
+    return result;
+  }
+
+  SetMaturityActionRequest._();
+
+  factory SetMaturityActionRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SetMaturityActionRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetMaturityActionRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'lockFundId')
+    ..aOS(2, _omitFieldNames ? '' : 'maturityAction')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetMaturityActionRequest clone() =>
+      SetMaturityActionRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetMaturityActionRequest copyWith(
+          void Function(SetMaturityActionRequest) updates) =>
+      super.copyWith((message) => updates(message as SetMaturityActionRequest))
+          as SetMaturityActionRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetMaturityActionRequest create() => SetMaturityActionRequest._();
+  @$core.override
+  SetMaturityActionRequest createEmptyInstance() => create();
+  static $pb.PbList<SetMaturityActionRequest> createRepeated() =>
+      $pb.PbList<SetMaturityActionRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SetMaturityActionRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetMaturityActionRequest>(create);
+  static SetMaturityActionRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get lockFundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set lockFundId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLockFundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLockFundId() => $_clearField(1);
+
+  /// "payout" | "reinvest_all" | "reinvest_principal" | "reinvest_interest".
+  /// Empty CLEARS the choice and hands the plan back to auto_renew — the only
+  /// way to undo a decision without closing the plan.
+  @$pb.TagNumber(2)
+  $core.String get maturityAction => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set maturityAction($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMaturityAction() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMaturityAction() => $_clearField(2);
+}
+
+class SetMaturityActionResponse extends $pb.GeneratedMessage {
+  factory SetMaturityActionResponse({
+    LockFund? lockFund,
+  }) {
+    final result = create();
+    if (lockFund != null) result.lockFund = lockFund;
+    return result;
+  }
+
+  SetMaturityActionResponse._();
+
+  factory SetMaturityActionResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SetMaturityActionResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetMaturityActionResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOM<LockFund>(1, _omitFieldNames ? '' : 'lockFund',
+        subBuilder: LockFund.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetMaturityActionResponse clone() =>
+      SetMaturityActionResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetMaturityActionResponse copyWith(
+          void Function(SetMaturityActionResponse) updates) =>
+      super.copyWith((message) => updates(message as SetMaturityActionResponse))
+          as SetMaturityActionResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetMaturityActionResponse create() => SetMaturityActionResponse._();
+  @$core.override
+  SetMaturityActionResponse createEmptyInstance() => create();
+  static $pb.PbList<SetMaturityActionResponse> createRepeated() =>
+      $pb.PbList<SetMaturityActionResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SetMaturityActionResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetMaturityActionResponse>(create);
+  static SetMaturityActionResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  LockFund get lockFund => $_getN(0);
+  @$pb.TagNumber(1)
+  set lockFund(LockFund value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLockFund() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLockFund() => $_clearField(1);
+  @$pb.TagNumber(1)
+  LockFund ensureLockFund() => $_ensure(0);
 }
 
 const $core.bool _omitFieldNames =
