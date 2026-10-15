@@ -363,7 +363,32 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
                                     color: kUpTextSecondary,
                                     fontWeight: FontWeight.w600)),
                           )
-                        : TextButton(
+                        // THE WINDOW HAS SHUT — say so instead of offering a
+                        // form that cannot be submitted.
+                        //
+                        // ApplyToUpliftFund refuses once the application
+                        // deadline passes, and this card went on offering
+                        // Apply anyway: tapping it opened the pitch form and
+                        // the refusal arrived at the end, after the business
+                        // had written the whole thing. The detail screen has
+                        // withdrawn the CTA for this reason since it was
+                        // built; the card simply never asked.
+                        //
+                        // A fund usually leaves `open` within a minute of its
+                        // deadline (the worker flips it to `expired`), but
+                        // "usually" is not a guard — this is the window
+                        // between the deadline and that tick, and it is
+                        // exactly when somebody racing the deadline taps.
+                        : upApplicationsClosed(f)
+                            ? const Padding(
+                                padding:
+                                    EdgeInsets.symmetric(horizontal: 10),
+                                child: Text('Applications closed',
+                                    style: TextStyle(
+                                        color: kUpTextSecondary,
+                                        fontWeight: FontWeight.w600)),
+                              )
+                            : TextButton(
                             onPressed: () async {
                               await Get.to(() => ApplyUpliftScreen(fund: f));
                               await _refreshAfterFundChange();

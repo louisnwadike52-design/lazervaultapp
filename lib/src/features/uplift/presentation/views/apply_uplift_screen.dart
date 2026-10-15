@@ -77,6 +77,20 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
+    // THE WINDOW CAN SHUT WHILE THE FORM IS OPEN.
+    //
+    // The entry guard in build() stops somebody opening this on a fund that
+    // is already closed, but a business typing a pitch two minutes before the
+    // deadline can cross it mid-sentence. Re-asked here so the refusal is
+    // ours and legible, rather than a gRPC FailedPrecondition after submit.
+    if (upApplicationsClosed(widget.fund)) {
+      Get.snackbar('Applications have closed',
+          'The deadline for this fund passed while you were writing. Nothing was sent.',
+          backgroundColor: kUpError,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
     if (!_form.currentState!.validate()) return;
     final amountKobo = (double.parse(_amount.text.trim()) * 100).round();
     if (amountKobo > _capKobo) {
@@ -121,6 +135,54 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
   @override
   Widget build(BuildContext context) {
     final f = widget.fund;
+    // ENTRY GUARD. Reachable from a deep link, a notification tap or a list
+    // that was loaded before the deadline passed — in all of which the honest
+    // thing is to say so at the door rather than let somebody write a pitch
+    // that cannot be sent.
+    if (upApplicationsClosed(f)) {
+      return Scaffold(
+        backgroundColor: kUpBg,
+        appBar: upAppBar('Apply for funding'),
+        body: UpGradientScaffoldBody(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.timer_off,
+                      color: kUpTextSecondary, size: 44),
+                  const SizedBox(height: 14),
+                  const Text(
+                    'Applications have closed',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'The deadline for ${f.title} has passed, so this fund is '
+                    'no longer taking applications.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: kUpTextSecondary, height: 1.4),
+                  ),
+                  const SizedBox(height: 18),
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: const Text('Browse other funds',
+                        style: TextStyle(
+                            color: kUpPrimary, fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: kUpBg,
       appBar: upAppBar('Apply for funding'),

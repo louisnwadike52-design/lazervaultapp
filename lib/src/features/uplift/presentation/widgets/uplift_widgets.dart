@@ -349,6 +349,33 @@ String upAppStatusLabel(up.UpliftApplicationStatus s) {
       .replaceAll('_', ' ');
 }
 
+
+/// True when the fund carries an application deadline that has already passed.
+///
+/// The server refuses a late application outright, so every surface that
+/// offers "Apply" has to withdraw the offer rather than let somebody write a
+/// whole pitch and be refused on submit. It lived in uplift_detail_screen.dart
+/// and only the detail screen consulted it — the Discover card went on
+/// offering Apply on a fund whose window had shut, which is the exact walk
+/// into a server-side refusal that the card's own "Your fund" branch exists to
+/// prevent.
+///
+/// Compared in LOCAL time: the deadline arrives as a UTC timestamp, and
+/// "has today passed" is a question about the user's clock.
+bool upApplicationsClosed(up.UpliftFundMessage f) {
+  if (!f.hasApplicationDeadline()) return false;
+  return DateTime.now().isAfter(f.applicationDeadline.toDateTime().toLocal());
+}
+
+/// True when the fund can still take an application from this user right now.
+/// The single predicate behind every Apply control, so a hidden button and a
+/// server refusal cannot disagree.
+bool upCanApply(up.UpliftFundMessage f) =>
+    !f.isFunder &&
+    f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_OPEN &&
+    !upApplicationsClosed(f) &&
+    !upHasLiveApplication(f);
+
 /// Whether a past application leaves the business free to apply to this fund
 /// again. Mirrors `models.UpliftAppReapplyAllowedFrom`, which is the list
 /// `ApplyToUpliftFund`'s duplicate guard actually uses.

@@ -14,17 +14,6 @@ import 'package:lazervault/src/features/uplift/presentation/views/uplift_milesto
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
 
-/// True when the fund carries an application deadline that has already passed.
-///
-/// The server refuses late applications outright ("application deadline has
-/// passed"), so the CTA has to withdraw rather than fail on submit after the
-/// applicant has written a pitch. Compared in local time — the deadline arrives
-/// as a UTC timestamp.
-bool upApplicationsClosed(up.UpliftFundMessage f) {
-  if (!f.hasApplicationDeadline()) return false;
-  return DateTime.now().isAfter(f.applicationDeadline.toDateTime().toLocal());
-}
-
 /// Fund detail — the shared hub for both journeys. The funder sees the pool /
 /// escrow state, can commit funds (PIN), and reviews/selects applicants.
 /// Everyone else sees the fund story and can apply / endorse. An applicant with
