@@ -131,6 +131,18 @@ class AutoSaveCreated extends LockFundsState {
   List<Object?> get props => [autoSave];
 }
 
+/// A maturity choice was recorded. Carries the server's copy of the plan, so
+/// a listener never has to guess what landed — the server may legitimately
+/// refuse part of a choice and answer with something else.
+class LockFundMaturityActionSet extends LockFundsState {
+  final LockFund lockFund;
+
+  const LockFundMaturityActionSet(this.lockFund);
+
+  @override
+  List<Object?> get props => [lockFund];
+}
+
 class LockFundsError extends LockFundsState {
   final String message;
 

@@ -225,6 +225,29 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
   }
 
   @override
+  Future<LockFund> setMaturityAction({
+    required String lockFundId,
+    required MaturityAction action,
+  }) async {
+    try {
+      // `wireValue` is '' for undecided, and an empty slug is what clears the
+      // choice server-side. Do not substitute 'payout' here.
+      final request = pb.SetMaturityActionRequest()
+        ..lockFundId = lockFundId
+        ..maturityAction = action.wireValue;
+
+      final response = await _grpcClient.lockFundsClient.setMaturityAction(
+        request,
+        options: await _grpcClient.callOptions,
+      );
+
+      return LockFundModel.fromProto(response.lockFund);
+    } catch (e) {
+      throw Exception(friendlyLockError(e));
+    }
+  }
+
+  @override
   Future<CancelResult> cancelLockFund({
     required String lockFundId,
     required String reason,

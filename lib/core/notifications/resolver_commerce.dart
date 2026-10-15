@@ -187,12 +187,51 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   if (_is(type, 'autosave') || _is(type, 'auto_save')) {
     return _landing(AppRoutes.autoSaveDashboard);
   }
+  // ---- PiggyVault ---------------------------------------------------------
+  // `lock_fund` SINGULAR is what accounts-service actually emits —
+  // lock_fund.matured, .settled, .renewed, .renewal_skipped,
+  // .approval_approved, .approval_rejected, .pending_approval. The branch
+  // here only listed the PLURAL `lock_funds`, which `_is` does not match
+  // against `lock_fund.matured`, so every one of those dead-ended on the feed.
+  // Both spellings are accepted now; neither is worth a server change.
+  //
   // Interest categories are PiggyVault events without "lock" in the slug —
-  // tapping an ROI payout must land on the plan list, not nowhere.
-  if (_is(type, 'lock_funds') ||
+  // tapping an ROI payout must land on the plan, not nowhere.
+  if (_is(type, 'lock_fund') ||
+      _is(type, 'lock_funds') ||
       _is(type, 'piggyvault') ||
-      _is(type, 'piggy') ||
-      _is(type, 'interest_payout') ||
+      _is(type, 'piggy')) {
+    // The plan itself when the payload names one. Every PiggyVault lifecycle
+    // notification carries `lock_fund_id`, and the detail route fetches from
+    // the id alone — so these are exact, not a landing.
+    //
+    // `reference_id` is accepted ONLY behind a matching `reference_type`. The
+    // generic notification envelope puts the plan's id there, but that field
+    // is shared by every producer on the channel, so reading it unconditionally
+    // would eventually hand some other service's id to the plan screen. A
+    // near-identical mistake on the uplift resolver handed a MILESTONE id to a
+    // fund screen, so the rule here is: only an id whose own payload says what
+    // it is.
+    var id = _first(data, const [
+      'lock_fund_id',
+      'lockFundId',
+      'lockfunds_id',
+    ]);
+    if (id == null &&
+        (data['reference_type'] ?? '').toLowerCase() == 'lock_fund') {
+      id = _first(data, const ['reference_id']);
+    }
+    if (id != null) {
+      return _record(AppRoutes.lockFundDetails, arguments: id);
+    }
+    return _landing(AppRoutes.lockFunds);
+  }
+  // Interest categories are PiggyVault events without "lock" in the slug.
+  // Kept as a LANDING on purpose: nothing publishes them as notifications
+  // today, so there is no payload to trust for an id, and routing a
+  // speculative `entity_id` at the plan screen would open "we could not find
+  // this plan" the first time somebody published a transaction id there.
+  if (_is(type, 'interest_payout') ||
       _is(type, 'upfront_interest') ||
       _is(type, 'interest_accrual')) {
     return _landing(AppRoutes.lockFunds);

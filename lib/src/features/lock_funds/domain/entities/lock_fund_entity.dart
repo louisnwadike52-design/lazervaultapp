@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:lazervault/core/utils/currency_formatter.dart'
     as currency_formatter;
 part 'lock_fund_entity_widgets.dart';
+part 'lock_fund_maturity_action.dart';
 
 dynamic _safeDecode(String raw) {
   // Hoisted decoder for the JSONB-backed PiggyVaultConfig string
@@ -66,6 +67,32 @@ class LockFund {
   /// switching on the enum. Empty for legacy rows.
   final String configId;
 
+  /// What happens when the term ends.
+  ///
+  /// [MaturityAction.undecided] is the real default and means the user has
+  /// never chosen: the server then follows [autoRenew]. It must never be
+  /// rendered as "pay out" — see [MaturityAction].
+  final MaturityAction maturityAction;
+
+  /// When the maturity settlement actually ran. Distinct from the plan merely
+  /// being `matured`, which is only the status flip — a plan can sit matured
+  /// and unsettled until the sweep reaches it, and during that window the
+  /// money has NOT moved.
+  final DateTime? maturitySettledAt;
+
+  /// The plan this one rolled into, when a reinvestment happened. Empty when
+  /// nothing was reinvested.
+  final String reinvestedIntoId;
+
+  /// Why a reinvestment did not happen as asked. Reinvesting returns alone
+  /// routinely lands under a plan's minimum, in which case the money was paid
+  /// out instead — safe, but not what was chosen, so the screen has to be able
+  /// to say so.
+  final String maturityNote;
+
+  /// Why a plan awaiting review was approved or turned down.
+  final String approvalNote;
+
   const LockFund({
     required this.id,
     required this.userId,
@@ -95,6 +122,11 @@ class LockFund {
     this.sourceAccountId,
     this.destinationAccountId,
     this.configId = '',
+    this.maturityAction = MaturityAction.undecided,
+    this.maturitySettledAt,
+    this.reinvestedIntoId = '',
+    this.maturityNote = '',
+    this.approvalNote = '',
   });
 
   LockFund copyWith({
@@ -126,6 +158,11 @@ class LockFund {
     String? sourceAccountId,
     String? destinationAccountId,
     String? configId,
+    MaturityAction? maturityAction,
+    DateTime? maturitySettledAt,
+    String? reinvestedIntoId,
+    String? maturityNote,
+    String? approvalNote,
   }) {
     return LockFund(
       id: id ?? this.id,
@@ -157,6 +194,11 @@ class LockFund {
       sourceAccountId: sourceAccountId ?? this.sourceAccountId,
       destinationAccountId: destinationAccountId ?? this.destinationAccountId,
       configId: configId ?? this.configId,
+      maturityAction: maturityAction ?? this.maturityAction,
+      maturitySettledAt: maturitySettledAt ?? this.maturitySettledAt,
+      reinvestedIntoId: reinvestedIntoId ?? this.reinvestedIntoId,
+      maturityNote: maturityNote ?? this.maturityNote,
+      approvalNote: approvalNote ?? this.approvalNote,
     );
   }
 

@@ -388,6 +388,35 @@ class LockFundsCubit extends Cubit<LockFundsState> {
     }
   }
 
+  /// Record what the plan does at maturity.
+  ///
+  /// Deliberately does NOT emit [LockFundsLoading] first: the details screen
+  /// reads that as "refetching" and shows a progress bar over the whole
+  /// screen, which is the wrong weight for a one-tap setting. The sheet drives
+  /// its own spinner instead.
+  ///
+  /// On success it emits [LockFundMaturityActionSet] and then refetches, so
+  /// the screen adopts the server's copy of the plan (including the
+  /// `maturity_note` it may attach) rather than the value we asked for.
+  Future<void> setMaturityAction({
+    required String lockFundId,
+    required MaturityAction action,
+  }) async {
+    try {
+      if (isClosed) return;
+      final updated = await _repository.setMaturityAction(
+        lockFundId: lockFundId,
+        action: action,
+      );
+      if (isClosed) return;
+      emit(LockFundMaturityActionSet(updated));
+      await loadLockFundDetails(lockFundId);
+    } catch (e) {
+      if (isClosed) return;
+      emit(LockFundsError(friendlyLockError(e)));
+    }
+  }
+
   void clearError() {
     if (isClosed) return;
     if (state is LockFundsError) {

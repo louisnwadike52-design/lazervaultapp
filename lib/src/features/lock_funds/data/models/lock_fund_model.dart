@@ -45,6 +45,17 @@ class LockFundModel {
       // the `lock_type` display enum — a denormalized label, not the plan
       // identity. Empty for legacy rows created before ID-based identity.
       configId: proto.configId,
+      // Empty slug is genuinely "not decided" — MaturityAction.fromWire maps
+      // it to `undecided` rather than guessing payout.
+      maturityAction: MaturityAction.fromWire(proto.maturityAction),
+      // hasMaturitySettledAt separates "not settled yet" from the epoch a
+      // bare toDateTime() would hand back, which would read as 1970.
+      maturitySettledAt: proto.hasMaturitySettledAt()
+          ? proto.maturitySettledAt.toDateTime()
+          : null,
+      reinvestedIntoId: proto.reinvestedIntoId,
+      maturityNote: proto.maturityNote,
+      approvalNote: proto.approvalNote,
     );
   }
 

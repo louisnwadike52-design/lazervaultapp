@@ -9,11 +9,13 @@ import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
 import '../widgets/lock_funds_empty_state.dart';
+import '../widgets/maturity_action_sheet.dart';
 import 'lock_withdrawal_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'lock_fund_details_screen_widgets.dart';
+part 'lock_fund_details_maturity.dart';
 
 class LockFundDetailsScreen extends StatefulWidget {
   final LockFund lockFund;
@@ -100,6 +102,19 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
           // pre-withdrawal total and the payout looks like it did nothing.
           setState(() => _refreshing = true);
           context.read<LockFundsCubit>().loadLockFundDetails(_lock.id);
+        } else if (state is LockFundMaturityActionSet &&
+            state.lockFund.id == _lock.id) {
+          setState(() => _lock = state.lockFund);
+          Get.snackbar(
+            'Saved',
+            state.lockFund.maturityAction == MaturityAction.undecided
+                ? 'Your choice was cleared. Auto-renew decides from here.'
+                : '${state.lockFund.maturityAction.displayName} when the '
+                    'term ends.',
+            backgroundColor: const Color(0xFF10B981),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+          );
         } else if (state is LockFundsError) {
           if (_refreshing) setState(() => _refreshing = false);
           Get.snackbar(
@@ -825,6 +840,16 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
           _buildDetailRow('Lock Duration', lock.durationText),
           _buildDetailRow(
               'Auto-Renew', lock.autoRenew ? 'Enabled' : 'Disabled'),
+          // Only `locked` and `pending_approval` accept a change — see
+          // AccountsService.SetMaturityAction. Passing a tap handler on any
+          // other status would open a sheet whose every option is refused.
+          _MaturitySection(
+            lock: lock,
+            onTap: (lock.status == LockStatus.active ||
+                    lock.status == LockStatus.pendingApproval)
+                ? _pickMaturityAction
+                : null,
+          ),
           if (lock.transactionId != null)
             _buildDetailRow('Transaction ID', lock.transactionId!),
           if (lock.goalDescription?.isNotEmpty == true)
@@ -1221,6 +1246,28 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
         if (words.isEmpty) return 'Activity';
         return words[0].toUpperCase() + words.substring(1).toLowerCase();
     }
+  }
+
+  /// Opens the maturity picker and records the answer.
+  ///
+  /// A dismissed sheet returns null and must change nothing — distinct from
+  /// [MaturityAction.undecided], which is a deliberate "clear my choice".
+  Future<void> _pickMaturityAction() async {
+    HapticFeedback.selectionClick();
+    final cubit = context.read<LockFundsCubit>();
+    final chosen = await showMaturityActionSheet(
+      context,
+      current: _lock.maturityAction,
+      autoRenew: _lock.autoRenew,
+    );
+    if (chosen == null) return;
+    if (chosen == _lock.maturityAction) return;
+    if (!mounted) return;
+    // Optimistic, then reconciled: the cubit refetches and the BlocListener
+    // adopts the server's copy, so a refusal cannot leave the new value on
+    // screen.
+    setState(() => _lock = _lock.copyWith(maturityAction: chosen));
+    await cubit.setMaturityAction(lockFundId: _lock.id, action: chosen);
   }
 
   void _showWithdrawDialog({bool early = false}) {

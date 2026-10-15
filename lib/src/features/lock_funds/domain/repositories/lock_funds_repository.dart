@@ -63,6 +63,18 @@ abstract class LockFundsRepository {
     required int newDurationDays,
   });
 
+  /// Record what the plan should do when its term ends.
+  ///
+  /// Pass [MaturityAction.undecided] to CLEAR a previous choice, which hands
+  /// the plan back to its `auto_renew` flag — the only way to undo a decision
+  /// without closing the plan. accounts-service owns the validation (which
+  /// actions the plan allows, whether its ending can still be changed, and
+  /// that the caller owns it).
+  Future<LockFund> setMaturityAction({
+    required String lockFundId,
+    required MaturityAction action,
+  });
+
   /// Cancel a lock fund
   Future<CancelResult> cancelLockFund({
     required String lockFundId,

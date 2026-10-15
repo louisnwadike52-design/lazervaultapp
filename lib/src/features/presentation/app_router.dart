@@ -621,6 +621,7 @@ import 'package:lazervault/src/features/social_linking/presentation/cubit/social
 import 'package:lazervault/src/features/lock_funds/presentation/cubit/lock_funds_cubit.dart';
 import 'package:lazervault/src/features/lock_funds/presentation/screens/lock_funds_list_screen.dart';
 import 'package:lazervault/src/features/lock_funds/presentation/screens/lock_fund_receipt_screen.dart';
+import 'package:lazervault/src/features/lock_funds/presentation/screens/lock_fund_details_by_id_screen.dart';
 
 // Family Account imports
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
@@ -3831,6 +3832,39 @@ class AppRouter {
       name: AppRoutes.lockFundReceipt,
       page: () => const LockFundReceiptScreen(),
       transition: Transition.zoom,
+    ),
+    // Open ONE plan from its id.
+    //
+    // The AppRoutes constant existed with no GetPage behind it, so every
+    // PiggyVault notification could only ever land on the list. A push payload
+    // carries `lock_fund_id` and nothing else, so the route has to take an id
+    // and fetch — LockFundDetailsScreen itself needs a hydrated LockFund,
+    // which no payload can build.
+    //
+    // Accepts a bare String or a Map with `lock_fund_id` / `lockFundId`,
+    // because the resolver, a universal link's query string and any in-app
+    // caller all spell arguments differently. An empty id falls through to
+    // the list rather than opening a detail screen that can only fail.
+    GetPage(
+      name: AppRoutes.lockFundDetails,
+      page: () {
+        final args = Get.arguments;
+        var id = '';
+        if (args is String) {
+          id = args.trim();
+        } else if (args is Map) {
+          id = (args['lock_fund_id'] ?? args['lockFundId'] ?? args['id'] ?? '')
+              .toString()
+              .trim();
+        }
+        return BlocProvider(
+          create: (_) => serviceLocator<LockFundsCubit>(),
+          child: id.isEmpty
+              ? const LockFundsListScreen()
+              : LockFundDetailsByIdScreen(lockFundId: id),
+        );
+      },
+      transition: Transition.rightToLeft,
     ),
 
     // Voice Enrollment Routes

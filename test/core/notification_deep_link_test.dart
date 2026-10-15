@@ -280,6 +280,16 @@ void main() {
         'electricity_payment_processing',
         'electricity_reconciliation_completed',
         'electricity_refund_processed',
+        // PiggyVault plan lifecycle. SINGULAR `lock_fund` — the resolver
+        // matched only the plural spelling, so every one of these landed on
+        // the feed instead of the plan.
+        'lock_fund.pending_approval',
+        'lock_fund.approval_approved',
+        'lock_fund.approval_rejected',
+        'lock_fund.matured',
+        'lock_fund.settled',
+        'lock_fund.renewed',
+        'lock_fund.renewal_skipped',
         'plain',
         'test',
       ];
@@ -290,6 +300,81 @@ void main() {
           reason: '$type has no destination — it would land on the feed',
         );
       }
+    });
+
+    test('opens the PiggyVault plan the message is about', () {
+      final t = NotificationRouteResolver.resolve('lock_fund.settled', const {
+        'lock_fund_id': 'b1b1b1b1-0000-0000-0000-000000000001',
+        'plan_name': 'Shoe Flex',
+      });
+      expect(t, isNotNull);
+      expect(t!.route, AppRoutes.lockFundDetails);
+      expect(t.arguments, 'b1b1b1b1-0000-0000-0000-000000000001');
+      expect(t.precision, TargetPrecision.record,
+          reason: 'the detail route fetches from the id alone, so this is '
+              'exact — not a landing');
+    });
+
+    test('a PiggyVault message with no id lands on My Locks, not nowhere', () {
+      final t =
+          NotificationRouteResolver.resolve('lock_fund.renewed', const {});
+      expect(t, isNotNull);
+      expect(t!.route, AppRoutes.lockFunds);
+      expect(t.precision, TargetPrecision.serviceLanding);
+    });
+
+    test('reference_id opens a plan only when reference_type says it is one',
+        () {
+      // reference_id is mirrored into every notification's payload by
+      // notifications-service, so it is shared by every producer on the
+      // channel. Reading it unconditionally would eventually hand another
+      // service's id to the plan screen — the same mistake that once handed a
+      // MILESTONE id to an uplift fund screen.
+      final claimed =
+          NotificationRouteResolver.resolve('lock_fund.matured', const {
+        'reference_id': 'c2c2c2c2-0000-0000-0000-000000000002',
+        'reference_type': 'lock_fund',
+      });
+      expect(claimed!.route, AppRoutes.lockFundDetails);
+      expect(claimed.arguments, 'c2c2c2c2-0000-0000-0000-000000000002');
+
+      final unclaimed =
+          NotificationRouteResolver.resolve('lock_fund.matured', const {
+        'reference_id': 'c2c2c2c2-0000-0000-0000-000000000002',
+        'reference_type': 'transaction',
+      });
+      expect(unclaimed!.route, AppRoutes.lockFunds,
+          reason: 'an id that does not claim to be a plan must degrade to the '
+              'landing, never open a plan screen that can only fail');
+
+      final bare =
+          NotificationRouteResolver.resolve('lock_fund.matured', const {
+        'reference_id': 'c2c2c2c2-0000-0000-0000-000000000002',
+      });
+      expect(bare!.route, AppRoutes.lockFunds,
+          reason: 'no reference_type at all is the trimmed-payload case and '
+              'must also degrade');
+    });
+
+    test('an explicit lock_fund_id beats a reference pair', () {
+      final t = NotificationRouteResolver.resolve('lock_fund.settled', const {
+        'lock_fund_id': 'd3d3d3d3-0000-0000-0000-000000000003',
+        'reference_id': 'ffffffff-0000-0000-0000-00000000ffff',
+        'reference_type': 'lock_fund',
+      });
+      expect(t!.arguments, 'd3d3d3d3-0000-0000-0000-000000000003');
+    });
+
+    test('interest categories stay on the landing even with an entity_id', () {
+      // Nothing publishes these as notifications today, so there is no payload
+      // to trust. Routing a speculative id at the plan screen would open
+      // "we could not open this plan" the first time somebody published a
+      // transaction id there.
+      final t = NotificationRouteResolver.resolve('interest_payout', const {
+        'entity_id': 'e4e4e4e4-0000-0000-0000-000000000004',
+      });
+      expect(t!.route, AppRoutes.lockFunds);
+      expect(t.precision, TargetPrecision.serviceLanding);
     });
 
     // entity_id is the generic key every notifications-service handler now
