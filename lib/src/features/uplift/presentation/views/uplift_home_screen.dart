@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/src/features/uplift/presentation/cubit/uplift_cubit.dart';
@@ -110,11 +111,26 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
   /// is rarely the first second they land on it. The row collapses to a single
   /// info link instead of vanishing, which opens the same copy in a dialog.
   Widget _guideFor(String tab) {
-    if (_showGuide[tab] != true) return UpliftTabInfoLink(tabId: tab);
-    return UpliftGuideCard(
-      tabId: tab,
-      onDismiss: () => _dismissGuide(tab),
-      onNeverShowAgain: _neverShowGuides,
+    // Rebuilt on [FeatureFlags.revision] so a flip of the admin gate lands on
+    // the next settings poll instead of at next launch. The background refresh
+    // applies the snapshot but tells no widget about it, so without this the
+    // screen would keep whichever state it was built with.
+    return ValueListenableBuilder<int>(
+      valueListenable: FeatureFlags.revision,
+      builder: (_, __, ___) {
+        // The card is OFF unless an admin turned it on (or whitelisted this
+        // account). The info link is the standing state, and it is not a
+        // fallback for a dismissed card any more — it is what the tab shows.
+        if (!FeatureFlags.lazerfundsGuideCardEnabled) {
+          return UpliftTabInfoLink(tabId: tab);
+        }
+        if (_showGuide[tab] != true) return UpliftTabInfoLink(tabId: tab);
+        return UpliftGuideCard(
+          tabId: tab,
+          onDismiss: () => _dismissGuide(tab),
+          onNeverShowAgain: _neverShowGuides,
+        );
+      },
     );
   }
 

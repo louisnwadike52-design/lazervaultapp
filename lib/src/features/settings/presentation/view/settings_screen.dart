@@ -211,6 +211,12 @@ class _SettingsViewState extends State<_SettingsView> {
     UpliftGuidePreference.isDismissed().then((v) {
       if (mounted) setState(() => _lazerfundsGuidesDismissed = v);
     });
+    // Admin gates can flip while this screen is open (the registry re-applies
+    // its snapshot in the background). Tiles that EXIST only while a gate is on
+    // would otherwise stay as they were built — present after the gate closed,
+    // or absent after it opened, which looks like the setting is broken rather
+    // than remotely controlled.
+    FeatureFlags.revision.addListener(_onFeatureGatesChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<ProfileCubit>().getUserProfile();
@@ -257,11 +263,18 @@ class _SettingsViewState extends State<_SettingsView> {
     }
   }
 
+  /// Repaints when an admin gate lands, so gate-dependent tiles appear and
+  /// disappear with the gate instead of at next launch.
+  void _onFeatureGatesChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
     // A pending debounce would call setState on a dead State.
     _searchDebounce?.cancel();
     _searchDebounce = null;
+    FeatureFlags.revision.removeListener(_onFeatureGatesChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -1108,6 +1121,15 @@ class _SettingsViewState extends State<_SettingsView> {
         // chose "Don't show these again" on the card. Reads the SAME flag the
         // card writes, so the switch can never disagree with what the screen
         // does — the failure the deposit-tips tile above was built to avoid.
+        //
+        // SHOWN ONLY WHILE THE CARD STATE IS ENABLED by an admin. The tabs now
+        // carry a one-line info link as their standing state, and that link is
+        // not something a user can switch off — so with the gate closed this
+        // switch would move a flag that changes nothing on any screen. A
+        // control that promises "explain each tab the first time you open it"
+        // and then does not is worse than no control: it sends the user looking
+        // for a bug that is really a setting nobody wired to the flow.
+        final lazerfundsGuidesEnabled = FeatureFlags.lazerfundsGuideCardEnabled;
         final lazerfundsGuidesTile = _switchTile(
           icon: Icons.school_outlined,
           title: 'Lazerfunds guides',
@@ -1241,7 +1263,7 @@ class _SettingsViewState extends State<_SettingsView> {
             dashboardLayoutTile,
             adaptiveServicesTile,
             depositTipsTile,
-            lazerfundsGuidesTile,
+            if (lazerfundsGuidesEnabled) lazerfundsGuidesTile,
             pendingPromptTile,
             loginMethodTile,
           ]);
@@ -1289,8 +1311,10 @@ class _SettingsViewState extends State<_SettingsView> {
               child: _customizeGroupLabel('Guides'),
             ),
             SizedBox(height: 10.h),
-            lazerfundsGuidesTile,
-            SizedBox(height: 10.h),
+            if (lazerfundsGuidesEnabled) ...[
+              lazerfundsGuidesTile,
+              SizedBox(height: 10.h),
+            ],
             voiceGuidesTile,
             SizedBox(height: 18.h),
             Padding(

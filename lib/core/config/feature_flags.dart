@@ -775,10 +775,26 @@ class FeatureFlags {
   /// surface available, because a typo in an admin field must not take a
   /// working service off the app — the backend still refuses whatever it
   /// would refuse anyway.
-  static bool gateAvailable(String prefix) {
+  ///
+  /// [defaultOn] is the answer when NOBODY HAS CHOSEN — no row, or a blank
+  /// one. It is true for every gate that withholds an existing surface, which
+  /// is all of them bar one: a gate that ADDS optional UI must default OFF, or
+  /// shipping the gate ships the UI to everyone on the next poll. The one
+  /// caller that passes false is the Lazerfunds guide card, which was
+  /// deliberately taken off the tabs — see [lazerfundsGuideCardEnabled].
+  ///
+  /// A blank value is treated as unset for the same reason the admin screen
+  /// does: `upsertSystemSetting(key, "")` is how a cleared field saves, and
+  /// reading "" as "false" would make clearing a message switch a surface off.
+  static bool gateAvailable(String prefix, {bool defaultOn = true}) {
     final raw = _prefs?.getString('${prefix}_available');
-    if (raw == null) return true;
-    return raw.trim().toLowerCase() != 'false';
+    if (raw == null || raw.trim().isEmpty) return defaultOn;
+    final v = raw.trim().toLowerCase();
+    if (defaultOn) return v != 'false';
+    // Default-OFF gates are the mirror image: only the exact string "true"
+    // enables, so the same typo that cannot take a service down also cannot
+    // put unasked-for UI back on every phone.
+    return v == 'true';
   }
 
   /// Whether the current user may see [prefix].
@@ -786,10 +802,33 @@ class FeatureFlags {
   /// The whitelist is an OVERRIDE and is checked FIRST: an address on an
   /// enabled list sees the surface even while it is switched off for everyone
   /// else, which is the entire point of shipping to testers.
-  static bool gateAllowed(String prefix, {String? email}) {
+  static bool gateAllowed(String prefix, {String? email, bool defaultOn = true}) {
     if (whitelisted(prefix, email ?? currentUserEmail())) return true;
-    return gateAvailable(prefix);
+    return gateAvailable(prefix, defaultOn: defaultOn);
   }
+
+  /// Whether Lazerfunds should show the FULL first-run guide card on its tabs,
+  /// instead of the one-line info link that is now the standing state.
+  ///
+  /// DEFAULT OFF. The big card was removed from the tabs on purpose — three of
+  /// them stacked an explainer above content that is itself the explanation,
+  /// and on a small screen the first thing below the tab bar was a paragraph
+  /// rather than a fund. The compact `UpliftTabInfoLink` carries the same copy
+  /// behind an info icon and opens the identical sheet, so nothing became
+  /// unreachable.
+  ///
+  /// It stays switchable rather than deleted because it is the better state for
+  /// a cohort we cannot identify from here — a first-run audience, a demo, a
+  /// market where the product needs more framing. An admin turns it on for
+  /// everyone, or whitelists it to the accounts running the demo.
+  ///
+  /// The per-user Settings switch still applies on top: this gate decides
+  /// whether the card EXISTS as a state, the user's choice decides whether it
+  /// appears unprompted to them.
+  static bool get lazerfundsGuideCardEnabled => gateAllowed(
+        featurePrefix('explainer', 'lazerfundsguide'),
+        defaultOn: false,
+      );
 
   /// Copy for the "not available" modal. Never blank, so an admin who disables
   /// a surface without writing a message still gets a sentence that is true.
