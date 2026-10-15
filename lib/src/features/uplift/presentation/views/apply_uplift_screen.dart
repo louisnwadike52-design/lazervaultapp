@@ -221,9 +221,14 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            _field(_businessName, 'Business name'),
+            // 80: a trading name, not a legal description. It renders beside
+            // a status chip on the funder's list, where anything longer is
+            // ellipsised anyway, and the column is varchar(255).
+            _field(_businessName, 'Business name', maxLength: 80),
+            // 600: long enough for a real case, short enough that a funder
+            // reading twenty of them still reads this one.
             _field(_pitch, 'Your pitch — what will you do with the funds?',
-                maxLines: 5),
+                maxLines: 5, maxLength: 600),
             _field(_amount, 'Amount requested (₦)',
                 keyboard: TextInputType.number, validator: (v) {
               if (v == null || v.trim().isEmpty) return 'Required';
@@ -397,6 +402,9 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
             TextField(
               controller: _equityNote,
               maxLines: 2,
+              // A note on terms, not a contract — the funder negotiates in
+              // the offer flow, which has its own thread.
+              maxLength: 200,
               style: const TextStyle(color: Colors.white),
               decoration: _dec('Note (optional)'),
             ),
@@ -417,8 +425,21 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
             borderSide: BorderSide.none),
       );
 
+  /// A form field with a HARD ceiling and a live counter.
+  ///
+  /// None of these had a limit. A pitch is read in a card on the funder's
+  /// review list and in the application sheet — both of which clip it — so an
+  /// unbounded field invited someone to write something nobody would ever
+  /// see, and a business name of arbitrary length broke the layout wherever it
+  /// is rendered beside a status chip. The server stores business_name as
+  /// varchar(255), so an over-long name was a refusal at the very end of the
+  /// form rather than a limit while typing.
+  ///
+  /// maxLength both CAPS the input and shows the counter, so the ceiling is
+  /// visible before it is reached rather than discovered at submit.
   Widget _field(TextEditingController c, String label,
       {int maxLines = 1,
+      int? maxLength,
       TextInputType? keyboard,
       String? Function(String?)? validator}) {
     return Padding(
@@ -426,6 +447,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
       child: TextFormField(
         controller: c,
         maxLines: maxLines,
+        maxLength: maxLength,
         keyboardType: keyboard,
         style: const TextStyle(color: Colors.white),
         validator: validator ??

@@ -100,9 +100,16 @@ void main() {
         'media_max_image_mb': '0',
         'uplift_application_max_documents': '-3',
       });
-      expect(FeatureFlags.upliftApplicationMaxImages, 8);
+      // Asserted against the Go defaults rather than literals, so lowering a
+      // ceiling does not have to be remembered in two places. What this test
+      // is really about is that a cleared or negative value falls back AT ALL
+      // — not what the fallback happens to be today.
+      final go = _financialProductsDefaults();
+      expect(FeatureFlags.upliftApplicationMaxImages,
+          go?['defaultApplicationMaxImages'] ?? 3);
       expect(FeatureFlags.mediaMaxImageMb, 10);
-      expect(FeatureFlags.upliftApplicationMaxDocuments, 5);
+      expect(FeatureFlags.upliftApplicationMaxDocuments,
+          go?['defaultApplicationMaxDocuments'] ?? 3);
     });
 
     test('non-numeric', () async {

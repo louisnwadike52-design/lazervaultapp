@@ -769,7 +769,7 @@ class UpliftImagePickerRow extends StatefulWidget {
     required this.onAdd,
     required this.onRemove,
     this.label = 'Photos',
-    this.maxItems = 8,
+    this.maxItems = 3,
     this.allowDocuments = false,
     this.onUploadingChanged,
     super.key,
@@ -1012,7 +1012,12 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
         Text(
           _atLimit
               ? 'Maximum of ${widget.maxItems} reached — remove one to add another.'
-              : '${widget.urls.length} of ${widget.maxItems}',
+              // "0 of 3" reads like a checklist with three boxes to tick.
+              // These attachments are OPTIONAL and the number is a ceiling,
+              // so say so: nothing here is required to submit.
+              : widget.urls.isEmpty
+                  ? 'Optional · up to ${widget.maxItems}'
+                  : '${widget.urls.length} added · up to ${widget.maxItems}',
           style: TextStyle(
             color: _atLimit ? kUpWarning : kUpTextSecondary,
             fontSize: 11,

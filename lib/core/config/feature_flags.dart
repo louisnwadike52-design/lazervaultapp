@@ -1110,12 +1110,12 @@ class FeatureFlags {
 
   /// How many photos a LazerFund application may attach. Default 8.
   static int get upliftApplicationMaxImages =>
-      _positiveSetting(upliftApplicationMaxImagesKey, 8, cap: 30);
+      _positiveSetting(upliftApplicationMaxImagesKey, 3, cap: 30);
 
   /// How many documents (pitch deck, accounts) an application may attach.
   /// Default 5.
   static int get upliftApplicationMaxDocuments =>
-      _positiveSetting(upliftApplicationMaxDocumentsKey, 5, cap: 20);
+      _positiveSetting(upliftApplicationMaxDocumentsKey, 3, cap: 20);
 
   /// Largest image or PDF any uploader will send, in MB. Default 10.
   ///
