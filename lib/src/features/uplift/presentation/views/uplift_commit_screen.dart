@@ -347,8 +347,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
           color: kUpCard,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: kUpDivider)),
+          borderRadius: BorderRadius.circular(12)),
       child: Row(children: [
         Container(
           width: 40,

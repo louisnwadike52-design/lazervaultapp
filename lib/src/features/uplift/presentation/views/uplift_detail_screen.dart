@@ -976,10 +976,10 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
+            // The 10% status tint is the signal. A 35% outline of the same
+            // hue on top of it adds nothing but an edge.
             color: _terminalColour(f.status).withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-                color: _terminalColour(f.status).withValues(alpha: 0.35)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1281,7 +1281,6 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
           decoration: BoxDecoration(
             color: kUpSuccess.withOpacity(0.12),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kUpSuccess.withOpacity(0.4)),
           ),
           child: Column(children: [
             Row(children: const [
@@ -1344,7 +1343,6 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
           decoration: BoxDecoration(
             color: kUpPrimary.withOpacity(0.12),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kUpPrimary.withOpacity(0.4)),
           ),
           child: Row(children: const [
             Icon(Icons.hourglass_top, color: kUpPrimarySoft),
@@ -1365,9 +1363,8 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: kUpCard,
+            color: kUpPrimary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kUpPrimary.withValues(alpha: 0.4)),
           ),
           child: Row(children: const [
             Icon(Icons.workspace_premium_outlined, color: kUpPrimarySoft),
@@ -1388,9 +1385,8 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: kUpCard,
+            color: kUpWarning.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kUpWarning.withValues(alpha: 0.4)),
           ),
           child: Row(children: const [
             Icon(Icons.event_busy_outlined, color: kUpWarning),
@@ -1442,7 +1438,6 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
             decoration: BoxDecoration(
               color: kUpCard,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: kUpDivider),
             ),
             child: Row(children: [
               const Icon(Icons.info_outline, color: kUpTextSecondary),

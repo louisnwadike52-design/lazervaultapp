@@ -297,4 +297,24 @@ extension _DepositMethodMeta on _DepositMethod {
         return Icons.credit_card;
     }
   }
+
+  /// The id banking-service uses for this rail in `GetDepositMethods`, or null
+  /// where the server does not speak for it.
+  ///
+  /// Bank Transfer and Link Bank are deliberately null. The server's method
+  /// list is per-country and, for Nigeria, contains only `card` — so matching
+  /// them by name would find nothing and report them unavailable, taking the
+  /// two rails that DO work off the screen. The server answers for the
+  /// hosted-checkout rails; the rest keep the app's own rules.
+  String? get serverRailId {
+    switch (this) {
+      case _DepositMethod.card:
+        return 'card';
+      case _DepositMethod.applePay:
+        return 'apple_pay';
+      case _DepositMethod.linkAccount:
+      case _DepositMethod.bankTransfer:
+        return null;
+    }
+  }
 }

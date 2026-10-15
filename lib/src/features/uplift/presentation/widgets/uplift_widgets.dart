@@ -64,7 +64,7 @@ class UpEquityChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: kUpPrimary.withOpacity(0.16),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: kUpPrimarySoft.withOpacity(0.4)),
+          // No outline: the tinted fill is what makes this read as a pill.
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(icon, size: 12, color: kUpPrimarySoft),
@@ -220,7 +220,8 @@ class UpAppBarIconButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: color.withValues(alpha: 0.1),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          // A 10%-white outline on a filled circle is invisible at this
+          // size on anything but a perfectly dim screen.
         ),
         child: Icon(icon, color: color, size: 17.sp),
       ),
@@ -424,7 +425,7 @@ class UpStatusChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.withOpacity(0.15),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: c.withOpacity(0.4)),
+        // No outline: the status colour fill carries the meaning on its own.
       ),
       child: Text(label,
           style: GoogleFonts.inter(
@@ -463,10 +464,13 @@ class UpliftFundCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: kUpCard,
         borderRadius: BorderRadius.circular(14),
-        // A 1px hairline at 18% opacity read as a rendering artefact rather
-        // than an edge. A flat, slightly lighter surface border separates the
-        // cards without drawing a box around each one.
-        border: Border.all(color: kUpDivider),
+        // NO BORDER ON A LISTING ROW. The kUpCard fill against the kUpBg page
+        // is a 21-point luminance step and already separates one row from the
+        // next; a kUpDivider outline on top of it adds a 14-point box around
+        // each one, and stacked down a list those boxes read as a ladder of
+        // faint artefacts rather than as structure. The earlier note here
+        // argued a flat border beat a translucent hairline — the answer was
+        // neither.
       ),
       child: Material(
         color: Colors.transparent,
@@ -992,9 +996,10 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
                   width: 72,
                   height: 72,
                   decoration: BoxDecoration(
+                      // The kUpCard fill is the target; an outline on top of
+                      // it is the same faint box as on the listing rows.
                       color: kUpCard,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: kUpDivider)),
+                      borderRadius: BorderRadius.circular(8)),
                   child: _uploading
                       ? const Center(
                           child: SizedBox(
@@ -1043,7 +1048,7 @@ class UpliftApplicationCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: kUpCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: kUpDivider),
+        // No outline — same rule as the fund rows above.
         boxShadow: const [
           BoxShadow(
               color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
@@ -1393,7 +1398,6 @@ class UpErrorState extends StatelessWidget {
               decoration: BoxDecoration(
                 color: kUpCard,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: kUpDivider),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1943,7 +1947,11 @@ class _UpliftVideoPickerRowState extends State<UpliftVideoPickerRow> {
             decoration: BoxDecoration(
               color: kUpCard,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: has ? kUpPrimary : kUpDivider),
+              // The purple edge MEANS "a file is attached" — the only place
+              // that fact is shown on this row. The empty state gets no
+              // outline at all, rather than the kUpDivider hairline, which
+              // was decoration pretending to be a state.
+              border: has ? Border.all(color: kUpPrimary) : null,
             ),
             child: Row(
               children: [

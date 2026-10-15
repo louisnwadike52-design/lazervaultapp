@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,6 +20,16 @@ class ReviewStep extends StatelessWidget {
   final String category;
   final DateTime? deadline;
   final String? imageUrl;
+
+  /// The image the user PICKED but which has not been uploaded yet.
+  ///
+  /// The cover is only uploaded when "Create Campaign" is pressed, so on this
+  /// screen [imageUrl] is empty for everybody who chose a photo from their
+  /// phone — which is nearly everybody. The review then showed the empty-state
+  /// gradient and the user was asked to confirm a campaign whose cover looked
+  /// like it had not been set. Previewing the local file costs nothing and is
+  /// what they are actually about to publish.
+  final File? imageFile;
   final Map<String, String> socialLinks;
 
   const ReviewStep({
@@ -31,6 +42,7 @@ class ReviewStep extends StatelessWidget {
     required this.category,
     required this.deadline,
     required this.imageUrl,
+    this.imageFile,
     this.socialLinks = const {},
   });
 
@@ -41,9 +53,18 @@ class ReviewStep extends StatelessWidget {
     return '$_currencySymbol $targetAmount';
   }
 
+  /// Date AND time. The deadline is an instant, and the review is the last
+  /// screen before it is committed — showing only the date here is how a
+  /// campaign closing at 12:00 AM looked identical to one closing at 11:59 PM
+  /// on the same day.
   String get _deadlineText {
-    if (deadline == null) return 'No deadline';
-    return '${deadline!.day}/${deadline!.month}/${deadline!.year}';
+    final d = deadline;
+    if (d == null) return 'No deadline';
+    final h24 = d.hour;
+    final h12 = h24 % 12 == 0 ? 12 : h24 % 12;
+    final mm = d.minute.toString().padLeft(2, '0');
+    final ampm = h24 < 12 ? 'AM' : 'PM';
+    return '${d.day}/${d.month}/${d.year}\n$h12:$mm $ampm';
   }
 
   @override
@@ -119,13 +140,25 @@ class ReviewStep extends StatelessWidget {
                 topLeft: Radius.circular(14.r),
                 topRight: Radius.circular(14.r),
               ),
+              // Remote first: a pasted URL is the one case where there is no
+              // local file. Otherwise the picked file, which is what the
+              // picked-photo path has at this point.
               child: imageUrl != null && imageUrl!.startsWith('http')
                   ? Image.network(
                       imageUrl!,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => _imagePlaceholder(),
                     )
-                  : _imagePlaceholder(),
+                  : imageFile != null
+                      ? Image.file(
+                          imageFile!,
+                          fit: BoxFit.cover,
+                          // A file that has been moved or cleared from the
+                          // cache since it was picked must not crash the
+                          // review of an otherwise complete campaign.
+                          errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                        )
+                      : _imagePlaceholder(),
             ),
           ),
           Padding(
@@ -259,8 +292,12 @@ class ReviewStep extends StatelessWidget {
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
                     color: valueColor,
+                    height: 1.25,
                   ),
-                  maxLines: 1,
+                  // Two, because the deadline is now "date \n time". A goal
+                  // still occupies one and the tiles stay the same height,
+                  // since both sit in the same Row.
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],

@@ -143,6 +143,44 @@ class DepositCubit extends Cubit<DepositState> {
     }
   }
 
+  /// The rails banking-service reports as CLOSED right now, by its own id
+  /// ("card", "apple_pay"). Empty when nothing is closed, unknown, or the read
+  /// failed.
+  ///
+  /// EMITS NOTHING. [loadDepositMethods] above emits `DepositFailure` when the
+  /// read fails, and on the deposit landing that renders as a failed deposit —
+  /// a screen-filling error because a cosmetic list could not be fetched. This
+  /// read is asked on arrival, so it has to be silent: the caller decides what
+  /// to do with the answer and keeps offering every rail when there is none.
+  ///
+  /// FAILING OPEN IS CORRECT HERE. The gate this feeds is the OFFER, not the
+  /// stop — banking-service refuses a closed rail in InitiateDeposit whatever
+  /// the app shows, so the worst case is a user who taps Card and is told
+  /// clearly why it cannot be used, instead of a user who cannot deposit at
+  /// all because a list fetch timed out.
+  Future<Set<String>> fetchClosedRails({
+    required String countryCode,
+    required String currency,
+  }) async {
+    if (isClosed) return const <String>{};
+    try {
+      final result = await _initiateDepositUseCase.getDepositMethods(
+        countryCode: countryCode,
+        currency: currency,
+      );
+      return result.fold(
+        (_) => const <String>{},
+        (methods) => methods
+            .where((m) => !m.available)
+            .map((m) => m.id.trim().toLowerCase())
+            .where((id) => id.isNotEmpty)
+            .toSet(),
+      );
+    } catch (_) {
+      return const <String>{};
+    }
+  }
+
   /// Called when the Flutterwave WebView redirect is intercepted
   void onPaymentCompleted(String depositId) {
     // WebSocket subscription should already be active from initiateDeposit

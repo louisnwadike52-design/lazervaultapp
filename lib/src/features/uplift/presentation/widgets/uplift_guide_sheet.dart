@@ -33,9 +33,12 @@ class _UpliftGuideSheet extends StatelessWidget {
       expand: false,
       builder: (context, controller) => Container(
         decoration: BoxDecoration(
+          // No outline. Border.all on a sheet whose bottom runs off the
+          // screen draws three edges and a line across the bottom of the
+          // phone; the rounded top and the fill are what separate it from the
+          // page behind.
           color: kUpBg,
           borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
-          border: Border.all(color: kUpPrimary.withValues(alpha: 0.25)),
         ),
         child: Column(
           children: [
@@ -179,7 +182,6 @@ class _SideCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: kUpCard,
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: kUpPrimary.withValues(alpha: 0.22)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,8 +294,9 @@ class _Step extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: kUpPrimary.withValues(alpha: 0.16),
-                  border: Border.all(color: kUpPrimary.withValues(alpha: 0.5)),
+                  // A 24px circle with a tinted fill needs no ring; at this
+                  // size the ring is most of what you see.
+                  color: kUpPrimary.withValues(alpha: 0.22),
                 ),
                 child: Text(
                   '$index',
@@ -354,9 +357,10 @@ class _MoneyBlock extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: kUpCard,
+          // The success hue moves into the fill, so the block still reads as
+          // the reassuring one without an edge around it.
+          color: kUpSuccess.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: kUpSuccess.withValues(alpha: 0.28)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

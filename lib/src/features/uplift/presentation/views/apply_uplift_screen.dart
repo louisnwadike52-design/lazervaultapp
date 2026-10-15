@@ -363,8 +363,11 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
       decoration: BoxDecoration(
         color: kUpCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: kUpPrimary.withOpacity(_offerEquity ? 0.4 : 0.12)),
+        // Outlined only while the section is ON — same rule as the create
+        // screen's equity block.
+        border: _offerEquity
+            ? Border.all(color: kUpPrimary.withOpacity(0.4))
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

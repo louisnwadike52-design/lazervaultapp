@@ -40,6 +40,7 @@ import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono
 import 'package:lazervault/src/features/open_banking/domain/entities/deposit.dart';
 import 'package:lazervault/src/features/funds/data/services/mono_institutions_service.dart';
 import 'package:lazervault/src/features/funds/domain/services/pending_deposit.dart';
+import 'package:lazervault/core/shared_widgets/service_unavailable_modal.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/pay_by_transfer_card.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/flutterwave_payment_webview.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/recurring_access_toggle.dart';
@@ -232,6 +233,51 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   // screen instance (persisted per-user so it's shown once, ever).
   bool _refreshGuideChecked = false;
 
+  /// Rails banking-service reports as CLOSED, by its own id ("card",
+  /// "apple_pay"). Read once on arrival and again whenever the screen resumes,
+  /// because an operator can close a rail while the app sits in the background.
+  ///
+  /// Starts EMPTY, which means "offer everything". The read is silent and
+  /// fails open: this is the OFFER, and the stop is banking-service refusing
+  /// the rail in InitiateDeposit. A list fetch that times out must not be the
+  /// reason somebody cannot fund their wallet.
+  Set<String> _closedRails = const <String>{};
+
+  /// Asks the server which rails are closed. Silent on failure — see
+  /// [DepositCubit.fetchClosedRails] for why this does not go through the
+  /// cubit's state machine.
+  Future<void> _refreshClosedRails() async {
+    if (!mounted) return;
+    final closed = await serviceLocator<DepositCubit>().fetchClosedRails(
+      countryCode: _countryCodeForCurrency(_currency),
+      currency: _currency,
+    );
+    if (!mounted || closed == _closedRails) return;
+    setState(() => _closedRails = closed);
+  }
+
+  /// Why this method cannot be used right now, or null when it can.
+  ///
+  /// The tile stays on screen and explains itself on tap rather than
+  /// disappearing. A payment method that silently vanishes reads as a bug —
+  /// especially to somebody who used it last week — and produces exactly the
+  /// support ticket the switch was meant to prevent.
+  String? _methodClosedReason(_DepositMethod method) {
+    final id = method.serverRailId;
+    if (id == null || !_closedRails.contains(id)) return null;
+    switch (method) {
+      case _DepositMethod.card:
+        return 'Card payments are not being accepted at the moment. '
+            '${_isNGN ? 'You can still add money by bank transfer or from a linked bank account.' : 'Please try again later.'}';
+      case _DepositMethod.applePay:
+        return 'Apple Pay is not available at the moment. '
+            'Please try another method or check back later.';
+      case _DepositMethod.linkAccount:
+      case _DepositMethod.bankTransfer:
+        return null;
+    }
+  }
+
   /// Get currency from selected card
   String get _currency {
     final currency = widget.selectedCard['currency'] as String? ?? 'GBP';
@@ -275,6 +321,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         MandateAuthAttemptStore.hydrate();
       });
     }
+    // Which rails the server says are closed. Fire-and-forget: the list is
+    // already on screen with everything offered, and a closed rail is dimmed
+    // when the answer lands rather than the screen waiting on it.
+    // ignore: discarded_futures
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshClosedRails());
     // Listen to amount changes to update button state
     _amountController.addListener(_onAmountChanged);
 
@@ -456,7 +507,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     // banking app. They return expecting the card to reflect what they just
     // did, and nothing here was listening — so a completed setup kept showing
     // as unfinished until the screen happened to be rebuilt.
-    if (state == AppLifecycleState.resumed) _loadUserMandates();
+    if (state == AppLifecycleState.resumed) {
+      _loadUserMandates();
+      // An operator can close a rail while the app sits in the background, and
+      // the next thing the user does is tap a method. Re-read on return so the
+      // offer is no more than one resume stale.
+      // ignore: discarded_futures
+      _refreshClosedRails();
+    }
   }
 
   void _loadUserMandates() {
@@ -1049,9 +1107,23 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
   Widget _buildMethodCard(_DepositMethod method, bool isLoading) {
     final accent = const Color.fromARGB(255, 78, 3, 208);
-    return InkWell(
+    final closedReason = _methodClosedReason(method);
+    final isClosed = closedReason != null;
+    return Opacity(
+      // Dimmed, not hidden, and not disabled either — it still takes the tap,
+      // because the answer to "why can't I use my card" is the point.
+      opacity: isClosed ? 0.55 : 1,
+      child: InkWell(
       borderRadius: BorderRadius.circular(14.r),
-      onTap: isLoading ? null : () => _openDepositMethodGated(method),
+      onTap: isLoading
+          ? null
+          : isClosed
+              ? () => showServiceUnavailableModal(
+                    context,
+                    serviceName: method.label,
+                    message: closedReason,
+                  )
+              : () => _openDepositMethodGated(method),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
@@ -1099,7 +1171,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    method.subtitle,
+                    // Dimming alone is not a message — it reads as a styling
+                    // choice, and on a bright screen outdoors it is invisible.
+                    isClosed
+                        ? 'Not available right now — tap to see why'
+                        : method.subtitle,
                     style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12.sp),
@@ -1111,6 +1187,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 color: Colors.white.withValues(alpha: 0.4), size: 22.sp),
           ],
         ),
+      ),
       ),
     );
   }

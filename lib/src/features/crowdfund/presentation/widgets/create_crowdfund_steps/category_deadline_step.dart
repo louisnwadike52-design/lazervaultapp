@@ -126,7 +126,7 @@ class CategoryDeadlineStep extends StatelessWidget {
                 children: [
                   Text(
                     selectedDeadline != null
-                        ? '${selectedDeadline!.day}/${selectedDeadline!.month}/${selectedDeadline!.year}'
+                        ? _fmtDeadline(selectedDeadline!)
                         : 'Select deadline',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
@@ -158,7 +158,17 @@ class CategoryDeadlineStep extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 32.h),
+          SizedBox(height: 8.h),
+          Text(
+            'Pick a date, then a time. If you skip the time it is set to '
+            '12:00 AM on that day — so choosing today needs a time later today.',
+            style: GoogleFonts.inter(
+              fontSize: 11.5.sp,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF6B7280),
+            ),
+          ),
+          SizedBox(height: 24.h),
 
           // Public-by-default explainer (no visibility selector — every
           // campaign is publicly discoverable, and anyone with the
@@ -213,12 +223,34 @@ class CategoryDeadlineStep extends StatelessWidget {
     );
   }
 
+  /// Date + 12-hour time, so "12:00 AM" in the copy is what the user sees back.
+  static String _fmtDeadline(DateTime d) {
+    final h24 = d.hour;
+    final h12 = h24 % 12 == 0 ? 12 : h24 % 12;
+    final mm = d.minute.toString().padLeft(2, '0');
+    final ampm = h24 < 12 ? 'AM' : 'PM';
+    return '${d.day}/${d.month}/${d.year} · $h12:$mm $ampm';
+  }
+
+  /// Picks the deadline DATE and then its TIME.
+  ///
+  /// The time step used to not exist, and that is what made campaign creation
+  /// fail: a date-only deadline is MIDNIGHT on that day, so choosing today
+  /// produced an instant that had already passed. The backend refused it with
+  /// "deadline must be in the future" while the user was looking at today's
+  /// date on the screen, which reads as a broken server rather than a time
+  /// they never chose.
+  ///
+  /// Mirrors the Lazerfunds picker exactly, including the rule that cancelling
+  /// the time step is a CHOICE ("12:00 AM is fine") rather than a cancellation
+  /// of the whole selection.
   Future<void> _selectDeadline(BuildContext context) async {
+    final now = DateTime.now();
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().add(const Duration(days: 30)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialDate: selectedDeadline ?? now.add(const Duration(days: 30)),
+      firstDate: DateTime(now.year, now.month, now.day),
+      lastDate: now.add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -231,8 +263,68 @@ class CategoryDeadlineStep extends StatelessWidget {
         );
       },
     );
-    if (picked != null) {
-      onDeadlineChanged(picked);
+    if (picked == null || !context.mounted) return;
+
+    final isToday =
+        picked.year == now.year && picked.month == now.month && picked.day == now.day;
+
+    final time = await showTimePicker(
+      context: context,
+      // On today, midnight is already gone, so opening on it would invite
+      // exactly the refusal below. Start an hour out instead — still the
+      // user's choice, just not a pre-filled impossibility.
+      initialTime: selectedDeadline != null
+          ? TimeOfDay.fromDateTime(selectedDeadline!)
+          : (isToday
+              ? TimeOfDay.fromDateTime(now.add(const Duration(hours: 1)))
+              : const TimeOfDay(hour: 0, minute: 0)),
+      helpText: 'Deadline time — 12:00 AM if you skip this',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF4E03D0),
+              surface: Color(0xFF1F1F1F),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (!context.mounted) return;
+
+    final chosen = time ?? const TimeOfDay(hour: 0, minute: 0);
+    final at = DateTime(
+        picked.year, picked.month, picked.day, chosen.hour, chosen.minute);
+
+    if (!at.isAfter(DateTime.now())) {
+      // The 12:00-AM-today case, and any other backwards pick. Name the
+      // instant that was produced, so the message is about what they did
+      // rather than about a date that looks perfectly valid.
+      _say(
+          context,
+          time == null
+              ? '12:00 AM today has already passed. Pick a time later today, '
+                  'or choose another day.'
+              : '${_fmtDeadline(at)} has already passed. Pick a time in the '
+                  'future.');
+      return;
     }
+
+    onDeadlineChanged(at);
+    if (time == null) {
+      _say(context,
+          'Deadline set to ${_fmtDeadline(at)} — the default when no time is chosen.');
+    }
+  }
+
+  static void _say(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF1F1F1F),
+      ),
+    );
   }
 }

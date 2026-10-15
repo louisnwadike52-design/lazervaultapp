@@ -1627,13 +1627,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                             onPayment: canPay
                                 ? () => _navigateToMakePayment(contribution)
                                 : null,
-                            // Only the person who may edit the contribution
-                            // can start it — the same gate the server
-                            // applies — so a member never sees a button
-                            // that would come back refused.
-                            onOpen: isAdmin && contribution.awaitingOpen
-                                ? () => _confirmOpenEsusu(contribution)
-                                : null,
+                            // Starting an esusu is NOT offered from this
+                            // list. It locks the roster and fixes the payout
+                            // rotation permanently, so it belongs on the
+                            // details page beside the roster it freezes —
+                            // tapping the row goes straight there.
                           ),
                         ),
                       );
@@ -1859,52 +1857,12 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   /// creator who taps it expecting "save" and finds a locked circle has no
   /// way back, so the dialog leads with the irreversible part rather than
   /// burying it.
-  /// Start an esusu, collecting the schedule it will run on.
-  ///
-  /// This used to be a confirm dialog with no input: the schedule had already
-  /// been chosen in the creation wizard, often days earlier, so a circle could
-  /// start with most of its window already spent. The sheet asks for the cycle
-  /// length and the number of cycles HERE, and the dates are counted from the
-  /// moment it actually starts.
-  Future<void> _confirmOpenEsusu(Contribution contribution) async {
-    final activeMembers = contribution.members
-        .where((m) => m.membershipStatus == ContributionMembershipStatus.active)
-        .toList();
-
-    final choice = await showStartEsusuSheet(
-      context,
-      contribution: contribution,
-      activeMembers: activeMembers.length,
-      rotationNames: activeMembers
-          .map((m) => m.userName.trim())
-          .where((n) => n.isNotEmpty)
-          .toList(),
-    );
-    if (choice == null || !mounted) return;
-
-    final cubit = context.read<GroupAccountCubit>();
-    final error = await cubit.openEsusu(
-      contribution.id,
-      groupId: widget.groupId,
-      frequency: choice.frequency,
-      totalCycles: choice.totalCycles,
-      // The date the creator just approved on screen, rather than one derived
-      // a moment later on the server — they must match.
-      deadline: choice.endsOn,
-    );
-    if (!mounted || error == null) return;
-    // The refusals that land here are actionable — "needs at least 2 members",
-    // "set the amount each member pays" — so they are shown verbatim rather
-    // than replaced with a generic failure.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(error),
-        backgroundColor: const Color(0xFFEF4444),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-      ),
-    );
-  }
+  // _confirmOpenEsusu lived here and was the list row's green "Start esusu"
+  // button. Removed with the button: starting a circle locks the roster and
+  // fixes the payout rotation for its whole life, and the identical flow
+  // (showStartEsusuSheet → openEsusu) lives on contribution_details_screen,
+  // beside the roster and schedule it freezes. Two copies of an irreversible
+  // action is one too many.
 
   /// Why the group's own admin cannot leave, and what to do instead.
   ///

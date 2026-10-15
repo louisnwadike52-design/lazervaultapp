@@ -227,8 +227,7 @@ class _UpliftOfferScreenState extends State<UpliftOfferScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                   color: kUpCard,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: kUpDivider)),
+                  borderRadius: BorderRadius.circular(10)),
               child: Column(children: [
                 _feeRow('Gross disbursement',
                     upNaira(_fee!.gross.toInt(), widget.currency)),

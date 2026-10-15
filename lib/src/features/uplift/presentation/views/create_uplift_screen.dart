@@ -590,7 +590,6 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
           decoration: BoxDecoration(
             color: kUpCard,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kUpDivider),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -681,8 +680,11 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
       decoration: BoxDecoration(
         color: kUpCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: kUpPrimary.withOpacity(_equityEnabled ? 0.4 : 0.12)),
+        // Outlined only while the section is ON, where the edge reinforces
+        // the switch. Off, a 12% hairline is an artefact, not a state.
+        border: _equityEnabled
+            ? Border.all(color: kUpPrimary.withOpacity(0.4))
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -23,7 +23,6 @@ class ContributionCard extends StatelessWidget {
   /// unopened esusu), and the CTA is not drawn at all — the same contract as
   /// [onPayment]: the parent owns the permission decision, so a member never
   /// sees a button that would be refused.
-  final VoidCallback? onOpen;
 
   const ContributionCard({
     this.currentUserId,
@@ -31,7 +30,6 @@ class ContributionCard extends StatelessWidget {
     required this.contribution,
     this.onTap,
     this.onPayment,
-    this.onOpen,
   });
 
   @override
@@ -257,41 +255,21 @@ class ContributionCard extends StatelessWidget {
                 // role-permission helper to decide whether the
                 // current user is allowed to contribute, so a
                 // viewer never sees the button at all.
-                // Open comes BEFORE Contribute and replaces it: until the
-                // circle starts, there is no cycle to pay into — the server
-                // charges nobody and pays nobody out — so offering
-                // "Contribute" would take money for a cycle that does not
-                // exist yet.
-                if (contribution.awaitingOpen && onOpen != null) ...[
-                  SizedBox(width: 12.w),
-                  ElevatedButton(
-                    onPressed: onOpen,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 16.w, vertical: 10.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.play_arrow_rounded, size: 16.sp),
-                        SizedBox(width: 6.w),
-                        Text(
-                          'Start esusu',
-                          style: GoogleFonts.inter(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ] else if (!isCompleted &&
+                //
+                // NO "Start esusu" HERE. Starting a circle locks the roster
+                // and sets the payout rotation for its whole life — it is the
+                // single most irreversible thing an admin does in this
+                // feature, and it was offered as a green button on a list row
+                // one careless thumb away. It lives on the details page, next
+                // to the roster and the schedule it fixes. The row still says
+                // "Not started", and tapping it goes exactly where the action
+                // is.
+                //
+                // A not-started circle shows NO button at all: there is no
+                // cycle to pay into yet — the server charges nobody and pays
+                // nobody out — so "Contribute" would take money for a cycle
+                // that does not exist.
+                if (!isCompleted &&
                     !contribution.awaitingOpen &&
                     onPayment != null) ...[
                   SizedBox(width: 12.w),

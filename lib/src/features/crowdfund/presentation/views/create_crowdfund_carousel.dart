@@ -592,6 +592,12 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                       category: _selectedCategory,
                       deadline: _selectedDeadline,
                       imageUrl: _imageUrlController.text,
+                      // The picked cover has not been uploaded yet at this
+                      // point — the upload happens inside
+                      // _proceedToCreateCrowdfund — so without this the
+                      // review showed a placeholder for every user who chose
+                      // a photo rather than pasting a URL.
+                      imageFile: _pickedImageFile,
                       socialLinks: _socialLinks,
                     ),
                   ],
