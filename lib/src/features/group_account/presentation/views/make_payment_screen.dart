@@ -334,6 +334,22 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
       if (mounted) setState(() => _isProcessing = false);
     }
 
+    // RUN THE FORM'S OWN VALIDATORS. THEY WERE DEAD CODE.
+    //
+    // _formKey is attached to the Form, and the amount field carries the
+    // overpay caps, the already-settled refusal and the fixed-share equality
+    // rule — but validate() was never called anywhere on this screen. So none
+    // of them ran: the only client-side check was `amount <= 0` below, and a
+    // member could type any figure at all, pass the PIN, and be refused by the
+    // server at the very end. That is the reported case — NGN 20,000 entered
+    // against a NGN 200 share.
+    //
+    // Validating here lights all of them at once, inline, before the PIN.
+    if (!(_formKey.currentState?.validate() ?? true)) {
+      abort();
+      return;
+    }
+
     // tryParse, never parse: a stray character must not throw mid-flow.
     final amount = double.tryParse(_amountController.text) ?? 0;
     if (amount <= 0) {
@@ -843,6 +859,22 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                   (fixed > 0 && _myMember!.cyclePaidAmount >= fixed);
               if (settled) {
                 return 'You have already paid your share for this cycle';
+              }
+            }
+            // FIXED-SHARE ESUSU: the amount must EQUAL the share.
+            //
+            // group-accounts refuses anything else outright ("rotating-savings
+            // payments must equal the per-member amount"), and this case had no
+            // client guard at all — only the allow-partial branch below did. So
+            // the one configuration that is strictest on the server was the one
+            // the app checked least.
+            if (_isRotatingSavings && !_allowsPartial) {
+              final fixed = _fixedRoscaAmount ?? 0;
+              if (fixed > 0 && (amount - fixed).abs() > 0.005) {
+                final cur = widget.contribution?.currency ?? '';
+                final shown = fixed.toStringAsFixed(
+                    fixed == fixed.truncateToDouble() ? 0 : 2);
+                return 'This esusu takes exactly $cur $shown per cycle';
               }
             }
             if (_isRotatingSavings && _allowsPartial && _myMember != null) {

@@ -353,14 +353,18 @@ class GroupContributionPdfService {
               _buildDetailRow('Amount Paid', '$currencySymbol$amount',
                   isBold: true),
               _buildDetailRow('Currency', _currencyNameFor(currency)),
-              // The payment reference (GRP-…) is the identifier a person can
-              // actually quote back to support. The raw row UUID is only shown
-              // when no reference exists, so the receipt always carries
-              // something traceable but never the internal id by preference.
-              _buildDetailRow(
-                referenceIsCustomerFacing ? 'Reference' : 'Transaction ID',
-                reference,
-              ),
+              // Only the CUSTOMER-FACING reference.
+              //
+              // When no reference exists this used to print the raw row UUID
+              // under a "Transaction ID" label — an internal id, mislabelled,
+              // on a document people screenshot and forward. It means nothing
+              // to the holder and cannot be quoted to support any more
+              // usefully than the date and amount already on the page.
+              //
+              // The id is still on the record and still in the CSV export,
+              // which is where reconciliation happens.
+              if (referenceIsCustomerFacing)
+                _buildDetailRow('Reference', reference),
               if (notes != null && notes.isNotEmpty)
                 _buildDetailRow('Notes', notes),
             ],

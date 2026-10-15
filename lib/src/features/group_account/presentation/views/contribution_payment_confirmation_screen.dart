@@ -374,7 +374,6 @@ class _ContributionPaymentConfirmationScreenState
     final p = widget.payment;
     final c = widget.contribution;
     final ref = p.transactionId?.trim() ?? '';
-    final paymentId = p.id.trim();
 
     return Container(
       width: double.infinity,
@@ -400,14 +399,27 @@ class _ContributionPaymentConfirmationScreenState
           _buildDetailRow('Contribution', c.title),
           if (p.userName.trim().isNotEmpty) _buildDetailRow('From', p.userName),
           if (ref.isNotEmpty) _buildDetailRow('Transaction Ref', ref),
-          if (paymentId.isNotEmpty && paymentId != ref)
-            _buildDetailRow('Payment ID', paymentId),
+          // Payment ID deliberately NOT shown.
+          //
+          // It is our internal row id. It means nothing to the person holding
+          // the receipt, it cannot be quoted to support any more usefully than
+          // the Transaction Ref directly above it, and on a document people
+          // screenshot and forward it is one more identifier to explain. The
+          // id is still on the record and still in the CSV export, which is
+          // where an operator reconciling a statement goes.
           if (p.notes != null && p.notes!.trim().isNotEmpty)
             _buildDetailRow('Notes', p.notes!),
           _buildDetailRow('Amount',
               '${(_currencySymbol(p.currency.isNotEmpty ? p.currency : c.currency))}${p.amount.toStringAsFixed(2)}'),
           _buildDetailRow('Currency',
               (p.currency.isNotEmpty ? p.currency : c.currency).toUpperCase()),
+          // WHERE THIS PAYMENT LEFT THE POT.
+          //
+          // A receipt that says only "you paid X" answers half the question
+          // somebody asks when they open it. These four say what the payment
+          // was FOR and what is left — the same numbers the contribution
+          // header shows, so the receipt and the screen agree.
+          ..._buildContributionProgressRows(c, p),
           // Divider before QR — same visual rhythm as the
           // transfer receipt.
           Divider(
@@ -450,6 +462,46 @@ class _ContributionPaymentConfirmationScreenState
         ],
       ),
     );
+  }
+
+  /// Target, new total, remaining, progress and deadline.
+  ///
+  /// Computed from the contribution as it stands AFTER this payment, because
+  /// that is what the person reading the receipt wants to know: not what the
+  /// pot was, but where their money just put it.
+  ///
+  /// Each row is omitted when the number is not meaningful rather than printed
+  /// as zero — a one-time goal with no deadline should not show "Deadline: —",
+  /// and a contribution with no target has no remaining to report.
+  List<Widget> _buildContributionProgressRows(Contribution c, dynamic p) {
+    final sym = _currencySymbol(c.currency);
+    final rows = <Widget>[];
+
+    final target = c.targetAmount;
+    if (target > 0) {
+      rows.add(_buildDetailRow('Target', '$sym${target.toStringAsFixed(2)}'));
+    }
+
+    // current_amount is the pot AFTER this payment landed — the screen is
+    // reached from the success path, and the contribution is re-read on the
+    // way in.
+    final total = c.currentAmount;
+    rows.add(_buildDetailRow('New total', '$sym${total.toStringAsFixed(2)}'));
+
+    if (target > 0) {
+      final remaining = (target - total).clamp(0, double.infinity);
+      rows.add(_buildDetailRow(
+          'Remaining', '$sym${remaining.toStringAsFixed(2)}'));
+      final pct = ((total / target) * 100).clamp(0, 100);
+      rows.add(_buildDetailRow('Progress', '${pct.toStringAsFixed(0)}%'));
+    }
+
+    final deadline = c.deadline;
+    rows.add(_buildDetailRow(
+        c.isRotatingSavings ? 'Cycle ends' : 'Deadline',
+        DateFormat('d MMM yyyy').format(deadline.toLocal())));
+
+    return rows;
   }
 
   Widget _buildDetailRow(String label, String value) {

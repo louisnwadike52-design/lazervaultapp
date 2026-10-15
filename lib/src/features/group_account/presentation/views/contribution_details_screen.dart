@@ -31,6 +31,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../widgets/mention_picker.dart';
 import '../utils/group_funds_palette.dart';
 import '../widgets/full_text_details_dialog.dart';
+import '../widgets/auto_debit_attempts_sheet.dart';
 part 'contribution_details_sheets.dart';
 part 'contribution_details_banners.dart';
 part 'contribution_details_payment_widgets.dart';
@@ -818,13 +819,63 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     showDialog(
       context: context,
       useRootNavigator: false,
-      builder: (_) => _StatusDetailDialog(
+      builder: (dialogCtx) => _StatusDetailDialog(
         accent: accent,
         icon: hasPaid ? Icons.check_circle : Icons.bolt,
         title: title,
         sections: sections,
+        // The dialog answers "what happened to ME". This opens the rest of the
+        // cycle — every member's auto-debit state — which is the question an
+        // admin actually has when a pot is short, and which a member asking
+        // "is it just me?" wants too.
+        primaryAction: _DialogAction(
+          label: 'See all attempts this cycle',
+          onTap: () {
+            Navigator.of(dialogCtx).pop();
+            _showAutoDebitAttemptsSheet(contribution);
+          },
+        ),
       ),
     );
+  }
+
+  /// Every member's auto-debit state for the current cycle.
+  ///
+  /// A BOTTOM SHEET rather than another dialog: this is a list that can run to
+  /// the length of the roster, and it is reached by drilling in rather than by
+  /// being interrupted.
+  ///
+  /// Built from the roster already loaded — each ContributionMember carries its
+  /// own autoCharge status, attempt count, last attempt and last error — so it
+  /// costs no extra round-trip and cannot disagree with the Members tab.
+  void _showAutoDebitAttemptsSheet(Contribution contribution) {
+    final members = contribution.members
+        .where((m) => m.isActiveParticipant)
+        .toList()
+      // Anything that needs attention first: exhausted, then failed, then
+      // pending, then the ones that went through. A list sorted by name buries
+      // the one row somebody opened this to find.
+      ..sort((a, b) => _autoChargeRank(a).compareTo(_autoChargeRank(b)));
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => AutoDebitAttemptsSheet(
+        contribution: contribution,
+        members: members,
+        cycle: contribution.currentCycle ?? 1,
+      ),
+    );
+  }
+
+  /// Sort weight: the rows that need a human come first.
+  int _autoChargeRank(ContributionMember m) {
+    if (m.autoChargeExhausted) return 0;
+    if (m.autoChargeTriedAndFailed) return 1;
+    if (m.autoChargeStatus == 'pending') return 2;
+    if (m.autoChargeStatus.startsWith('succ')) return 4;
+    return 3;
   }
 
   Widget _buildHeader(Contribution contribution) {
@@ -2963,6 +3014,46 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFFFB923C),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if ((member?.missedCycles ?? 0) > 0) ...[
+                        // CYCLES BEHIND. This number existed and was shown
+                        // NOWHERE.
+                        //
+                        // missed_cycles is incremented server-side every time a
+                        // cycle closes with the member unpaid, and until now it
+                        // drove exactly one thing: the ordering of the payout
+                        // receiver picker. Nobody could see it. A member could
+                        // be three cycles behind and the roster showed the same
+                        // row as everyone else, so the arrears that decide who
+                        // may collect the pot were invisible to the people they
+                        // apply to.
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFEF4444).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.history_toggle_off,
+                                  size: 10.sp, color: const Color(0xFFEF4444)),
+                              SizedBox(width: 3.w),
+                              Text(
+                                member!.missedCycles == 1
+                                    ? '1 cycle behind'
+                                    : '${member.missedCycles} cycles behind',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFEF4444),
                                 ),
                               ),
                             ],

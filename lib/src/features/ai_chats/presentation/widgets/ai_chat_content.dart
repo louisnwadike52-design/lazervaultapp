@@ -2496,11 +2496,20 @@ class _AiChatContentState extends State<AiChatContent>
               children: [
                 _buildAttachButton(),
                 SizedBox(width: 8.w),
-                _buildMicButton(),
-                SizedBox(width: 8.w),
                 Expanded(child: _buildTextField()),
                 SizedBox(width: 8.w),
-                _buildSendButton(),
+                // ONE trailing control, not two.
+                //
+                // Mic and Send both sat on the bar at all times: Send was dead
+                // grey until you typed, and Mic stayed there competing with it
+                // once you had. Two buttons where only one is ever usable is
+                // the clutter, and it cost the text field width on a phone.
+                //
+                // The convention every major messenger settled on is a single
+                // slot that swaps — mic while the box is empty, send the moment
+                // there is something to send — so the control under the thumb
+                // is always the one that does the thing you are about to do.
+                _buildTrailingInputAction(),
               ],
             ),
         ],
@@ -2651,6 +2660,27 @@ class _AiChatContentState extends State<AiChatContent>
     );
   }
 
+  /// The single trailing control: mic when there is nothing to send, send
+  /// once there is.
+  ///
+  /// Keyed on the same condition the send button already used for its enabled
+  /// state, so an attachment with no text still offers Send — you can send a
+  /// file without typing, and showing a mic there would hide the only way to
+  /// post it.
+  Widget _buildTrailingInputAction() {
+    final hasSomethingToSend =
+        _messageController.text.trim().isNotEmpty || _isAttaching;
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 140),
+      transitionBuilder: (child, anim) =>
+          ScaleTransition(scale: anim, child: FadeTransition(opacity: anim, child: child)),
+      child: hasSomethingToSend
+          ? KeyedSubtree(
+              key: const ValueKey('send'), child: _buildSendButton())
+          : KeyedSubtree(key: const ValueKey('mic'), child: _buildMicButton()),
+    );
+  }
+
   Widget _buildMicButton() {
     return GestureDetector(
       onTap: _toggleRecording,
@@ -2756,7 +2786,9 @@ class _AiChatContentState extends State<AiChatContent>
           if (looksLikePin != _isPinMode) {
             setState(() => _isPinMode = looksLikePin);
           } else {
-            setState(() {}); // Update Send button state
+            // Rebuilds the trailing slot so it swaps mic <-> send as soon
+            // as the box stops (or starts) being empty.
+            setState(() {});
           }
         },
         decoration: InputDecoration(
