@@ -241,10 +241,20 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
   String get _bankName =>
       (widget.accountArgs['bankName'] as String?)?.trim() ?? '';
 
+  /// The card face's gradient.
+  ///
+  /// SAVINGS USES THE PERSONAL PALETTE. It was sky-blue into blue, which is
+  /// the only card face in this sheet that does not sit in the brand's purple
+  /// range — and the card's own contents argue against it: the account-number
+  /// and share controls on it are drawn in #9B6DFF, so the accents were
+  /// purple on a blue field while the sheet behind stayed near-black with
+  /// purple tabs. Personal and savings now read as the same product, which is
+  /// what they are to the person holding them; the other types keep their own
+  /// colour because they are genuinely different things.
   List<Color> get _activeGradient {
     switch (_accountType.toLowerCase()) {
       case 'savings':
-        return const [Color(0xFF0EA5E9), Color(0xFF2563EB)];
+        return const [Color(0xFF4E03D0), Color(0xFF4F46E5)];
       case 'investment':
         return const [Color(0xFF059669), Color(0xFF0D9488)];
       case 'family':

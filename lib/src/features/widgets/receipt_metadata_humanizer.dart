@@ -98,8 +98,54 @@ HumanizedReceiptEntry? humanizeReceiptMetadataEntry(
     return null;
   }
 
+  // AN AUTOSAVE RECEIPT SHOULD SAY WHAT ACTUALLY TRIGGERED THE SAVE.
+  //
+  // The backend stores the wire value — `scheduled`, `external_inflow`,
+  // `scheduled_external` — and the receipt printed it as-is: "Trigger ·
+  // Scheduled". That tells the user nothing they did not already know from
+  // the word AutoSave, and critically it does not distinguish the two cases
+  // that matter to them: money moved INSIDE Lazervault, or money PULLED FROM
+  // A LINKED BANK (which carries a bank-debit fee and can fail at the bank).
+  //
+  // The app already owns one canonical vocabulary for these — the picker, the
+  // history chips and the rule screens all read it. The receipt was the one
+  // surface still showing the raw key, so the document a user keeps was the
+  // least specific thing in the product.
+  if (lk == 'trigger' || lk == 'trigger_type' || lk == 'autosave_trigger') {
+    final friendly = _autoSaveTriggerName(value);
+    if (friendly != null) return HumanizedReceiptEntry('Trigger', friendly);
+  }
+
   final label = formatKey != null ? formatKey(key) : key;
   return HumanizedReceiptEntry(label, value);
+}
+
+/// Wire trigger value → the name the rest of the app uses for it.
+///
+/// Deliberately a local table rather than an import: this humanizer is shared
+/// by every receipt surface including the PDF builders, and reaching into the
+/// autosave feature from here would couple the receipt layer to it. The names
+/// are pinned against AutoSaveTriggerLabels by test, so the two cannot drift
+/// in silence.
+///
+/// An unrecognised value returns null and falls through to the ordinary
+/// formatting, so a trigger added server-side before the app knows about it
+/// still prints something rather than nothing.
+String? _autoSaveTriggerName(String raw) {
+  switch (raw.trim().toLowerCase()) {
+    case 'on_deposit':
+      return 'On Wallet Deposit';
+    case 'scheduled':
+      return 'Scheduled from Wallet';
+    case 'round_up':
+      return 'Amount Spend';
+    case 'external_inflow':
+      return 'Bank Inflow';
+    case 'scheduled_external':
+      return 'Recurring Bank Debit';
+    default:
+      return null;
+  }
 }
 
 /// Running-balance snapshots (the account's position before/after the entry).
