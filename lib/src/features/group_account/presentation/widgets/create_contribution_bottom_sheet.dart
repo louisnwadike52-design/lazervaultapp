@@ -1897,7 +1897,15 @@ class _CreateContributionBottomSheetState
 
           // Core toggles (always visible)
           _buildSwitchTile(
-            title: 'Auto-Pay',
+            // "Auto-debit", not "Auto-Pay".
+            //
+            // The contribution details screen, the member-facing status chip,
+            // the failure notifications and the admin dashboard all call this
+            // auto-DEBIT — it takes money from the member. Only the creation
+            // wizard still said Auto-Pay, which reads like the opposite
+            // (paying out) and sits one line above Auto-Payout, which IS the
+            // opposite. Sentence case to match every other control label.
+            title: 'Auto-debit',
             subtitle: isRotatingSavings
                 // The debit runs at the START of each cycle, not at its close.
                 // Saying "when the cycle closes" described the old behaviour,
@@ -2265,7 +2273,7 @@ class _CreateContributionBottomSheetState
 
           _buildReviewCard([
             _ReviewItem(
-              'Auto-Pay',
+              'Auto-debit',
               _autoPayEnabled
                   ? (_selectedType == ContributionType.rotatingSavings
                       ? "On — we debit each member's share at cycle close"

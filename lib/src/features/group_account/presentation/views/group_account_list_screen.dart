@@ -849,25 +849,34 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       reorderIndex: reorderIndex,
     );
 
-    // Swipe left for the same actions. Deliberately NOT a swipe-to-delete
+    // Swipe RIGHT for the same actions. Deliberately NOT a swipe-to-delete
     // that acts on release: this list sits inside a horizontally-swiped tab
     // bar, so an over-travelled tab gesture would otherwise remove a group.
     // The swipe opens the menu and the row springs back.
+    //
+    // startToEnd, not endToStart. Left-swipe collided with the tab bar's own
+    // gesture — the tabs advance left-to-right, so a leftward drag that
+    // over-travelled landed on the card instead of the tab, and the affordance
+    // fought the navigation it sits inside. Swiping right moves against the
+    // tab gesture, so the two no longer compete for the same drag.
     return Dismissible(
       key: ValueKey('swipe-${group.id}'),
-      direction: DismissDirection.endToStart,
+      direction: DismissDirection.startToEnd,
       confirmDismiss: (_) async {
         _showGroupCardMenu(group);
         return false;
       },
-      background: const SizedBox.shrink(),
-      secondaryBackground: Align(
-        alignment: Alignment.centerRight,
+      // The hint rides on `background` now: Flutter draws that one for a
+      // startToEnd drag and `secondaryBackground` only for endToStart, so
+      // leaving the icon there would have shown nothing at all.
+      background: Align(
+        alignment: Alignment.centerLeft,
         child: Padding(
-          padding: EdgeInsets.only(right: 18.w),
+          padding: EdgeInsets.only(left: 18.w),
           child: Icon(Icons.more_horiz, color: Colors.grey[500], size: 20.sp),
         ),
       ),
+      secondaryBackground: const SizedBox.shrink(),
       child: card,
     );
   }

@@ -556,14 +556,53 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // invisible chip stealing half a row and pushing Role under the tab bar —
     // does not arise either. Only the gap above it is conditional, and a
     // changed padding value does not relocate anything.
-    final autoPayoutRow = autoPayoutChip == null
+    // "Previous cycles", beside auto-payout.
+    //
+    // The cycle history screen already existed and was reachable only from the
+    // overflow menu, which is where things go to not be found. It sits here
+    // because a rotation's past cycles are the natural companion to its next
+    // payout — same question ("what has this circle actually done"), one tap
+    // apart.
+    //
+    // Only once the circle has STARTED. Before that there is genuinely no
+    // history, and a CTA that opens an empty list teaches the user it is not
+    // worth tapping again.
+    final showCycles = contribution.isRotatingSavings && !contribution.awaitingOpen;
+    final cyclesChip = !showCycles
+        ? null
+        : _StatusChip(
+            icon: Icons.history_rounded,
+            iconColor: const Color(0xFF9CA3AF),
+            label: 'Cycles',
+            value: 'View past',
+            onTap: () => _openCyclesHistory(contribution),
+          );
+
+    final autoPayoutRow = autoPayoutChip == null && cyclesChip == null
         ? null
         : Padding(
             // Same 20.w gutter the chip row above uses — this sits OUTSIDE
             // that row's Padding, so it has to carry its own.
-            padding: EdgeInsets.fromLTRB(
-                20.w, _autoPayoutChipVisible ? 8.h : 0, 20.w, 0),
-            child: autoPayoutChip,
+            padding: EdgeInsets.fromLTRB(20.w,
+                (_autoPayoutChipVisible || cyclesChip != null) ? 8.h : 0, 20.w, 0),
+            // STATIC shape, whatever the auto-payout chip decides to render.
+            //
+            // Both slots are always in the tree when this row exists, so the
+            // auto-payout chip never changes position — moving it is what
+            // destroyed its State and produced the endless fetch-rebuild loop
+            // documented above. It collapses to SizedBox.shrink() on its own
+            // when it has nothing to say, which costs no height.
+            child: autoPayoutChip == null
+                ? cyclesChip
+                : Row(
+                    children: [
+                      Expanded(child: autoPayoutChip),
+                      if (cyclesChip != null) ...[
+                        SizedBox(width: 10.w),
+                        Expanded(child: cyclesChip),
+                      ],
+                    ],
+                  ),
           );
 
     Widget withAutoPayout(Widget row) => autoPayoutRow == null
@@ -1468,6 +1507,21 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// The server still has the final say — it refuses a member who is behind,
   /// a non-member, and any reassignment once the payout is in flight or
   /// settled — and its sentence is shown verbatim if it does.
+  /// Opens the cycle history, with the SAME cubit the overflow menu passes.
+  ///
+  /// The screen and the per-cycle sheets it opens both read the cycle list and
+  /// per-cycle detail RPCs off this instance; handing them a fresh one would
+  /// give them no loaded group and an empty list.
+  void _openCyclesHistory(Contribution contribution) {
+    final histCubit = context.read<GroupAccountCubit>();
+    Get.to(
+      () => BlocProvider<GroupAccountCubit>.value(
+        value: histCubit,
+        child: ContributionCyclesHistoryScreen(contribution: contribution),
+      ),
+    );
+  }
+
   Future<void> _showChangeReceiverFlow(Contribution contribution) async {
     final current = contribution.currentPayoutRecipient;
     final currentName = current == null

@@ -90,7 +90,7 @@ class _Step4AdvancedState extends State<Step4Advanced> {
 
               // Auto-Pay Switch
               _buildSwitchTile(
-                title: 'Auto-Pay',
+                title: 'Auto-debit',
                 subtitle: isRotatingSavings
                     ? 'Disabled for rotating savings transparency'
                     : 'Automatically process payments when due',

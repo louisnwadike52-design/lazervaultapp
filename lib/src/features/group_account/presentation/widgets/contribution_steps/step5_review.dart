@@ -131,7 +131,7 @@ class Step5Review extends StatelessWidget {
                 iconColor: const Color(0xFF4E03D0),
                 children: [
                   _buildReviewItem(
-                    'Auto-Pay',
+                    'Auto-debit',
                     formState.autoPayEnabled ? 'Enabled' : 'Disabled',
                     valueColor: formState.autoPayEnabled
                         ? const Color(0xFF10B981)

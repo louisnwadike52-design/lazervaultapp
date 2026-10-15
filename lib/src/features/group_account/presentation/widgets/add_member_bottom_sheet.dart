@@ -824,11 +824,23 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       );
       if (!mounted || link.url.isEmpty) return;
       final expiry = link.expiresAt != null
-          ? ' It expires on ${DateFormat('d MMM').format(link.expiresAt!.toLocal())}.'
+          ? '\n\nExpires ${DateFormat('d MMM').format(link.expiresAt!.toLocal())}.'
           : '';
       await SharePlus.instance.share(
         ShareParams(
-          text: 'Join "${widget.group.name}" on Lazervault: ${link.url}$expiry',
+          // ONE THING PER LINE, with the URL on its own.
+          //
+          // This was a single run-on sentence — invitation, link and expiry
+          // all glued together — which reads as a wall in a chat bubble and,
+          // worse, let the trailing "It expires on 5 Nov." sit hard against
+          // the URL. Several messengers auto-link greedily and swallow
+          // adjacent text into the href, so the recipient taps the link and
+          // gets a 404 for a URL with a sentence stuck on the end.
+          //
+          // A blank line around the URL is what keeps it a clean, tappable
+          // token in WhatsApp, iMessage and SMS alike.
+          text: 'Join "${widget.group.name}" on Lazervault.'
+              '\n\n${link.url}$expiry',
           subject: 'Join ${widget.group.name} on Lazervault',
           sharePositionOrigin: _shareOrigin(),
         ),
