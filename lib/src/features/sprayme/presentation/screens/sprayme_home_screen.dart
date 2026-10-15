@@ -1,4 +1,6 @@
 import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/invited_sessions_section.dart';
 import 'package:flutter/material.dart';
@@ -355,6 +357,33 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
             ],
           ),
         ),
+        // THE ASSISTANTS THIS SCREEN ALREADY HAD A BACKEND FOR.
+        //
+        // chat-sprayme-service exposes 32 tools — create/join/end a session,
+        // the leaderboard, participants, the gift catalogue, wallet balance,
+        // and the two money paths (confirm_spray_fund / confirm_spray_withdraw)
+        // — and DIRECT_ROUTES has carried both `lazerspray` and `sprayme` for
+        // as long as it has existed. None of it was reachable from here,
+        // because this screen was the only service landing with neither
+        // button, so the whole agent was stranded behind a route nothing
+        // pinned.
+        ServiceVoiceButton(
+          serviceName: 'sprayme',
+          iconColor: const Color(0xFF9CA3AF),
+          backgroundColor: const Color(0xFF9333EA),
+          buttonSize: 34.w,
+          iconSize: 17.sp,
+        ),
+        SizedBox(width: 8.w),
+        MicroserviceChatIcon(
+          serviceName: 'Lazerspray',
+          sourceContext: 'sprayme',
+          icon: Icons.chat_bubble_outline,
+          iconColor: const Color(0xFF9CA3AF),
+          size: 34,
+          iconSize: 17,
+        ),
+        SizedBox(width: 4.w),
         IconButton(
           onPressed: () {
             HapticFeedback.lightImpact();

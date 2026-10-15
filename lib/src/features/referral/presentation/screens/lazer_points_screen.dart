@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -81,6 +83,29 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
           ),
         ),
         centerTitle: true,
+        // The points tools live in chat-accounts-service
+        // (build_lazerpoints_tools: balance, worth, history, referral code)
+        // and are wired into the accounts agent — but this screen had no way
+        // to reach them, so "how many points do I have" only worked if the
+        // general classifier happened to pick accounts.
+        //
+        // Pinned to `accounts` rather than `lifestyle`: the lifestyle agent is
+        // travel (flights, hotels, tours) and knows nothing about points.
+        actions: [
+          const ServiceVoiceButton(
+            serviceName: 'accounts',
+            iconColor: Color(0xFF9CA3AF),
+            backgroundColor: Color(0xFF4E03D0),
+          ),
+          SizedBox(width: 8.w),
+          const MicroserviceChatIcon(
+            serviceName: 'Lazerpoints',
+            sourceContext: 'accounts',
+            icon: Icons.chat_bubble_outline,
+            iconColor: Color(0xFF9CA3AF),
+          ),
+          SizedBox(width: 8.w),
+        ],
       ),
       body: BlocConsumer<ReferralCubit, ReferralState>(
         listener: (context, state) {
