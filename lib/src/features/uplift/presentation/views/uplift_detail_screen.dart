@@ -561,12 +561,11 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
                   showUpliftImageViewer(context, f.coverImageUrl, f.title),
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(f.coverImageUrl,
+                  child: UpRemoteImage(
+                      url: f.coverImageUrl,
                       height: 150,
                       width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          const SizedBox.shrink())),
+                      fallback: const SizedBox.shrink())),
             ),
             const SizedBox(height: 14),
           ],
@@ -605,11 +604,10 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
                       showUpliftImageViewer(context, f.gallery[i], f.title),
                   child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(f.gallery[i],
+                      child: UpRemoteImage(
+                          url: f.gallery[i],
                           width: 100,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              const SizedBox.shrink())),
+                          fallback: const SizedBox.shrink())),
                 ),
               ),
             ),

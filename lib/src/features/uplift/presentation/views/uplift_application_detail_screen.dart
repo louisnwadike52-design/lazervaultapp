@@ -385,10 +385,10 @@ class _UpliftApplicationDetailScreenState
           separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (_, i) => ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.network(imgs[i],
+            child: UpRemoteImage(
+                url: imgs[i],
                 width: 110,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                fallback: const SizedBox.shrink()),
           ),
         ),
       ),

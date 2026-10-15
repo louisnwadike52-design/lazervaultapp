@@ -569,6 +569,113 @@ class UpliftFundCard extends StatelessWidget {
   }
 }
 
+/// A network image that survives the upload race.
+///
+/// THE UPLOAD IS ASYNCHRONOUS AND THE APP RENDERS THE URL IMMEDIATELY.
+/// products-gateway answers an upload with **202 Accepted** — "the URL is
+/// reserved and the write is in flight" — and hands back the final URL
+/// straight away. The picker adds it to the list and the tile asks for it at
+/// once, often before the object exists. The request 404s, and Flutter's
+/// ImageCache CACHES THE FAILURE: it never asks again, so the tile stays a
+/// grey box for the rest of the session even though the file landed a second
+/// later.
+///
+/// That is the whole of the reported "uploading more than one photo fails".
+/// Measured in the prod gateway log: every background upload in the session
+/// completed on attempt 1. Nothing failed to upload — the app simply looked
+/// too early, once, and then stopped looking.
+///
+/// So on error we EVICT the cache entry and ask again, a few times, with a
+/// widening gap. The retries are deliberately short and few: this covers a
+/// write that is seconds behind, not a genuinely missing file, which still
+/// ends at the placeholder.
+class UpRemoteImage extends StatefulWidget {
+  const UpRemoteImage({
+    required this.url,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.fallback,
+    super.key,
+  });
+
+  final String url;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+
+  /// Shown once the retries are exhausted. A missing image should look
+  /// deliberate, not broken.
+  final Widget? fallback;
+
+  @override
+  State<UpRemoteImage> createState() => _UpRemoteImageState();
+}
+
+class _UpRemoteImageState extends State<UpRemoteImage> {
+  static const _delays = [
+    Duration(milliseconds: 700),
+    Duration(seconds: 2),
+    Duration(seconds: 4),
+  ];
+
+  int _attempt = 0;
+  bool _givenUp = false;
+
+  @override
+  void didUpdateWidget(covariant UpRemoteImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A different URL is a different question — start it fresh rather than
+    // inheriting the previous one's exhausted attempts.
+    if (oldWidget.url != widget.url) {
+      _attempt = 0;
+      _givenUp = false;
+    }
+  }
+
+  void _retry() {
+    if (_givenUp || _attempt >= _delays.length) {
+      if (mounted && !_givenUp) setState(() => _givenUp = true);
+      return;
+    }
+    final next = _delays[_attempt];
+    Future<void>.delayed(next, () async {
+      if (!mounted) return;
+      // Evicting is the point: without it the cached failure answers every
+      // subsequent request and the retry is a no-op.
+      await NetworkImage(widget.url).evict();
+      if (!mounted) return;
+      setState(() => _attempt++);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = widget.fallback ??
+        Container(
+          width: widget.width,
+          height: widget.height,
+          color: kUpDivider,
+          child: const Icon(Icons.image_not_supported_outlined,
+              color: kUpTextSecondary, size: 18),
+        );
+    if (_givenUp) return fallback;
+    return Image.network(
+      widget.url,
+      // The key forces a fresh ImageProvider each attempt; without it the
+      // element is reused and the evicted entry is never re-requested.
+      key: ValueKey('${widget.url}#$_attempt'),
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      errorBuilder: (_, __, ___) {
+        _retry();
+        return fallback;
+      },
+    );
+  }
+}
+
 /// The fund's cover as a square thumbnail, or its initials when it has none.
 ///
 /// Tapping opens the image full screen — the banner it replaced was the only
@@ -591,13 +698,11 @@ class _Thumb extends StatelessWidget {
           context, fund.coverImageUrl, fund.title),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
-        child: Image.network(
-          fund.coverImageUrl,
+        child: UpRemoteImage(
+          url: fund.coverImageUrl,
           width: 64,
           height: 64,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) =>
-              UpGradientAvatar(text: fund.title, size: 64),
+          fallback: UpGradientAvatar(text: fund.title, size: 64),
         ),
       ),
     );
@@ -636,10 +741,10 @@ Future<void> showUpliftImageViewer(
           child: InteractiveViewer(
             minScale: 1,
             maxScale: 4,
-            child: Image.network(
-              url,
+            child: UpRemoteImage(
+              url: url,
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const Padding(
+              fallback: const Padding(
                 padding: EdgeInsets.all(24),
                 child: Text('This image could not be loaded.',
                     style: TextStyle(color: kUpTextSecondary)),
@@ -848,11 +953,17 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
                             child: const Icon(Icons.picture_as_pdf,
                                 color: Colors.white70),
                           )
-                        : Image.network(u,
+                        // UpRemoteImage, because this tile is rendered the
+                        // instant the upload returns 202 and the object may
+                        // be a second behind. A plain Image.network asks once,
+                        // caches the 404 and leaves a grey square forever —
+                        // which is what "uploading more than one photo fails"
+                        // actually was.
+                        : UpRemoteImage(
+                            url: u,
                             width: 72,
                             height: 72,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
+                            fallback: Container(
                                 width: 72,
                                 height: 72,
                                 color: kUpDivider,
