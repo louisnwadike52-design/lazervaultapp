@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -626,30 +627,70 @@ class _UpRemoteImageState extends State<UpRemoteImage> {
   int _attempt = 0;
   bool _givenUp = false;
 
+  /// A retry is already waiting. WITHOUT THIS THE LIST FLICKERS.
+  ///
+  /// `errorBuilder` runs on EVERY build of a failing image, not once per
+  /// failure. It called _retry() each time, and _retry() scheduled a timer
+  /// each time — so one broken thumbnail in a list of funds queued a new
+  /// timer on every rebuild, each of which evicted the cache and called
+  /// setState, which caused the next rebuild. The list rebuilt continuously
+  /// for as long as any cover failed to load.
+  bool _retryPending = false;
+
+  /// Cancellable, so a retry cannot fire into a disposed State after the user
+  /// has scrolled the row away.
+  Timer? _retryTimer;
+
   @override
   void didUpdateWidget(covariant UpRemoteImage oldWidget) {
     super.didUpdateWidget(oldWidget);
     // A different URL is a different question — start it fresh rather than
     // inheriting the previous one's exhausted attempts.
     if (oldWidget.url != widget.url) {
+      _retryTimer?.cancel();
+      _retryTimer = null;
+      _retryPending = false;
       _attempt = 0;
       _givenUp = false;
     }
   }
 
+  @override
+  void dispose() {
+    _retryTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Called FROM BUILD, so it must never call setState synchronously.
+  ///
+  /// The old version did exactly that on the give-up branch — setState during
+  /// the build phase, which Flutter either asserts on or services by
+  /// scheduling another build, and that build hit the same errorBuilder. The
+  /// state change is deferred to after the frame instead.
   void _retry() {
-    if (_givenUp || _attempt >= _delays.length) {
-      if (mounted && !_givenUp) setState(() => _givenUp = true);
+    if (_givenUp || _retryPending) return;
+    if (_attempt >= _delays.length) {
+      _retryPending = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _givenUp = true;
+          _retryPending = false;
+        });
+      });
       return;
     }
-    final next = _delays[_attempt];
-    Future<void>.delayed(next, () async {
+    _retryPending = true;
+    _retryTimer = Timer(_delays[_attempt], () async {
       if (!mounted) return;
       // Evicting is the point: without it the cached failure answers every
       // subsequent request and the retry is a no-op.
       await NetworkImage(widget.url).evict();
       if (!mounted) return;
-      setState(() => _attempt++);
+      setState(() {
+        _attempt++;
+        _retryPending = false;
+      });
     });
   }
 
