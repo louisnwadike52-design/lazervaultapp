@@ -3273,7 +3273,17 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _wsSubscription = null;
     _wsChannel?.sink.close();
     _wsChannel = null;
+    // ALL the retry state, not just the counter.
+    //
+    // `_wsDegradedNotified` left true would make the NEXT session's first real
+    // outage silent — the user would get no "reconnecting" notice at all,
+    // because the flag that suppresses a repeat notice is still set from the
+    // previous call. `_wsHandshakeConfirmed` left true would make the next
+    // dial's first failure look like a proven socket dropping rather than a
+    // dial that never landed, which is the distinction the backoff depends on.
     _wsReconnectAttempts = 0;
+    _wsDegradedNotified = false;
+    _wsHandshakeConfirmed = false;
     // Clear caption state when WebSocket disconnects
     _clearCaptions();
   }
@@ -3362,6 +3372,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (_room != null) {
       // Connected is the neutral "session is live, nothing pending" state and
       // is what the sheet falls back to for rendering the transcript.
+      //
+      // Accepted trade-off: if the agent happened to be mid-thought when the
+      // user tapped the X, the typing indicator stops until its next event
+      // re-emits Processing — well under a second, on an action the user took
+      // deliberately to clear this surface.
       return VoiceSessionConnected(_room!);
     }
     return s;

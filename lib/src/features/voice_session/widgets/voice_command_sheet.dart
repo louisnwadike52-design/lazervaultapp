@@ -1138,10 +1138,15 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             ),
           );
         } else if (state is VoiceSessionWebSocketFailed) {
+          // "Reconnecting", not "unavailable". This state used to be the end
+          // of the road — the cubit gave up after five attempts — so the copy
+          // described a permanent condition. It now keeps retrying for as long
+          // as the call is up, and telling the user it is gone when it is
+          // coming back invites them to hang up and start over.
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                  'Visual feedback unavailable. Voice commands still work.'),
+                  'Reconnecting the visuals — your voice commands still work.'),
               backgroundColor: Color(0xFFFB923C),
               duration: Duration(seconds: 4),
             ),

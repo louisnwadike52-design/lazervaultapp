@@ -226,6 +226,36 @@ void main() {
               'the user is still talking and still needs the widgets');
     });
 
+    test('a new session starts with clean retry state', () {
+      // `_wsDegradedNotified` left true would make the NEXT session's first
+      // real outage silent, because the flag that suppresses a repeat notice
+      // is still set from the previous call. Same class of stale-flag bug as
+      // the transfer context above.
+      final src = code(cubit);
+      final i = src.indexOf('void _disconnectWebSocket()');
+      expect(i, greaterThan(-1));
+      final body = src.substring(i, src.indexOf('\n  }', i));
+      expect(body, contains('_wsReconnectAttempts = 0;'));
+      expect(body, contains('_wsDegradedNotified = false;'));
+      expect(body, contains('_wsHandshakeConfirmed = false;'));
+      // And no timer survives the session.
+      expect(body, contains('_wsReconnectTimer?.cancel()'));
+    });
+
+    test('the user is told it is reconnecting, not that it is gone', () {
+      // This state used to be the end of the road — the cubit gave up after
+      // five attempts — so the copy described a permanent condition. Telling
+      // the user the visuals are gone when they are coming back invites them
+      // to hang up and start over.
+      final src = code(
+          'lib/src/features/voice_session/widgets/voice_command_sheet.dart');
+      final i = src.indexOf('state is VoiceSessionWebSocketFailed');
+      expect(i, greaterThan(-1));
+      final block = src.substring(i, i + 500);
+      expect(block, contains('Reconnecting'));
+      expect(block, isNot(contains('Visual feedback unavailable')));
+    });
+
     test('a synchronous dial failure still retries', () {
       // A throw from connect() never reaches onError, so without this a bad
       // URI or missing route would never retry at all.
