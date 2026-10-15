@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/uplift/presentation/views/uplift_milesto
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_offer_screen.dart';
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_video_player.dart';
+import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
 
 /// Full-detail view of a single Lazerfunds application. Reached by tapping an
@@ -400,6 +401,19 @@ class _UpliftApplicationDetailScreenState
     );
   }
 
+  /// The applicant's attachments — readable WITHOUT leaving the app.
+  ///
+  /// Every row was "Document 1", "Document 2", and tapping one handed the URL
+  /// to the OS with LaunchMode.externalApplication: the funder left Lazervault
+  /// for a browser, and on iOS a PDF often just downloads with nothing shown.
+  /// An investor reading a business plan should not have to app-switch to do
+  /// it, and should not have to guess which file is which from a number.
+  ///
+  /// So: name the file from its URL, open images in the same full-screen
+  /// viewer the gallery uses, open everything else in the in-app web sheet
+  /// (which keeps its own "open in browser" escape hatch), and give each row
+  /// an explicit action to open externally — which is what "download" means
+  /// on both platforms, since the OS handler is what offers Save.
   Widget _docsSection() {
     final docs = _app.docUrls;
     if (docs.isEmpty) return const SizedBox.shrink();
@@ -408,32 +422,96 @@ class _UpliftApplicationDetailScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Documents',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+          Text('Documents (${docs.length})',
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           for (var i = 0; i < docs.length; i++)
-            InkWell(
-              onTap: () => _openUrl(docs[i]),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(children: [
-                  const Icon(Icons.description_outlined,
-                      size: 18, color: kUpPrimarySoft),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text('Document ${i + 1}',
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(children: [
+                Icon(_docIcon(docs[i]), size: 18, color: kUpPrimarySoft),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _viewDocument(docs[i], i),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        _docLabel(docs[i], i),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             color: kUpPrimarySoft,
-                            decoration: TextDecoration.underline)),
+                            decoration: TextDecoration.underline),
+                      ),
+                    ),
                   ),
-                  const Icon(Icons.open_in_new,
-                      size: 16, color: kUpTextSecondary),
-                ]),
-              ),
+                ),
+                IconButton(
+                  tooltip: 'Open outside the app',
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.download_outlined,
+                      size: 18, color: kUpTextSecondary),
+                  onPressed: () => _openUrl(docs[i]),
+                ),
+              ]),
             ),
         ],
       ),
+    );
+  }
+
+  /// The file's own name, so a funder can tell a pitch deck from a CAC
+  /// certificate without opening both.
+  String _docLabel(String url, int index) {
+    final path = Uri.tryParse(url)?.path ?? '';
+    final name = path.split('/').where((p) => p.isNotEmpty).lastOrNull ?? '';
+    if (name.isEmpty) return 'Document ${index + 1}';
+    // Uploads are stored under a UUID filename, which is not a name either —
+    // fall back to the numbered label but keep the extension, which at least
+    // says what KIND of file it is.
+    final dot = name.lastIndexOf('.');
+    final stem = dot > 0 ? name.substring(0, dot) : name;
+    final ext = dot > 0 ? name.substring(dot + 1).toUpperCase() : '';
+    final looksGenerated =
+        stem.length >= 32 && RegExp(r'^[0-9a-fA-F-]+$').hasMatch(stem);
+    if (looksGenerated) {
+      return ext.isEmpty
+          ? 'Document ${index + 1}'
+          : 'Document ${index + 1} · $ext';
+    }
+    return name;
+  }
+
+  IconData _docIcon(String url) {
+    final u = url.toLowerCase();
+    if (u.endsWith('.pdf')) return Icons.picture_as_pdf_outlined;
+    if (_looksLikeImage(u)) return Icons.image_outlined;
+    return Icons.description_outlined;
+  }
+
+  bool _looksLikeImage(String url) {
+    final u = url.toLowerCase().split('?').first;
+    return u.endsWith('.png') ||
+        u.endsWith('.jpg') ||
+        u.endsWith('.jpeg') ||
+        u.endsWith('.webp') ||
+        u.endsWith('.gif');
+  }
+
+  /// Opens a document in the most readable surface we have for its type,
+  /// without leaving the app.
+  Future<void> _viewDocument(String url, int index) async {
+    if (_looksLikeImage(url)) {
+      await showUpliftImageViewer(context, url, _docLabel(url, index));
+      return;
+    }
+    if (!mounted) return;
+    await showWebViewBottomSheet(
+      context,
+      url: url,
+      title: _docLabel(url, index),
     );
   }
 

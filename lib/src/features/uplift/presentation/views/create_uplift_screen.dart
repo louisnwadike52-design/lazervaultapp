@@ -223,6 +223,21 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
         _snack('Enter how many businesses to fund');
         return false;
       }
+      // EDITING DOWN BELOW WHAT HAS ALREADY BEEN PROMISED.
+      //
+      // Choosing businesses is a commitment; reducing the target afterwards
+      // does not un-choose anybody, it just leaves the fund advertising less
+      // than it owes. The server refuses this outright, so catching it here
+      // is about WHERE the user is told — on the field they are editing,
+      // rather than three taps later on Save.
+      final committed = widget.existing?.selectedCount ?? 0;
+      final wanted = int.tryParse(_count.text.trim()) ?? 0;
+      if (_isEdit && committed > 0 && wanted < committed) {
+        _snack('You have already chosen $committed business'
+            '${committed == 1 ? '' : 'es'} for this fund, so it cannot go '
+            'below $committed.');
+        return false;
+      }
     }
     return true;
   }
@@ -401,6 +416,16 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
             keyboard: TextInputType.number, validator: _num),
         _field(_count, 'How many businesses',
             keyboard: TextInputType.number, validator: _int),
+        if (_isEdit && (widget.existing?.selectedCount ?? 0) > 0)
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 10),
+            child: Text(
+              'You have already chosen '
+              '${widget.existing!.selectedCount} of these — the number '
+              'cannot go below that.',
+              style: const TextStyle(color: kUpTextSecondary, fontSize: 11.5),
+            ),
+          ),
         _dateTimePicker('Application deadline', _appDeadline, (d) {
           // Applications cannot still be open after the funding window has
           // shut — there would be nothing left to fund them from. Caught

@@ -45,12 +45,25 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
   @override
   void initState() {
     super.initState();
-    _load();
+    _load(showSpinner: true);
   }
 
-  Future<void> _load() async {
+  /// Re-reads the fund.
+  ///
+  /// [showSpinner] REPLACES the page with a loader while it runs. That is
+  /// right for the first load and for retrying after an error — there is
+  /// nothing on screen worth keeping. It is wrong everywhere else, and it was
+  /// the default: every CTA ended `await Get.to(...); await _load();`, so
+  /// coming back from ANY of them — even one that changed nothing, even
+  /// Cancel — blanked the page to a spinner and reset the scroll position.
+  /// On a page this long that reads as the screen reloading itself, which is
+  /// exactly how it was reported.
+  ///
+  /// A quiet refresh fetches the same data and swaps it in on arrival. The
+  /// user keeps their place and sees the new numbers appear.
+  Future<void> _load({bool showSpinner = false}) async {
     setState(() {
-      _loading = true;
+      if (showSpinner) _loading = true;
       _error = null;
     });
     try {
@@ -538,7 +551,9 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         child: _loading
             ? const UpLoading()
             : _error != null
-                ? UpErrorState(message: _error!, onRetry: _load)
+                ? UpErrorState(
+                    message: _error!,
+                    onRetry: () => _load(showSpinner: true))
                 : _content(),
       ),
     );
@@ -875,32 +890,46 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         ),
         const SizedBox(height: 14),
       ],
-      Row(children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-                backgroundColor: kUpPrimary,
-                foregroundColor: Colors.white,
-                minimumSize: const Size.fromHeight(48)),
-            onPressed: !isTerminal ? _commitPool : null,
-            icon: const Icon(Icons.savings),
-            label: const Text('Commit funds'),
+      // A CLOSED FUND SHOWS NO ACTIONS IT CANNOT PERFORM.
+      //
+      // Commit and Cancel used to render DISABLED on a terminal fund —
+      // dimmed purple on near-black and dimmed red inside a red outline,
+      // which is the "what are these invisible CTAs" in the report. They were
+      // not invisible, they were unreadable, and a control nobody can read is
+      // worse than one that is not there: it costs a row of the screen and
+      // invites a tap that does nothing.
+      //
+      // The explanation banner directly above already says what happened to
+      // the fund and where the money went, so removing them leaves the page
+      // saying MORE, not less.
+      if (!isTerminal) ...[
+        Row(children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: kUpPrimary,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(48)),
+              onPressed: _commitPool,
+              icon: const Icon(Icons.savings),
+              label: const Text('Commit funds'),
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-                foregroundColor: kUpError,
-                minimumSize: const Size.fromHeight(48),
-                side: const BorderSide(color: kUpError)),
-            onPressed: !isTerminal ? _cancelFund : null,
-            icon: const Icon(Icons.cancel),
-            label: const Text('Cancel'),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: kUpError,
+                  minimumSize: const Size.fromHeight(48),
+                  side: const BorderSide(color: kUpError)),
+              onPressed: _cancelFund,
+              icon: const Icon(Icons.cancel),
+              label: const Text('Cancel'),
+            ),
           ),
-        ),
-      ]),
-      const SizedBox(height: 10),
+        ]),
+        const SizedBox(height: 10),
+      ],
       Row(children: [
         if (f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_OPEN ||
             f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_REVIEWING ||
