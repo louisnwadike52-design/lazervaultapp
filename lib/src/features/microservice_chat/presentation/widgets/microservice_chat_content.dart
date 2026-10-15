@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_setup_card.dart';
 
 import 'package:flutter/material.dart';
 import 'chat_load_older_mixin.dart';
@@ -728,6 +729,14 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
               canRate:
                   context.read<MicroserviceChatCubit>().sessionId.isNotEmpty,
               onVerdict: (v) => _rate(message, v),
+            ),
+          // The PIN-SETUP hand-off. A card, never a field: the agent used
+          // to take the new PIN as a tool argument, which wrote a credential
+          // into conversation history.
+          if (!isUser && message.metadata?['pin_setup'] != null)
+            ChatPinSetupCard(
+              reason: (message.metadata?['pin_setup']
+                  as Map?)?['reason'] as String?,
             ),
           if (quickActions != null && quickActions.isNotEmpty)
             QuickActionChips(

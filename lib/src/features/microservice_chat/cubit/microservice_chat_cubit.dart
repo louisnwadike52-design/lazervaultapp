@@ -431,6 +431,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             // off entities under the sentinel keys. Strip them so the
             // next round-trip doesn't re-send.
             final pinPrompt = _entities.remove('_pin_prompt_pending');
+            final pinSetup = _entities.remove('_pin_setup_pending');
             final receiptCard = _entities.remove('_receipt_card_pending');
             final recipientCard = _entities.remove('_recipient_card_pending');
             final analyticsCard = _entities.remove('_analytics_card_pending');
@@ -459,6 +460,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             if (pinPrompt is Map) {
               messageMetadata['pin_prompt'] =
                   Map<String, dynamic>.from(pinPrompt);
+            }
+            // The PIN-setup hand-off rides the same sentinel protocol, so it
+            // lands in message metadata and therefore survives in history —
+            // a card the user scrolls back to still works.
+            if (pinSetup is Map) {
+              messageMetadata['pin_setup'] =
+                  Map<String, dynamic>.from(pinSetup);
             }
             if (receiptCard != null) {
               messageMetadata['receipt_card'] = receiptCard;
@@ -537,6 +545,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           final lastPaymentId = responseEntities['last_payment_id'] as String?;
           // New chat protocol — pin_prompt + receipt_card sentinels.
           final pinPrompt = responseEntities.remove('_pin_prompt_pending');
+          final pinSetup = responseEntities.remove('_pin_setup_pending');
           final receiptCard = responseEntities.remove('_receipt_card_pending');
           final recipientCard =
               responseEntities.remove('_recipient_card_pending');
@@ -567,6 +576,10 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           if (pinPrompt is Map) {
             messageMetadata['pin_prompt'] =
                 Map<String, dynamic>.from(pinPrompt);
+          }
+          if (pinSetup is Map) {
+            messageMetadata['pin_setup'] =
+                Map<String, dynamic>.from(pinSetup);
           }
           if (receiptCard != null) {
             messageMetadata['receipt_card'] = receiptCard;
@@ -699,6 +712,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             final analyticsCard = _entities.remove('_analytics_card_pending');
             final qrCard = _entities.remove('_qr_card_pending');
             final pinPrompt = _entities.remove('_pin_prompt_pending');
+            final pinSetup = _entities.remove('_pin_setup_pending');
             final messageMetadata = <String, dynamic>{};
             // Degradation chrome, matching the general chat: the same LLM
             // failure must explain itself here too rather than leaving the
@@ -739,6 +753,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             if (pinPrompt is Map) {
               messageMetadata['pin_prompt'] =
                   Map<String, dynamic>.from(pinPrompt);
+            }
+            // The PIN-setup hand-off rides the same sentinel protocol, so it
+            // lands in message metadata and therefore survives in history —
+            // a card the user scrolls back to still works.
+            if (pinSetup is Map) {
+              messageMetadata['pin_setup'] =
+                  Map<String, dynamic>.from(pinSetup);
             }
             final botMessage = MicroserviceChatMessageEntity(
               text: chatResponse.response,

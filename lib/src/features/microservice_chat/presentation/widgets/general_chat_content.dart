@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_setup_card.dart';
 import 'package:flutter/material.dart';
 import 'chat_load_older_mixin.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -1175,6 +1176,14 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                   (context.read<GeneralChatCubit>().currentSessionId ?? '')
                       .isNotEmpty,
               onVerdict: (v) => _rate(message, v),
+            ),
+          // The PIN-SETUP hand-off. A card, never a field: the agent used
+          // to take the new PIN as a tool argument, which wrote a credential
+          // into conversation history.
+          if (!isUser && message.metadata?['pin_setup'] != null)
+            ChatPinSetupCard(
+              reason: (message.metadata?['pin_setup']
+                  as Map?)?['reason'] as String?,
             ),
           if (quickActions != null && quickActions.isNotEmpty)
             QuickActionChips(
