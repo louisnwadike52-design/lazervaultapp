@@ -983,6 +983,86 @@ final $typed_data.Uint8List pauseUpliftFundResponseDescriptor =
         'ChdQYXVzZVVwbGlmdEZ1bmRSZXNwb25zZRIpCgRmdW5kGAEgASgLMhUucGIuVXBsaWZ0RnVuZE'
         '1lc3NhZ2VSBGZ1bmQ=');
 
+@$core.Deprecated('Use withdrawUpliftPoolRequestDescriptor instead')
+const WithdrawUpliftPoolRequest$json = {
+  '1': 'WithdrawUpliftPoolRequest',
+  '2': [
+    {'1': 'fund_id', '3': 1, '4': 1, '5': 9, '10': 'fundId'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
+    {
+      '1': 'destination_account_id',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'destinationAccountId'
+    },
+    {'1': 'transaction_pin', '3': 4, '4': 1, '5': 9, '10': 'transactionPin'},
+    {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
+  ],
+};
+
+/// Descriptor for `WithdrawUpliftPoolRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List withdrawUpliftPoolRequestDescriptor = $convert.base64Decode(
+    'ChlXaXRoZHJhd1VwbGlmdFBvb2xSZXF1ZXN0EhcKB2Z1bmRfaWQYASABKAlSBmZ1bmRJZBIWCg'
+    'ZhbW91bnQYAiABKARSBmFtb3VudBI0ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGAMgASgJUhRk'
+    'ZXN0aW5hdGlvbkFjY291bnRJZBInCg90cmFuc2FjdGlvbl9waW4YBCABKAlSDnRyYW5zYWN0aW'
+    '9uUGluEiUKDnRyYW5zYWN0aW9uX2lkGAUgASgJUg10cmFuc2FjdGlvbklk');
+
+@$core.Deprecated('Use withdrawUpliftPoolResponseDescriptor instead')
+const WithdrawUpliftPoolResponse$json = {
+  '1': 'WithdrawUpliftPoolResponse',
+  '2': [
+    {
+      '1': 'fund',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.UpliftFundMessage',
+      '10': 'fund'
+    },
+    {'1': 'withdrawn_amount', '3': 2, '4': 1, '5': 4, '10': 'withdrawnAmount'},
+    {'1': 'escrow_available', '3': 3, '4': 1, '5': 4, '10': 'escrowAvailable'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `WithdrawUpliftPoolResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List withdrawUpliftPoolResponseDescriptor = $convert.base64Decode(
+    'ChpXaXRoZHJhd1VwbGlmdFBvb2xSZXNwb25zZRIpCgRmdW5kGAEgASgLMhUucGIuVXBsaWZ0Rn'
+    'VuZE1lc3NhZ2VSBGZ1bmQSKQoQd2l0aGRyYXduX2Ftb3VudBgCIAEoBFIPd2l0aGRyYXduQW1v'
+    'dW50EikKEGVzY3Jvd19hdmFpbGFibGUYAyABKARSD2VzY3Jvd0F2YWlsYWJsZRIYCgdtZXNzYW'
+    'dlGAQgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use deleteUpliftFundRequestDescriptor instead')
+const DeleteUpliftFundRequest$json = {
+  '1': 'DeleteUpliftFundRequest',
+  '2': [
+    {'1': 'fund_id', '3': 1, '4': 1, '5': 9, '10': 'fundId'},
+    {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `DeleteUpliftFundRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteUpliftFundRequestDescriptor =
+    $convert.base64Decode(
+        'ChdEZWxldGVVcGxpZnRGdW5kUmVxdWVzdBIXCgdmdW5kX2lkGAEgASgJUgZmdW5kSWQSFgoGcm'
+        'Vhc29uGAIgASgJUgZyZWFzb24=');
+
+@$core.Deprecated('Use deleteUpliftFundResponseDescriptor instead')
+const DeleteUpliftFundResponse$json = {
+  '1': 'DeleteUpliftFundResponse',
+  '2': [
+    {'1': 'fund_id', '3': 1, '4': 1, '5': 9, '10': 'fundId'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `DeleteUpliftFundResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteUpliftFundResponseDescriptor =
+    $convert.base64Decode(
+        'ChhEZWxldGVVcGxpZnRGdW5kUmVzcG9uc2USFwoHZnVuZF9pZBgBIAEoCVIGZnVuZElkEhgKB2'
+        '1lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+
 @$core.Deprecated('Use cancelUpliftFundRequestDescriptor instead')
 const CancelUpliftFundRequest$json = {
   '1': 'CancelUpliftFundRequest',

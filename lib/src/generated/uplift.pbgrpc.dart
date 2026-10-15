@@ -89,12 +89,26 @@ class UpliftServiceClient extends $grpc.Client {
     return $createUnaryCall(_$cancelUpliftFund, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.DeleteUpliftFundResponse> deleteUpliftFund(
+    $0.DeleteUpliftFundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$deleteUpliftFund, request, options: options);
+  }
+
   /// ---- Escrow / pool commit (funder) ----
   $grpc.ResponseFuture<$0.CommitUpliftPoolResponse> commitUpliftPool(
     $0.CommitUpliftPoolRequest request, {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$commitUpliftPool, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.WithdrawUpliftPoolResponse> withdrawUpliftPool(
+    $0.WithdrawUpliftPoolRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$withdrawUpliftPool, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.GetUpliftEscrowBalanceResponse>
@@ -283,11 +297,21 @@ class UpliftServiceClient extends $grpc.Client {
       '/pb.UpliftService/CancelUpliftFund',
       ($0.CancelUpliftFundRequest value) => value.writeToBuffer(),
       $0.CancelUpliftFundResponse.fromBuffer);
+  static final _$deleteUpliftFund = $grpc.ClientMethod<
+          $0.DeleteUpliftFundRequest, $0.DeleteUpliftFundResponse>(
+      '/pb.UpliftService/DeleteUpliftFund',
+      ($0.DeleteUpliftFundRequest value) => value.writeToBuffer(),
+      $0.DeleteUpliftFundResponse.fromBuffer);
   static final _$commitUpliftPool = $grpc.ClientMethod<
           $0.CommitUpliftPoolRequest, $0.CommitUpliftPoolResponse>(
       '/pb.UpliftService/CommitUpliftPool',
       ($0.CommitUpliftPoolRequest value) => value.writeToBuffer(),
       $0.CommitUpliftPoolResponse.fromBuffer);
+  static final _$withdrawUpliftPool = $grpc.ClientMethod<
+          $0.WithdrawUpliftPoolRequest, $0.WithdrawUpliftPoolResponse>(
+      '/pb.UpliftService/WithdrawUpliftPool',
+      ($0.WithdrawUpliftPoolRequest value) => value.writeToBuffer(),
+      $0.WithdrawUpliftPoolResponse.fromBuffer);
   static final _$getUpliftEscrowBalance = $grpc.ClientMethod<
           $0.GetUpliftEscrowBalanceRequest, $0.GetUpliftEscrowBalanceResponse>(
       '/pb.UpliftService/GetUpliftEscrowBalance',
@@ -459,6 +483,15 @@ abstract class UpliftServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.CancelUpliftFundRequest.fromBuffer(value),
         ($0.CancelUpliftFundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteUpliftFundRequest,
+            $0.DeleteUpliftFundResponse>(
+        'DeleteUpliftFund',
+        deleteUpliftFund_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.DeleteUpliftFundRequest.fromBuffer(value),
+        ($0.DeleteUpliftFundResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CommitUpliftPoolRequest,
             $0.CommitUpliftPoolResponse>(
         'CommitUpliftPool',
@@ -468,6 +501,15 @@ abstract class UpliftServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.CommitUpliftPoolRequest.fromBuffer(value),
         ($0.CommitUpliftPoolResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.WithdrawUpliftPoolRequest,
+            $0.WithdrawUpliftPoolResponse>(
+        'WithdrawUpliftPool',
+        withdrawUpliftPool_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.WithdrawUpliftPoolRequest.fromBuffer(value),
+        ($0.WithdrawUpliftPoolResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetUpliftEscrowBalanceRequest,
             $0.GetUpliftEscrowBalanceResponse>(
         'GetUpliftEscrowBalance',
@@ -696,6 +738,15 @@ abstract class UpliftServiceBase extends $grpc.Service {
   $async.Future<$0.CancelUpliftFundResponse> cancelUpliftFund(
       $grpc.ServiceCall call, $0.CancelUpliftFundRequest request);
 
+  $async.Future<$0.DeleteUpliftFundResponse> deleteUpliftFund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.DeleteUpliftFundRequest> $request) async {
+    return deleteUpliftFund($call, await $request);
+  }
+
+  $async.Future<$0.DeleteUpliftFundResponse> deleteUpliftFund(
+      $grpc.ServiceCall call, $0.DeleteUpliftFundRequest request);
+
   $async.Future<$0.CommitUpliftPoolResponse> commitUpliftPool_Pre(
       $grpc.ServiceCall $call,
       $async.Future<$0.CommitUpliftPoolRequest> $request) async {
@@ -704,6 +755,15 @@ abstract class UpliftServiceBase extends $grpc.Service {
 
   $async.Future<$0.CommitUpliftPoolResponse> commitUpliftPool(
       $grpc.ServiceCall call, $0.CommitUpliftPoolRequest request);
+
+  $async.Future<$0.WithdrawUpliftPoolResponse> withdrawUpliftPool_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.WithdrawUpliftPoolRequest> $request) async {
+    return withdrawUpliftPool($call, await $request);
+  }
+
+  $async.Future<$0.WithdrawUpliftPoolResponse> withdrawUpliftPool(
+      $grpc.ServiceCall call, $0.WithdrawUpliftPoolRequest request);
 
   $async.Future<$0.GetUpliftEscrowBalanceResponse> getUpliftEscrowBalance_Pre(
       $grpc.ServiceCall $call,

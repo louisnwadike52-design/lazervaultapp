@@ -447,94 +447,117 @@ class UpliftFundCard extends StatelessWidget {
     final progress =
         committed > 0 ? (released / committed).clamp(0.0, 1.0) : 0.0;
     final equity = UpEquityTerms.fromMetadata(fund.metadata);
+
+    // THE IMAGE SITS BESIDE THE FUND, NOT ABOVE IT.
+    //
+    // A 108px banner plus a stacked title, meta line, equity chip, progress
+    // bar and footer made one card about 280px tall, so barely two fit on a
+    // phone and browsing meant scrolling past funds rather than comparing
+    // them. A 64px square on the left puts the same information in roughly
+    // half the height, and the vertical rhythm matches the group-funds list.
+    //
+    // The banner is not lost — it is the first thing on the detail page, and
+    // tapping the thumbnail opens it full screen.
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: kUpCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: kUpPrimary.withOpacity(0.18)),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        // A 1px hairline at 18% opacity read as a rendering artefact rather
+        // than an edge. A flat, slightly lighter surface border separates the
+        // cards without drawing a box around each one.
+        border: Border.all(color: kUpDivider),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (fund.coverImageUrl.isNotEmpty)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(fund.coverImageUrl,
-                        height: 108,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink()),
-                  ),
-                if (fund.coverImageUrl.isNotEmpty) const SizedBox(height: 10),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (fund.coverImageUrl.isEmpty) ...[
-                      UpGradientAvatar(text: fund.title, size: 40),
-                      const SizedBox(width: 10),
-                    ],
+                    _Thumb(fund: fund),
+                    const SizedBox(width: 12),
                     Expanded(
-                      child: Text(fund.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(fund.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700)),
+                              ),
+                              const SizedBox(width: 8),
+                              UpStatusChip(
+                                  label: upFundStatusLabel(fund.status)),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${fund.category} · up to '
+                            '${upNaira(fund.perBusinessCap.toInt(), fund.currency)}'
+                            ' · ${fund.targetCount} businesses',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: kUpTextSecondary, fontSize: 12),
+                          ),
+                          const SizedBox(height: 6),
+                          // Equity and the applied count share a line now.
+                          // They were two stacked rows saying very little
+                          // each, and side by side they read as one fact
+                          // about the deal.
+                          Row(
+                            children: [
+                              if (equity.enabled &&
+                                  (equity.offeredPct > 0 ||
+                                      equity.investmentType.isNotEmpty))
+                                Flexible(
+                                  child: UpEquityChip(
+                                    label: equity.offeredPct > 0
+                                        ? '${upInvestmentTypeLabel(equity.investmentType).isEmpty ? 'Equity' : upInvestmentTypeLabel(equity.investmentType)} · ${upPct(equity.offeredPct)}'
+                                        : upInvestmentTypeLabel(
+                                            equity.investmentType),
+                                  ),
+                                ),
+                              const Spacer(),
+                              Text('${fund.applicationCount} applied',
+                                  style: const TextStyle(
+                                      color: kUpTextSecondary, fontSize: 11)),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    Padding(
-                        padding: const EdgeInsets.only(top: 1),
-                        child: UpStatusChip(
-                            label: upFundStatusLabel(fund.status))),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                    '${fund.category} · up to ${upNaira(fund.perBusinessCap.toInt(), fund.currency)} each · ${fund.targetCount} businesses',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style:
-                        const TextStyle(color: kUpTextSecondary, fontSize: 12)),
-                if (equity.enabled &&
-                    (equity.offeredPct > 0 ||
-                        equity.investmentType.isNotEmpty)) ...[
-                  const SizedBox(height: 8),
-                  Row(children: [
-                    UpEquityChip(
-                      label: equity.offeredPct > 0
-                          ? '${upInvestmentTypeLabel(equity.investmentType).isEmpty ? 'Equity' : upInvestmentTypeLabel(equity.investmentType)} · ${upPct(equity.offeredPct)}'
-                          : upInvestmentTypeLabel(equity.investmentType),
-                    ),
-                  ]),
+                // The progress bar only says something once money has been
+                // committed. On a fresh fund it was a grey line under
+                // "₦0.00 released of ₦0.00" — two rows of nothing on every
+                // card in the list.
+                if (committed > 0) ...[
+                  const SizedBox(height: 10),
+                  UpProgressBar(value: progress, height: 5),
+                  const SizedBox(height: 5),
+                  Text(
+                    '${upNaira(released, fund.currency)} released of '
+                    '${upNaira(committed, fund.currency)}',
+                    style: const TextStyle(
+                        color: kUpTextSecondary, fontSize: 11),
+                  ),
                 ],
-                const SizedBox(height: 10),
-                UpProgressBar(value: progress),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                        '${upNaira(released, fund.currency)} released of ${upNaira(committed, fund.currency)}',
-                        style: const TextStyle(
-                            color: kUpTextSecondary, fontSize: 11)),
-                    Text('${fund.applicationCount} applied',
-                        style: const TextStyle(
-                            color: kUpTextSecondary, fontSize: 11)),
-                  ],
-                ),
                 if (trailing != null)
                   Align(alignment: Alignment.centerRight, child: trailing!),
               ],
@@ -544,6 +567,89 @@ class UpliftFundCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The fund's cover as a square thumbnail, or its initials when it has none.
+///
+/// Tapping opens the image full screen — the banner it replaced was the only
+/// place a fund's cover could be seen at any size, and shrinking it without
+/// giving it back would have lost something real.
+class _Thumb extends StatelessWidget {
+  const _Thumb({required this.fund});
+  final up.UpliftFundMessage fund;
+
+  @override
+  Widget build(BuildContext context) {
+    if (fund.coverImageUrl.isEmpty) {
+      return UpGradientAvatar(text: fund.title, size: 64);
+    }
+    return GestureDetector(
+      // Opaque so the tap lands here and not on the card's InkWell behind it:
+      // tapping the picture should show the picture, not open the fund.
+      behavior: HitTestBehavior.opaque,
+      onTap: () => showUpliftImageViewer(
+          context, fund.coverImageUrl, fund.title),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.network(
+          fund.coverImageUrl,
+          width: 64,
+          height: 64,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              UpGradientAvatar(text: fund.title, size: 64),
+        ),
+      ),
+    );
+  }
+}
+
+/// Full-screen image viewer: pinch to zoom, tap or swipe down to dismiss.
+///
+/// Used by the fund card thumbnail and the detail page's gallery, so an image
+/// is never a decoration the user cannot actually look at.
+Future<void> showUpliftImageViewer(
+    BuildContext context, String url, String title) {
+  return showDialog<void>(
+    context: context,
+    barrierColor: Colors.black.withValues(alpha: 0.92),
+    builder: (ctx) => Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.white,
+        title: Text(title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(fontSize: 15)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.of(ctx).pop(),
+          ),
+        ],
+      ),
+      body: GestureDetector(
+        onTap: () => Navigator.of(ctx).pop(),
+        child: Center(
+          child: InteractiveViewer(
+            minScale: 1,
+            maxScale: 4,
+            child: Image.network(
+              url,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const Padding(
+                padding: EdgeInsets.all(24),
+                child: Text('This image could not be loaded.',
+                    style: TextStyle(color: kUpTextSecondary)),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 /// A media row: shows thumbnails of attached image URLs plus a "pick & upload"

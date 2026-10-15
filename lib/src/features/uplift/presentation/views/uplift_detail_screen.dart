@@ -119,6 +119,171 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
     );
   }
 
+  /// Take uncommitted pool money back without closing the fund.
+  ///
+  /// The ceiling comes from the SERVER, not from arithmetic here: it also has
+  /// to subtract refunds already in flight, which the app cannot see. The
+  /// sheet shows `escrow_available` and the server refuses anything above
+  /// what is genuinely free, so the two can never disagree.
+  Future<void> _withdrawPool() async {
+    final fund = _fund!;
+    final availableKobo = _escrow?.available.toInt() ?? fund.escrowAvailable.toInt();
+    if (availableKobo <= 0) {
+      Get.snackbar('Nothing to withdraw',
+          'This pool is either empty or fully promised to businesses you have selected.',
+          backgroundColor: kUpCard,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    final ctrl = TextEditingController(
+        text: (availableKobo / 100).toStringAsFixed(2));
+    final amount = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: kUpCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Withdraw from pool',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Up to ${upNaira(availableKobo, fund.currency)} is free to take '
+              'back. Money already promised to a selected business stays put.',
+              style: const TextStyle(color: kUpTextSecondary, height: 1.4),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: ctrl,
+              autofocus: true,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Amount (${fund.currency})',
+                labelStyle: const TextStyle(color: kUpTextSecondary),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text('It returns to your personal account.',
+                style: TextStyle(color: kUpTextSecondary, fontSize: 11.5)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel',
+                style: TextStyle(color: kUpTextSecondary)),
+          ),
+          TextButton(
+            onPressed: () {
+              final major = double.tryParse(ctrl.text.trim());
+              if (major == null || major <= 0) return;
+              Navigator.of(ctx).pop((major * 100).round());
+            },
+            child: const Text('Withdraw',
+                style: TextStyle(
+                    color: kUpPrimary, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (amount == null || !mounted) return;
+    // Checked here too so the funder is told before a PIN entry is spent on a
+    // refusal the screen already had the numbers to predict.
+    if (amount > availableKobo) {
+      Get.snackbar('More than is available',
+          'You can withdraw up to ${upNaira(availableKobo, fund.currency)} right now.',
+          backgroundColor: kUpError,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    final txId = 'UPLIFT-WITHDRAW-${DateTime.now().microsecondsSinceEpoch}';
+    await validateTransactionPin(
+      context: context,
+      transactionId: txId,
+      transactionType: 'uplift_pool_withdraw',
+      amount: amount / 100,
+      currency: fund.currency,
+      onPinValidated: (verificationToken) async {
+        final resp = await _repo.withdrawPool(
+          fundId: fund.id,
+          amountKobo: amount,
+          pinToken: verificationToken,
+          transactionId: txId,
+        );
+        Get.snackbar('Withdrawal started',
+            '${upNaira(resp.withdrawnAmount.toInt(), fund.currency)} is on its way to your account.',
+            backgroundColor: kUpCard,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM);
+        await _load();
+      },
+    );
+  }
+
+  /// Remove the fund from the funder's own lists.
+  ///
+  /// No PIN: this moves no money, and the server refuses outright while any
+  /// is still in the pool or in flight. The dialog says plainly that the
+  /// record is kept, because "delete" otherwise reads as destroying the
+  /// applications people submitted.
+  Future<void> _deleteFund() async {
+    final fund = _fund!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: kUpCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Remove this fund?',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700)),
+        content: const Text(
+          'It disappears from your funds and stops taking any further '
+          'activity. The record is kept for our records and for the '
+          'businesses that applied — this does not erase their applications.',
+          style: TextStyle(color: kUpTextSecondary, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child:
+                const Text('Keep', style: TextStyle(color: kUpTextSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Remove',
+                style:
+                    TextStyle(color: kUpError, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await _repo.deleteFund(fundId: fund.id);
+      Get.back(result: true);
+      Get.snackbar('Fund removed', '${fund.title} is no longer in your list',
+          backgroundColor: kUpCard,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      // The server's sentence is the useful one — it names what is still in
+      // the pool and what to do about it.
+      _err(e);
+    }
+  }
+
   Future<void> _respondToOffer(bool accept) async {
     if (widget.applicationId == null) return;
     try {
@@ -388,13 +553,21 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         padding: const EdgeInsets.all(16),
         children: [
           if (f.coverImageUrl.isNotEmpty) ...[
-            ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(f.coverImageUrl,
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink())),
+            // Tappable: the list now shows a 64px thumbnail, so this is where
+            // the cover is actually seen — and it should be openable at full
+            // size rather than cropped to a 150px band forever.
+            GestureDetector(
+              onTap: () =>
+                  showUpliftImageViewer(context, f.coverImageUrl, f.title),
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(f.coverImageUrl,
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const SizedBox.shrink())),
+            ),
             const SizedBox(height: 14),
           ],
           Row(
@@ -427,12 +600,17 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
                 scrollDirection: Axis.horizontal,
                 itemCount: f.gallery.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (_, i) => ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(f.gallery[i],
-                        width: 100,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink())),
+                itemBuilder: (_, i) => GestureDetector(
+                  onTap: () =>
+                      showUpliftImageViewer(context, f.gallery[i], f.title),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(f.gallery[i],
+                          width: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              const SizedBox.shrink())),
+                ),
               ),
             ),
           ],
@@ -738,6 +916,51 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
             label: const Text('Funding activity'),
           ),
         ),
+      ]),
+      const SizedBox(height: 10),
+      Row(children: [
+        // TAKE IT BACK WITHOUT KILLING THE RAISE.
+        //
+        // Cancel refunds the unreleased balance, but it also rejects every
+        // pending application — so a funder who merely over-committed had to
+        // choose between leaving the money locked and ending the fund. Shown
+        // only while there is something free to take: the server subtracts
+        // what is allocated to selected businesses AND refunds already in
+        // flight, so an enabled button on an empty pool would be an offer it
+        // would refuse.
+        if (!isTerminal && (_escrow?.available.toInt() ?? 0) > 0)
+          Expanded(
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: kUpPrimary,
+                  minimumSize: const Size.fromHeight(44),
+                  side: const BorderSide(color: kUpDivider)),
+              onPressed: _withdrawPool,
+              icon: const Icon(Icons.undo),
+              label: const Text('Withdraw'),
+            ),
+          ),
+        if (!isTerminal && (_escrow?.available.toInt() ?? 0) > 0)
+          const SizedBox(width: 12),
+        // Remove is offered only once the pool is settled — the server
+        // refuses otherwise, and a button that can only fail is worse than
+        // no button. On a live fund the route out is Cancel or Withdraw,
+        // which are both right there.
+        if (f.committedPool.toInt() -
+                f.releasedTotal.toInt() -
+                f.refundedTotal.toInt() <=
+            0)
+          Expanded(
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: kUpError,
+                  minimumSize: const Size.fromHeight(44),
+                  side: const BorderSide(color: kUpDivider)),
+              onPressed: _deleteFund,
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Remove'),
+            ),
+          ),
       ]),
       const SizedBox(height: 20),
       Row(

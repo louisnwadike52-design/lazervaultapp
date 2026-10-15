@@ -3226,6 +3226,364 @@ class PauseUpliftFundResponse extends $pb.GeneratedMessage {
   UpliftFundMessage ensureFund() => $_ensure(0);
 }
 
+/// Take uncommitted pool money back WITHOUT closing the fund. Cancelling
+/// already refunds the unreleased balance, but it also rejects every pending
+/// application and ends the raise — too blunt for a funder who simply
+/// over-committed. Bounded server-side by what is not already promised to a
+/// selected business. amount = 0 means "all of it".
+class WithdrawUpliftPoolRequest extends $pb.GeneratedMessage {
+  factory WithdrawUpliftPoolRequest({
+    $core.String? fundId,
+    $fixnum.Int64? amount,
+    $core.String? destinationAccountId,
+    $core.String? transactionPin,
+    $core.String? transactionId,
+  }) {
+    final result = create();
+    if (fundId != null) result.fundId = fundId;
+    if (amount != null) result.amount = amount;
+    if (destinationAccountId != null)
+      result.destinationAccountId = destinationAccountId;
+    if (transactionPin != null) result.transactionPin = transactionPin;
+    if (transactionId != null) result.transactionId = transactionId;
+    return result;
+  }
+
+  WithdrawUpliftPoolRequest._();
+
+  factory WithdrawUpliftPoolRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory WithdrawUpliftPoolRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'WithdrawUpliftPoolRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'fundId')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'destinationAccountId')
+    ..aOS(4, _omitFieldNames ? '' : 'transactionPin')
+    ..aOS(5, _omitFieldNames ? '' : 'transactionId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawUpliftPoolRequest clone() =>
+      WithdrawUpliftPoolRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawUpliftPoolRequest copyWith(
+          void Function(WithdrawUpliftPoolRequest) updates) =>
+      super.copyWith((message) => updates(message as WithdrawUpliftPoolRequest))
+          as WithdrawUpliftPoolRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static WithdrawUpliftPoolRequest create() => WithdrawUpliftPoolRequest._();
+  @$core.override
+  WithdrawUpliftPoolRequest createEmptyInstance() => create();
+  static $pb.PbList<WithdrawUpliftPoolRequest> createRepeated() =>
+      $pb.PbList<WithdrawUpliftPoolRequest>();
+  @$core.pragma('dart2js:noInline')
+  static WithdrawUpliftPoolRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<WithdrawUpliftPoolRequest>(create);
+  static WithdrawUpliftPoolRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get fundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set fundId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFundId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get amount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set amount($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get destinationAccountId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set destinationAccountId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasDestinationAccountId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDestinationAccountId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get transactionPin => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set transactionPin($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasTransactionPin() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTransactionPin() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get transactionId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set transactionId($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasTransactionId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTransactionId() => $_clearField(5);
+}
+
+class WithdrawUpliftPoolResponse extends $pb.GeneratedMessage {
+  factory WithdrawUpliftPoolResponse({
+    UpliftFundMessage? fund,
+    $fixnum.Int64? withdrawnAmount,
+    $fixnum.Int64? escrowAvailable,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (fund != null) result.fund = fund;
+    if (withdrawnAmount != null) result.withdrawnAmount = withdrawnAmount;
+    if (escrowAvailable != null) result.escrowAvailable = escrowAvailable;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  WithdrawUpliftPoolResponse._();
+
+  factory WithdrawUpliftPoolResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory WithdrawUpliftPoolResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'WithdrawUpliftPoolResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOM<UpliftFundMessage>(1, _omitFieldNames ? '' : 'fund',
+        subBuilder: UpliftFundMessage.create)
+    ..a<$fixnum.Int64>(
+        2, _omitFieldNames ? '' : 'withdrawnAmount', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        3, _omitFieldNames ? '' : 'escrowAvailable', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawUpliftPoolResponse clone() =>
+      WithdrawUpliftPoolResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawUpliftPoolResponse copyWith(
+          void Function(WithdrawUpliftPoolResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as WithdrawUpliftPoolResponse))
+          as WithdrawUpliftPoolResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static WithdrawUpliftPoolResponse create() => WithdrawUpliftPoolResponse._();
+  @$core.override
+  WithdrawUpliftPoolResponse createEmptyInstance() => create();
+  static $pb.PbList<WithdrawUpliftPoolResponse> createRepeated() =>
+      $pb.PbList<WithdrawUpliftPoolResponse>();
+  @$core.pragma('dart2js:noInline')
+  static WithdrawUpliftPoolResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<WithdrawUpliftPoolResponse>(create);
+  static WithdrawUpliftPoolResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  UpliftFundMessage get fund => $_getN(0);
+  @$pb.TagNumber(1)
+  set fund(UpliftFundMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFund() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFund() => $_clearField(1);
+  @$pb.TagNumber(1)
+  UpliftFundMessage ensureFund() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get withdrawnAmount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set withdrawnAmount($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasWithdrawnAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearWithdrawnAmount() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get escrowAvailable => $_getI64(2);
+  @$pb.TagNumber(3)
+  set escrowAvailable($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasEscrowAvailable() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEscrowAvailable() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => $_clearField(4);
+}
+
+/// Hide a fund from the funder's own views. NOT a data deletion — the admin
+/// console still shows it, flagged, and every application, release and refund
+/// stays auditable. Refused server-side while escrow still holds money.
+class DeleteUpliftFundRequest extends $pb.GeneratedMessage {
+  factory DeleteUpliftFundRequest({
+    $core.String? fundId,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (fundId != null) result.fundId = fundId;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  DeleteUpliftFundRequest._();
+
+  factory DeleteUpliftFundRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DeleteUpliftFundRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DeleteUpliftFundRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'fundId')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteUpliftFundRequest clone() =>
+      DeleteUpliftFundRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteUpliftFundRequest copyWith(
+          void Function(DeleteUpliftFundRequest) updates) =>
+      super.copyWith((message) => updates(message as DeleteUpliftFundRequest))
+          as DeleteUpliftFundRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeleteUpliftFundRequest create() => DeleteUpliftFundRequest._();
+  @$core.override
+  DeleteUpliftFundRequest createEmptyInstance() => create();
+  static $pb.PbList<DeleteUpliftFundRequest> createRepeated() =>
+      $pb.PbList<DeleteUpliftFundRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteUpliftFundRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DeleteUpliftFundRequest>(create);
+  static DeleteUpliftFundRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get fundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set fundId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFundId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => $_clearField(2);
+}
+
+class DeleteUpliftFundResponse extends $pb.GeneratedMessage {
+  factory DeleteUpliftFundResponse({
+    $core.String? fundId,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (fundId != null) result.fundId = fundId;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  DeleteUpliftFundResponse._();
+
+  factory DeleteUpliftFundResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DeleteUpliftFundResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DeleteUpliftFundResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'fundId')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteUpliftFundResponse clone() =>
+      DeleteUpliftFundResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteUpliftFundResponse copyWith(
+          void Function(DeleteUpliftFundResponse) updates) =>
+      super.copyWith((message) => updates(message as DeleteUpliftFundResponse))
+          as DeleteUpliftFundResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeleteUpliftFundResponse create() => DeleteUpliftFundResponse._();
+  @$core.override
+  DeleteUpliftFundResponse createEmptyInstance() => create();
+  static $pb.PbList<DeleteUpliftFundResponse> createRepeated() =>
+      $pb.PbList<DeleteUpliftFundResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteUpliftFundResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DeleteUpliftFundResponse>(create);
+  static DeleteUpliftFundResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get fundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set fundId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFundId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
 class CancelUpliftFundRequest extends $pb.GeneratedMessage {
   factory CancelUpliftFundRequest({
     $core.String? fundId,

@@ -190,6 +190,44 @@ class UpliftRepository {
     );
   }
 
+  /// Take uncommitted pool money back WITHOUT closing the fund.
+  ///
+  /// [amountKobo] of 0 means "all of it". The server bounds this by what is
+  /// not already promised to a selected business, and by refunds already in
+  /// flight, so the app never has to compute the ceiling itself — it shows
+  /// what the server reports and lets the server refuse.
+  Future<up.WithdrawUpliftPoolResponse> withdrawPool({
+    required String fundId,
+    required int amountKobo,
+    required String pinToken,
+    required String transactionId,
+    String destinationAccountId = '',
+  }) async {
+    return _client.withdrawUpliftPool(
+      up.WithdrawUpliftPoolRequest(
+        fundId: fundId,
+        amount: Int64(amountKobo),
+        destinationAccountId: destinationAccountId,
+        transactionPin: pinToken,
+        transactionId: transactionId,
+      ),
+      options: await _callOptions.withAuth(),
+    );
+  }
+
+  /// Remove a fund from the funder's own views. Not a data deletion — the
+  /// admin console keeps it, and the server refuses while escrow still holds
+  /// money or a refund is in flight.
+  Future<up.DeleteUpliftFundResponse> deleteFund({
+    required String fundId,
+    String reason = '',
+  }) async {
+    return _client.deleteUpliftFund(
+      up.DeleteUpliftFundRequest(fundId: fundId, reason: reason),
+      options: await _callOptions.withAuth(),
+    );
+  }
+
   Future<up.CancelUpliftFundResponse> cancelFund({
     required String fundId,
     required String reason,
