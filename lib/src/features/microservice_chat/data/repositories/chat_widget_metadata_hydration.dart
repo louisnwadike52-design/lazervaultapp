@@ -51,6 +51,14 @@ const String kChatMetaRecipientCard = 'recipient_card';
 /// re-querying is what pins it to the question that produced it.
 const String kChatMetaAnalyticsCard = 'analytics_card';
 
+/// The PIN-SETUP hand-off card.
+///
+/// Unlike the others this one is not a record of something that happened — it is an
+/// ACTION the user may not have taken yet. Dropping it on reload is therefore worse
+/// than dropping a receipt: a user who scrolled away mid-onboarding comes back to a
+/// sentence telling them setup opened, and no way to open it.
+const String kChatMetaPinSetup = 'pin_setup';
+
 /// Sentinel keys the chat-proxy-gateway stores a widget payload under.
 ///
 /// The direct path's transport has one slot for structured data — the entities
@@ -66,6 +74,7 @@ const Map<String, String> kChatEntitySentinelToMetaKey = {
   '_recipient_card_pending': kChatMetaRecipientCard,
   '_analytics_card_pending': kChatMetaAnalyticsCard,
   '_qr_card_pending': kChatMetaQrCard,
+  '_pin_setup_pending': kChatMetaPinSetup,
 };
 
 /// Rebuilds the widget metadata for ONE stored message.
@@ -116,6 +125,7 @@ Map<String, dynamic>? hydrateChatWidgetMetadata({
     kChatMetaQrCard,
     kChatMetaRecipientCard,
     kChatMetaAnalyticsCard,
+    kChatMetaPinSetup,
   ]) {
     final v = storedMetadata?[key];
     if (v is Map || v is List) put(key, v);

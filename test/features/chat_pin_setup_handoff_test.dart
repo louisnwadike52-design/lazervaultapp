@@ -71,6 +71,27 @@ void main() {
     }
   });
 
+  test('the card is REBUILT from stored history, not just rendered live', () {
+    // Message metadata alone is not enough. Reopening a thread goes through
+    // hydrateChatWidgetMetadata, and a key that mapper does not copy forward
+    // degrades silently to a grey bubble — the exact bug that file was
+    // written to fix for receipts. The hand-off is worse to lose than a
+    // receipt: it is an action the user may not have taken yet.
+    const hydration =
+        'lib/src/features/microservice_chat/data/repositories/chat_widget_metadata_hydration.dart';
+    final src = read(hydration);
+    expect(src, contains("kChatMetaPinSetup = 'pin_setup'"));
+    expect(src, contains("'_pin_setup_pending': kChatMetaPinSetup"),
+        reason: 'the direct path carries it as a sentinel in entities; '
+            'without this entry a per-service chat loses it on reload');
+    // It must be in the always-hydrate list, not merely declared.
+    final i = src.indexOf('for (final key in const [');
+    final block = src.substring(i, src.indexOf(']', i));
+    expect(block, contains('kChatMetaPinSetup'),
+        reason: 'declaring the key without hydrating it is the same silent '
+            'degradation');
+  });
+
   test('the sentinel name matches the shared protocol exactly', () {
     // A typo here is invisible: the agent emits, nothing matches, no error.
     var dir = Directory.current;
