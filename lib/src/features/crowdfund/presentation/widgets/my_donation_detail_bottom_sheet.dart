@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 
 import '../../domain/entities/crowdfund_entities.dart';
+import '../utils/crowdfund_status_display.dart';
 
 /// Modal bottom sheet that shows the user's donation alongside the
 /// campaign it funded, with a CTA into the campaign details page.
@@ -56,34 +57,31 @@ class _MyDonationDetailBottomSheet extends StatelessWidget {
     required this.isUnresolvable,
   });
 
-  ({Color bg, Color fg, String label}) _statusPalette(String? status) =>
-      switch (status) {
-        'active' => (
-            bg: const Color(0xFF4E03D0).withValues(alpha: 0.18),
-            fg: const Color(0xFF8B5CF6),
-            label: 'Active',
-          ),
-        'completed' => (
-            bg: const Color(0xFF10B981).withValues(alpha: 0.18),
-            fg: const Color(0xFF10B981),
-            label: 'Completed',
-          ),
-        'expired' => (
-            bg: const Color(0xFFFB923C).withValues(alpha: 0.18),
-            fg: const Color(0xFFFB923C),
-            label: 'Expired',
-          ),
-        'cancelled' => (
-            bg: const Color(0xFFEF4444).withValues(alpha: 0.18),
-            fg: const Color(0xFFEF4444),
-            label: 'Cancelled',
-          ),
-        _ => (
-            bg: const Color(0xFF2D2D2D),
-            fg: const Color(0xFF9CA3AF),
-            label: '…',
-          ),
-      };
+  /// The CAMPAIGN's state, as it matters to someone who put money in.
+  ///
+  /// This was a fourth private copy of the palette and it had the same two
+  /// holes as the others: `paused` and `cancelling` named no arm, so they
+  /// rendered the "…" placeholder. `cancelling` means this donor's money is
+  /// being refunded right now — on the one screen built to explain their
+  /// donation, that was shown as a loading dash.
+  ({Color bg, Color fg, String label}) _statusPalette(String? status) {
+    final visual = crowdfundStatusVisualFromName(
+      status,
+      activeColor: const Color(0xFF8B5CF6),
+    );
+    if (visual == null) {
+      return (
+        bg: const Color(0xFF2D2D2D),
+        fg: const Color(0xFF9CA3AF),
+        label: '…',
+      );
+    }
+    return (
+      bg: visual.color.withValues(alpha: 0.18),
+      fg: visual.color,
+      label: visual.label,
+    );
+  }
 
   ({Color color, String label}) _donationPalette(DonationStatus s) =>
       switch (s) {

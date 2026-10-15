@@ -199,7 +199,10 @@ class CrowdfundCard extends StatelessWidget {
                 // so completed and cancelled cards wore a "hurry" colour
                 // forever; and `isExpired ? 'Expired'` reported a campaign
                 // cancelled a month early as having reached its deadline.
-                if (crowdfund.hasDeadline && _clockLabel.isNotEmpty)
+                // No longer gated on hasDeadline: an open-ended
+                // campaign now has a label of its own ("No deadline")
+                // and hiding it made that case look like missing data.
+                if (_clockLabel.isNotEmpty)
                   Row(
                     children: [
                       Icon(

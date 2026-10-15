@@ -13,6 +13,7 @@ import '../cubit/crowdfund_state.dart';
 import '../widgets/my_donation_detail_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import '../utils/crowdfund_status_display.dart';
 
 /// My Donations — view-all page for the user's crowdfund donations.
 ///
@@ -365,6 +366,15 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
     );
   }
 
+  /// The campaign badge for a donation row, or null when there is nothing
+  /// worth saying — an unresolved status, or a campaign that is simply
+  /// running normally.
+  CrowdfundStatusVisual? _campaignBadge(String? status) {
+    final parsed = crowdfundStatusFromName(status);
+    if (parsed == null || parsed == CrowdfundStatus.active) return null;
+    return crowdfundStatusVisualFor(parsed);
+  }
+
   Widget _buildDonationTile(CrowdfundDonation donation) {
     final donationPalette = _donationStatusPalette(donation.status);
     final dateStr =
@@ -451,6 +461,49 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
                       ),
                     ],
                   ),
+                  // THE CAMPAIGN'S OWN STATE, when it changes what this
+                  // donation means.
+                  //
+                  // The row above is the DONATION's status — did my money
+                  // leave. That is a different question from what became of
+                  // the campaign, and this screen only answered the second
+                  // one if you opened the sheet. A backer scrolling their
+                  // donations could not see that a campaign had been
+                  // cancelled, or that a refund was on its way to them.
+                  //
+                  // Deliberately NOT shown for a plain active campaign:
+                  // that is the unremarkable case, and an "Active" pill on
+                  // every row would just crowd the status that is actually
+                  // specific to this donation.
+                  if (_campaignBadge(campaignStatus) case final badge?) ...[
+                    SizedBox(height: 5.h),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 7.w, vertical: 2.5.h),
+                        decoration: BoxDecoration(
+                          color: badge.color.withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(5.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(badge.icon, color: badge.color, size: 10.sp),
+                            SizedBox(width: 3.w),
+                            Text(
+                              badge.label,
+                              style: GoogleFonts.inter(
+                                color: badge.color,
+                                fontSize: 9.5.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   if (donation.message != null &&
                       donation.message!.trim().isNotEmpty) ...[
                     SizedBox(height: 4.h),

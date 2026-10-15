@@ -44,8 +44,30 @@ CrowdfundStatusVisual crowdfundStatusVisual(
   /// The detail screen's active colour is the brand accent rather than
   /// green; the cards use green. Only this one differs between surfaces.
   Color? activeColor,
+}) =>
+    crowdfundStatusVisualFor(
+      c.status,
+      pastDeadline: c.isPastDeadline,
+      activeColor: activeColor,
+    );
+
+/// The vocabulary itself, keyed on the status rather than on a whole
+/// campaign — because two surfaces hold only a cached status STRING and
+/// cannot build an entity to ask with. They each grew their own four-arm
+/// palette instead, and both had the same two holes: `paused` and
+/// `cancelling` matched no arm and fell to the "not resolved yet" skeleton
+/// pill, so a paused campaign and a campaign mid-REFUND both rendered as a
+/// permanent "…". For a donor whose money is on its way back, that is the
+/// one state they most need named.
+CrowdfundStatusVisual crowdfundStatusVisualFor(
+  CrowdfundStatus status, {
+  /// Only knowable from a full campaign. A cached string has no deadline
+  /// with it, so those surfaces pass nothing and simply never show
+  /// "Closing" — the status they do have is still rendered correctly.
+  bool pastDeadline = false,
+  Color? activeColor,
 }) {
-  switch (c.status) {
+  switch (status) {
     case CrowdfundStatus.completed:
       return (
         color: _green,
@@ -88,7 +110,7 @@ CrowdfundStatusVisual crowdfundStatusVisual(
       // not run yet. It is no longer collecting, and it is not yet known
       // whether it will close as completed or expired, so say exactly that
       // instead of inventing either ending.
-      if (c.isPastDeadline) {
+      if (pastDeadline) {
         return (
           color: _amber,
           label: 'Closing',
@@ -103,6 +125,43 @@ CrowdfundStatusVisual crowdfundStatusVisual(
         blurb: '',
       );
   }
+}
+
+/// Parse the status name the API sends (and that the list screens cache) into
+/// the enum. Returns null for an absent or unrecognised value, which is NOT
+/// the same thing as a known status: a null means "we have not resolved this
+/// campaign yet" and callers render their neutral placeholder for it. Folding
+/// the two together is what made a paused campaign indistinguishable from one
+/// still loading.
+CrowdfundStatus? crowdfundStatusFromName(String? name) {
+  switch ((name ?? '').trim().toLowerCase()) {
+    case 'active':
+      return CrowdfundStatus.active;
+    case 'paused':
+      return CrowdfundStatus.paused;
+    case 'completed':
+      return CrowdfundStatus.completed;
+    case 'cancelling':
+      return CrowdfundStatus.cancelling;
+    case 'cancelled':
+      return CrowdfundStatus.cancelled;
+    case 'expired':
+      return CrowdfundStatus.expired;
+    default:
+      return null;
+  }
+}
+
+/// Visual for a cached status string, or null when there is nothing to show
+/// yet. Lets the two string-only surfaces share this vocabulary instead of
+/// keeping their own.
+CrowdfundStatusVisual? crowdfundStatusVisualFromName(
+  String? name, {
+  Color? activeColor,
+}) {
+  final status = crowdfundStatusFromName(name);
+  if (status == null) return null;
+  return crowdfundStatusVisualFor(status, activeColor: activeColor);
 }
 
 /// The clock line that sits beside the donor count.
@@ -122,7 +181,22 @@ String crowdfundDeadlineLabel(Crowdfund c) {
       return 'Ended';
     case CrowdfundStatus.paused:
     case CrowdfundStatus.active:
-      if (!c.hasDeadline) return '';
+      // NO DEADLINE IS A REAL ANSWER, NOT A MISSING ONE.
+      //
+      // A deadline is optional — the create wizard labels it "Optional" and
+      // its picker has a clear button, the service stores a null, the
+      // deadline worker only ever selects `deadline IS NOT NULL`, and the
+      // contribute path skips its past-deadline refusal on a zero one. Such
+      // a campaign keeps collecting until it reaches its target or the
+      // organiser stops it.
+      //
+      // This returned an empty string for that, and both call sites hide the
+      // line when it is empty — so an open-ended campaign showed no clock at
+      // all and looked like a campaign whose dates had failed to load. Say
+      // the actual thing instead.
+      if (!c.hasDeadline) {
+        return 'No deadline';
+      }
       if (c.isPastDeadline) return 'Deadline reached';
       final days = c.daysRemaining;
       // `daysRemaining` truncates, so anything under 24h floors to 0 while

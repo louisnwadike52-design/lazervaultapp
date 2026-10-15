@@ -10,6 +10,7 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../widgets/crowdfund_card.dart';
+import '../utils/crowdfund_status_display.dart';
 import '../widgets/crowdfund_shimmer.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
@@ -1070,39 +1071,37 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     );
   }
 
-  /// Status pill driven by the cached campaign meta. Colours match
-  /// the rest of the crowdfund flow (purple-active, green-completed,
-  /// orange-expired, red-cancelled). When status is null the cache
-  /// hasn't resolved yet — render a neutral skeleton-style pill so
-  /// the row doesn't shift width once the back-fill lands.
+  /// Status pill driven by the cached campaign meta.
+  ///
+  /// This had its own four-arm palette, and the two statuses it did not
+  /// name — `paused` and `cancelling` — fell through to the "not resolved
+  /// yet" arm and rendered a permanent "…". A paused campaign and one
+  /// actively refunding its backers both looked like a row still loading.
+  /// It also painted `expired` orange where the rest of the flow paints it
+  /// slate, which is a deliberate distinction: a campaign that simply ran
+  /// out of time did not do anything wrong.
+  ///
+  /// Now it asks the shared vocabulary. A null comes back only for a status
+  /// that genuinely has not resolved, and that alone keeps the neutral
+  /// skeleton pill.
   Widget _buildStatusBadge(String? status) {
-    final ({Color bg, Color fg, String label}) palette = switch (status) {
-      'active' => (
-          bg: const Color(0xFF4E03D0).withValues(alpha: 0.18),
-          fg: const Color(0xFF8B5CF6),
-          label: 'Active',
-        ),
-      'completed' => (
-          bg: const Color(0xFF10B981).withValues(alpha: 0.18),
-          fg: const Color(0xFF10B981),
-          label: 'Completed',
-        ),
-      'expired' => (
-          bg: const Color(0xFFFB923C).withValues(alpha: 0.18),
-          fg: const Color(0xFFFB923C),
-          label: 'Expired',
-        ),
-      'cancelled' => (
-          bg: const Color(0xFFEF4444).withValues(alpha: 0.18),
-          fg: const Color(0xFFEF4444),
-          label: 'Cancelled',
-        ),
-      _ => (
-          bg: const Color(0xFF2D2D2D),
-          fg: const Color(0xFF9CA3AF),
-          label: '…',
-        ),
-    };
+    final visual = crowdfundStatusVisualFromName(
+      status,
+      // This screen's active colour is the brand purple, matching its own
+      // filter pills, rather than the green the cards use.
+      activeColor: const Color(0xFF8B5CF6),
+    );
+    final ({Color bg, Color fg, String label}) palette = visual == null
+        ? (
+            bg: const Color(0xFF2D2D2D),
+            fg: const Color(0xFF9CA3AF),
+            label: '…',
+          )
+        : (
+            bg: visual.color.withValues(alpha: 0.18),
+            fg: visual.color,
+            label: visual.label,
+          );
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(

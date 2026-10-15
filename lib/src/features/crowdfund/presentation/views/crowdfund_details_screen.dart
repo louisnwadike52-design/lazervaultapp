@@ -1183,7 +1183,10 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
               ],
             ),
           ),
-          if (c.hasDeadline) ...[
+          // Shown for an open-ended campaign too — the label says
+          // "No deadline" rather than the row vanishing, which read as
+          // dates that had failed to load.
+          if (crowdfundDeadlineLabel(c).isNotEmpty) ...[
             SizedBox(height: 8.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

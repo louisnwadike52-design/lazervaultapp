@@ -171,8 +171,93 @@ void main() {
       );
     });
 
-    test('no deadline, no clock line', () {
-      expect(crowdfundDeadlineLabel(_c(status: CrowdfundStatus.active)), '');
+    test('no deadline says so, rather than going blank', () {
+      // Both call sites hide this line when it is empty, so returning ''
+      // for an open-ended campaign showed no clock at all and read as
+      // dates that had failed to load. A deadline is optional by design —
+      // the wizard labels it so, the service stores a null, and the
+      // campaign keeps collecting until it is funded or stopped.
+      expect(
+        crowdfundDeadlineLabel(_c(status: CrowdfundStatus.active)),
+        'No deadline',
+      );
+    });
+
+    test('an open-ended campaign is never urgent', () {
+      // "No deadline" must render calm, not in the amber hurry colour.
+      expect(
+        crowdfundDeadlineIsUrgent(_c(status: CrowdfundStatus.active)),
+        false,
+      );
+    });
+
+    test('a terminal campaign with no deadline still names its ending', () {
+      // The no-deadline answer belongs to the OPEN arm only. A cancelled
+      // open-ended campaign must say "Cancelled", not "No deadline".
+      expect(
+        crowdfundDeadlineLabel(_c(status: CrowdfundStatus.cancelled)),
+        'Cancelled',
+      );
+      expect(
+        crowdfundDeadlineLabel(_c(status: CrowdfundStatus.completed)),
+        'Closed',
+      );
+    });
+  });
+
+  group('status from a cached name', () {
+    // Two surfaces hold only a cached status STRING and grew their own
+    // four-arm palettes. Both missed `paused` and `cancelling`, which fell
+    // to the "not resolved yet" arm and rendered a permanent "…" — on the
+    // donation screen that meant a backer being refunded right now saw a
+    // loading dash where the refund should have been named.
+    test('every status the server can send is recognised', () {
+      // These are the exact strings in the Crowdfund proto's status comment.
+      expect(crowdfundStatusFromName('active'), CrowdfundStatus.active);
+      expect(crowdfundStatusFromName('paused'), CrowdfundStatus.paused);
+      expect(crowdfundStatusFromName('cancelling'), CrowdfundStatus.cancelling);
+      expect(crowdfundStatusFromName('cancelled'), CrowdfundStatus.cancelled);
+      expect(crowdfundStatusFromName('completed'), CrowdfundStatus.completed);
+      expect(crowdfundStatusFromName('expired'), CrowdfundStatus.expired);
+    });
+
+    test('unresolved stays distinguishable from a known status', () {
+      // This is the whole point: null means "we have not loaded this
+      // campaign yet" and keeps the neutral placeholder. Folding an
+      // unrecognised status into it is what hid paused and cancelling.
+      expect(crowdfundStatusFromName(null), isNull);
+      expect(crowdfundStatusFromName(''), isNull);
+      expect(crowdfundStatusFromName('   '), isNull);
+      expect(crowdfundStatusFromName('something_new'), isNull);
+      expect(crowdfundStatusVisualFromName(null), isNull);
+    });
+
+    test('paused and refunding get real labels, not a loading dash', () {
+      expect(crowdfundStatusVisualFromName('paused')!.label, 'Paused');
+      expect(crowdfundStatusVisualFromName('cancelling')!.label, 'Refunding');
+    });
+
+    test('casing and padding from the wire do not matter', () {
+      expect(crowdfundStatusVisualFromName(' Cancelling ')!.label, 'Refunding');
+    });
+
+    test('the cached-string palette agrees with the entity one', () {
+      // One vocabulary, two entry points. If these ever diverge the surfaces
+      // disagree again, which is the bug this file exists to prevent.
+      for (final status in CrowdfundStatus.values) {
+        final fromName = crowdfundStatusVisualFromName(status.name)!;
+        final fromEnum = crowdfundStatusVisualFor(status);
+        expect(fromName.label, fromEnum.label, reason: status.name);
+        expect(fromName.color, fromEnum.color, reason: status.name);
+        expect(fromName.icon, fromEnum.icon, reason: status.name);
+      }
+    });
+
+    test('expired is not painted as a cancellation here either', () {
+      expect(
+        crowdfundStatusVisualFromName('expired')!.color,
+        isNot(crowdfundStatusVisualFromName('cancelled')!.color),
+      );
     });
   });
 
