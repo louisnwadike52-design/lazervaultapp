@@ -6,6 +6,7 @@ import 'package:mono_connect/mono_connect.dart';
 
 import '../../../../core/config/mono_config.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_profile_fix.dart';
 
 /// Mono Identity verification screen for Nigerian users (BVN-based KYC).
 ///
@@ -328,6 +329,42 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
                     ],
                   ),
                 ),
+                // THE FIX, WHERE THE PROBLEM IS DESCRIBED.
+                //
+                // Several identity checks refuse before reaching the provider
+                // because the profile is missing something — no Nigerian
+                // phone, no email, no name — and each message ends "please
+                // update it and try again". The only button here was "Retry
+                // Verification", which re-runs the same check against the
+                // same profile and fails the same way. The editor is several
+                // taps away in Settings and nothing pointed at it.
+                if (kycProfileFieldFor(_errorMessage) !=
+                    KycProfileField.none) ...[
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        final field = kycProfileFieldFor(_errorMessage);
+                        final changed = await openKycProfileFix(field);
+                        if (!mounted) return;
+                        // Changing the phone is the one case we can confirm,
+                        // so it retries straight away rather than making the
+                        // user find their way back to a screen they only left
+                        // to satisfy.
+                        if (changed) _launchMonoIdentity();
+                      },
+                      icon: const Icon(Icons.edit_outlined,
+                          size: 18, color: _primary),
+                      label: Text(
+                        kycProfileFixLabel(
+                            kycProfileFieldFor(_errorMessage)),
+                        style: const TextStyle(
+                            color: _primary, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
               ],
 
               const Spacer(),

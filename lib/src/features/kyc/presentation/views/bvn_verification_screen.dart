@@ -16,6 +16,7 @@ import '../../../funds/domain/services/pending_deposit.dart';
 import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../data/services/prove_kyc_http_service.dart';
 import '../../domain/repositories/kyc_repository.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_profile_fix.dart';
 
 /// Dark-theme palette (matches the rest of the app — see the platform conventions).
 const Color _bg = Color(0xFF0A0A0A);
@@ -1431,9 +1432,37 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     }
   }
 
-  /// Failure handler. Always offers Cancel + Try Again; during signup it also
-  /// offers "Skip for now" so a stuck user can continue onboarding.
+  /// Failure handler.
+  ///
+  /// When the refusal is about the user's OWN profile — no Nigerian phone, no
+  /// email, no name — "Try Again" is the wrong button: it re-runs the same
+  /// check against the same profile and fails identically. Those get a button
+  /// that goes to the editor instead, and a phone change comes back here and
+  /// retries on its own, because the user only left to satisfy this screen.
+  ///
+  /// Everything else keeps Cancel + Try Again; during signup a "Skip for now"
+  /// is added so a stuck user can finish onboarding.
   void _handleFailure(String title, String message) {
+    final field = kycProfileFieldFor(message);
+    if (field != KycProfileField.none) {
+      _showErrorDialog(
+        title,
+        message,
+        primaryLabel: kycProfileFixLabel(field),
+        onPrimary: () async {
+          // Close the dialog FIRST. _showErrorDialog only pops it in its
+          // default handler, so a custom onPrimary that pushes a screen
+          // would stack it on top of a dialog that is still open — and the
+          // user would come back to a modal they thought they had dismissed.
+          Get.back();
+          final changed = await openKycProfileFix(field);
+          if (!mounted) return;
+          if (changed) _startVerification();
+        },
+        showSkip: _fromSignup && _allowSkip,
+      );
+      return;
+    }
     _showErrorDialog(title, message, showSkip: _fromSignup && _allowSkip);
   }
 
