@@ -35,9 +35,21 @@ class EscrowCubit extends Cubit<EscrowState> {
   }
 
   /// Load the caller's deals. role: "", "buyer", "seller".
-  /// Page size for the deals list. Small enough that a page is one screen
-  /// or two, which is what makes numbered pages meaningful.
-  static const int dealsPageSize = 20;
+  /// Rows per page, for EVERY paged list in EscrowPay.
+  ///
+  /// FIVE, not twenty. A deal card is tall — parties, amount, state, the
+  /// action it is waiting on — so twenty of them is a long scroll with a
+  /// pager at the bottom nobody reaches, which is the worst of both designs:
+  /// the cost of pagination without its benefit. Five is about one screen, so
+  /// the numbered bar is visible with the list and paging is a tap rather
+  /// than a scroll-then-tap.
+  ///
+  /// One constant for deals AND offers: two lists that page differently in
+  /// the same feature is a detail the user has to notice.
+  static const int dealsPageSize = 5;
+
+  /// Alias for readability at the offers call sites. Same number on purpose.
+  static const int offersPageSize = dealsPageSize;
 
   /// The next page, fetched in the background after the current one lands.
   /// Keyed by (role, status, page) so a filter change cannot serve a page
@@ -329,12 +341,68 @@ class EscrowCubit extends Cubit<EscrowState> {
 
   // ── Two-sided offers (money-free agreement phase before funding) ──
 
-  Future<void> loadOffers({String role = '', String status = ''}) async {
-    emit(const EscrowLoading());
+  /// The next offers page, fetched in the background after the current one
+  /// lands. Keyed exactly like the deals prefetch, so a role or status change
+  /// cannot serve a page fetched for a different list.
+  String? _offersPrefetchKey;
+  EscrowOffersPage? _offersPrefetched;
+
+  Future<void> loadOffers({
+    String role = '',
+    String status = '',
+    int page = 1,
+  }) async {
+    // A page change keeps the current list visible and flags it loading; a
+    // first load has nothing to keep, so it shows the shimmer.
+    final current = state;
+    if (current is EscrowOffersLoaded && page != current.page) {
+      emit(current.copyWith(pageLoading: true));
+    } else {
+      emit(const EscrowLoading());
+    }
     try {
       final uid = await _userId();
-      final offers = await repository.listMyOffers(role: role, status: status);
-      emit(EscrowOffersLoaded(offers, uid));
+
+      // Serve the prefetch when it is for exactly this list and page.
+      EscrowOffersPage result;
+      final want = _key(role, status, page);
+      final hit = _offersPrefetched;
+      if (hit != null && _offersPrefetchKey == want) {
+        result = hit;
+      } else {
+        result = await repository.listMyOffersPaged(
+            role: role, status: status, page: page, limit: offersPageSize);
+      }
+      _offersPrefetched = null;
+      _offersPrefetchKey = null;
+
+      emit(EscrowOffersLoaded(
+        result.items,
+        uid,
+        page: result.page,
+        totalPages: result.totalPages,
+      ));
+
+      // Warm the next page AFTER emitting, so it never delays what the user
+      // asked for. Failures are swallowed: a prefetch that cannot run is a
+      // missed optimisation, not an error anyone should see.
+      if (result.page < result.totalPages) {
+        final nextPage = result.page + 1;
+        unawaited(repository
+            .listMyOffersPaged(
+                role: role,
+                status: status,
+                page: nextPage,
+                limit: offersPageSize)
+            .then((p) {
+          _offersPrefetched = p;
+          _offersPrefetchKey = _key(role, status, nextPage);
+        }).catchError((_) {
+          _offersPrefetched = null;
+          _offersPrefetchKey = null;
+          return;
+        }));
+      }
     } catch (e) {
       emit(EscrowError(_clean(e)));
     }

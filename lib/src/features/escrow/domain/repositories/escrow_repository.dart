@@ -143,11 +143,28 @@ abstract class EscrowRepository {
   Future<EscrowOfferEntity> getOfferByShareToken(String shareToken);
 
   /// List offers I created / that are addressed to me.
+  ///
+  /// Kept for callers that want a plain list. The offers SCREEN uses
+  /// [listMyOffersPaged] — see there for why the total matters.
   Future<List<EscrowOfferEntity>> listMyOffers({
     String role = '',
     String status = '',
     int page = 1,
     int limit = 50,
+  });
+
+  /// One page of offers, WITH the server's total.
+  ///
+  /// Separate from [listMyOffers] for the same reason [listMyDealsPaged] is
+  /// separate from the plain deals list: that one discards `total`, and
+  /// without a total the app cannot say how many pages there are — which is
+  /// the whole point of numbered pagination. The RPC has always returned it;
+  /// the repository was throwing it away.
+  Future<EscrowOffersPage> listMyOffersPaged({
+    String role,
+    String status,
+    int page,
+    int limit,
   });
 
   /// Addressed counterparty accepts (buy_request) or declines an OPEN offer.
@@ -231,5 +248,28 @@ class EscrowDealsPage {
 
   /// At least 1, so an empty list is "page 1 of 1" rather than "of 0",
   /// which reads as a broken counter.
+  int get totalPages => total <= 0 ? 1 : ((total + limit - 1) ~/ limit);
+}
+
+/// One page of offers plus the server's total. Mirrors [EscrowDealsPage] —
+/// the two lists page identically, so they share a shape rather than each
+/// inventing one.
+class EscrowOffersPage {
+  final List<EscrowOfferEntity> items;
+  final int total;
+  final int page;
+  final int limit;
+
+  const EscrowOffersPage({
+    required this.items,
+    required this.total,
+    required this.page,
+    required this.limit,
+  });
+
+  static const empty =
+      EscrowOffersPage(items: [], total: 0, page: 1, limit: 5);
+
+  /// At least 1, for the same reason as above.
   int get totalPages => total <= 0 ? 1 : ((total + limit - 1) ~/ limit);
 }

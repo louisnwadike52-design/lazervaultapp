@@ -1,3 +1,4 @@
+import 'settings_search_vocabulary.dart';
 import 'dart:async';
 import 'package:lazervault/src/features/uplift/data/services/uplift_guide_preference.dart';
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_entry_tile.dart';
@@ -592,6 +593,25 @@ class _SettingsViewState extends State<_SettingsView> {
           'totp',
           'update password',
           'device permissions',
+          // Tiles this list had fallen behind on. Each is rendered by
+          // _securityBody and was unreachable from the search bar: the
+          // section was filtered out before the tile filter ever ran.
+          'auto-logout',
+          'auto logout',
+          'idle timeout',
+          'session timeout',
+          'login activity',
+          'recent sign-ins',
+          'sign in history',
+          'fraud detection',
+          'fraud',
+          'trusted devices',
+          'camera',
+          'microphone',
+          'contacts access',
+          'permissions',
+          'set password',
+          'change password',
         ],
       ),
       // Dedicated Account Lock section — a scheduled or emergency self-lock that
@@ -614,26 +634,16 @@ class _SettingsViewState extends State<_SettingsView> {
         title: 'Customize',
         icon: Icons.tune_rounded,
         body: _customizeBody(),
-        keywords: const [
-          'login method',
-          'email password',
-          'phone passcode',
-          'send flow',
-          'transfer flow',
-          'service tiles',
-          'home tiles',
-          'entrance animation',
-          'appearance',
-          'preferences',
-          'send money',
-          'classic',
-          'standard',
-          'sign in',
-          'transfer style',
-          'send funds',
-          'sendfunds',
-          'transfer',
-        ],
+        // COMPOSED FROM THE TILES, not retyped beside them.
+        //
+        // This list used to be hand-written and had fallen six tiles behind:
+        // Dashboard Layout, Adaptive quick services, Deposit balance tips,
+        // Lazerfunds guides, Voice tips and Payment reminders were all
+        // searchable as TILES and none of them was reachable, because
+        // matching happens in two stages and this one runs first — the
+        // section was filtered out before the tile filter ever ran. Searching
+        // "dashboard" from this screen returned nothing at all.
+        keywords: SettingsSearchVocabulary.customize,
       ),
       _SectionSpec(
         title: 'Regional',
@@ -746,6 +756,23 @@ class _SettingsViewState extends State<_SettingsView> {
           'ticket',
           'logout',
           'sign out',
+          // Tiles that were rendered here but not searchable.
+          'help center',
+          'help centre',
+          'app tour',
+          'tour',
+          'walkthrough',
+          'replay app tour',
+          'dashboard walkthrough',
+          'open-source licenses',
+          'open source',
+          'licenses',
+          'licences',
+          'app version',
+          'version',
+          'about lazervault',
+          'delete account',
+          'close account',
         ],
       ),
     ];
@@ -992,16 +1019,7 @@ class _SettingsViewState extends State<_SettingsView> {
         final sendMoneyTile = _navTile(
           icon: Icons.bolt_rounded,
           title: 'Send Funds',
-          keywords: const [
-            'transfer style',
-            'classic',
-            'standard',
-            'send',
-            'transfer',
-            'send funds',
-            'sendfunds',
-            'send money',
-          ],
+          keywords: SettingsSearchVocabulary.sendFunds,
           subtitle: _transferStyleClassic
               ? 'Classic — fast, streamlined'
               : 'Standard — full transfer form',
@@ -1010,7 +1028,7 @@ class _SettingsViewState extends State<_SettingsView> {
         final loginMethodTile = _navTile(
           icon: Icons.login_rounded,
           title: 'Login Method',
-          keywords: const ['passcode', 'password', 'email', 'phone', 'sign in'],
+          keywords: SettingsSearchVocabulary.loginMethod,
           subtitle:
               isEmailMode ? 'Email or phone + password' : 'Phone + passcode',
           onTap: () => _openLoginMethodSheet(hasPassword),
@@ -1018,14 +1036,7 @@ class _SettingsViewState extends State<_SettingsView> {
         final dashboardLayoutTile = _navTile(
           icon: Icons.dashboard_customize_rounded,
           title: 'Dashboard Layout',
-          keywords: const [
-            'dashboard',
-            'layout',
-            'home',
-            'adverts',
-            'showcase',
-            'classic',
-          ],
+          keywords: SettingsSearchVocabulary.dashboardLayout,
           subtitle: _dashboardShowcase
               ? 'Showcase — compact services + adverts'
               : 'Classic — current view',
@@ -1034,14 +1045,7 @@ class _SettingsViewState extends State<_SettingsView> {
         final adaptiveServicesTile = _switchTile(
           icon: Icons.auto_awesome_motion_rounded,
           title: 'Adaptive quick services',
-          keywords: const [
-            'adaptive',
-            'quick services',
-            'reorder',
-            'most used',
-            'personalise',
-            'personalize',
-          ],
+          keywords: SettingsSearchVocabulary.adaptiveServices,
           subtitle: 'Reorder services by the ones you use most',
           value: _adaptiveQuickServices,
           onChanged: (v) {
@@ -1091,15 +1095,7 @@ class _SettingsViewState extends State<_SettingsView> {
         final depositTipsTile = _switchTile(
           icon: Icons.tips_and_updates_rounded,
           title: 'Deposit balance tips',
-          keywords: const [
-            'deposit',
-            'balance',
-            'refresh',
-            'tips',
-            'guide',
-            'keep balance live',
-            'linked bank',
-          ],
+          keywords: SettingsSearchVocabulary.depositTips,
           subtitle:
               'Show the "keep your balance live" guide on the deposit screen',
           value: depositGuideOn,
@@ -1133,18 +1129,7 @@ class _SettingsViewState extends State<_SettingsView> {
         final lazerfundsGuidesTile = _switchTile(
           icon: Icons.school_outlined,
           title: 'Lazerfunds guides',
-          keywords: const [
-            'lazerfunds',
-            'uplift',
-            'guide',
-            'guides',
-            'explainer',
-            'tips',
-            'how it works',
-            'tutorial',
-            'onboarding',
-            'first time',
-          ],
+          keywords: SettingsSearchVocabulary.lazerfundsGuides,
           subtitle: 'Explain each Lazerfunds tab the first time you open it',
           value: !_lazerfundsGuidesDismissed,
           onChanged: (v) async {
@@ -1170,20 +1155,7 @@ class _SettingsViewState extends State<_SettingsView> {
         final voiceGuidesTile = _switchTile(
           icon: Icons.record_voice_over_outlined,
           title: 'Voice tips',
-          keywords: const [
-            'voice',
-            'tips',
-            'guide',
-            'guides',
-            'nova',
-            'assistant',
-            'hold to talk',
-            'tap to talk',
-            'push to talk',
-            'coach',
-            'how it works',
-            'first time',
-          ],
+          keywords: SettingsSearchVocabulary.voiceTips,
           subtitle: 'Explain how to talk to the assistant when a session opens',
           value: !_voiceGuidesDismissed,
           onChanged: (v) async {
@@ -1220,23 +1192,7 @@ class _SettingsViewState extends State<_SettingsView> {
         final pendingPromptTile = _switchTile(
           icon: Icons.schedule_rounded,
           title: 'Payment reminders on launch',
-          keywords: const [
-            'pending',
-            'payments',
-            'reminder',
-            'reminders',
-            'launch',
-            'startup',
-            'prompt',
-            'popup',
-            'waiting',
-            'invoice',
-            'split bill',
-            'tag pay',
-            'requests',
-            'dont show again',
-            "don't show again",
-          ],
+          keywords: SettingsSearchVocabulary.pendingPrompt,
           subtitle:
               'Show what you owe and who is waiting on you when you open the app',
           value: pendingPromptOn,

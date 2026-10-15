@@ -2577,6 +2577,14 @@ const UpdateContributionRequest$json = {
     {'1': 'total_cycles_set', '3': 11, '4': 1, '5': 8, '10': 'totalCyclesSet'},
     {'1': 'image_url', '3': 12, '4': 1, '5': 9, '10': 'imageUrl'},
     {'1': 'image_url_set', '3': 13, '4': 1, '5': 8, '10': 'imageUrlSet'},
+    {'1': 'auto_pay_enabled', '3': 14, '4': 1, '5': 8, '10': 'autoPayEnabled'},
+    {
+      '1': 'auto_pay_enabled_set',
+      '3': 15,
+      '4': 1,
+      '5': 8,
+      '10': 'autoPayEnabledSet'
+    },
   ],
 };
 
@@ -2591,7 +2599,9 @@ final $typed_data.Uint8List updateContributionRequestDescriptor = $convert.base6
     'CFIRYXV0b1BheW91dEVuYWJsZWQSNQoXYXV0b19wYXlvdXRfZW5hYmxlZF9zZXQYCSABKAhSFG'
     'F1dG9QYXlvdXRFbmFibGVkU2V0EiEKDHRvdGFsX2N5Y2xlcxgKIAEoBVILdG90YWxDeWNsZXMS'
     'KAoQdG90YWxfY3ljbGVzX3NldBgLIAEoCFIOdG90YWxDeWNsZXNTZXQSGwoJaW1hZ2VfdXJsGA'
-    'wgASgJUghpbWFnZVVybBIiCg1pbWFnZV91cmxfc2V0GA0gASgIUgtpbWFnZVVybFNldA==');
+    'wgASgJUghpbWFnZVVybBIiCg1pbWFnZV91cmxfc2V0GA0gASgIUgtpbWFnZVVybFNldBIoChBh'
+    'dXRvX3BheV9lbmFibGVkGA4gASgIUg5hdXRvUGF5RW5hYmxlZBIvChRhdXRvX3BheV9lbmFibG'
+    'VkX3NldBgPIAEoCFIRYXV0b1BheUVuYWJsZWRTZXQ=');
 
 @$core.Deprecated('Use updateContributionResponseDescriptor instead')
 const UpdateContributionResponse$json = {

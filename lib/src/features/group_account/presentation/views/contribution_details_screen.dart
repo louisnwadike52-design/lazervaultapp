@@ -181,6 +181,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           buildWhen: (previous, current) =>
               current is GroupAccountLoading ||
               current is GroupAccountGroupLoaded ||
+              // The state a DEEP LINK arrives on. Without it in this list the
+              // screen never rebuilt after the fetch landed and sat on the
+              // loading view for good.
+              current is ContributionDetailsLoaded ||
               current is ContributionPaymentSuccess ||
               current is ContributionPaymentFailed ||
               current is GroupAccountError,
@@ -195,6 +199,26 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   behavior: SnackBarBehavior.floating,
                 ),
               );
+            } else if (state is ContributionDetailsLoaded) {
+              // Arrived by id alone — a push tap, an in-app notification tap,
+              // a share link. This is the ONLY state that carries a
+              // contribution without a group behind it.
+              if (state.contribution.id == widget.contributionId && mounted) {
+                setState(() {
+                  _currentContribution = state.contribution;
+                  if (state.payments.isNotEmpty) {
+                    _localPayments = state.payments;
+                  }
+                });
+                // The group is what tells this screen the viewer's ROLE, and
+                // the deep link had no group id until now. Fetching it here —
+                // after the contribution is already on screen — fills in the
+                // admin-only controls without making the first paint wait.
+                final gid = state.contribution.groupId;
+                if (gid.isNotEmpty) {
+                  context.read<GroupAccountCubit>().loadGroupDetails(gid);
+                }
+              }
             } else if (state is GroupAccountGroupLoaded) {
               // Update the current contribution from the loaded group data
               // This ensures statistics update after payment
@@ -520,6 +544,21 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         value: hasPaid ? 'Covered' : 'On',
         onTap: () => _showAutoDebitDialog(contribution, hasPaid: hasPaid),
       ));
+    } else if (me != null) {
+      // AUTO-DEBIT OFF — SHOWN, NOT HIDDEN.
+      //
+      // The flag was settable only at creation, so a circle created with it
+      // off nagged its members "payment past due" every cycle with nothing
+      // anywhere that could answer the nag. The chip said nothing because it
+      // rendered only when the flag was already on, which is the one state
+      // where nobody needs to find the control.
+      chips.add(_StatusChip(
+        icon: Icons.bolt_outlined,
+        iconColor: const Color(0xFF9CA3AF),
+        label: 'Auto-debit',
+        value: 'Off',
+        onTap: () => _showEnableAutoDebitDialog(contribution, isAdmin: isAdmin),
+      ));
     }
     final autoPayoutChip = !showAutoPayout
         ? null
@@ -726,6 +765,102 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         primaryAction: null,
       ),
     );
+  }
+
+  /// Offers to turn auto-debit ON for this contribution.
+  ///
+  /// Server-side this is an ADMIN edit (the same ActionEditContribution gate
+  /// as the target amount), so a plain member is told who can do it rather
+  /// than being shown a button that will come back refused. The flag is
+  /// per-CONTRIBUTION, not per-member — that is how the backend models it,
+  /// and saying so plainly is better than implying a personal setting that
+  /// would quietly change the circle for everyone.
+  void _showEnableAutoDebitDialog(Contribution contribution,
+      {required bool isAdmin}) {
+    final amountLabel =
+        contribution.regularAmount != null && contribution.regularAmount! > 0
+            ? '${contribution.currency} ${_fmtAmount(contribution.regularAmount!)}'
+            : 'each share';
+    final sections = <_DialogSection>[
+      _DialogSection(
+        heading: 'What it does',
+        body: 'With auto-debit on, $amountLabel is collected from each '
+            "member's wallet at the start of every cycle. If a wallet is "
+            'short, we try again once a day and tell that member why — '
+            'instead of everyone getting a "past due" reminder they have to '
+            'act on by hand.',
+      ),
+      _DialogSection(
+        heading: 'It applies to the whole circle',
+        body: 'This is a setting on the contribution, so turning it on turns '
+            'it on for every member. Nobody is charged anything they did not '
+            'already owe for the cycle.',
+      ),
+    ];
+    if (!isAdmin) {
+      sections.add(const _DialogSection(
+        heading: 'Who can turn it on',
+        body: 'Only the group admin can change this. Ask them to switch '
+            'auto-debit on, or keep paying your share from the Contribute '
+            'button.',
+      ));
+    }
+
+    showDialog(
+      context: context,
+      useRootNavigator: false,
+      builder: (dialogCtx) => _StatusDetailDialog(
+        accent: const Color(0xFF9CA3AF),
+        icon: Icons.bolt_outlined,
+        title: 'Auto-debit is off',
+        sections: sections,
+        primaryAction: !isAdmin
+            ? null
+            : _DialogAction(
+                label: 'Turn auto-debit on',
+                onTap: () {
+                  Navigator.of(dialogCtx).pop();
+                  _setAutoDebit(contribution, true);
+                },
+              ),
+      ),
+    );
+  }
+
+  /// Writes the flag and re-reads the contribution.
+  ///
+  /// The server charges the current cycle immediately when this goes from off
+  /// to on — somebody switching it on has just been told their share is past
+  /// due, and leaving them looking at the same nag would make the switch
+  /// appear to do nothing. So the re-read matters: it is what replaces
+  /// "past due" with "Covered" on this screen.
+  Future<void> _setAutoDebit(Contribution contribution, bool on) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final cubit = context.read<GroupAccountCubit>();
+    await cubit.updateContributionDetails(
+      contribution.copyWith(autoPayEnabled: on),
+    );
+    if (!mounted) return;
+    // updateContributionDetails reports failure as a STATE, not an exception
+    // (it rolls its optimistic patch back and emits GroupAccountError), and
+    // this screen's listener already surfaces that. So the only thing left to
+    // decide is whether to claim success — and claiming it after a refusal is
+    // exactly the "setting that silently did nothing" this change exists to
+    // remove.
+    if (cubit.state is GroupAccountError) return;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(on
+            ? 'Auto-debit is on. We will collect each share automatically.'
+            : 'Auto-debit is off. Members pay their share manually.'),
+        backgroundColor: const Color(0xFF10B981),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+      ),
+    );
+    // Re-read: the server charges the current cycle the moment this goes from
+    // off to on, so this is what turns "past due" into "Covered" on screen.
+    _loadContributionDetails(force: true);
   }
 
   void _showAutoDebitDialog(Contribution contribution,

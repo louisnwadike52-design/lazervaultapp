@@ -78,7 +78,32 @@ class EscrowError extends EscrowState {
 class EscrowOffersLoaded extends EscrowState {
   final List<EscrowOfferEntity> offers;
   final String currentUserId;
-  const EscrowOffersLoaded(this.offers, this.currentUserId);
+
+  /// 1-based page and how many there are, so the bar can render numbers.
+  /// Same shape as [EscrowDealsLoaded] — the two lists page identically.
+  final int page;
+  final int totalPages;
+
+  /// True while the NEXT page is being fetched. The current page stays on
+  /// screen underneath, because blanking a list the user is reading to show
+  /// a spinner loses their place for no gain.
+  final bool pageLoading;
+
+  const EscrowOffersLoaded(
+    this.offers,
+    this.currentUserId, {
+    this.page = 1,
+    this.totalPages = 1,
+    this.pageLoading = false,
+  });
+
+  EscrowOffersLoaded copyWith({bool? pageLoading}) => EscrowOffersLoaded(
+        offers,
+        currentUserId,
+        page: page,
+        totalPages: totalPages,
+        pageLoading: pageLoading ?? this.pageLoading,
+      );
 }
 
 class EscrowOfferLoaded extends EscrowState {

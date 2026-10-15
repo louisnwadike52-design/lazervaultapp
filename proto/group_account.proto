@@ -50,14 +50,17 @@ enum GroupMemberStatus {
   // and gate role/remove actions off until the invite is accepted.
   GROUP_MEMBER_STATUS_PENDING = 5;
 
-  // The PERSON asked to join a public group; an admin has not decided yet.
-  // The opposite direction from PENDING above, which is an invitation the
-  // admin sent. The requester sees "Awaiting approval"; admins see an
-  // approve/reject action.
+  // The PERSON asked to join a public group and an admin has not decided
+  // yet. The opposite direction from PENDING above, which is an invitation
+  // the admin sent. Clients render an "Awaiting approval" state for the
+  // requester and an approve/reject action for admins; an admin seeing
+  // PENDING must be able to tell they are waiting on somebody, not the
+  // other way round.
   GROUP_MEMBER_STATUS_PENDING_APPROVAL = 6;
 
   // An admin declined a join request. Distinct from REMOVED, which means
-  // "was a member, is not any more".
+  // "was a member, is not any more" — someone never admitted was never
+  // removed, and the two read differently in the activity log.
   GROUP_MEMBER_STATUS_REJECTED = 7;
 }
 
@@ -162,9 +165,14 @@ message GroupAccountMessage {
   // fetch. Defaults false on endpoints that don't resolve membership
   // (and for unauthenticated callers).
   bool is_member = 16;
-  // Drives the CTA: 'Request to join' versus 'Join', so the user knows
-  // before tapping whether they are joining or joining a queue.
+  // Whether joining this group needs an admin decision. Drives the CTA:
+  // "Request to join" versus "Join", so the user knows before tapping
+  // whether they are getting in or getting in a queue.
   bool requires_approval = 17;
+  // The caller's own outstanding request, when they have one. Lets the
+  // discover list render "Awaiting approval" without a second round-trip
+  // per group.
+  bool has_pending_join_request = 18;
 }
 
 message GroupMemberMessage {
@@ -184,7 +192,8 @@ message GroupMemberMessage {
   // Propagated from auth SearchUsers: do not infer from masked email/phone strings.
   bool email_matches_search_query = 14;
   bool phone_matches_search_query_exact = 15;
-  // Join-request audit. Unset for members who never went through approval.
+  // Join-request audit. Set only for members who came through the public
+  // group approval flow; null/empty for everyone else.
   google.protobuf.Timestamp requested_at = 16;
   google.protobuf.Timestamp decided_at = 17;
   string decided_by = 18;
@@ -232,6 +241,51 @@ message ContributionMessage {
   // creator must trigger it via TriggerManualPayout. Distinct from
   // auto_pay_enabled (field 23) which controls MEMBER-side auto-debit.
   bool auto_payout_enabled = 32;
+
+  // What this contribution has actually RAISED in its current cycle: the sum
+  // of completed payments, not the pot's live balance.
+  //
+  // current_amount is the balance, and a payout empties it — so after a
+  // payout the header read "NGN 0 Raised / 0% progress" on a contribution
+  // that had just paid out its full target. The money raised is a fact about
+  // the cycle and does not stop being true when the pot is swept.
+  //
+  // Scoped to the CURRENT cycle so a ROSCA reports the round in progress
+  // rather than a lifetime figure that would climb past the target every
+  // cycle and make progress meaningless.
+  uint64 raised_this_cycle_minor = 33;
+
+  // Contribution avatar. Same shape and storage rail as
+  // GroupAccountMessage.image_url (field 14): a storage-service public URL
+  // the client uploads to BEFORE create/update, never raw bytes on this RPC.
+  // Empty ⇒ the client draws its initials placeholder, so a contribution
+  // without one is a normal state and not a broken image.
+  string image_url = 34;
+
+  // Whether any payout on this contribution has actually SETTLED, and for
+  // how much. Derived (not stored): the sum of completed payout_transactions.
+  //
+  // The list could not tell "completed" apart from "completed AND the money
+  // has gone out", so a one-time goal that had paid its recipient looked
+  // identical to one still holding the pot. Carried as a flag rather than the
+  // payout_history array because the list endpoint deliberately does not
+  // preload history — one grouped aggregate per page, not one query per row.
+  bool paid_out = 35;
+  uint64 paid_out_amount_minor = 36;
+
+  // When the creator OPENED this contribution, freezing its roster. Unset ⇒
+  // not opened yet, which only ever happens on a rotating-savings circle
+  // (a one-time goal has no roster to freeze and opens at creation).
+  //
+  // Drives the create flow's last step: while a circle is unopened, members
+  // can still be added and the payout scheduler leaves it alone.
+  google.protobuf.Timestamp opened_at = 37;
+
+  // Cycles that have CLOSED, as opposed to current_cycle, which is the
+  // rotation position now in progress. Without it a client cannot render
+  // "cycle 3 of 6" against the agreed total — the column has existed on the
+  // model since migration 020 but was never exposed here.
+  int32 cycles_completed = 38;
 }
 
 // Member assigned to a contribution
@@ -266,6 +320,30 @@ message ContributionMemberMessage {
   // and Flutter UI surface "Invite Sent" with a one-tap deep link
   // to the invite detail.
   string linked_invitation_id = 14;
+
+  // === Exit / refund metadata (populated only for removed members) ===
+  // Mirrors migration 013 columns. All zero-values for active rows.
+  google.protobuf.Timestamp removed_at = 15;
+  string removal_reason                = 16;
+  int64  refund_amount                 = 17;
+  int64  forfeited_amount              = 18;
+  string refund_status                 = 19;   // none|pending|completed|failed
+  string refund_failed_reason          = 20;
+
+  // Auto-charge attempt state for THIS member's current cycle.
+  //
+  // Carried on the member row rather than behind a new RPC: the app already
+  // reads these rows to draw the roster, and the person asking "why was I not
+  // debited?" is looking at their own row when they ask it. Before this the
+  // attempt history existed only in contribution_auto_charges, which nothing
+  // outside the service could read — so auto-pay could quietly exhaust its
+  // retries and the member had no way to find out.
+  //
+  // All zero when auto-pay is off or no attempt has been made.
+  string auto_charge_status            = 21;   // ''|pending|succeeded|failed|exhausted
+  int32  auto_charge_attempts          = 22;
+  google.protobuf.Timestamp auto_charge_last_attempt_at = 23;
+  string auto_charge_last_error        = 24;
 }
 
 message ContributionPaymentMessage {
@@ -412,6 +490,18 @@ message ScheduledPayoutMessage {
   int64 version = 20;
   google.protobuf.Timestamp created_at = 21;
   google.protobuf.Timestamp updated_at = 22;
+
+  // Why this payout failed, in terms the member can act on. Derived from
+  // last_error by the service so the app and the admin console cannot drift
+  // into two different readings of the same string.
+  //   failure_code       — stable enum-ish code (RECIPIENT_ACCOUNT_INACTIVE, …)
+  //   failure_recoverable— the USER can fix it; only false routes to support
+  //   failure_hint       — one sentence telling them what to do
+  //   manual_eligible    — re-firing by hand is a sensible next step
+  string failure_code = 23;
+  bool failure_recoverable = 24;
+  string failure_hint = 25;
+  bool manual_eligible = 26;
 }
 
 message PayoutEventMessage {
@@ -456,6 +546,15 @@ message ClearPayoutReceiverRequest {
 message ClearPayoutReceiverResponse {
   bool cleared = 1;
   ScheduledPayoutMessage scheduled_payout = 2;
+}
+
+message SwitchPayoutToManualRequest {
+  string contribution_id = 1;
+  int32 cycle_index = 2;
+}
+
+message SwitchPayoutToManualResponse {
+  ScheduledPayoutMessage scheduled_payout = 1;
 }
 
 message TriggerManualPayoutRequest {
@@ -523,6 +622,90 @@ message ListUserGroupsRequest {
 message ListUserGroupsResponse {
   repeated GroupAccountMessage groups = 1;
   GroupPaginationInfo pagination = 2;
+}
+
+// ===== Past Contributions / Past Groups =====
+
+// PastContributionEntry decorates a contribution + group pair with
+// the caller's exit metadata (when, why, refund status, the cycle
+// they were on at exit) so the Past-Contributions list screen can
+// render the full row in one pass.
+message PastContributionEntry {
+  ContributionMessage contribution      = 1;
+  GroupAccountMessage group             = 2;
+  google.protobuf.Timestamp removed_at  = 3;
+  string removal_reason                 = 4;
+  int32  removed_at_cycle_index         = 5;   // 0 = exited before any cycle
+  string refund_status                  = 6;   // none|pending|completed|failed
+  int64  refund_amount                  = 7;
+  int64  forfeited_amount               = 8;
+  string refund_failed_reason           = 9;
+  bool   self_exit                      = 10;  // → "Left" tab when true
+  // The caller "deleted" this row from their own lists. Nothing is removed
+  // from the database — this is a per-user hide, so the row still appears
+  // under the Deleted tab and every audit/report still counts it.
+  bool   hidden                         = 11;
+  google.protobuf.Timestamp hidden_at   = 12;
+}
+
+message ListPastContributionsRequest {
+  int32  page      = 1;
+  int32  page_size = 2;
+  string filter    = 3;   // ""|"removed"|"left"
+  // Independent of `filter` (which is about WHY the membership ended).
+  // ""|"visible" → rows the caller has not deleted; "hidden" → only the
+  // deleted ones (the Deleted tab); "all" → both.
+  //
+  // The default EXCLUDES hidden rows: "delete" has to mean the row stops
+  // appearing where the user deleted it from, or the control does nothing.
+  string visibility = 4;
+}
+message ListPastContributionsResponse {
+  repeated PastContributionEntry entries = 1;
+  GroupPaginationInfo pagination         = 2;
+}
+
+message PastGroupEntry {
+  GroupAccountMessage group           = 1;
+  google.protobuf.Timestamp left_at   = 2;   // group_members.deleted_at
+  bool   self_exit                    = 3;
+  int32  active_contributions_at_exit = 4;
+  // Per-user hide — see PastContributionEntry.hidden.
+  bool   hidden                       = 5;
+  google.protobuf.Timestamp hidden_at = 6;
+}
+message ListPastGroupsRequest {
+  int32  page      = 1;
+  int32  page_size = 2;
+  string filter    = 3;   // ""|"removed"|"left"
+  // ""|"visible"|"hidden"|"all" — see ListPastContributionsRequest.
+  string visibility = 4;
+}
+message ListPastGroupsResponse {
+  repeated PastGroupEntry entries = 1;
+  GroupPaginationInfo pagination  = 2;
+}
+
+message GetPastContributionDetailsRequest {
+  string contribution_id = 1;
+}
+message GetPastContributionDetailsResponse {
+  ContributionMessage contribution                  = 1;
+  PastContributionEntry membership_summary          = 2;
+  repeated ContributionMemberMessage members        = 3;
+  // Caller's payments only — render the per-cycle refund pill from
+  // payments where status = 'refunded' grouped by cycle_index.
+  repeated ContributionPaymentMessage my_payments   = 4;
+  // First page of the FULL payments list across all members; client
+  // pages further via existing GetContributionPayments. Empty for
+  // ROSCA contributions where the caller wasn't ever a member of any
+  // cycle.
+  repeated ContributionPaymentMessage all_payments_page = 5;
+  repeated ContributionCycleSummary closed_cycles   = 6;
+  // Cycle that was active at the moment the caller was removed —
+  // null/zero for one-time contributions or pre-cycle exits.
+  ContributionCycleSummary active_cycle_at_exit     = 7;
+  GroupPaginationInfo all_payments_pagination       = 8;
 }
 
 message UpdateGroupRequest {
@@ -619,17 +802,27 @@ message CreateContributionRequest {
   // payout automatically once a receiver is set. When false, the
   // creator must press the manual-trigger CTA.
   bool auto_payout_enabled = 19;
-  // Who receives the payout, chosen at creation.
-  //
-  // Lives in the proto rather than as a hand-edit to the generated Dart: a
-  // previous edit was applied directly to group_account.pb.dart and a later
-  // regeneration silently removed it, breaking the build. Field 20 matches the
-  // service contract.
-  //
-  // Empty is meaningful — the contribution is created in pending_receiver,
-  // which is what older app builds do. For a rotating contribution the
-  // receiver is member_rotation_order[0], so the order IS the selection.
+  // Who receives the payout for the first cycle. REQUIRED for one_time:
+  // there is deliberately no server-side fallback — not even the creator —
+  // because silently choosing a recipient for a money movement hides that
+  // decision from the person making it. rotating_savings ignores this field:
+  // its receiver is member_rotation_order[0], so the rotation order IS the
+  // selection. Empty ⇒ the contribution is created in pending_receiver,
+  // which is what older app builds will keep doing.
   string payout_receiver_user_id = 20;
+  // Optional avatar, as a storage-service public URL already uploaded by
+  // the client. Empty is valid and means "no avatar".
+  string image_url = 21;
+
+  // Rotating savings only: create the circle CLOSED, so the creator can keep
+  // adding members and then OPEN it when the roster is final.
+  //
+  // Defaults false, and that default is load-bearing. An app build that
+  // predates the Open button never sends this field, so its esusus must
+  // start immediately exactly as they always have — otherwise every circle
+  // created on an older build would sit unopened forever, never charging and
+  // never paying out, with no control anywhere to start it.
+  bool open_later = 22;
 }
 
 message CreateContributionResponse {
@@ -670,6 +863,41 @@ message UpdateContributionRequest {
   // "leave the existing value alone".
   bool auto_payout_enabled = 8;
   bool auto_payout_enabled_set = 9;
+  // Rotating-savings cycle count. Same explicit-set pattern as the toggle
+  // above: 0 with total_cycles_set=false means "leave alone", which matters
+  // because every other caller of this RPC omits it.
+  //
+  // The agreed number of cycles. When cycles_completed reaches it the
+  // rotation CLOSES: the contribution goes to completed, the remaining
+  // payout slots are cancelled, and nothing further is charged or paid.
+  //
+  // It used to be purely informational while the app asked for it and showed
+  // the creator a "Rotation Ends" date — so the circle promised an end the
+  // server never delivered, and no member could ever leave it cleanly.
+  //
+  // A contribution with no count stored still rotates indefinitely, which is
+  // the real-world esusu that runs as long as its members want it to.
+  int32 total_cycles = 10;
+  bool total_cycles_set = 11;
+  // Avatar, with the same explicit-set pattern as the toggles above —
+  // needed in BOTH directions here: without the flag an empty string is
+  // indistinguishable from "field omitted", so REMOVING an avatar would be
+  // impossible, and every caller that omits it would silently clear one.
+  string image_url = 12;
+  bool image_url_set = 13;
+  // AUTO-DEBIT, with the same explicit-set pattern as the toggles above.
+  //
+  // auto_pay_enabled was settable ONLY at creation. A circle created with it
+  // off could never have it turned on, so its members kept getting "payment
+  // past due" nudges forever with no way to say "just take it from my
+  // wallet" — the overdue fire gates auto-charge on this exact flag and does
+  // nothing else when it is false.
+  //
+  // Additive fields on an existing message: an older client that omits them
+  // sends auto_pay_enabled_set=false, which means "leave it alone", so no
+  // caller changes behaviour by upgrading.
+  bool auto_pay_enabled = 14;
+  bool auto_pay_enabled_set = 15;
 }
 
 message UpdateContributionResponse {
@@ -1063,6 +1291,30 @@ message ContributionMessageProto {
   string media_url = 7;   // CDN/asset URL (voice/image)
   int32 duration_ms = 8;  // voice note duration
   string created_at = 9;  // RFC3339
+
+  // Echoed back so the app can match the server row to its optimistic
+  // bubble instead of rendering the message twice.
+  string client_message_id = 10;
+  // Reply quote. Denormalised: survives deletion of the original.
+  string reply_to_message_id = 11;
+  string reply_to_body = 12;
+  string reply_to_sender = 13;
+  // Non-empty ⇒ show an "edited" marker.
+  string edited_at = 14;      // RFC3339
+  // True ⇒ render "This message was deleted" in place; body/media are blank.
+  bool deleted_for_everyone = 15;
+  // User ids @-mentioned in `body`. Lets the bubble highlight the right names
+  // and lets a client tell "you were tagged" without a second lookup.
+  repeated string mentioned_user_ids = 16;
+
+  // A member tagged Lazervault support on this message. Drives the "waiting
+  // on support" marker in the bubble and the operator queue.
+  bool support_requested = 17;
+
+  // Posted BY support, through the admin surface. The app renders it
+  // differently: a member has to be able to tell Lazervault apart from the
+  // person in their circle who is asking them for money.
+  bool is_support = 18;
 }
 
 message SendContributionMessageRequest {
@@ -1071,6 +1323,37 @@ message SendContributionMessageRequest {
   string body = 3;
   string media_url = 4;
   int32 duration_ms = 5;
+  // Client-generated id that makes SEND idempotent: a retry after a timeout
+  // returns the original message instead of posting a duplicate.
+  string client_message_id = 6;
+  // Optional: the message being replied to.
+  string reply_to_message_id = 7;
+  // User ids @-mentioned in `body`, in the order they appear.
+  //
+  // Sent as ids rather than parsed out of the text server-side: the client
+  // already knows exactly who was picked, and re-deriving targets from
+  // "@Ada" would guess wrong the moment two members share a first name.
+  // The server does NOT trust them — every id is checked against the group's
+  // active membership before it is stored or notified, because a mention
+  // sends a push carrying a preview of a private group's messages.
+  repeated string mentioned_user_ids = 8;
+
+  // Tag Lazervault support on this message.
+  //
+  // A separate flag rather than a sentinel id in mentioned_user_ids: support
+  // is not a member, has no user id in this group, and must not be pushed a
+  // member notification. Mixing it in would put a fake user into the one
+  // field that decides who receives a preview of a private conversation.
+  bool mention_support = 9;
+
+  // Tag EVERY active member ("@all").
+  //
+  // A flag rather than the client listing every id: the roster is the
+  // server's to know, and a client that last loaded the member list an hour
+  // ago would tag the people it remembers rather than the people who are
+  // actually in the circle. The service expands it against active membership
+  // at send time, which is the same check every explicit id already passes.
+  bool mention_all = 10;
 }
 
 message SendContributionMessageResponse {
@@ -1199,9 +1482,10 @@ message JoinPublicGroupResponse {
   GroupMemberMessage member = 1;
   GroupAccountMessage group = 2;
   string message = 3;
-  // True when this call filed a REQUEST rather than joining. The member above
-  // is then the pending row, not a membership — do not navigate into the
-  // group on the strength of it.
+  // True when the group requires approval and this call filed a REQUEST
+  // rather than joining. The member above is then the pending row, not a
+  // membership — clients must not navigate into the group on the strength
+  // of it.
   bool pending_approval = 4;
 }
 
@@ -1211,15 +1495,43 @@ message ListJoinRequestsRequest {
   string group_id = 1;
 }
 
+// Every join request awaiting THIS admin, across all their groups.
+//
+// ListJoinRequests is per-group, which suits the group's own screen but cannot
+// answer "is anything waiting on me?" — the question the Group Funds tab
+// exists to answer. Asking it per-group from the client would be one RPC per
+// group the user administers, on a tab that opens on every visit.
+message ListMyPendingJoinRequestsRequest {
+  int32 limit = 1; // default 50, max 200
+}
+
+message ListMyPendingJoinRequestsResponse {
+  repeated PendingJoinRequest requests = 1;
+  int32 total = 2;
+}
+
+// A request plus the group it is for, so the tab can render a row without a
+// second fetch per group.
+message PendingJoinRequest {
+  GroupMemberMessage member = 1;
+  string group_id           = 2;
+  string group_name         = 3;
+  string group_image_url    = 4;
+  int32  group_member_count = 5;
+}
+
 message ListJoinRequestsResponse {
   repeated GroupMemberMessage requests = 1;
 }
 
 message DecideJoinRequestRequest {
   string group_id = 1;
+  // The person who asked to join.
   string requester_id = 2;
-  // true approves, false rejects.
+  // true approves, false rejects. One RPC rather than two so a client
+  // cannot approve when it meant to reject by calling the wrong endpoint.
   bool approve = 3;
+  // Optional note from the admin, carried to the requester's notification.
   string note = 4;
 }
 
@@ -1239,6 +1551,91 @@ message WithdrawJoinRequestResponse {
 // ============================================================================
 // PAGINATION INFO
 // ============================================================================
+
+// =====================================================================
+// Per-user dashboard preferences: hide ("delete") + persisted order
+//
+// Both are properties of a USER's view, not of the group or contribution,
+// so they live in their own table keyed by (user_id, item_type, item_id)
+// and NOTHING here deletes or reorders anything for anyone else.
+// =====================================================================
+
+// item_type vocabulary, shared by every request below.
+//   "group"        → a joint-funds group on the My Groups list
+//   "contribution" → a contribution on a group's contributions list
+message OpenContributionRequest {
+  string contribution_id = 1;
+
+  // The SCHEDULE, decided at start rather than at creation.
+  //
+  // A circle is created closed and only starts once the creator has finished
+  // adding members — often days later. Collecting the cycle length and the
+  // number of cycles at creation meant the window was already running down
+  // before anyone could pay into it.
+  //
+  // All three are optional on the wire so an older app, which sends only
+  // contribution_id, still starts a circle using whatever was stored at
+  // creation. Unset frequency is UNSPECIFIED and unset total_cycles is 0;
+  // the server treats both as "keep what you have".
+  ContributionFrequency frequency = 2;
+  int32 total_cycles = 3;
+
+  // Optional explicit end date. Left unset the server derives it as
+  // start + total_cycles × frequency_period, which is the rotation end and
+  // the only value consistent with the cycle boundaries the scheduler fires
+  // on. Must be in the future.
+  google.protobuf.Timestamp deadline = 4;
+}
+
+message OpenContributionResponse {
+  ContributionMessage contribution = 1;
+  bool   success = 2;
+  string message = 3;
+}
+
+message SetDashboardOrderRequest {
+  string item_type = 1;
+  // ordered_item_ids is the FULL visible page order after the drag, front
+  // to back. Sent as a list rather than one moved item + index because the
+  // client already knows the final order and a single (item, index) pair
+  // cannot express a reorder without the server re-deriving everyone
+  // else's position — which is exactly where two concurrent drags drift.
+  repeated string ordered_item_ids = 2;
+  // Required when item_type == "contribution": the group whose list was
+  // reordered. Scopes the write so a drag in one group cannot renumber
+  // another group's contributions.
+  string scope_id = 3;
+  // 0-based rank of ordered_item_ids[0] within the whole list. Non-zero on
+  // page 2+ of a paginated list, so reordering page 3 does not renumber
+  // those rows to the front of the list.
+  int32 start_index = 4;
+}
+
+message SetDashboardOrderResponse {
+  bool   success = 1;
+  string message = 2;
+  int32  items_updated = 3;
+}
+
+message HideDashboardItemRequest {
+  string item_type = 1;
+  string item_id   = 2;
+}
+
+message HideDashboardItemResponse {
+  bool   success = 1;
+  string message = 2;
+}
+
+message UnhideDashboardItemRequest {
+  string item_type = 1;
+  string item_id   = 2;
+}
+
+message UnhideDashboardItemResponse {
+  bool   success = 1;
+  string message = 2;
+}
 
 message GroupPaginationInfo {
   int32 current_page = 1;
@@ -1324,6 +1721,154 @@ message GetContributionActivityLogsResponse {
 }
 
 // ============================================================================
+// GROUP JOIN LINKS (shareable invite links)
+// ============================================================================
+// A join link is a GROUP-level, multi-use, expiring token an admin can share
+// with anyone (WhatsApp, SMS, email). Distinct from GroupInvitation, which is
+// targeted at a known user id. The token carries no authority by itself: the
+// joiner must be signed in, and the server re-checks expiry/revocation/uses
+// and group capacity before adding them.
+
+message GroupJoinLink {
+  string token = 1;
+  string group_id = 2;
+  string url = 3;                  // canonical https:// share URL
+  string created_by_user_id = 4;
+  string role = 5;                 // role granted on join (member/moderator)
+  string expires_at = 6;           // RFC3339
+  int32 max_uses = 7;              // 0 = unlimited
+  int32 use_count = 8;
+  bool revoked = 9;
+  string created_at = 10;
+}
+
+message CreateGroupJoinLinkRequest {
+  string group_id = 1;
+  // Optional overrides. expires_in_hours 0 => server default (7 days);
+  // max_uses 0 => unlimited.
+  int32 expires_in_hours = 2;
+  int32 max_uses = 3;
+  string role = 4;
+  // When true, mint a NEW token even if an active one exists (rotates the
+  // link, invalidating anything already shared).
+  bool rotate = 5;
+}
+
+message CreateGroupJoinLinkResponse {
+  GroupJoinLink link = 1;
+}
+
+message GetGroupJoinLinkRequest {
+  string token = 1;
+}
+
+// Preview shown BEFORE joining: enough to decide, nothing sensitive (no
+// member list, no balances).
+message GetGroupJoinLinkResponse {
+  bool valid = 1;
+  string invalid_reason = 2;       // expired | revoked | exhausted | not_found
+  string group_id = 3;
+  string group_name = 4;
+  string group_description = 5;
+  int32 member_count = 6;
+  string inviter_name = 7;
+  string role = 8;
+  string expires_at = 9;
+  bool already_member = 10;
+}
+
+message JoinGroupViaLinkRequest {
+  string token = 1;
+}
+
+message JoinGroupViaLinkResponse {
+  bool success = 1;
+  string message = 2;
+  string group_id = 3;
+  GroupMemberMessage member = 4;
+  bool already_member = 5;
+}
+
+message RevokeGroupJoinLinkRequest {
+  string group_id = 1;
+}
+
+message RevokeGroupJoinLinkResponse {
+  bool success = 1;
+}
+
+// ---- Platform fee quote ----------------------------------------------------
+// One place the app asks "what will this cost?" so the number a member sees
+// before paying is produced by the SAME code that later charges them.
+
+message GetGroupFundsFeeQuoteRequest {
+  // Amount the fee is charged on, in MINOR units (kobo/cents).
+  int64 amount_minor = 1;
+  // Which leg: "contribution" (member pays in) or "payout" (recipient is
+  // paid). Empty defaults to contribution.
+  string leg = 2;
+}
+
+message GetGroupFundsFeeQuoteResponse {
+  bool fee_applies = 1;
+  int64 fee_minor = 2;
+  // amount + fee for the contribution leg; amount - fee for the payout leg.
+  int64 total_minor = 3;
+  // Human label, e.g. "1% (max ₦1,000)" or "₦50 flat". Empty when no fee.
+  string description = 4;
+}
+
+// ---- Contribution chat state ----------------------------------------------
+// Read watermarks, typing presence and message mutation. Message CONTENT uses
+// the existing Send/ListContributionMessages RPCs.
+
+message ContributionReader {
+  string user_id = 1;
+  string user_name = 2;
+  string last_read_message_id = 3;
+  string last_read_at = 4;           // RFC3339
+}
+
+message ContributionTyping {
+  string user_id = 1;
+  string user_name = 2;
+}
+
+message MarkContributionReadRequest {
+  string contribution_id = 1;
+  // Newest message the caller has seen. The server refuses to move a
+  // watermark backwards, so replaying an older id is a no-op.
+  string message_id = 2;
+}
+message MarkContributionReadResponse { bool success = 1; }
+
+message GetContributionChatStateRequest { string contribution_id = 1; }
+message GetContributionChatStateResponse {
+  repeated ContributionReader readers = 1;
+  repeated ContributionTyping typing = 2;
+  int64 unread_count = 3;
+}
+
+message SetContributionTypingRequest {
+  string contribution_id = 1;
+  bool is_typing = 2;
+}
+message SetContributionTypingResponse { bool success = 1; }
+
+message EditContributionMessageRequest {
+  string contribution_id = 1;
+  string message_id = 2;
+  string body = 3;
+}
+message EditContributionMessageResponse { ContributionMessageProto message = 1; }
+
+message DeleteContributionMessageForEveryoneRequest {
+  string contribution_id = 1;
+  string message_id = 2;
+}
+message DeleteContributionMessageForEveryoneResponse { bool success = 1; }
+
+// ============================================================================
 // SERVICE DEFINITION
 // ============================================================================
 
@@ -1344,6 +1889,36 @@ service GroupAccountService {
   rpc ListUserGroups(ListUserGroupsRequest) returns (ListUserGroupsResponse) {
     option (google.api.http) = {
       get: "/v1/groups"
+    };
+  }
+
+  // ListPastContributions returns contributions the caller used to
+  // belong to but has been removed from / left voluntarily. Backed by
+  // contribution_members rows where removed_at IS NOT NULL. Filter
+  // values: "" (all), "removed" (admin-removed), "left" (self-exit).
+  rpc ListPastContributions(ListPastContributionsRequest) returns (ListPastContributionsResponse) {
+    option (google.api.http) = {
+      get: "/v1/me/past-contributions"
+    };
+  }
+
+  // ListPastGroups returns groups the caller has been removed from /
+  // left. Mirrors ListPastContributions over group_members soft-delete.
+  rpc ListPastGroups(ListPastGroupsRequest) returns (ListPastGroupsResponse) {
+    option (google.api.http) = {
+      get: "/v1/me/past-groups"
+    };
+  }
+
+  // GetPastContributionDetails aggregates everything the read-only
+  // detail screen needs in one round-trip: contribution meta, the
+  // caller's payments (with refund status per cycle), all members,
+  // closed cycles, and the cycle that was active when the caller was
+  // removed (if any). Permitted via assertCanIncludingExited so an
+  // ex-member can still see what they used to be part of.
+  rpc GetPastContributionDetails(GetPastContributionDetailsRequest) returns (GetPastContributionDetailsResponse) {
+    option (google.api.http) = {
+      get: "/v1/me/past-contributions/{contribution_id}"
     };
   }
 
@@ -1572,6 +2147,16 @@ service GroupAccountService {
     };
   }
 
+  // SwitchPayoutToManual takes a payout off automation so the creator can fire
+  // it themselves once they have fixed whatever blocked it. The alternative we
+  // shipped with was "contact support", which is not a flow.
+  rpc SwitchPayoutToManual(SwitchPayoutToManualRequest) returns (SwitchPayoutToManualResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/{contribution_id}/payout-mode/manual"
+      body: "*"
+    };
+  }
+
   rpc ListScheduledPayouts(ListScheduledPayoutsRequest) returns (ListScheduledPayoutsResponse) {
     option (google.api.http) = {
       get: "/v1/scheduled-payouts"
@@ -1699,12 +2284,30 @@ service GroupAccountService {
     };
   }
 
+  rpc JoinPublicGroup(JoinPublicGroupRequest) returns (JoinPublicGroupResponse) {
+    option (google.api.http) = {
+      post: "/v1/groups/public/{group_id}/join"
+      body: "*"
+    };
+  }
+
+  // ---- Join requests -----------------------------------------------------
+  // The admin's queue for one group. Admin/moderator only: this lists people
+  // waiting on a decision about access to the group's money.
+  // Everything awaiting this admin's decision, across their groups.
+  rpc ListMyPendingJoinRequests(ListMyPendingJoinRequestsRequest) returns (ListMyPendingJoinRequestsResponse) {
+    option (google.api.http) = {
+      get: "/v1/group-accounts/join-requests/pending"
+    };
+  }
+
   rpc ListJoinRequests(ListJoinRequestsRequest) returns (ListJoinRequestsResponse) {
     option (google.api.http) = {
       get: "/v1/groups/{group_id}/join-requests"
     };
   }
 
+  // Approve or reject one request. Admin/moderator only.
   rpc DecideJoinRequest(DecideJoinRequestRequest) returns (DecideJoinRequestResponse) {
     option (google.api.http) = {
       post: "/v1/groups/{group_id}/join-requests/{requester_id}/decide"
@@ -1712,16 +2315,137 @@ service GroupAccountService {
     };
   }
 
+  // The requester takes back their own request. Without this the only way out
+  // of "awaiting approval" is somebody else's decision, which leaves a person
+  // who changed their mind stuck in another group's queue.
   rpc WithdrawJoinRequest(WithdrawJoinRequestRequest) returns (WithdrawJoinRequestResponse) {
     option (google.api.http) = {
       delete: "/v1/groups/{group_id}/join-request"
     };
   }
 
-  rpc JoinPublicGroup(JoinPublicGroupRequest) returns (JoinPublicGroupResponse) {
+  // ---- Group join links (shareable invite) -------------------------------
+  // Mint (or fetch) the group's active share link. Admin/moderator only —
+  // the same gate as inviting a member, since a link IS an open invite.
+  rpc CreateGroupJoinLink(CreateGroupJoinLinkRequest) returns (CreateGroupJoinLinkResponse) {
     option (google.api.http) = {
-      post: "/v1/groups/public/{group_id}/join"
+      post: "/v1/groups/{group_id}/join-link"
       body: "*"
     };
   }
+
+  // Preview a shared link before acting on it. Authenticated (so we can say
+  // "you're already a member") but requires no group membership.
+  rpc GetGroupJoinLink(GetGroupJoinLinkRequest) returns (GetGroupJoinLinkResponse) {
+    option (google.api.http) = {
+      get: "/v1/group-join-links/{token}"
+    };
+  }
+
+  // Consume the link: adds the caller to the group. Idempotent — an existing
+  // member gets already_member=true instead of a duplicate row or an error.
+  rpc JoinGroupViaLink(JoinGroupViaLinkRequest) returns (JoinGroupViaLinkResponse) {
+    option (google.api.http) = {
+      post: "/v1/group-join-links/{token}/join"
+      body: "*"
+    };
+  }
+
+  // Kill the active link (anything already shared stops working).
+  rpc RevokeGroupJoinLink(RevokeGroupJoinLinkRequest) returns (RevokeGroupJoinLinkResponse) {
+    option (google.api.http) = {
+      delete: "/v1/groups/{group_id}/join-link"
+    };
+  }
+
+
+  // Quote the platform fee for a group-funds money movement. Authenticated
+  // so it can't be used to probe pricing anonymously; cheap (settings are
+  // cached) so the app can call it as the amount changes.
+  rpc GetGroupFundsFeeQuote(GetGroupFundsFeeQuoteRequest) returns (GetGroupFundsFeeQuoteResponse) {
+    option (google.api.http) = {
+      post: "/v1/group-funds/fee-quote"
+      body: "*"
+    };
+  }
+
+
+  // ---- Contribution chat state -------------------------------------------
+  rpc MarkContributionRead(MarkContributionReadRequest) returns (MarkContributionReadResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/{contribution_id}/messages/read"
+      body: "*"
+    };
+  }
+
+  // One call for everything the chat needs to render state: who has read how
+  // far, who is typing, and the caller's unread count.
+  rpc GetContributionChatState(GetContributionChatStateRequest) returns (GetContributionChatStateResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/{contribution_id}/chat-state"
+    };
+  }
+
+  rpc SetContributionTyping(SetContributionTypingRequest) returns (SetContributionTypingResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/{contribution_id}/typing"
+      body: "*"
+    };
+  }
+
+  rpc EditContributionMessage(EditContributionMessageRequest) returns (EditContributionMessageResponse) {
+    option (google.api.http) = {
+      patch: "/v1/contributions/{contribution_id}/messages/{message_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteContributionMessageForEveryone(DeleteContributionMessageForEveryoneRequest) returns (DeleteContributionMessageForEveryoneResponse) {
+    option (google.api.http) = {
+      delete: "/v1/contributions/{contribution_id}/messages/{message_id}/everyone"
+    };
+  }
+
+  // ===== Per-user dashboard preferences =====
+
+  // SetDashboardOrder persists the order the caller dragged their list
+  // into, so it survives the session and the next cold start. Per-user:
+  // it changes nobody else's list.
+  // OpenContribution starts a rotating-savings circle: the roster is frozen
+  // from this moment and the rotation begins. Creator / group admin only,
+  // and idempotent — opening an already-open circle returns it unchanged
+  // rather than erroring, because the client may retry.
+  rpc OpenContribution(OpenContributionRequest) returns (OpenContributionResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/{contribution_id}/open"
+      body: "*"
+    };
+  }
+
+  rpc SetDashboardOrder(SetDashboardOrderRequest) returns (SetDashboardOrderResponse) {
+    option (google.api.http) = {
+      post: "/v1/me/dashboard/order"
+      body: "*"
+    };
+  }
+
+  // HideDashboardItem is the "delete" the user asks for: the row stops
+  // appearing on their lists, and NOTHING is removed from the database.
+  // Refused while the caller is still an ACTIVE member — you leave first,
+  // then you may clear it away — so hiding can never be a way to walk away
+  // from a contribution that still holds your money.
+  rpc HideDashboardItem(HideDashboardItemRequest) returns (HideDashboardItemResponse) {
+    option (google.api.http) = {
+      post: "/v1/me/dashboard/hidden"
+      body: "*"
+    };
+  }
+
+  // UnhideDashboardItem restores a hidden row to the caller's past lists.
+  rpc UnhideDashboardItem(UnhideDashboardItemRequest) returns (UnhideDashboardItemResponse) {
+    option (google.api.http) = {
+      delete: "/v1/me/dashboard/hidden/{item_type}/{item_id}"
+    };
+  }
+
 }

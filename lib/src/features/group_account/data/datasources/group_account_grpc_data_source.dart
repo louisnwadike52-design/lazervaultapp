@@ -548,7 +548,13 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         // explicit set=true here because the edit form is the only
         // caller and it always carries an intent.
         ..autoPayoutEnabled = contribution.autoPayoutEnabled
-        ..autoPayoutEnabledSet = true;
+        ..autoPayoutEnabledSet = true
+        // AUTO-DEBIT, same explicit-set sentinel. It was settable only at
+        // creation, so a circle created with it off kept nagging its members
+        // forever with no way to answer the nag — the server gates
+        // auto-charge on this exact flag.
+        ..autoPayEnabled = contribution.autoPayEnabled
+        ..autoPayEnabledSet = true;
       // Only sent when the contribution actually carries a cycle count, so an
       // edit to any OTHER field cannot rewrite cycles as a side effect — the
       // server treats totalCyclesSet=false as "leave alone".

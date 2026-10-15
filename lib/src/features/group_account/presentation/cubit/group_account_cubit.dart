@@ -1133,10 +1133,25 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     if (isClosed) return;
     emit(const GroupAccountLoading(message: 'Loading contribution details...'));
     try {
-      await getContributionById(contributionId);
-      await getContributionPayments(contributionId);
+      // THE RESULTS WERE BEING THROWN AWAY.
+      //
+      // Both use cases return what they fetched, and this method awaited them
+      // for their side effects alone, then emitted a success MESSAGE with no
+      // payload. The details screen learns about a contribution only from a
+      // state that carries one, so every caller arriving with an id and no
+      // group — a push tap, an in-app notification tap, a share link — sat on
+      // the loading view forever with nothing on the way.
+      final contribution = await getContributionById(contributionId);
+      List<ContributionPayment> payments = const [];
+      try {
+        payments = await getContributionPayments(contributionId);
+      } catch (_) {
+        // The payment history is the second tab. Failing to fetch it must not
+        // turn a readable contribution into an error screen — the screen
+        // renders an empty history and its own refresh can try again.
+      }
       if (isClosed) return;
-      emit(GroupAccountSuccess('Contribution loaded'));
+      emit(ContributionDetailsLoaded(contribution, payments: payments));
     } catch (e) {
       if (isClosed) return;
       emit(GroupAccountError(_opError('Failed to load contribution', e)));

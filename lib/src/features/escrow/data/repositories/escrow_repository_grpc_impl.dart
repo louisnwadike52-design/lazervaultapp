@@ -399,6 +399,34 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
   }
 
   @override
+  Future<EscrowOffersPage> listMyOffersPaged({
+    String role = '',
+    String status = '',
+    int page = 1,
+    int limit = 5,
+  }) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.ListMyOffersRequest()
+        ..role = role
+        ..status = status
+        ..page = page
+        ..limit = limit;
+      final options = await grpcClient.callOptions;
+      final resp =
+          await grpcClient.escrowClient.listMyOffers(req, options: options);
+      // `total` has always been on the wire; listMyOffers above drops it, so
+      // the screen could not know how many pages there were and loaded the
+      // whole list every time.
+      return EscrowOffersPage(
+        items: resp.offers.map(_offerFromProto).toList(),
+        total: resp.total,
+        page: page,
+        limit: limit,
+      );
+    });
+  }
+
+  @override
   Future<EscrowOfferEntity> respondOffer({
     required String offerId,
     required bool accept,

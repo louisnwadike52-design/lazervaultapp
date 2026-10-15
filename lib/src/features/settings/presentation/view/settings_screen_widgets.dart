@@ -74,22 +74,16 @@ class _SectionSpec {
   });
 
   /// True when [query] matches this section's title, subtitle or any keyword.
-  bool matches(String query) {
-    final q = query.trim().toLowerCase();
-    if (q.isEmpty) return true;
-    // Token-based match: every whitespace-separated word in the query must
-    // appear somewhere in the haystack (title + subtitle + keywords). This
-    // makes multi-word ("voice login") and partial ("bio", "kyc tier")
-    // queries work regardless of word order, instead of requiring one
-    // keyword to contain the entire raw query string.
-    final haystack = [
-      title.toLowerCase(),
-      (subtitle ?? '').toLowerCase(),
-      ...keywords.map((k) => k.toLowerCase()),
-    ].join(' ');
-    final tokens = q.split(RegExp(r'\s+')).where((t) => t.isNotEmpty);
-    return tokens.every((t) => haystack.contains(t));
-  }
+  ///
+  /// Delegates to [settingsQueryMatches] so the rule has ONE definition that a
+  /// test can exercise directly — this matcher is half of the two-stage filter
+  /// that made six Customize tiles unreachable, and it was untestable while it
+  /// lived on a private class inside a `part of` file.
+  bool matches(String query) => settingsQueryMatches(query, [
+        title,
+        subtitle ?? '',
+        ...keywords,
+      ]);
 }
 
 /// One accordion card. We don't use Flutter's stock `ExpansionTile`

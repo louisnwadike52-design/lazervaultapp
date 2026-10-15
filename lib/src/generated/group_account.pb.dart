@@ -7420,6 +7420,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     $core.bool? totalCyclesSet,
     $core.String? imageUrl,
     $core.bool? imageUrlSet,
+    $core.bool? autoPayEnabled,
+    $core.bool? autoPayEnabledSet,
   }) {
     final result = create();
     if (contributionId != null) result.contributionId = contributionId;
@@ -7436,6 +7438,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     if (totalCyclesSet != null) result.totalCyclesSet = totalCyclesSet;
     if (imageUrl != null) result.imageUrl = imageUrl;
     if (imageUrlSet != null) result.imageUrlSet = imageUrlSet;
+    if (autoPayEnabled != null) result.autoPayEnabled = autoPayEnabled;
+    if (autoPayEnabledSet != null) result.autoPayEnabledSet = autoPayEnabledSet;
     return result;
   }
 
@@ -7472,6 +7476,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     ..aOB(11, _omitFieldNames ? '' : 'totalCyclesSet')
     ..aOS(12, _omitFieldNames ? '' : 'imageUrl')
     ..aOB(13, _omitFieldNames ? '' : 'imageUrlSet')
+    ..aOB(14, _omitFieldNames ? '' : 'autoPayEnabled')
+    ..aOB(15, _omitFieldNames ? '' : 'autoPayEnabledSet')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -7637,6 +7643,35 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasImageUrlSet() => $_has(12);
   @$pb.TagNumber(13)
   void clearImageUrlSet() => $_clearField(13);
+
+  /// AUTO-DEBIT, with the same explicit-set pattern as the toggles above.
+  ///
+  /// auto_pay_enabled was settable ONLY at creation. A circle created with it
+  /// off could never have it turned on, so its members kept getting "payment
+  /// past due" nudges forever with no way to say "just take it from my
+  /// wallet" — the overdue fire gates auto-charge on this exact flag and does
+  /// nothing else when it is false.
+  ///
+  /// Additive fields on an existing message: an older client that omits them
+  /// sends auto_pay_enabled_set=false, which means "leave it alone", so no
+  /// caller changes behaviour by upgrading.
+  @$pb.TagNumber(14)
+  $core.bool get autoPayEnabled => $_getBF(13);
+  @$pb.TagNumber(14)
+  set autoPayEnabled($core.bool value) => $_setBool(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasAutoPayEnabled() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearAutoPayEnabled() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.bool get autoPayEnabledSet => $_getBF(14);
+  @$pb.TagNumber(15)
+  set autoPayEnabledSet($core.bool value) => $_setBool(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasAutoPayEnabledSet() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearAutoPayEnabledSet() => $_clearField(15);
 }
 
 class UpdateContributionResponse extends $pb.GeneratedMessage {

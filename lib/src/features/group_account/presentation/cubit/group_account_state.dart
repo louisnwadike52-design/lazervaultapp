@@ -166,6 +166,26 @@ class GroupAccountAwaitingApproval extends GroupAccountState {
       [groupId, group, awaitingApproval, hasPendingInvite];
 }
 
+/// One contribution, fetched by id alone.
+///
+/// THE STATE A DEEP LINK NEEDS. `loadContributionDetails` fetched the
+/// contribution and then emitted `GroupAccountSuccess('Contribution loaded')`
+/// — a message with no payload. The details screen only ever learned about a
+/// contribution from `GroupAccountGroupLoaded`, which comes from loading a
+/// GROUP, so arriving with a contribution id and no group (every push
+/// notification, every in-app notification tap, every share link) left
+/// `_currentContribution` null forever and the screen spinning on its loading
+/// view with nothing on the way.
+class ContributionDetailsLoaded extends GroupAccountState {
+  final Contribution contribution;
+
+  /// Payments fetched in the same pass, so the screen does not need a second
+  /// round trip before it can render its history tab.
+  final List<ContributionPayment> payments;
+
+  ContributionDetailsLoaded(this.contribution, {this.payments = const []});
+}
+
 class GroupAccountError extends GroupAccountState {
   final String message;
 

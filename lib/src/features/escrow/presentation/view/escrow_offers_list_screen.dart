@@ -14,6 +14,7 @@ import '../../domain/entities/escrow_offer_entity.dart';
 import '../cubit/escrow_cubit.dart';
 import '../widgets/escrow_shimmer.dart';
 import '../widgets/escrow_empty_state.dart';
+import '../widgets/paged_pagination_bar.dart';
 import 'escrow_role_labels.dart';
 import 'escrow_theme.dart';
 
@@ -29,6 +30,11 @@ class EscrowOffersListScreen extends StatefulWidget {
 class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
   String _role = ''; // '' | created | received
   String _status = '';
+
+  /// 1-based. A role or status change resets it: page 4 of a list that no
+  /// longer has four pages is an empty screen that looks like lost data.
+  /// Same rule as the deals list on the Escrow home.
+  int _page = 1;
 
   static const _statusChips = <(String, String)>[
     ('', 'All'),
@@ -46,8 +52,18 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _reload());
   }
 
-  void _reload() =>
-      context.read<EscrowCubit>().loadOffers(role: _role, status: _status);
+  void _reload() => context
+      .read<EscrowCubit>()
+      .loadOffers(role: _role, status: _status, page: _page);
+
+  /// Changing what the list IS always returns to page 1.
+  void _setFilter(VoidCallback apply) {
+    setState(() {
+      apply();
+      _page = 1;
+    });
+    _reload();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +123,27 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
                 },
               ),
             ),
+            // Numbered pages under the list — the same bar, rules and page
+            // size the deals list on the Escrow home uses. Hidden at one
+            // page, and the controls go inert while a page is in flight so a
+            // second tap cannot queue a third request.
+            BlocBuilder<EscrowCubit, EscrowState>(
+              builder: (context, state) {
+                if (state is! EscrowOffersLoaded) {
+                  return const SizedBox.shrink();
+                }
+                return PagedPaginationBar(
+                  page: state.page,
+                  totalPages: state.totalPages,
+                  onGoTo: state.pageLoading
+                      ? null
+                      : (p) {
+                          setState(() => _page = p);
+                          _reload();
+                        },
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -119,8 +156,7 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
       return Expanded(
         child: GestureDetector(
           onTap: () {
-            setState(() => _role = role);
-            _reload();
+            _setFilter(() => _role = role);
           },
           child: Container(
             margin: EdgeInsets.symmetric(horizontal: 4.w),
@@ -163,8 +199,7 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
             final active = _status == value;
             return GestureDetector(
               onTap: () {
-                setState(() => _status = value);
-                _reload();
+                _setFilter(() => _status = value);
               },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w),
