@@ -304,10 +304,72 @@ class _UpliftApplicationDetailScreenState
   Widget _videoSection() {
     final url = _app.videoUrl;
     if (url.isEmpty) return const SizedBox.shrink();
+    // An applicant may paste a link instead of uploading. The player can only
+    // play what we host; handing it a YouTube or Drive page produces a black
+    // box that never loads, which reads as a broken application rather than
+    // as "this is a link". So ask which kind it is first.
+    if (!upIsHostedMedia(url)) {
+      return UpCard(
+        margin: const EdgeInsets.only(top: 12),
+        child: InkWell(
+          onTap: () => _openPitchLink(url),
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                const Icon(Icons.link, color: kUpPrimary, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Pitch link',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(url,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: kUpTextSecondary, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.open_in_new,
+                    color: kUpTextSecondary, size: 18),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return UpCard(
       margin: const EdgeInsets.only(top: 12),
       child: UpliftVideoPlayer(url: url),
     );
+  }
+
+  Future<void> _openPitchLink(String url) async {
+    final uri = Uri.tryParse(url);
+    // Re-checked on the way OUT as well as on the way in: this row renders
+    // whatever is stored, and a row written before the validator existed (or
+    // by any other client) must not be able to launch something that is not
+    // a web page.
+    if (uri == null || !upIsAcceptablePitchLink(url)) {
+      Get.snackbar('Cannot open this link', 'The pitch link is not a web address.',
+          backgroundColor: kUpError,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      Get.snackbar('Cannot open this link', 'No app on this device can open it.',
+          backgroundColor: kUpError,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+    }
   }
 
   Widget _imagesSection() {

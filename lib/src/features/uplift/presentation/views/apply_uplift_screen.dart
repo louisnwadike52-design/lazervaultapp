@@ -36,6 +36,12 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
 
   /// Optional founder pitch video.
   String _videoUrl = '';
+
+  /// Which half of the pitch-media control is showing. The two are exclusive
+  /// because they write the same field — offering both at once would invite
+  /// filling in two and silently dropping one.
+  bool _usePitchLink = false;
+  final _pitchLink = TextEditingController();
   bool _offerEquity = false;
   bool _submitting = false;
 
@@ -59,10 +65,15 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
     _amount.dispose();
     _equityPct.dispose();
     _equityNote.dispose();
+    _pitchLink.dispose();
     super.dispose();
   }
 
   int get _capKobo => widget.fund.perBusinessCap.toInt();
+
+  /// The one value that goes on the wire, whichever control produced it.
+  String get _pitchMedia =>
+      _usePitchLink ? _pitchLink.text.trim() : _videoUrl;
 
   Future<void> _submit() async {
     // Last line of defence. The Discover list and the detail screen both hide
@@ -110,7 +121,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
         requestedAmountKobo: amountKobo,
         images: _images,
         docUrls: _docUrls,
-        videoUrl: _videoUrl,
+        videoUrl: _pitchMedia,
         proposedEquityPct: _offerEquity
             ? ((double.tryParse(_equityPct.text.trim()) ?? 0) * 100).round()
             : 0,
@@ -243,11 +254,72 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
               onRemove: (u) => setState(() => _docUrls.remove(u)),
             ),
             const SizedBox(height: 16),
-            UpliftVideoPickerRow(
-              url: _videoUrl,
-              onUploadingChanged: _trackUpload,
-              onChanged: (u) => setState(() => _videoUrl = u),
-            ),
+            // UPLOAD A VIDEO, OR PASTE A LINK. Either is a pitch.
+            //
+            // A founder who already has their pitch on YouTube, Loom or Drive
+            // had to re-upload it as a file, and the 64MB ceiling means plenty
+            // of them simply could not. Both land in the same `video_url`
+            // field, so nothing downstream needed a new contract — the readers
+            // just had to stop assuming it was always ours.
+            if (!_usePitchLink) ...[
+              UpliftVideoPickerRow(
+                url: _videoUrl,
+                onUploadingChanged: _trackUpload,
+                onChanged: (u) => setState(() => _videoUrl = u),
+              ),
+              if (_videoUrl.isEmpty)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => setState(() {
+                      _usePitchLink = true;
+                      _videoUrl = '';
+                    }),
+                    icon: const Icon(Icons.link, size: 16, color: kUpPrimary),
+                    label: const Text('Paste a link instead',
+                        style: TextStyle(
+                            color: kUpPrimary, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+            ] else ...[
+              TextFormField(
+                controller: _pitchLink,
+                style: const TextStyle(color: Colors.white),
+                keyboardType: TextInputType.url,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  labelText: 'Link to your pitch (optional)',
+                  labelStyle: TextStyle(color: kUpTextSecondary),
+                  hintText: 'https://…',
+                  hintStyle: TextStyle(color: kUpTextSecondary),
+                ),
+                // Validated, not just accepted: this link is opened on the
+                // FUNDER's device, so a javascript: or data: URL in it would
+                // be our problem handed to them. http(s) only.
+                validator: (v) {
+                  final t = (v ?? '').trim();
+                  if (t.isEmpty) return null;
+                  if (!upIsAcceptablePitchLink(t)) {
+                    return 'Enter a full web address starting with https://';
+                  }
+                  return null;
+                },
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => setState(() {
+                    _usePitchLink = false;
+                    _pitchLink.clear();
+                  }),
+                  icon: const Icon(Icons.videocam_outlined,
+                      size: 16, color: kUpPrimary),
+                  label: const Text('Upload a video instead',
+                      style: TextStyle(
+                          color: kUpPrimary, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             _equityProposal(),
             const SizedBox(height: 20),

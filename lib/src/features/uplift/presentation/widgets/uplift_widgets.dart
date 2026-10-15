@@ -1548,6 +1548,43 @@ bool upIsPdfUrl(String url) => _isPdfUrl(url);
 /// Not a list. A funder deciding on an investment watches one pitch; offering a
 /// gallery is a way to avoid making one. Picking again replaces rather than
 /// appends, so the control always reflects what the funder will actually see.
+/// A PITCH CAN BE A LINK, NOT ONLY AN UPLOAD.
+///
+/// `video_url` has always been a plain string, so a pasted link needs no
+/// contract change — but everything that READ it assumed our storage and
+/// handed it to a video player, which cannot play a YouTube, Loom or Drive
+/// page. A founder who already has a pitch hosted somewhere had to re-upload
+/// it as a file, and a 64MB ceiling means plenty of them could not.
+///
+/// So the question every reader asks first is which kind of thing this is.
+/// Ours gets the inline player; anything else gets a link tile that opens in
+/// the browser, which is honest about what it is rather than failing to play.
+bool upIsHostedMedia(String url) {
+  final u = url.trim().toLowerCase();
+  if (u.isEmpty) return false;
+  // Our storage service serves every uploaded object under this path. Matched
+  // on the PATH rather than the host so it keeps working behind the tunnel,
+  // in dev, and if the domain ever moves.
+  return u.contains('/v1/storage/objects/');
+}
+
+/// Whether [url] is something we are willing to store in `video_url` at all.
+///
+/// http/https only: a `javascript:` or `data:` URL in a field that other
+/// people's devices will open is not a pitch, and the funder is the one who
+/// would tap it.
+bool upIsAcceptablePitchLink(String url) {
+  final u = url.trim();
+  if (u.isEmpty) return false;
+  final parsed = Uri.tryParse(u);
+  if (parsed == null) return false;
+  // host, not hasAuthority: Dart reports hasAuthority == true for a bare
+  // "https://", which names nothing. The server checks u.Host for the same
+  // reason, and the two must agree or the app accepts a link the RPC refuses.
+  if (parsed.host.isEmpty) return false;
+  return parsed.scheme == 'http' || parsed.scheme == 'https';
+}
+
 class UpliftVideoPickerRow extends StatefulWidget {
   const UpliftVideoPickerRow({
     required this.url,

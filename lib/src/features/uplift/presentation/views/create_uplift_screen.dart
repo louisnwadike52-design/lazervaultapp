@@ -32,7 +32,14 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
 
   final _pageCtrl = PageController();
   int _step = 0;
-  static const _steps = ['Basics', 'Funding', 'Deal terms', 'Media', 'Review'];
+  // FOUR STEPS, NOT FIVE.
+  //
+  // "Deal terms" was a page of its own holding one optional section, so the
+  // wizard asked somebody to tap Continue through a screen most funders leave
+  // untouched. It belongs with Funding — the cap, the count, the deadlines and
+  // what you take in return are all one question ("what is the shape of this
+  // raise?"), and splitting them made the shape harder to see, not easier.
+  static const _steps = ['Basics', 'Funding', 'Media', 'Review'];
   int get _lastStep => _steps.length - 1;
 
   // Optional equity / deal terms.
@@ -117,10 +124,82 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
 
   void _back() {
     if (_step == 0) {
-      Get.back();
+      _confirmExit();
       return;
     }
     _goTo(_step - 1);
+  }
+
+  /// True once the funder has typed anything worth losing.
+  ///
+  /// Deliberately not "has the form been touched": tapping into a field and
+  /// back out is not work, and a confirm for nothing trains people to dismiss
+  /// confirms that do matter.
+  bool get _hasUnsavedWork =>
+      _title.text.trim().isNotEmpty ||
+      _desc.text.trim().isNotEmpty ||
+      _cap.text.trim().isNotEmpty ||
+      _count.text.trim().isNotEmpty ||
+      _gallery.isNotEmpty ||
+      _appDeadline != null ||
+      _fundingDeadline != null;
+
+  /// Leaves the entire wizard. Asks first when there is something to lose,
+  /// and — when the fund has enough to be saved — offers the draft rather
+  /// than making "keep it" and "throw it away" the only two choices.
+  Future<void> _confirmExit() async {
+    if (_isEdit || !_hasUnsavedWork) {
+      Get.back();
+      return;
+    }
+    final canDraft = _title.text.trim().isNotEmpty &&
+        _num(_cap.text) == null &&
+        _int(_count.text) == null;
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: kUpCard,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Leave without opening this fund?',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700)),
+        content: Text(
+          canDraft
+              ? 'You can save what you have as a draft and finish it later.'
+              : 'What you have entered will not be kept.',
+          style: const TextStyle(color: kUpTextSecondary, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop('stay'),
+            child: const Text('Keep editing',
+                style: TextStyle(color: kUpTextSecondary)),
+          ),
+          if (canDraft)
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop('draft'),
+              child: const Text('Save draft',
+                  style: TextStyle(
+                      color: kUpPrimary, fontWeight: FontWeight.w600)),
+            ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop('discard'),
+            child: const Text('Discard',
+                style:
+                    TextStyle(color: kUpError, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (choice == 'discard') {
+      Get.back();
+    } else if (choice == 'draft') {
+      await _submit(asDraft: true);
+    }
   }
 
   void _snack(String msg) => Get.snackbar('', msg,
@@ -222,6 +301,23 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
             onPressed: _submitting ? null : _back),
         title:
             Text('${_isEdit ? 'Edit fund' : 'Open a fund'} · ${_steps[_step]}'),
+        // LEAVE THE WHOLE FLOW, not one step of it.
+        //
+        // Back walks the wizard in reverse, which from Review means four taps
+        // to get out — and on a five-, now four-step form that is the most
+        // common thing somebody wants to do once they have changed their mind.
+        // There was no way to do it at all except hardware back, which is not
+        // available on iOS.
+        //
+        // It asks first when there is work to lose: closing silently is how
+        // somebody loses a title, a cap and two deadlines to a mis-tap.
+        actions: [
+          IconButton(
+            tooltip: 'Close',
+            icon: const Icon(Icons.close),
+            onPressed: _submitting ? null : _confirmExit,
+          ),
+        ],
       ),
       body: UpGradientScaffoldBody(
         child: Column(
@@ -235,7 +331,6 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
                 children: [
                   _pageScroll(_basicsStep()),
                   _pageScroll(_fundingStep()),
-                  _pageScroll(_dealStep()),
                   _pageScroll(_mediaStep()),
                   _pageScroll(_reviewStep()),
                 ],
@@ -334,11 +429,12 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
             style: TextStyle(color: kUpTextSecondary, fontSize: 11.5),
           ),
         ),
-      ];
-
-  List<Widget> _dealStep() => [
-        _stepHeader('Deal terms',
-            'Optionally structure the equity or investment you take in return.'),
+        const SizedBox(height: 18),
+        // Folded in from the step that used to stand alone. Still optional,
+        // and still collapsed by default, so a funder who takes nothing in
+        // return sees one line rather than a page.
+        const Divider(color: kUpDivider, height: 1),
+        const SizedBox(height: 16),
         _equitySection(),
       ];
 
