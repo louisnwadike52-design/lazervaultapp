@@ -267,8 +267,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (id == null || !_closedRails.contains(id)) return null;
     switch (method) {
       case _DepositMethod.card:
-        return 'Card payments are not being accepted at the moment. '
-            '${_isNGN ? 'You can still add money by bank transfer or from a linked bank account.' : 'Please try again later.'}';
+        // NO "at the moment", and no "try again later".
+        //
+        // The rail closes for two different reasons and the list the server
+        // sends does not say which: an operator pausing cards globally, which
+        // does come back, or the acquirer not having enabled card charges for
+        // our account in this corridor, which waiting does not fix. NGN is in
+        // the second case today. A line that promises a return would be a
+        // promise we cannot keep half the time, so it says what is true in
+        // both and names the way forward instead.
+        return 'Card payments are not available for this wallet. '
+            '${_isNGN ? 'You can still add money by bank transfer or from a linked bank account.' : 'Please use another method.'}';
       case _DepositMethod.applePay:
         return 'Apple Pay is not available at the moment. '
             'Please try another method or check back later.';
