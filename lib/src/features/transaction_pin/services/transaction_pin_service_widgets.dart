@@ -69,6 +69,24 @@ abstract class ITransactionPinService {
     required String newPin,
     required String confirmNewPin,
   });
+
+  /// Validate an OTP WITHOUT consuming it, so the screen that collected it can
+  /// reject a wrong code there.
+  ///
+  /// The reset flow collects the code first and the new PIN after, and until
+  /// this existed the code was only ever checked at the END — so a wrong code
+  /// walked the user through choosing and confirming a new PIN before failing,
+  /// and the failure arrived attached to the PIN step where it read as if the
+  /// PIN had been rejected.
+  ///
+  /// The server does NOT mark the OTP verified and does NOT burn a 2FA backup
+  /// code on this call, so a correct code still works at the real step. A
+  /// WRONG code still counts against the attempt budget — otherwise this
+  /// would be a free oracle for guessing it.
+  Future<PinOTPVerifyResult> checkPinOtp({
+    required String otpCode,
+    required String operationType,
+  });
 }
 
 /// Result of PIN verification

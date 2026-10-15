@@ -189,6 +189,35 @@ class PinManagementCubit extends Cubit<PinManagementState> {
     }
   }
 
+  /// Validates the OTP WITHOUT consuming it. Returns true when the screen may
+  /// advance to the new-PIN step.
+  ///
+  /// EMITS NOTHING ON SUCCESS. The caller is a step transition, not a state
+  /// the rest of the screen renders — emitting Loading/Success here would
+  /// drive _handleStateChange and move the step twice. On FAILURE it emits
+  /// PinManagementError so the existing error rendering (including the
+  /// remaining-attempts count) works unchanged.
+  Future<bool> checkOtp({
+    required String otpCode,
+    required String operationType,
+  }) async {
+    try {
+      final result = await _pinService
+          .checkPinOtp(otpCode: otpCode, operationType: operationType)
+          .timeout(_rpcTimeout);
+      if (result.success) return true;
+      emit(PinManagementError(
+        message: _friendly(result.message),
+        remainingAttempts: result.remainingAttempts,
+      ));
+      return false;
+    } catch (e) {
+      // Fails closed — see ITransactionPinService.checkPinOtp.
+      emit(PinManagementError(message: _friendly(e)));
+      return false;
+    }
+  }
+
   Future<void> completeForgotPin({
     required String otpCode,
     required String newPin,

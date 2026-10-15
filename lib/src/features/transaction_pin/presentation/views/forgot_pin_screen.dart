@@ -111,6 +111,13 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
     _cubit.sendOTP(operationType: 'reset', channel: _channelUsed);
   }
 
+  /// True while the typed code is being checked against the server.
+  ///
+  /// Guards re-entry: the sixth digit can fire _onOtpChanged more than once
+  /// (an autofill writes several fields, a paste rewrites them all), and
+  /// without this each would spend one of the user's OTP attempts.
+  bool _verifyingOtp = false;
+
   void _onOtpChanged(int index, String value) {
     if (value.length == 1 && index < 5) {
       _otpFocusNodes[index + 1].requestFocus();
@@ -120,11 +127,40 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
 
     final code = _getOtpCode();
     if (code.length == 6) {
-      setState(() {
-        _storedOtpCode = code;
-        _currentStep = 3;
-      });
+      _verifyThenAdvance(code);
     }
+  }
+
+  /// THE CODE IS CHECKED HERE, NOT AFTER THE NEW PIN.
+  ///
+  /// This used to be `setState(() { _storedOtpCode = code; _currentStep = 3; })`
+  /// — six digits typed was the whole test. The code was only ever verified
+  /// inside completeForgotPin, at the END, so a WRONG code walked the user
+  /// through choosing and confirming a new PIN before failing, and the failure
+  /// then arrived attached to the PIN step where it read as if the PIN had
+  /// been rejected rather than the code.
+  ///
+  /// The server check does not consume the code — it does not mark the OTP
+  /// verified and does not burn a 2FA backup code — so a correct code still
+  /// works at the real step. See PinOTPService.CheckPinOperationCode.
+  Future<void> _verifyThenAdvance(String code) async {
+    if (_verifyingOtp) return;
+    setState(() => _verifyingOtp = true);
+    final ok = await _cubit.checkOtp(otpCode: code, operationType: 'reset');
+    if (!mounted) return;
+    setState(() => _verifyingOtp = false);
+    if (!ok) {
+      // The cubit emitted the error, which _handleStateChange renders. Clear
+      // the boxes and put the caret back at the first one so the next attempt
+      // does not have to delete six digits first.
+      _clearOtpFields();
+      if (_otpFocusNodes.isNotEmpty) _otpFocusNodes[0].requestFocus();
+      return;
+    }
+    setState(() {
+      _storedOtpCode = code;
+      _currentStep = 3;
+    });
   }
 
   void _onResetPin() {
@@ -849,11 +885,39 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
                   ),
                 ),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                // Locked while the typed code is being checked, so a stray
+                // keystroke cannot edit the code mid-request and leave the
+                // boxes disagreeing with what was sent.
+                enabled: !_verifyingOtp,
                 onChanged: (value) => _onOtpChanged(index, value),
               ),
             );
           }),
         ),
+        // Feedback while the code is checked. The check deliberately does not
+        // emit a Loading state — that drives the step machine — so without
+        // this the screen would sit silent for the round trip and the user
+        // would retype.
+        if (_verifyingOtp) ...[
+          SizedBox(height: 16.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 14.w,
+                height: 14.w,
+                child: const CircularProgressIndicator(
+                    strokeWidth: 2, color: _purpleAccent),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                'Checking code...',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: Colors.grey.shade700),
+              ),
+            ],
+          ),
+        ],
         SizedBox(height: 28.h),
         // Resend row — only for email/SMS. A time-based authenticator code has
         // no "resend" (the app rotates it every 30s), so we hide it and instead

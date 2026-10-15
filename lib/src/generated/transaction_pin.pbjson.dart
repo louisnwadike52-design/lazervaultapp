@@ -776,6 +776,43 @@ final $typed_data.Uint8List createChannelRegistrationResponseDescriptor =
         'bWFza2VkUGhvbmUSMwoWb3RwX2V4cGlyZXNfaW5fc2Vjb25kcxgEIAEoBVITb3RwRXhwaXJlc0'
         'luU2Vjb25kcw==');
 
+@$core.Deprecated('Use checkPinOTPRequestDescriptor instead')
+const CheckPinOTPRequest$json = {
+  '1': 'CheckPinOTPRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'operation_type', '3': 2, '4': 1, '5': 9, '10': 'operationType'},
+    {'1': 'otp_code', '3': 3, '4': 1, '5': 9, '10': 'otpCode'},
+  ],
+};
+
+/// Descriptor for `CheckPinOTPRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List checkPinOTPRequestDescriptor = $convert.base64Decode(
+    'ChJDaGVja1Bpbk9UUFJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEiUKDm9wZXJhdG'
+    'lvbl90eXBlGAIgASgJUg1vcGVyYXRpb25UeXBlEhkKCG90cF9jb2RlGAMgASgJUgdvdHBDb2Rl');
+
+@$core.Deprecated('Use checkPinOTPResponseDescriptor instead')
+const CheckPinOTPResponse$json = {
+  '1': 'CheckPinOTPResponse',
+  '2': [
+    {'1': 'valid', '3': 1, '4': 1, '5': 8, '10': 'valid'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'remaining_attempts',
+      '3': 3,
+      '4': 1,
+      '5': 5,
+      '10': 'remainingAttempts'
+    },
+  ],
+};
+
+/// Descriptor for `CheckPinOTPResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List checkPinOTPResponseDescriptor = $convert.base64Decode(
+    'ChNDaGVja1Bpbk9UUFJlc3BvbnNlEhQKBXZhbGlkGAEgASgIUgV2YWxpZBIYCgdtZXNzYWdlGA'
+    'IgASgJUgdtZXNzYWdlEi0KEnJlbWFpbmluZ19hdHRlbXB0cxgDIAEoBVIRcmVtYWluaW5nQXR0'
+    'ZW1wdHM=');
+
 @$core.Deprecated('Use verifyChannelOTPRequestDescriptor instead')
 const VerifyChannelOTPRequest$json = {
   '1': 'VerifyChannelOTPRequest',

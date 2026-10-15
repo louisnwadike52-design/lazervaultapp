@@ -2845,6 +2845,172 @@ class CreateChannelRegistrationResponse extends $pb.GeneratedMessage {
 }
 
 /// VerifyChannelOTP
+/// CheckPinOTP — validate only, never consume.
+class CheckPinOTPRequest extends $pb.GeneratedMessage {
+  factory CheckPinOTPRequest({
+    $core.String? userId,
+    $core.String? operationType,
+    $core.String? otpCode,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (operationType != null) result.operationType = operationType;
+    if (otpCode != null) result.otpCode = otpCode;
+    return result;
+  }
+
+  CheckPinOTPRequest._();
+
+  factory CheckPinOTPRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CheckPinOTPRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CheckPinOTPRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'operationType')
+    ..aOS(3, _omitFieldNames ? '' : 'otpCode')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CheckPinOTPRequest clone() => CheckPinOTPRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CheckPinOTPRequest copyWith(void Function(CheckPinOTPRequest) updates) =>
+      super.copyWith((message) => updates(message as CheckPinOTPRequest))
+          as CheckPinOTPRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CheckPinOTPRequest create() => CheckPinOTPRequest._();
+  @$core.override
+  CheckPinOTPRequest createEmptyInstance() => create();
+  static $pb.PbList<CheckPinOTPRequest> createRepeated() =>
+      $pb.PbList<CheckPinOTPRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CheckPinOTPRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CheckPinOTPRequest>(create);
+  static CheckPinOTPRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  /// "create" | "change" | "reset" — the same operation_type the code was
+  /// issued for. A code issued for one operation must not validate another.
+  @$pb.TagNumber(2)
+  $core.String get operationType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set operationType($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasOperationType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOperationType() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get otpCode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set otpCode($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasOtpCode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOtpCode() => $_clearField(3);
+}
+
+class CheckPinOTPResponse extends $pb.GeneratedMessage {
+  factory CheckPinOTPResponse({
+    $core.bool? valid,
+    $core.String? message,
+    $core.int? remainingAttempts,
+  }) {
+    final result = create();
+    if (valid != null) result.valid = valid;
+    if (message != null) result.message = message;
+    if (remainingAttempts != null) result.remainingAttempts = remainingAttempts;
+    return result;
+  }
+
+  CheckPinOTPResponse._();
+
+  factory CheckPinOTPResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CheckPinOTPResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CheckPinOTPResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'valid')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..a<$core.int>(
+        3, _omitFieldNames ? '' : 'remainingAttempts', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CheckPinOTPResponse clone() => CheckPinOTPResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CheckPinOTPResponse copyWith(void Function(CheckPinOTPResponse) updates) =>
+      super.copyWith((message) => updates(message as CheckPinOTPResponse))
+          as CheckPinOTPResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CheckPinOTPResponse create() => CheckPinOTPResponse._();
+  @$core.override
+  CheckPinOTPResponse createEmptyInstance() => create();
+  static $pb.PbList<CheckPinOTPResponse> createRepeated() =>
+      $pb.PbList<CheckPinOTPResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CheckPinOTPResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CheckPinOTPResponse>(create);
+  static CheckPinOTPResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get valid => $_getBF(0);
+  @$pb.TagNumber(1)
+  set valid($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasValid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearValid() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+
+  /// Attempts left on the OTP row after a failure, so the screen can say how
+  /// many tries remain rather than only that the code was wrong.
+  @$pb.TagNumber(3)
+  $core.int get remainingAttempts => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set remainingAttempts($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasRemainingAttempts() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRemainingAttempts() => $_clearField(3);
+}
+
 class VerifyChannelOTPRequest extends $pb.GeneratedMessage {
   factory VerifyChannelOTPRequest({
     $core.String? userId,

@@ -108,6 +108,18 @@ class TransactionPinServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getPinOTPChannels, request, options: options);
   }
 
+  /// CheckPinOTP validates a PIN-operation code WITHOUT consuming it, so the
+  /// UI can reject a wrong code on the screen where it was typed instead of
+  /// walking the user through choosing a new PIN first. Failures still count
+  /// against the OTP's attempt budget — otherwise this would be a free oracle
+  /// for guessing the code.
+  $grpc.ResponseFuture<$0.CheckPinOTPResponse> checkPinOTP(
+    $0.CheckPinOTPRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$checkPinOTP, request, options: options);
+  }
+
   /// CompleteForgotPin verifies OTP and resets the PIN (forgot PIN flow)
   $grpc.ResponseFuture<$0.CompleteForgotPinResponse> completeForgotPin(
     $0.CompleteForgotPinRequest request, {
@@ -216,6 +228,11 @@ class TransactionPinServiceClient extends $grpc.Client {
       '/pb.TransactionPinService/GetPinOTPChannels',
       ($0.GetPinOTPChannelsRequest value) => value.writeToBuffer(),
       $0.GetPinOTPChannelsResponse.fromBuffer);
+  static final _$checkPinOTP =
+      $grpc.ClientMethod<$0.CheckPinOTPRequest, $0.CheckPinOTPResponse>(
+          '/pb.TransactionPinService/CheckPinOTP',
+          ($0.CheckPinOTPRequest value) => value.writeToBuffer(),
+          $0.CheckPinOTPResponse.fromBuffer);
   static final _$completeForgotPin = $grpc.ClientMethod<
           $0.CompleteForgotPinRequest, $0.CompleteForgotPinResponse>(
       '/pb.TransactionPinService/CompleteForgotPin',
@@ -342,6 +359,15 @@ abstract class TransactionPinServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetPinOTPChannelsRequest.fromBuffer(value),
         ($0.GetPinOTPChannelsResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.CheckPinOTPRequest, $0.CheckPinOTPResponse>(
+            'CheckPinOTP',
+            checkPinOTP_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.CheckPinOTPRequest.fromBuffer(value),
+            ($0.CheckPinOTPResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CompleteForgotPinRequest,
             $0.CompleteForgotPinResponse>(
         'CompleteForgotPin',
@@ -488,6 +514,14 @@ abstract class TransactionPinServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetPinOTPChannelsResponse> getPinOTPChannels(
       $grpc.ServiceCall call, $0.GetPinOTPChannelsRequest request);
+
+  $async.Future<$0.CheckPinOTPResponse> checkPinOTP_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.CheckPinOTPRequest> $request) async {
+    return checkPinOTP($call, await $request);
+  }
+
+  $async.Future<$0.CheckPinOTPResponse> checkPinOTP(
+      $grpc.ServiceCall call, $0.CheckPinOTPRequest request);
 
   $async.Future<$0.CompleteForgotPinResponse> completeForgotPin_Pre(
       $grpc.ServiceCall $call,

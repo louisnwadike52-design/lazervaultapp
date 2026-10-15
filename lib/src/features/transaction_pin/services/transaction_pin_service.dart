@@ -497,6 +497,49 @@ class TransactionPinService implements ITransactionPinService {
   }
 
   @override
+  Future<PinOTPVerifyResult> checkPinOtp({
+    required String otpCode,
+    required String operationType,
+  }) async {
+    try {
+      final userId = await _getUserId();
+      final request = CheckPinOTPRequest()
+        ..userId = userId
+        ..operationType = operationType
+        ..otpCode = otpCode;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.checkPinOTP(request, options: callOptions);
+      return PinOTPVerifyResult(
+        success: response.valid,
+        message: response.message,
+        remainingAttempts: response.remainingAttempts,
+      );
+    } on GrpcError catch (e) {
+      // FAILS CLOSED. This gate exists to stop a wrong code advancing; a
+      // transport error must not become an open door, because the user would
+      // then be sent to choose a PIN that the real step refuses anyway —
+      // which is the exact experience this check was added to remove.
+      //
+      // Returned rather than thrown: the caller is a screen deciding whether
+      // to advance, and an exception there would surface as a crash dialog
+      // instead of a message beside the code field.
+      return PinOTPVerifyResult(
+        success: false,
+        message: e.message?.trim().isNotEmpty == true
+            ? e.message!
+            : 'Could not check that code. Please try again.',
+        remainingAttempts: 0,
+      );
+    } catch (_) {
+      return PinOTPVerifyResult(
+        success: false,
+        message: 'Could not check that code. Please try again.',
+        remainingAttempts: 0,
+      );
+    }
+  }
+
+  @override
   Future<PinOTPVerifyResult> completeForgotPin({
     required String otpCode,
     required String newPin,
