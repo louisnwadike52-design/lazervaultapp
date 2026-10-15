@@ -65,6 +65,19 @@ void main() {
     });
   });
 
+  test('a milestone notice does not hand its id to the fund screen', () {
+    // "Funds received" carries a MILESTONE id. Routing it to the fund detail
+    // would ask the server for a fund that does not exist, which renders as a
+    // screen that loads forever — the composite-reference failure from the
+    // other end.
+    final target = NotificationRouteResolver.resolve(
+      'uplift_milestone_released',
+      {'milestone_id': 'ffffffff-1111-2222-3333-444444444444'},
+    );
+    expect(target!.route, AppRoutes.dashboardTransactionHistory,
+        reason: 'money landing is a question the history answers');
+  });
+
   group('money notices still go to the history', () {
     // A disbursement or refund is a question about an amount landing in an
     // account, and the history is where that is answered.

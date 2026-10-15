@@ -250,14 +250,24 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   // disbursement or a refund is a question about an amount landing in an
   // account, and the history is where that is answered.
   if (_is(type, 'uplift')) {
-    if (type.contains('disbursement') || type.contains('refund')) {
+    // Money landing in an account is a question the HISTORY answers, so these
+    // go there — including the milestone release, which is the notification a
+    // business gets when funding actually arrives.
+    if (type.contains('disbursement') ||
+        type.contains('refund') ||
+        type.contains('milestone')) {
       return _landing(AppRoutes.dashboardTransactionHistory);
     }
+    // fund_id FIRST, and reference_id only as a fallback.
+    //
+    // reference_id is whatever the notice points at, which is not always a
+    // fund — an application or milestone notice carries its own id. The
+    // service now labels the payload by type, so a notice that is not about a
+    // fund simply has no fund_id and falls through to the landing rather than
+    // handing the detail screen an id it can never fetch.
     final fundId = _first(data, const [
       'fund_id',
       'fundId',
-      // reference_id is folded into the payload by the client, and for every
-      // fund-scoped uplift notice it IS the fund id.
       'reference_id',
     ]);
     // MUST LOOK LIKE AN ID.
