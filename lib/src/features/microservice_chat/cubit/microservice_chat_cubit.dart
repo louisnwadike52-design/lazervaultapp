@@ -668,7 +668,25 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
       emit(MicroserviceChatMessageLoading(
           messages: List.from(_currentMessages)));
 
-      final locale = serviceLocator<LocaleManager>().currentLocale;
+      final localeManager = serviceLocator<LocaleManager>();
+      final locale = localeManager.currentLocale;
+
+      // THE CONFIRM TURN IS THE ONE THAT MOVES THE MONEY, so it has to carry
+      // the same active-account scope as the turns before it. This sent
+      // accountId: '' with the USER PROFILE's country and currency — the exact
+      // defect that was fixed for the ordinary send path (see the block around
+      // `activeAccountId` above) and left in place here, on the most important
+      // call site of all. An empty account id makes the agent resolve a source
+      // account on its own, and a profile currency formats and validates a GBP
+      // transfer in the profile's currency.
+      final activeAccountId =
+          serviceLocator<AccountManager>().activeAccountId ?? '';
+      final activeCountry = localeManager.currentCountry.isNotEmpty
+          ? localeManager.currentCountry
+          : (authState.profile.user.country ?? '');
+      final activeCurrency = localeManager.currentCurrency.isNotEmpty
+          ? localeManager.currentCurrency
+          : (authState.profile.user.currency ?? '');
 
       // Inject the protocol fields into the cubit's entities map so
       // the direct path (which forwards entities) carries them.
@@ -687,9 +705,9 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           accessToken: '',
           sourceContext: sourceContext,
           entities: outboundEntities,
-          accountId: '',
-          userCountry: authState.profile.user.country ?? '',
-          currency: authState.profile.user.currency ?? '',
+          accountId: activeAccountId,
+          userCountry: activeCountry,
+          currency: activeCurrency,
           language: 'en',
           locale: locale,
         );
