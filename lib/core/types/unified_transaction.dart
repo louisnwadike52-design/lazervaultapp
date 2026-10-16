@@ -42,6 +42,27 @@ class UnifiedTransaction extends Equatable {
       final stripped = raw.substring(5).trim();
       if (stripped.isNotEmpty) return stripped;
     }
+    // IDEM-CR-/IDEM-DR-/IDEM-XFER- are accounts-service's DEDUP markers, not
+    // references a human ever quotes. accounts-service stores the transaction
+    // reference AS the idempotency marker so FindByReference can dedupe a
+    // retried credit (see idem_reference.go), which means the business
+    // reference the service actually generated — SPRAY-WD-<uuid>,
+    // SPRAY-FUND-<uuid> — ends up buried behind that prefix.
+    //
+    // Measured on prod: a Lazerspray withdrawal stored
+    // `IDEM-CR-SPRAY-WD-53a25fe4-…` in reference while the DESCRIPTION read
+    // "SprayMe wallet withdrawal. Ref SPRAY-WD-53a25fe4-…". The service had
+    // duplicated the reference into the description precisely because the
+    // reference column was unusable — so the receipt showed the same id twice,
+    // once mangled and once inside a sentence.
+    //
+    // Stripped for the same reason HOLD- is: it is an internal key. HOLD-CAP
+    // stays whole above because that IS a settlement row in its own right.
+    final idem = RegExp(r'^IDEM-[A-Z]+-');
+    if (idem.hasMatch(raw)) {
+      final stripped = raw.replaceFirst(idem, '').trim();
+      if (stripped.isNotEmpty) return stripped;
+    }
     return raw;
   }
   final Map<String, dynamic>? metadata;
