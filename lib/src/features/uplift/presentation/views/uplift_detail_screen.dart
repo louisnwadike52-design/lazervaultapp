@@ -911,24 +911,31 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
     }
   }
 
-  /// Why this fund is closed, and — the part that matters to a funder — where
-  /// their money went. Expiry and cancellation both refund unreleased escrow,
-  /// so say so plainly rather than leaving them to infer it from a ₦0 pool.
+  /// What actually happened to the money in a closed fund.
+  /// Delegates to the pure [upliftMoneyOutcome] so the rule can be pinned by a
+  /// test without building a screen — it is the part that was wrong.
+  String _moneyOutcome(up.UpliftFundMessage f) => upliftMoneyOutcome(
+        committedKobo: f.committedPool.toInt(),
+        releasedKobo: f.releasedTotal.toInt(),
+        refundedKobo: f.refundedTotal.toInt(),
+        currency: f.currency,
+      );
+
+  /// Why this fund is closed, followed by where the money stands.
   String _terminalNote(up.UpliftFundMessage f) {
     switch (f.status) {
       case up.UpliftFundStatus.UPLIFT_FUND_STATUS_COMPLETED:
         return 'This fund is complete. Every selected business was funded and '
             'all milestones were released.';
       case up.UpliftFundStatus.UPLIFT_FUND_STATUS_EXPIRED:
-        return 'This fund expired when its funding deadline passed. Anything in the '
-            'pool that had not been released was refunded to your wallet.';
+        return 'This fund expired when its funding deadline passed. '
+            '${_moneyOutcome(f)}';
       default:
         final why = f.cancelReason.trim();
-        return why.isEmpty
-            ? 'This fund was cancelled. Anything left in the pool was refunded '
-                'to your wallet.'
-            : 'This fund was cancelled — $why. Anything left in the pool was '
-                'refunded to your wallet.';
+        final head = why.isEmpty
+            ? 'This fund was cancelled.'
+            : 'This fund was cancelled — $why.';
+        return '$head ${_moneyOutcome(f)}';
     }
   }
 
@@ -1576,4 +1583,48 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
       ),
     );
   }
+}
+
+/// What a closed fund should SAY about the funder's money.
+///
+/// This used to be a fixed sentence attached to the STATUS: every expired or
+/// cancelled fund told the funder that "anything in the pool that had not been
+/// released was refunded to your wallet", whether or not a naira had ever been
+/// committed.
+///
+/// Measured on production 2026-10-16: all four expired funds had
+/// committed_pool = 0, released = 0, refunded = 0 and no escrow account, and
+/// `uplift_escrow_refunds` held ZERO rows platform-wide. The expiry sweep only
+/// queues a refund when `unreleased > 0`
+/// (uplift_worker_reconcile.go sweepExpiredFunds), so for a fund nobody funded
+/// there is correctly nothing to refund — but the screen promised one, which
+/// sent a funder looking through the refunds page for money that had never
+/// moved.
+///
+/// "Nothing was taken" and "it came back" are different promises, and the
+/// expensive direction is claiming a refund that did not happen. Each arm is
+/// derived from the fund's own figures.
+String upliftMoneyOutcome({
+  required int committedKobo,
+  required int releasedKobo,
+  required int refundedKobo,
+  required String currency,
+}) {
+  final unreleased = committedKobo - releasedKobo - refundedKobo;
+
+  if (committedKobo <= 0) {
+    // Say it plainly. Silence here reads as a refund that went missing.
+    return 'No money was committed to this fund, so there is nothing to refund.';
+  }
+  if (unreleased > 0) {
+    // Queued, not settled. Promising a completed refund would be the
+    // expensive direction of wrong.
+    return '${upNaira(unreleased, currency)} is on its way back to your wallet. '
+        'It will appear once the refund settles.';
+  }
+  if (refundedKobo > 0) {
+    return '${upNaira(refundedKobo, currency)} was returned to your wallet.';
+  }
+  return 'Everything in the pool had already been released to businesses, so '
+      'there is nothing to refund.';
 }
