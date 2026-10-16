@@ -11,11 +11,13 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../authentication/cubit/authentication_state.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
+import 'id_pay_payment_guards.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
@@ -44,6 +46,28 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
   // key because it IS a new intent.
   String? _pendingIdempotencyKey;
   String? _pendingIdempotencyKeyFingerprint;
+
+  /// True while the PIN sheet is on screen and owns the payment's outcome.
+  ///
+  /// The BlocListener below also reacts to IDPayError / IDPayInsufficientFunds
+  /// with a snackbar. Once the payment runs INSIDE the sheet, the sheet renders
+  /// the failure itself, so the snackbar would be a second copy of the same
+  /// refusal stacked over it.
+  bool _pinSheetOwnsOutcome = false;
+
+  /// The signed-in user's id, or null when auth state isn't resolved.
+  String? get _signedInUserId {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) return authState.profile.userId;
+    return null;
+  }
+
+  /// Whether this PayID belongs to the person looking at it. See
+  /// [isOwnPayId] — it mirrors the server rule and fails open.
+  bool get _isOwnPayId => isOwnPayId(
+        signedInUserId: _signedInUserId,
+        creatorId: _idPay.creatorId,
+      );
 
   String _resolveIdempotencyKey(double amount, String accountId) {
     final fp = '$accountId:${amount.toStringAsFixed(2)}';
@@ -143,6 +167,25 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
       if (mounted) setState(() => _isProcessing = false);
     }
 
+    // SELF-PAYMENT, refused before the PIN sheet opens.
+    //
+    // The server refuses this too, but inside its payment transaction — which
+    // is after the sheet has already announced success. Checking here is what
+    // makes the refusal arrive before the user is told their money moved.
+    if (_isOwnPayId) {
+      Get.snackbar(
+        'Your own PayID',
+        ownPayIdRefusalMessage,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w),
+        duration: const Duration(seconds: 4),
+      );
+      abort();
+      return;
+    }
+
     if (!_isValidAmount) {
       Get.snackbar(
         'Invalid Amount',
@@ -212,8 +255,23 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
         _idPay.id.length >= 8 ? _idPay.id.substring(0, 8) : _idPay.id;
     final transactionId = 'IDPAY-$idPrefix';
 
-    String? verificationToken;
+    final cubit = context.read<IDPayCubit>();
+    final accountId = _selectedAccountId!;
+    _pinSheetOwnsOutcome = true;
 
+    // THE PAYMENT RUNS INSIDE onPinValidated, and that is the entire fix.
+    //
+    // This callback used to only capture the token and return. Returning
+    // normally is what tells the mixin the action SUCCEEDED, so the sheet's
+    // last beat fired on PIN VALIDATION alone and always read "Transaction
+    // Successful!" — while the real payment ran afterwards, outside the sheet,
+    // and could still be refused. That is how one tap produced a success sheet
+    // and a "cannot pay your own PayID" snackbar at the same time.
+    //
+    // Awaiting the real payment here means the sheet sits on "Processing"
+    // while the money actually moves, and only reaches "Payment Successful"
+    // once the cubit has emitted IDPayPaid. A refusal throws, which the mixin
+    // renders as the sheet's FAILED phase carrying the server's own reason.
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
@@ -223,25 +281,30 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
       title: 'Confirm Payment',
       message:
           'Confirm PayID payment of ${_currencySymbol(_idPay.currency)}${_paymentAmount.toStringAsFixed(2)}',
+      successMessage: 'Payment Successful',
+      processingSubtitle: 'Sending your payment',
+      successSubtitle: 'Your PayID payment was successful',
       onPinValidated: (token) async {
-        verificationToken = token;
+        await cubit.payIDPay(
+          payId: _idPay.payId,
+          amount: _paymentAmount,
+          transactionPin: token,
+          sourceAccountId: accountId,
+          idempotencyKey: _resolveIdempotencyKey(_paymentAmount, accountId),
+        );
+        // payIDPay awaits the RPC and emits before it returns, so the state is
+        // already terminal. Throwing on a refusal is what turns the sheet's
+        // last beat into FAILED instead of "successful".
+        throwIfPaymentRefused(cubit.state);
       },
+      failureMessageBuilder: idPayPaymentFailureMessage,
     );
 
-    if (!success || verificationToken == null) {
+    _pinSheetOwnsOutcome = false;
+    if (!success) {
       abort();
       return;
     }
-
-    if (!mounted) return;
-    context.read<IDPayCubit>().payIDPay(
-          payId: _idPay.payId,
-          amount: _paymentAmount,
-          transactionPin: verificationToken!,
-          sourceAccountId: _selectedAccountId!,
-          idempotencyKey:
-              _resolveIdempotencyKey(_paymentAmount, _selectedAccountId!),
-        );
   }
 
   String _getAmountErrorMessage() {
@@ -280,6 +343,14 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
               'transaction': state.transaction,
               'idPay': _idPay,
               'newBalance': state.newBalance,
+            });
+          } else if (_pinSheetOwnsOutcome &&
+              (state is IDPayError || state is IDPayInsufficientFunds)) {
+            // The PIN sheet is still on screen and renders this outcome itself
+            // (its FAILED phase carries the server's reason). Showing a
+            // snackbar as well stacks a second copy of the same refusal.
+            setState(() {
+              _isProcessing = false;
             });
           } else if (state is IDPayInsufficientFunds) {
             // Previously unhandled: the cubit emitted this and the screen
@@ -1083,6 +1154,38 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
   }
 
   Widget _buildPayButton() {
+    // Own PayID: say so here rather than letting the user tap, enter a PIN and
+    // then be refused. The server check and the pre-flight in _processPayment
+    // both still stand — this is the courtesy, not the enforcement.
+    if (_isOwnPayId) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline, color: Color(0xFFEF4444), size: 20),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                ownPayIdRefusalMessage,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFEF4444),
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(

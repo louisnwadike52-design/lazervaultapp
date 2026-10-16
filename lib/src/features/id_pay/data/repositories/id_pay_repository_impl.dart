@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:lazervault/src/features/id_pay/domain/pay_id_code.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../../domain/entities/id_pay_fee_rule_entity.dart';
 import '../../domain/entities/id_pay_organization_entity.dart';
@@ -62,7 +63,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to create PayID'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -79,7 +84,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to lookup PayID'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -105,7 +114,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to process PayID payment'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -127,7 +140,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to get PayIDs'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -149,7 +166,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to get PayID transactions'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -165,7 +186,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to cancel PayID'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -181,7 +206,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to get PayID details'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -205,7 +234,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to create organization'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -228,7 +261,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to get organizations'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -252,7 +289,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to update organization'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -268,7 +309,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to delete organization'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -285,7 +330,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to get organization details'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -303,7 +352,11 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to lookup PayID'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      // NEVER e.toString() — a non-gRPC throw here stringifies to raw
+      // internals (a provider's IP-allowlist refusal, a parser message) and
+      // this string is rendered straight into the UI.
+      return Left(
+          ServerFailure(message: friendlyError(e), statusCode: 'UNKNOWN'));
     }
   }
 }
