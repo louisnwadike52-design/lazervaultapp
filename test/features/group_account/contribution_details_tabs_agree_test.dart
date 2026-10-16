@@ -81,9 +81,8 @@ void main() {
     // collapsed: the formatter puts each mixin on its own line, so a plain
     // substring search for "with TickerProviderStateMixin" finds nothing even
     // when the mixin is there.
-    final decl = src
-        .replaceAll(RegExp(r'//[^\n]*'), '')
-        .replaceAll(RegExp(r'\s+'), ' ');
+    final decl =
+        src.replaceAll(RegExp(r'//[^\n]*'), '').replaceAll(RegExp(r'\s+'), ' ');
     final clause = RegExp(r'class _ContributionDetailsScreenState[^{]*')
         .firstMatch(decl)!
         .group(0)!;
@@ -120,5 +119,37 @@ void main() {
     // And it must not fire from under a modal, which would swap the
     // contribution a sheet was opened against.
     expect(src, contains("ModalRoute.of(context)?.isCurrent != true"));
+  });
+
+  test('the Cycles tab is mounted only once it has been opened', () {
+    // TabBarView hands its children to a PageView backed by a
+    // SliverChildListDelegate, so pages ADJACENT to the current one are built.
+    // Swiping Overview -> Payments -> Members was therefore enough to
+    // construct the Cycles tab and fire its loadContributionCycles RPC for a
+    // tab the user never opened.
+    expect(src, contains('bool _cyclesTabVisited = false;'));
+    expect(src, contains('_cyclesTabVisited'),
+        reason: 'the child must be gated on first visit');
+    expect(src, contains('setState(() => _cyclesTabVisited = true)'),
+        reason: 'opening the tab must mount it');
+    // The slot must still exist unconditionally once the tab is shown, or the
+    // children count stops matching TabController.length.
+    expect(src, contains('const SizedBox.shrink()'),
+        reason: 'the unvisited tab still needs to occupy its slot');
+  });
+
+  test('the embedded cycles tab does not double-report the host\'s errors', () {
+    final cycles = File(
+      'lib/src/features/group_account/presentation/views/'
+      'contribution_cycles_history_screen.dart',
+    ).readAsStringSync();
+    // Its BlocConsumer listens to the SHARED GroupAccountCubit, so a
+    // GroupAccountError raised by the host's own loadContributionDetails fired
+    // this listener too — two identical red snackbars for one failure.
+    expect(cycles, contains('if (widget.embedded) return;'),
+        reason: 'as a tab it must leave error snackbars to the host screen');
+    // The error must still be visible somewhere.
+    expect(cycles, contains('_buildError(state.message)'),
+        reason: 'suppressing the snackbar must not hide the failure entirely');
   });
 }

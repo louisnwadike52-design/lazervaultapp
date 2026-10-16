@@ -72,6 +72,16 @@ class _ContributionCyclesHistoryScreenState
                 curr is ContributionCyclesLoaded ||
                 curr is GroupAccountError,
             listener: (ctx, state) {
+              // EMBEDDED: the host screen owns error reporting.
+              //
+              // This listener fires on ANY GroupAccountError on the SHARED
+              // cubit — including the ones the host's own
+              // loadContributionDetails raises, which the host already
+              // snackbars. As a tab that meant one failed load produced TWO
+              // identical red snackbars stacked on each other. The error is
+              // still rendered inline by _buildError below, so nothing is
+              // hidden from the user.
+              if (widget.embedded) return;
               if (state is GroupAccountError) {
                 ScaffoldMessenger.of(ctx).showSnackBar(
                   SnackBar(

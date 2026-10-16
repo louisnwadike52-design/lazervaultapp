@@ -95,6 +95,16 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// than on every frame of the indicator animation.
   int _lastTabIndex = 0;
 
+  /// Whether the Cycles tab has ever been opened.
+  ///
+  /// TabBarView hands its children to a PageView backed by a
+  /// SliverChildListDelegate, so pages adjacent to the current one are BUILT —
+  /// swiping to Members was enough to construct the Cycles tab and fire its
+  /// loadContributionCycles RPC for a tab the user never opened. Mounting it
+  /// only once visited keeps the details screen to the calls it actually needs,
+  /// and once mounted it stays mounted, so switching back does not refetch.
+  bool _cyclesTabVisited = false;
+
   void _startAutoRefresh() {
     _refreshTimer?.cancel();
     _refreshTimer = Timer.periodic(_refreshEvery, (_) {
@@ -120,6 +130,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     final index = _tabController.index;
     if (index == _lastTabIndex) return;
     _lastTabIndex = index;
+    if (index == _cyclesTabIndex && !_cyclesTabVisited) {
+      setState(() => _cyclesTabVisited = true);
+    }
     _loadContributionDetails(force: true);
     _loadLocalPayments();
   }
@@ -566,10 +579,15 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               // error states are the ones already in production, not a second
               // implementation that can drift.
               if (_showCyclesTab(contribution))
-                ContributionCyclesHistoryScreen(
-                  contribution: contribution,
-                  embedded: true,
-                ),
+                _cyclesTabVisited
+                    ? ContributionCyclesHistoryScreen(
+                        contribution: contribution,
+                        embedded: true,
+                      )
+                    // Placeholder until the tab is first opened — see
+                    // [_cyclesTabVisited]. It must still occupy the slot so the
+                    // children count keeps matching TabController.length.
+                    : const SizedBox.shrink(),
             ],
           ),
         ),

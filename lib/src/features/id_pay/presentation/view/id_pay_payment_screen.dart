@@ -272,35 +272,63 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
     // while the money actually moves, and only reaches "Payment Successful"
     // once the cubit has emitted IDPayPaid. A refusal throws, which the mixin
     // renders as the sheet's FAILED phase carrying the server's own reason.
-    final success = await validateTransactionPin(
-      context: context,
-      transactionId: transactionId,
-      transactionType: 'id_pay_payment',
-      amount: _paymentAmount,
-      currency: _idPay.currency,
-      title: 'Confirm Payment',
-      message:
-          'Confirm PayID payment of ${_currencySymbol(_idPay.currency)}${_paymentAmount.toStringAsFixed(2)}',
-      successMessage: 'Payment Successful',
-      processingSubtitle: 'Sending your payment',
-      successSubtitle: 'Your PayID payment was successful',
-      onPinValidated: (token) async {
-        await cubit.payIDPay(
-          payId: _idPay.payId,
-          amount: _paymentAmount,
-          transactionPin: token,
-          sourceAccountId: accountId,
-          idempotencyKey: _resolveIdempotencyKey(_paymentAmount, accountId),
+    final bool success;
+    try {
+      success = await validateTransactionPin(
+        context: context,
+        transactionId: transactionId,
+        transactionType: 'id_pay_payment',
+        amount: _paymentAmount,
+        currency: _idPay.currency,
+        title: 'Confirm Payment',
+        message:
+            'Confirm PayID payment of ${_currencySymbol(_idPay.currency)}${_paymentAmount.toStringAsFixed(2)}',
+        successMessage: 'Payment Successful',
+        processingSubtitle: 'Sending your payment',
+        successSubtitle: 'Your PayID payment was successful',
+        onPinValidated: (token) async {
+          await cubit.payIDPay(
+            payId: _idPay.payId,
+            amount: _paymentAmount,
+            transactionPin: token,
+            sourceAccountId: accountId,
+            idempotencyKey: _resolveIdempotencyKey(_paymentAmount, accountId),
+          );
+          // payIDPay awaits the RPC and emits before it returns, so the state is
+          // already terminal. Throwing on a refusal is what turns the sheet's
+          // last beat into FAILED instead of "successful".
+          throwIfPaymentRefused(cubit.state);
+        },
+        failureMessageBuilder: idPayPaymentFailureMessage,
+      );
+    } catch (e) {
+      // The mixin renders its own failure and returns false for every outcome
+      // it anticipates, so reaching here means something escaped it. Without
+      // this the exception unwound out of _processPayment with _isProcessing
+      // still true: no Pay button, no message, nothing to retry.
+      abort();
+      if (mounted) {
+        Get.snackbar(
+          'Payment Failed',
+          idPayPaymentFailureMessage(e),
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: EdgeInsets.all(16.w),
+          duration: const Duration(seconds: 4),
         );
-        // payIDPay awaits the RPC and emits before it returns, so the state is
-        // already terminal. Throwing on a refusal is what turns the sheet's
-        // last beat into FAILED instead of "successful".
-        throwIfPaymentRefused(cubit.state);
-      },
-      failureMessageBuilder: idPayPaymentFailureMessage,
-    );
+      }
+      return;
+    } finally {
+      _pinSheetOwnsOutcome = false;
+    }
 
-    _pinSheetOwnsOutcome = false;
+    // The flag and the processing lock are cleared in a FINALLY, not after the
+    // await. If validateTransactionPin ever throws rather than returning false
+    // — a sheet that fails to mount, a service that raises outside the mixin's
+    // own try — the old code left _pinSheetOwnsOutcome true and _isProcessing
+    // true for the life of the screen: the Pay button stayed disabled and the
+    // BlocListener stayed silent, so the user had no button and no error.
     if (!success) {
       abort();
       return;
