@@ -175,6 +175,20 @@ class TransactionPinModalState extends State<TransactionPinModal>
       'not enough',
       'limit',
       'same account',
+      // Paying yourself, said in each service's own words. id-pay-service
+      // returns "cannot pay your own PayID" — a textbook refusal that matched
+      // nothing here, so the sheet framed it "Transaction Failed / Something
+      // went wrong" over a body explaining the rule, and told the user to
+      // retry something that can only ever be refused again.
+      'your own',
+      'cannot pay yourself',
+      'pay yourself',
+      // A PayID / invoice / request that is expired, spent or withdrawn. The
+      // money did not move and no retry will change that.
+      'has expired',
+      'is not active',
+      'no longer available',
+      'already paid',
       'not allowed',
       'frozen',
       'suspended',
@@ -208,6 +222,17 @@ class TransactionPinModalState extends State<TransactionPinModal>
         m.contains('suspended') ||
         m.contains('blocked')) {
       return 'This account is restricted';
+    }
+    if (m.contains('your own') ||
+        m.contains('yourself') ||
+        m.contains('same account')) {
+      return 'You can\'t pay yourself';
+    }
+    if (m.contains('has expired') ||
+        m.contains('is not active') ||
+        m.contains('no longer available') ||
+        m.contains('already paid')) {
+      return 'This request is no longer payable';
     }
     return 'This transfer was not allowed';
   }
