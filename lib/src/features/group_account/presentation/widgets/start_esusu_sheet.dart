@@ -87,8 +87,12 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
     // than members would end the circle before some of them were ever paid.
     // The server enforces the same floor; this keeps the sheet from offering
     // a number it would refuse.
-    final stored = widget.contribution.totalCycles ?? 0;
-    _cycles = stored > widget.activeMembers ? stored : widget.activeMembers;
+    // Exactly the roster size — the same rule the server applies at open
+    // (rotationCycleCount). A stored value from creation is deliberately
+    // ignored: members are usually still joining between creating a circle
+    // and starting it, which is the window a creation-time number cannot know
+    // about.
+    _cycles = widget.activeMembers;
     if (_cycles < 1) _cycles = 1;
   }
 
@@ -285,33 +289,44 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
           ],
         ),
         SizedBox(height: 16.h),
-        Text('How many cycles?',
+        // CYCLES ARE NOT A CHOICE — they are the roster size.
+        //
+        // This used to be a stepper floored at the member count but with no
+        // ceiling, so an organiser could set MORE cycles than members. The
+        // rotation then wraps: measured on prod, an esusu with 2 members and
+        // 3 cycles would pay one member twice and the other once, each having
+        // paid the same into every cycle. That is not a rotation.
+        //
+        // The server computes the same number at open (rotationCycleCount),
+        // so a stepper here could only ever disagree with what actually runs.
+        // Showing the derived figure keeps the sheet honest.
+        Text('Cycles',
             style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w600)),
         SizedBox(height: 2.h),
         Text(
-          'Each member is paid once, so this cannot be fewer than the '
-          '${widget.activeMembers} members in the circle.',
+          'One per member, so everyone is paid exactly once.',
           style: GoogleFonts.inter(color: _muted, fontSize: 11.sp, height: 1.4),
         ),
         SizedBox(height: 8.h),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _stepper(Icons.remove, () {
-              if (_cycles > widget.activeMembers && _cycles > 1) {
-                setState(() => _cycles--);
-              }
-            }),
-            SizedBox(width: 14.w),
             Text('$_cycles',
                 style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700)),
-            SizedBox(width: 14.w),
-            _stepper(Icons.add, () => setState(() => _cycles++)),
+            SizedBox(width: 8.w),
+            Text(
+              _cycles == 1
+                  ? 'cycle · 1 member'
+                  : 'cycles · ${widget.activeMembers} members',
+              style:
+                  GoogleFonts.inter(color: _muted, fontSize: 12.sp),
+            ),
           ],
         ),
         SizedBox(height: 16.h),
@@ -344,22 +359,6 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _stepper(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 34.w,
-        height: 34.w,
-        decoration: BoxDecoration(
-          color: _card,
-          shape: BoxShape.circle,
-          border: Border.all(color: _border),
-        ),
-        child: Icon(icon, color: Colors.white, size: 17.sp),
-      ),
     );
   }
 
