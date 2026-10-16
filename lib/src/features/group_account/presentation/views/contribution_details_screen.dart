@@ -25,6 +25,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../widgets/exit_contribution_bottom_sheet.dart';
 import 'contribution_cycles_history_screen.dart';
+import 'package:lazervault/core/shared_widgets/scroll_more_hint.dart';
 import 'edit_contribution_screen.dart';
 import '../widgets/payment_group_widgets.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -52,7 +53,12 @@ class ContributionDetailsScreen extends StatefulWidget {
 }
 
 class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+    // TickerProviderStateMixin, not SingleTicker: the tab count is not fixed
+    // (see [_syncTabController]) and SingleTickerProviderStateMixin asserts on
+    // a second ticker even after the first is disposed.
+    with
+        TickerProviderStateMixin,
+        WidgetsBindingObserver {
   late TabController _tabController;
   Contribution? _currentContribution;
   List<ContributionPayment> _localPayments = [];
@@ -67,11 +73,64 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   // unmounted widget AND leak the cubit-stream listener.
   StreamSubscription<GroupAccountState>? _transcriptSub;
 
+  /// Keeps an OPEN details screen honest while OTHER members act.
+  ///
+  /// Nearly everything on this screen is other people's money moving: a member
+  /// pays, the pot grows, arrears clear, the payout becomes triggerable. It
+  /// refreshed only on open, on app resume, on pull-to-refresh and after the
+  /// viewer's OWN action — so an admin sitting on it while the last member paid
+  /// kept reading the receiver as behind, and the Trigger Payout button kept
+  /// offering a payout whose state had already moved underneath it. That stale
+  /// button is what made "Try again" look like the thing to press on a cycle
+  /// that had already been paid.
+  ///
+  /// Deliberately a SLOW poll. PayoutReceiverBanner already polls every 3s
+  /// while a payout is IN_FLIGHT, which is the only window where seconds
+  /// matter; this covers the minutes-long window while contributions trickle
+  /// in.
+  Timer? _refreshTimer;
+  static const Duration _refreshEvery = Duration(seconds: 20);
+
+  /// Last settled tab index, so the tab listener fires once per change rather
+  /// than on every frame of the indicator animation.
+  int _lastTabIndex = 0;
+
+  void _startAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(_refreshEvery, (_) {
+      if (!mounted) return;
+      // Never refresh from under a modal — a PIN sheet, a confirm dialog, a
+      // member sheet. Those are opened AGAINST a contribution snapshot, and
+      // swapping it mid-flow is how a confirm ends up acting on different
+      // numbers than the ones the user read.
+      if (ModalRoute.of(context)?.isCurrent != true) return;
+      _loadContributionDetails(force: true);
+    });
+  }
+
+  void _stopAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
+  }
+
+  /// Switching INTO a tab is exactly when its staleness becomes visible, so
+  /// re-read then as well as on the timer.
+  void _onTabChanged() {
+    if (!mounted) return;
+    final index = _tabController.index;
+    if (index == _lastTabIndex) return;
+    _lastTabIndex = index;
+    _loadContributionDetails(force: true);
+    _loadLocalPayments();
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_onTabChanged);
+    _startAutoRefresh();
     _currentContribution = widget.contribution;
     _loadContributionDetails();
     _loadLocalPayments();
@@ -115,6 +174,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _stopAutoRefresh();
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _transcriptSub?.cancel();
     _transcriptSub = null;
@@ -123,7 +184,15 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && mounted) {
+    // A timer that keeps firing in the background spends the user's data and
+    // battery on a screen nobody is looking at, and lands its result on a
+    // widget that may be disposed before it returns.
+    if (state != AppLifecycleState.resumed) {
+      _stopAutoRefresh();
+      return;
+    }
+    if (mounted) {
+      _startAutoRefresh();
       // Refresh payments when app resumes (e.g., returning from payment screen)
       _refreshPayments();
       // Also re-sync group state so pending-invite shadow rows get
@@ -361,6 +430,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   Widget _buildContributionDetailsView(Contribution contribution) {
+    // The Cycles tab comes and goes with the contribution's state, and
+    // TabController.length must match the children built below.
+    _syncTabController(contribution);
     // Get current user info for permission display
     final cubit = context.read<GroupAccountCubit>();
     final currentUserId = cubit.currentUserId;
@@ -410,70 +482,77 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             onRefresh: () async => _loadContributionDetails(force: true),
             color: GroupFundsPalette.onDark,
             backgroundColor: const Color(0xFF1F1F1F),
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                children: [
-                  _buildContributionSummary(contribution),
-                  // Directly under the statistics, above everything else that competes
-                  // for attention. An esusu that has not started is the one state where
-                  // nothing else on this screen can proceed — no payment, no payout, no
-                  // rotation — so the action that unblocks it belongs at the top rather
-                  // than only on the card in the list behind.
-                  // Not started: Start and Set receiver as ONE compact pair.
-                  //
-                  // Both used to be full-width banners with their whole explanation
-                  // inline. Stacked under the summary card they filled the screen and
-                  // pushed the tab bar off the bottom, so Overview / Payments /
-                  // Members could not be reached at all on a phone. The detail now
-                  // lives in a dialog behind each button, which is where somebody
-                  // about to take an irreversible action (starting locks the roster)
-                  // should be reading it anyway.
-                  if (contribution.awaitingOpen)
-                    _buildAwaitingOpenActions(contribution, isAdmin),
-                  // Payout receiver banner — surfaces the scheduled-payout state
-                  // (pending_receiver / ready / scheduled / in_flight / settled
-                  // / failed / exhausted) with the right CTA for the role. Only
-                  // admin/creator gets actionable buttons; members see read-only
-                  // status. The banner self-loads + polls in_flight states.
-                  PayoutReceiverBanner(
-                    contribution: contribution,
-                    cycleIndex:
-                        contribution.type == ContributionType.rotatingSavings
-                            ? (contribution.currentCycle ?? 1)
-                            : 0,
-                    isAdmin: isAdmin,
-                    // SCHEDULED state is rendered as a compact chip in the
-                    // status row below; the banner only owns the actionable /
-                    // exceptional states (pending, ready, in_flight, failed,
-                    // exhausted, settled).
-                    hideScheduled: true,
-                    // Offered in the compact pair above while the circle has not
-                    // started, so the tall version here would be a second copy of the
-                    // same action.
-                    hidePendingReceiver: contribution.awaitingOpen,
-                    // After a manual trigger settles, the saga creates a new
-                    // payout_transaction + zeros current_amount on the
-                    // contribution. Refreshing the contribution details here
-                    // makes the Payments / Overview tabs reflect the new state
-                    // without the user pulling-to-refresh.
-                    onStateChanged: _loadContributionDetails,
-                  ),
-                  // Status chips row: auto-debit + auto-payout (when scheduled)
-                  // + role rendered side-by-side. Each chip is borderless, uses
-                  // elevation, and opens a styled dialog with the full detail
-                  // when tapped. Wraps to two rows on narrow screens.
-                  _buildStatusChipsRow(
-                      contribution, isCreator, isMember, isAdmin),
-                  if (contribution.hasExternalLinks)
-                    _buildExternalLinksSection(contribution),
-                  SizedBox(height: 8.h),
-                ],
+            // This block is a VARIABLE stack of cards, so whether it overflows
+            // depends on the contribution's state and the device. When it does
+            // there was nothing on screen to say so — it just looked finished.
+            // The hint shows only when it actually scrolls and fades at the
+            // bottom.
+            child: ScrollMoreHint(
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    _buildContributionSummary(contribution),
+                    // Directly under the statistics, above everything else that competes
+                    // for attention. An esusu that has not started is the one state where
+                    // nothing else on this screen can proceed — no payment, no payout, no
+                    // rotation — so the action that unblocks it belongs at the top rather
+                    // than only on the card in the list behind.
+                    // Not started: Start and Set receiver as ONE compact pair.
+                    //
+                    // Both used to be full-width banners with their whole explanation
+                    // inline. Stacked under the summary card they filled the screen and
+                    // pushed the tab bar off the bottom, so Overview / Payments /
+                    // Members could not be reached at all on a phone. The detail now
+                    // lives in a dialog behind each button, which is where somebody
+                    // about to take an irreversible action (starting locks the roster)
+                    // should be reading it anyway.
+                    if (contribution.awaitingOpen)
+                      _buildAwaitingOpenActions(contribution, isAdmin),
+                    // Payout receiver banner — surfaces the scheduled-payout state
+                    // (pending_receiver / ready / scheduled / in_flight / settled
+                    // / failed / exhausted) with the right CTA for the role. Only
+                    // admin/creator gets actionable buttons; members see read-only
+                    // status. The banner self-loads + polls in_flight states.
+                    PayoutReceiverBanner(
+                      contribution: contribution,
+                      cycleIndex:
+                          contribution.type == ContributionType.rotatingSavings
+                              ? (contribution.currentCycle ?? 1)
+                              : 0,
+                      isAdmin: isAdmin,
+                      // SCHEDULED state is rendered as a compact chip in the
+                      // status row below; the banner only owns the actionable /
+                      // exceptional states (pending, ready, in_flight, failed,
+                      // exhausted, settled).
+                      hideScheduled: true,
+                      // Offered in the compact pair above while the circle has not
+                      // started, so the tall version here would be a second copy of the
+                      // same action.
+                      hidePendingReceiver: contribution.awaitingOpen,
+                      // After a manual trigger settles, the saga creates a new
+                      // payout_transaction + zeros current_amount on the
+                      // contribution. Refreshing the contribution details here
+                      // makes the Payments / Overview tabs reflect the new state
+                      // without the user pulling-to-refresh.
+                      onStateChanged: _loadContributionDetails,
+                    ),
+                    // Status chips row: auto-debit + auto-payout (when scheduled)
+                    // + role rendered side-by-side. Each chip is borderless, uses
+                    // elevation, and opens a styled dialog with the full detail
+                    // when tapped. Wraps to two rows on narrow screens.
+                    _buildStatusChipsRow(
+                        contribution, isCreator, isMember, isAdmin),
+                    if (contribution.hasExternalLinks)
+                      _buildExternalLinksSection(contribution),
+                    SizedBox(height: 8.h),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-        _buildTabBar(),
+        _buildTabBar(contribution),
         Expanded(
           child: TabBarView(
             controller: _tabController,
@@ -481,6 +560,16 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               _buildOverviewTab(contribution),
               _buildPaymentsTab(contribution),
               _buildMembersTab(contribution),
+              // Same screen the overflow menu and the Cycles chip open, with
+              // its own Scaffold and back header dropped. Reusing it means the
+              // cycle cards, the per-cycle bottom sheet and the loading /
+              // error states are the ones already in production, not a second
+              // implementation that can drift.
+              if (_showCyclesTab(contribution))
+                ContributionCyclesHistoryScreen(
+                  contribution: contribution,
+                  embedded: true,
+                ),
             ],
           ),
         ),
@@ -607,7 +696,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // Only once the circle has STARTED. Before that there is genuinely no
     // history, and a CTA that opens an empty list teaches the user it is not
     // worth tapping again.
-    final showCycles = contribution.isRotatingSavings && !contribution.awaitingOpen;
+    final showCycles =
+        contribution.isRotatingSavings && !contribution.awaitingOpen;
     final cyclesChip = !showCycles
         ? null
         : _StatusChip(
@@ -623,8 +713,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         : Padding(
             // Same 20.w gutter the chip row above uses — this sits OUTSIDE
             // that row's Padding, so it has to carry its own.
-            padding: EdgeInsets.fromLTRB(20.w,
-                (_autoPayoutChipVisible || cyclesChip != null) ? 8.h : 0, 20.w, 0),
+            padding: EdgeInsets.fromLTRB(
+                20.w,
+                (_autoPayoutChipVisible || cyclesChip != null) ? 8.h : 0,
+                20.w,
+                0),
             // STATIC shape, whatever the auto-payout chip decides to render.
             //
             // Both slots are always in the tree when this row exists, so the
@@ -777,10 +870,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// would quietly change the circle for everyone.
   void _showEnableAutoDebitDialog(Contribution contribution,
       {required bool isAdmin}) {
-    final amountLabel =
-        contribution.regularAmount != null && contribution.regularAmount! > 0
-            ? '${contribution.currency} ${_fmtAmount(contribution.regularAmount!)}'
-            : 'each share';
+    final amountLabel = contribution.regularAmount != null &&
+            contribution.regularAmount! > 0
+        ? '${contribution.currency} ${_fmtAmount(contribution.regularAmount!)}'
+        : 'each share';
     final sections = <_DialogSection>[
       _DialogSection(
         heading: 'What it does',
@@ -1698,7 +1791,56 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// The screen and the per-cycle sheets it opens both read the cycle list and
   /// per-cycle detail RPCs off this instance; handing them a fresh one would
   /// give them no loaded group and an empty list.
+  /// Whether this contribution has cycles worth a tab of their own.
+  ///
+  /// A one-time collection has none at all, and a rotation that has not opened
+  /// has none YET — showing an empty Cycles tab in either case is a dead end.
+  bool _showCyclesTab(Contribution? c) =>
+      c != null && c.isRotatingSavings && !c.awaitingOpen;
+
+  /// Index of the Cycles tab, or -1 when it is not showing.
+  int get _cyclesTabIndex => _showCyclesTab(_currentContribution) ? 3 : -1;
+
+  /// Keeps [TabController.length] equal to the number of TabBar / TabBarView
+  /// children, which Flutter requires at all times.
+  ///
+  /// The count is not fixed: a rotation gains its Cycles tab the moment it
+  /// opens, and that can land while this screen is on screen (an admin starts
+  /// it, or someone else does and the refresh brings it in). Rebuilding the
+  /// controller is the only way to change the length, so this runs from build
+  /// and is a no-op whenever the count already matches.
+  void _syncTabController(Contribution? contribution) {
+    final count = _showCyclesTab(contribution) ? 4 : 3;
+    if (_tabController.length == count) return;
+    final previous = _tabController.index;
+    final old = _tabController;
+    old.removeListener(_onTabChanged);
+    _tabController = TabController(
+      length: count,
+      vsync: this,
+      // Stay where the user was. Clamped because losing the Cycles tab while
+      // standing on it would otherwise leave the controller out of range.
+      initialIndex: previous.clamp(0, count - 1),
+    )..addListener(_onTabChanged);
+    _lastTabIndex = _tabController.index;
+    // Disposed AFTER this frame: the outgoing TabBar / TabBarView are still
+    // listening to it until they rebuild, and disposing mid-build makes the
+    // next notification throw "used after being disposed".
+    WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+  }
+
+  /// Cycles, from the overflow menu or the Cycles chip.
+  ///
+  /// When the tab is showing, SWITCH TO IT rather than pushing the same screen
+  /// on top of itself — otherwise the back stack holds two routes rendering
+  /// the same list and Back from the pushed one lands on a details screen
+  /// whose Cycles tab shows the very thing the user just dismissed. The push
+  /// is kept for the states that have no tab.
   void _openCyclesHistory(Contribution contribution) {
+    if (_cyclesTabIndex >= 0 && _tabController.length > _cyclesTabIndex) {
+      _tabController.animateTo(_cyclesTabIndex);
+      return;
+    }
     final histCubit = context.read<GroupAccountCubit>();
     Get.to(
       () => BlocProvider<GroupAccountCubit>.value(
@@ -2342,7 +2484,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     }
   }
 
-  Widget _buildTabBar() {
+  Widget _buildTabBar(Contribution contribution) {
+    final showCycles = _showCyclesTab(contribution);
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
@@ -2364,9 +2507,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           fontWeight: FontWeight.w600,
         ),
         tabs: [
-          Tab(text: 'Overview'),
-          Tab(text: 'Payments'),
-          Tab(text: 'Members'),
+          const Tab(text: 'Overview'),
+          const Tab(text: 'Payments'),
+          const Tab(text: 'Members'),
+          if (showCycles) const Tab(text: 'Cycles'),
         ],
       ),
     );

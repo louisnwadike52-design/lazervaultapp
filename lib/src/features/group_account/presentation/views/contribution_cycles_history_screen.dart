@@ -21,8 +21,21 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 class ContributionCyclesHistoryScreen extends StatefulWidget {
   final Contribution contribution;
 
-  const ContributionCyclesHistoryScreen(
-      {super.key, required this.contribution});
+  /// Rendered as a TAB of the contribution details screen rather than as its
+  /// own route.
+  ///
+  /// Drops the Scaffold and the back header — a tab already sits inside one
+  /// and has no back button of its own — and keeps everything that matters:
+  /// the same load, the same cycle cards, the same per-cycle bottom sheet and
+  /// the same loading / empty / error states. One implementation, two hosts,
+  /// so the tab cannot drift from the pushed screen.
+  final bool embedded;
+
+  const ContributionCyclesHistoryScreen({
+    super.key,
+    required this.contribution,
+    this.embedded = false,
+  });
 
   @override
   State<ContributionCyclesHistoryScreen> createState() =>
@@ -48,49 +61,54 @@ class _ContributionCyclesHistoryScreenState
 
   @override
   Widget build(BuildContext context) {
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!widget.embedded) _buildHeader(),
+        Expanded(
+          child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
+            buildWhen: (prev, curr) =>
+                curr is ContributionCyclesLoading ||
+                curr is ContributionCyclesLoaded ||
+                curr is GroupAccountError,
+            listener: (ctx, state) {
+              if (state is GroupAccountError) {
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: const Color(0xFFEF4444),
+                  ),
+                );
+              }
+            },
+            builder: (ctx, state) {
+              if (state is ContributionCyclesLoading) {
+                return const Center(
+                  child: LazerVaultLoader.small(),
+                );
+              }
+              if (state is ContributionCyclesLoaded &&
+                  state.contributionId == widget.contribution.id) {
+                return _buildList(state.cycles);
+              }
+              if (state is GroupAccountError) {
+                return _buildError(state.message);
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      ],
+    );
+
+    // As a tab, the host screen already provides the Scaffold and the safe
+    // area; nesting another would add a second background layer and a second
+    // top inset inside the tab view.
+    if (widget.embedded) return content;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
-                buildWhen: (prev, curr) =>
-                    curr is ContributionCyclesLoading ||
-                    curr is ContributionCyclesLoaded ||
-                    curr is GroupAccountError,
-                listener: (ctx, state) {
-                  if (state is GroupAccountError) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: const Color(0xFFEF4444),
-                      ),
-                    );
-                  }
-                },
-                builder: (ctx, state) {
-                  if (state is ContributionCyclesLoading) {
-                    return const Center(
-                      child: LazerVaultLoader.small(),
-                    );
-                  }
-                  if (state is ContributionCyclesLoaded &&
-                      state.contributionId == widget.contribution.id) {
-                    return _buildList(state.cycles);
-                  }
-                  if (state is GroupAccountError) {
-                    return _buildError(state.message);
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: SafeArea(child: content),
     );
   }
 
