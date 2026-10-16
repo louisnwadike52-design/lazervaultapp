@@ -334,6 +334,18 @@ class AiChatRepositoryImpl implements IAiChatRepository {
               final pinPrompt = asMap('pin_prompt');
               final qrCard = asMap('qr_card');
               final recipientCard = asMap('recipient_card');
+              // THE CHARTS. Reloaded history dropped every analytics card: the
+              // live turn carries it top-level as `analytics_card` and the
+              // cubit decodes it out of `entities['_analytics_card']`, but the
+              // HISTORY path rebuilt receipt_card / qr_card / recipient_card
+              // and silently skipped this one — so asking "how are my
+              // finances" drew charts, and the same answer after a reopen was
+              // a wall of text.
+              //
+              // The gateway does persist it (main.py: response_metadata
+              // ["analytics_card"], plus the Redis fast-path copy), so the
+              // data was there the whole time and nothing read it.
+              final analyticsCard = asMap('analytics_card');
 
               // Match the live display (see AIChatCubit.sendMediaMessage): voice
               // shows "Sent a voice note" with the transcript inside the player;
@@ -369,6 +381,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
                 pinPrompt: pinPrompt,
                 qrCard: qrCard,
                 recipientCard: recipientCard,
+                analyticsCard: analyticsCard,
                 mediaType: mediaType,
                 mediaUrl: mediaUrl,
                 audioDurationMs: mediaDurationMs,
