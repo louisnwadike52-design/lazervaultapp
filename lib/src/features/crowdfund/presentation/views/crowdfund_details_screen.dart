@@ -498,9 +498,25 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                 final canEdit = isOwner &&
                     !isMutating &&
                     (crowdfund.isActive || crowdfund.isPaused);
+                // MIRRORS THE SERVER, which is the authority here.
+                //
+                // This used to require !isTerminal, and isTerminal includes
+                // isCompleted — so a campaign that REACHED ITS GOAL could
+                // never withdraw. The creator raised the money and the app
+                // gave them no way to take it out; that is the "no ways to
+                // withdraw the funds" report.
+                //
+                // fp_crowdfund_withdraw.go refuses exactly two statuses —
+                // 'cancelling' and 'cancelled' (money is being drained back
+                // to contributors from the same wallet) — and otherwise
+                // requires only: creator, destination != campaign wallet,
+                // and sufficient funds. Completed and expired are allowed,
+                // so the client must allow them too or it locks people out
+                // of their own balance.
                 final canWithdraw = isOwner &&
                     !isMutating &&
-                    !isTerminal &&
+                    !crowdfund.isCancelling &&
+                    !crowdfund.isCancelled &&
                     crowdfund.currentAmount > 0;
                 final canPause = isOwner && crowdfund.isActive;
                 final canResume = isOwner && crowdfund.isPaused;
@@ -636,6 +652,17 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                 // visually continuous.
                 _buildSummaryHero(crowdfund),
                 SizedBox(height: 14.h),
+                // CREATOR ACTIONS, ON THE PAGE.
+                //
+                // Withdraw and "Cancel & refund all" existed only in the
+                // overflow menu. On a campaign that has ENDED — completed or
+                // expired — those are the only two things left to do with the
+                // money, and burying them behind a 3-dot icon reads as "there
+                // is no way to withdraw the funds". Shown inline once the
+                // campaign is terminal; while it is still running the overflow
+                // stays the home for them so the page keeps its focus on
+                // funding.
+                _buildOwnerMoneyActions(crowdfund),
                 _buildShareLinkCard(crowdfund),
                 SizedBox(height: 16.h),
                 _sectionHeading(icon: Icons.info_outline, label: 'About'),
@@ -1365,6 +1392,105 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
   /// Public share link card. Anyone with this URL can fund the campaign;
   /// the URL pattern is `<base>/crowdfund/<id>` where `<base>` comes from
   /// CrowdfundShareService (configurable via the admin dashboard).
+  /// Withdraw / Cancel-&-refund, surfaced on the page once a campaign has
+  /// ENDED.
+  ///
+  /// The gates are deliberately the SAME expressions the overflow menu uses,
+  /// read off the same crowdfund, so the two can never offer different
+  /// actions for one state. In particular withdrawal mirrors the server
+  /// (fp_crowdfund_withdraw.go), which refuses only 'cancelling' and
+  /// 'cancelled' — a completed or expired campaign may still be withdrawn
+  /// from, and must be, or the creator cannot reach money they raised.
+  ///
+  /// Renders nothing for a non-owner, for a still-running campaign, or when
+  /// neither action is available (e.g. an expired campaign that raised
+  /// nothing — there is no money to move and no one to refund).
+  Widget _buildOwnerMoneyActions(Crowdfund crowdfund) {
+    if (!_isCampaignCreator(crowdfund)) return const SizedBox.shrink();
+
+    final ended =
+        crowdfund.isCompleted || crowdfund.isExpired || crowdfund.isCancelled;
+    if (!ended) return const SizedBox.shrink();
+
+    final isMutating = crowdfund.isCancelling;
+    final canWithdraw = !isMutating &&
+        !crowdfund.isCancelling &&
+        !crowdfund.isCancelled &&
+        crowdfund.currentAmount > 0;
+    // Refunding is only meaningful while there is still money held for
+    // contributors. A cancelled campaign has already drained.
+    final canRefund = !isMutating &&
+        !crowdfund.isCancelled &&
+        crowdfund.currentAmount > 0 &&
+        crowdfund.donorCount > 0;
+
+    if (!canWithdraw && !canRefund) return const SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 14.h),
+      child: Row(
+        children: [
+          if (canWithdraw)
+            Expanded(
+              child: _moneyActionButton(
+                icon: Icons.account_balance_wallet,
+                label: 'Withdraw',
+                color: const Color(0xFF4E03D0),
+                filled: true,
+                onTap: () => _showWithdrawSheet(crowdfund),
+              ),
+            ),
+          if (canWithdraw && canRefund) SizedBox(width: 12.w),
+          if (canRefund)
+            Expanded(
+              child: _moneyActionButton(
+                icon: Icons.undo_rounded,
+                label: 'Refund all',
+                color: const Color(0xFFEF4444),
+                filled: false,
+                onTap: () => _showCancelSheet(crowdfund),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _moneyActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required bool filled,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 13.h),
+        decoration: BoxDecoration(
+          color: filled ? color : Colors.transparent,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: color, width: 1.2),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 17.sp, color: filled ? Colors.white : color),
+            SizedBox(width: 8.w),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: filled ? Colors.white : color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildShareLinkCard(Crowdfund crowdfund) {
     final url =
         serviceLocator<CrowdfundShareService>().shareUrlFor(crowdfund.id);
