@@ -108,8 +108,6 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     } catch (_) {}
   }
 
-
-
   /// Quidax minimum order value for this token, in fiat major units (per-token
   /// from GET /markets minimum_order_size, currency floor fallback). 0=unknown.
   double _minFiat() {
@@ -145,9 +143,31 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     }
   }
 
-  /// Minimum purchase in CRYPTO units (deliverability floor), or 0 if unknown.
+  /// Minimum purchase in CRYPTO units, DERIVED FROM the enforced fiat minimum
+  /// at the quoted rate.
+  ///
+  /// TWO RATES ON ONE SCREEN. This used to return the raw deliverability floor
+  /// while the fiat half of the same label came from [_minFiat], which pads
+  /// that floor by 2% for rate drift. The two were never reconciled, so the
+  /// hint read "Min 1 USDT (≈₦1402)" while the sheet quoted ₦1,378/USDT and
+  /// charged ₦275,509.73 for 200 — the parenthetical looked like a conversion
+  /// and wasn't, so the screen showed a price the user could not reproduce
+  /// from anything else on it.
+  ///
+  /// Dividing the enforced minimum by the SAME rate the sheet quotes makes the
+  /// pair reconcile by construction: whatever floors apply, minFiat / minCrypto
+  /// is always the quoted rate. The padding is still enforced — it just no
+  /// longer masquerades as a different exchange rate.
+  ///
+  /// Enforcement is unchanged: [_minFiat] remains the only value compared
+  /// against the typed amount.
   double _minCrypto() {
     try {
+      final rate = _rate();
+      final minFiat = _minFiat();
+      if (rate > 0 && minFiat > 0) return minFiat / rate;
+      // No live rate yet — fall back to the raw floor so the hint still says
+      // something true about the crypto leg.
       return GetIt.I<CryptoConfigCubit>()
               .config
               .minDeliverableFor(widget.crypto.symbol) ??
