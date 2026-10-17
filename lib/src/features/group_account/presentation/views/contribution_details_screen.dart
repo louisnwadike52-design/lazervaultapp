@@ -2042,6 +2042,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   Widget _buildContributionSummary(Contribution contribution) {
     final progressPercentage = contribution.progressPercentage;
 
+    // Cycle badge inputs. currentCycle is 1-based server-side and defaults to
+    // 1 in the DB, so a rotation that has opened always has one; totalCycles
+    // is nullable because a contribution created but not yet OPENED has no
+    // roster to size the rotation against (open() sets it to the member count
+    // — see rotationCycleCount). When the total is unknown we show the round
+    // we are on rather than inventing a denominator.
+    final currentCycle = contribution.currentCycle ?? 0;
+    final totalCycles = contribution.totalCycles ?? 0;
+    final showCycleBadge = contribution.isRotatingSavings && currentCycle > 0;
+    final cycleBadgeLabel = totalCycles > 0
+        ? 'Cycle $currentCycle of $totalCycles'
+        : 'Cycle $currentCycle';
+
     // Partial-aware stat inputs. The "Contributors" stat counts every
     // user who has made any payment attempt (completed, processing,
     // or even still-pending) so a single partial-paying member never
@@ -2161,7 +2174,17 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ),
             ],
           ),
-          if (partialCount > 0 || fullyPaidCount > 0) ...[
+          // WHICH CYCLE AM I ON? A rotating circle's headline numbers are
+          // all per-cycle — raised, contributors, progress, the pot bar — so
+          // without the round number the card is ambiguous the moment cycle 2
+          // starts and the figures reset. The Cycles tab has it, but only if
+          // you go looking.
+          //
+          // Rotating savings only: a one-time collection has no cycles, and
+          // "Cycle 1 of 1" on it would be noise. Both values come straight
+          // off the contribution (proto total_cycles / current_cycle, mapped
+          // in group_account_grpc_data_source) — nothing new is fetched.
+          if (showCycleBadge || partialCount > 0 || fullyPaidCount > 0) ...[
             SizedBox(height: 8.h),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
@@ -2172,6 +2195,26 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  if (showCycleBadge) ...[
+                    Icon(Icons.loop_rounded, color: Colors.white, size: 12.sp),
+                    SizedBox(width: 4.w),
+                    Text(
+                      cycleBadgeLabel,
+                      style: GoogleFonts.inter(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (fullyPaidCount > 0 || partialCount > 0) ...[
+                      SizedBox(width: 8.w),
+                      Container(
+                          width: 1,
+                          height: 10.h,
+                          color: Colors.white.withValues(alpha: 0.3)),
+                      SizedBox(width: 8.w),
+                    ],
+                  ],
                   if (fullyPaidCount > 0) ...[
                     Icon(Icons.check_circle,
                         color: const Color(0xFF10B981), size: 12.sp),

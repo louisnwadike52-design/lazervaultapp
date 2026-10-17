@@ -21,6 +21,7 @@ import 'package:lazervault/src/features/widgets/service_categories.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/money_flow_charts.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/account_manager.dart';
@@ -495,6 +496,13 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 _buildSpendingChart(state),
                 SizedBox(height: 12.h),
                 _buildMonthlyTrendChart(state),
+                SizedBox(height: 12.h),
+                // The money-flow charts NOVA draws in chat. Every series comes
+                // from responses this screen already holds — category
+                // analytics carries BOTH expense_categories and
+                // income_categories, and monthly trends carries income and
+                // expenses per month — so this adds no RPC.
+                _buildMoneyFlowCharts(state),
               ],
             ),
           ),
@@ -1940,6 +1948,28 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
           ],
         ),
       ),
+    );
+  }
+
+  /// Currency for the money-flow charts.
+  ///
+  /// The wallets on screen are all one currency (the filter is scoped that
+  /// way — see the "all N wallets in X" notice), so the first is
+  /// representative. NGN only as a last resort, when nothing has loaded yet.
+  String _statsCurrency(StatisticsState state) {
+    if (state is StatisticsLoaded && state.availableWallets.isNotEmpty) {
+      final c = state.availableWallets.first.currency.trim();
+      if (c.isNotEmpty) return c;
+    }
+    return 'NGN';
+  }
+
+  Widget _buildMoneyFlowCharts(StatisticsState state) {
+    if (state is! StatisticsLoaded) return const SizedBox.shrink();
+    return MoneyFlowCharts(
+      currency: _statsCurrency(state),
+      categoryAnalytics: state.categoryAnalytics,
+      monthlyTrends: state.monthlyTrends,
     );
   }
 

@@ -28,6 +28,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Quick Services carousel - 3 rows with reduced indicator spacing
 // Context-aware: switches between personal and business services based on active account
+import 'service_tile_scale_in.dart';
+
 class AppServicesBuilder extends StatefulWidget {
   /// When true the quick-service tiles render slightly shorter (the showcase
   /// dashboard layout uses this to make room for the adverts carousel below).
@@ -84,6 +86,14 @@ class AppServicesBuilder extends StatefulWidget {
 }
 
 class _AppServicesBuilderState extends State<AppServicesBuilder> {
+  /// Tiles whose entrance animation has already run.
+  ///
+  /// Lives on the State so it dies with the grid: the tiles animate on the
+  /// dashboard's first appearance after login and stay still for every
+  /// rebuild after that (balance refresh, account switch, reorder drag, every
+  /// cubit emission behind the grid). See [ServiceTileScaleIn].
+  final Set<String> _introPlayed = <String>{};
+
   late int _currentIndex;
   final DashboardStateManager _stateManager =
       serviceLocator<DashboardStateManager>();
@@ -1157,14 +1167,25 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                 physics: NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
                   final service = servicesOnPage[index];
+                  // Stagger across the whole grid, not within the page, so
+                  // page two does not restart the sweep from zero.
+                  final staggerIndex = pageIndex * _itemsPerPage + index;
                   // Reorder is only offered on the PERSONAL grid — the other
                   // account types carry a hand-picked order that is not the
                   // user's to rearrange.
                   if (!_reorderEnabled) {
-                    return AppServiceBuilder(appService: service);
+                    return ServiceTileScaleIn(
+                      id: service.serviceName.name,
+                      index: staggerIndex,
+                      played: _introPlayed,
+                      child: AppServiceBuilder(appService: service),
+                    );
                   }
-                  final globalIndex = pageIndex * _itemsPerPage + index;
-                  return _buildReorderableTile(service, globalIndex);
+                  // The reorderable tile is NOT wrapped: it is a drag target
+                  // whose own AnimatedContainer owns its transform, and
+                  // nesting a second scale under a drag makes the tile jump
+                  // away from the finger.
+                  return _buildReorderableTile(service, staggerIndex);
                 },
               );
             },
