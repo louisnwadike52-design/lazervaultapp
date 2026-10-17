@@ -48,6 +48,12 @@ class AirtimeTransactionModel extends AirtimeTransaction {
         'providerReference': response.providerReference,
         'commissionEarned': response.commissionEarned,
         'dataInfo': response.dataInfo,
+        // A purchase can come back already refunded — the pre-charge
+        // release path runs inside the same call. Without this the
+        // receipt the user lands on says "Payment Failed" and never
+        // mentions the money that is already back in their wallet.
+        if (payment.hasRefundSource() && payment.refundSource.isNotEmpty)
+          'refund_source': payment.refundSource,
       },
     );
   }
@@ -85,6 +91,8 @@ class AirtimeTransactionModel extends AirtimeTransaction {
         'commissionEarned': response.commissionEarned,
         'isTransfer': true,
         'senderPhone': senderPhone,
+        if (payment.hasRefundSource() && payment.refundSource.isNotEmpty)
+          'refund_source': payment.refundSource,
         if (transferNote != null && transferNote.isNotEmpty)
           'transferNote': transferNote,
       },

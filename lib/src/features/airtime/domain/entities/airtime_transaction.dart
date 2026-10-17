@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:equatable/equatable.dart';
 import 'network_provider.dart';
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
 
 enum AirtimeTransactionStatus {
   pending,
@@ -289,26 +290,66 @@ extension AirtimeTransactionDisplay on AirtimeTransaction {
     return name.substring(0, 1).toUpperCase();
   }
 
-  /// Refund metadata isn't modelled on the proto yet; the UI probes for
-  /// `refundStatus`/`refund_status` so when the backend surfaces it, the
-  /// badges light up automatically.
-  bool get hasRefundActivity {
+  /// The backend's own `refund_source`, carried on metadata.
+  ///
+  /// IT WAS LOOKING FOR THE WRONG KEY. The model stamps `refund_source`
+  /// (BillPayment field 14, whose proto comment literally says "the Flutter
+  /// clients read this to promote the chip from Failed to Refunded"), and
+  /// the two getters below probed `refundStatus` / `refund_status` — which
+  /// nothing writes. So a ₦200 top-up that failed and was refunded showed
+  /// "Payment Failed" with no mention of the money, on the receipt AND in
+  /// its shared PDF. Measured on prod: AIR-1792095169-d068a8e9, status
+  /// `failed`, refund_source `pre_charge_release`, with the ledger row
+  /// already marked `refunded`.
+  ///
+  /// Both spellings are still read: a pending/failed REFUND (as opposed to a
+  /// completed one) arrives as `refund_status`, and that distinction is what
+  /// decides between "Refund In Progress" and "Payment Refunded".
+  String? get refundSignal {
     final m = metadata;
-    if (m == null) return status == AirtimeTransactionStatus.refunded;
-    final rs = (m['refundStatus'] ?? m['refund_status'])?.toString();
-    return (rs != null && rs.isNotEmpty) ||
-        status == AirtimeTransactionStatus.refunded;
+    if (m == null) return null;
+    for (final key in const ['refundStatus', 'refund_status', 'refund_source']) {
+      final v = m[key]?.toString().trim();
+      if (v != null && v.isNotEmpty && v.toLowerCase() != 'none') return v;
+    }
+    return null;
+  }
+
+  bool get hasRefundActivity =>
+      isRefundLabel(
+        billReceiptStatusLabel(
+          status.name,
+          refundSource: refundSignal,
+          isRefunded: status == AirtimeTransactionStatus.refunded,
+        ),
+      ) ||
+      // A refund still in flight is refund ACTIVITY but not yet a refund,
+      // so the canonical label (which only promotes a settled one) does not
+      // catch it — and "Refund In Progress" is exactly what the user needs
+      // to read while their money is on its way back.
+      _refundInFlight;
+
+  bool get _refundInFlight {
+    final signal = (refundSignal ?? '').toLowerCase();
+    return signal.contains('pending') ||
+        signal.contains('processing') ||
+        signal.contains('fail') && signal.contains('refund');
   }
 
   String get refundDisplayLabel {
     final m = metadata;
+    // An explicit refund STATUS is a stage in the refund pipeline and is
+    // shown as-is ("Refund pending", "Refund failed"). A refund SOURCE only
+    // ever means the money came back.
     final rs = m == null
         ? null
-        : (m['refundStatus'] ?? m['refund_status'])?.toString();
+        : (m['refundStatus'] ?? m['refund_status'])?.toString().trim();
     if (rs != null && rs.isNotEmpty) {
       return rs[0].toUpperCase() + rs.substring(1);
     }
     if (status == AirtimeTransactionStatus.refunded) return 'Refunded';
+    final src = (m?['refund_source'] ?? '').toString().trim();
+    if (src.isNotEmpty && src.toLowerCase() != 'none') return 'Refunded';
     return '';
   }
 

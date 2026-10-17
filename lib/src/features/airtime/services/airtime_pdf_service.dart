@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:lazervault/core/utils/receipt_download.dart';
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -10,6 +11,22 @@ import 'package:intl/intl.dart';
 import '../domain/entities/airtime_transaction.dart';
 import '../domain/entities/network_provider.dart';
 import 'dart:ui' show Rect;
+
+/// The word on the PDF's status banner.
+///
+/// Named and exported so the one thing that went wrong here — a refunded
+/// top-up exporting a red "PAYMENT FAILED" — is testable. The rendering
+/// around it needs golden files; this decision does not.
+String airtimeReceiptBannerText({
+  required bool isSuccess,
+  required bool isRefunded,
+}) {
+  if (isSuccess) return 'PAYMENT SUCCESSFUL';
+  // Refund wins over failure: the purchase did fail, and saying only that
+  // hides the fact that the money is already back.
+  if (isRefunded) return 'PAYMENT REFUNDED';
+  return 'PAYMENT FAILED';
+}
 
 class AirtimePdfService {
   static final _displayDateFormat = DateFormat('MMM dd, yyyy');
@@ -87,6 +104,28 @@ class AirtimePdfService {
     final currencySymbol = _currencySymbolFor(transaction.currency);
     final amount = transaction.amount.toStringAsFixed(2);
     final isSuccess = transaction.status == AirtimeTransactionStatus.completed;
+    // A REFUNDED TOP-UP IS NOT A FAILED ONE, AND THIS IS THE COPY PEOPLE KEEP.
+    //
+    // The banner read SUCCESSFUL or FAILED and nothing else, so a purchase the
+    // network could not deliver — money already back in the wallet — exported
+    // a red "PAYMENT FAILED" document with no mention of the refund. The
+    // screen beside it says "Payment Refunded"; the PDF is the one that gets
+    // forwarded. Same rule, from the same shared helper, as every other bill
+    // receipt (core/utils/bill_receipt_status.dart).
+    final statusLabel = billReceiptStatusLabel(
+      transaction.status.name,
+      refundSource: transaction.refundSignal,
+      isRefunded: transaction.status == AirtimeTransactionStatus.refunded,
+    );
+    final isRefunded = isRefundLabel(statusLabel);
+    final bannerText = airtimeReceiptBannerText(
+      isSuccess: isSuccess,
+      isRefunded: isRefunded,
+    );
+    // Amber, not green and not red: the purchase did not happen, and the
+    // money is not gone.
+    const refundBg = PdfColor.fromInt(0xFFFEF3C7);
+    const refundFg = PdfColor.fromInt(0xFF92400E);
 
     pdf.addPage(
       pw.Page(
@@ -107,18 +146,22 @@ class AirtimePdfService {
                 decoration: pw.BoxDecoration(
                   color: isSuccess
                       ? const PdfColor.fromInt(0xFFDCFCE7)
-                      : const PdfColor.fromInt(0xFFFEE2E2),
+                      : isRefunded
+                          ? refundBg
+                          : const PdfColor.fromInt(0xFFFEE2E2),
                   borderRadius: pw.BorderRadius.circular(8),
                 ),
                 child: pw.Center(
                   child: pw.Text(
-                    isSuccess ? 'PAYMENT SUCCESSFUL' : 'PAYMENT FAILED',
+                    bannerText,
                     style: _getTextStyle(
                       fontSize: 14,
                       isBold: true,
                       color: isSuccess
                           ? const PdfColor.fromInt(0xFF166534)
-                          : const PdfColor.fromInt(0xFF991B1B),
+                          : isRefunded
+                              ? refundFg
+                              : const PdfColor.fromInt(0xFF991B1B),
                     ),
                   ),
                 ),
@@ -172,7 +215,7 @@ class AirtimePdfService {
               if (transaction.recipientName != null &&
                   transaction.recipientName!.isNotEmpty)
                 _buildDetailRow('Recipient', transaction.recipientName!),
-              _buildDetailRow('Status', transaction.status.displayName),
+              _buildDetailRow('Status', statusLabel),
               _buildDetailRow(
                   'Date', _fullDateTimeFormat.format(transaction.createdAt)),
               if (transaction.completedAt != null)
