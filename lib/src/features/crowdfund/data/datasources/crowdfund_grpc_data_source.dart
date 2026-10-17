@@ -482,7 +482,10 @@ class CrowdfundGrpcDataSource {
   /// [amount] - Amount to withdraw in major units (e.g., Naira)
   /// [transactionPin] - User's transaction PIN for authentication
   /// [destinationAccountId] - Optional specific account ID to withdraw to
-  /// [destinationAccountType] - Optional account type (savings, personal, investment)
+  /// [destinationAccountType] - Optional account type (personal or savings).
+  /// `investment` is refused by the backend: an investment account is a
+  /// position, not a wallet, so a withdrawal into one is money the creator
+  /// cannot then spend.
   ///                            Used if destinationAccountId is not provided
   Future<CrowdfundWithdrawalResultModel> withdrawFromCrowdfund({
     required String crowdfundId,
