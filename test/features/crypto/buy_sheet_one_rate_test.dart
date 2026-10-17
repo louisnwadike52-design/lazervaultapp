@@ -60,4 +60,49 @@ void main() {
         reason: 'sell derives its crypto minimum from the fiat minimum at the '
             'quoted price; buy must use the same construction');
   });
+
+  // ── The same invariant across the other three crypto surfaces ──────────
+  //
+  // None of these had the buy sheet's defect when audited: each already
+  // derives one half of its minimum from the other at the rate it quotes.
+  // They are asserted so the three that are correct cannot drift into the
+  // state buy was in — the bug is invisible until someone compares two
+  // numbers on the same screen.
+
+  const send =
+      'lib/src/features/crypto/presentation/view/send_crypto_screen.dart';
+  const swap =
+      'lib/src/features/crypto/presentation/view/swap_crypto_screen.dart';
+
+  test('send derives its fiat minimum from the crypto minimum', () {
+    // 'Min ₦X (0.5 BTC)' — the two must divide to the price the screen shows.
+    // Matched as a TERMINATING expression, not a substring. `contains` alone
+    // is satisfied by `minC * _priceOf * 1.02` — the very padding that made
+    // the buy sheet show two rates — so an earlier version of this assertion
+    // passed on the defect it exists to catch.
+    expect(read(send), matches(RegExp(r'minC \* _priceOf\s*:')),
+        reason: 'the fiat half must be the crypto minimum at the quoted '
+            'price with NOTHING applied on top, or the pair stops dividing '
+            'to the price the screen shows');
+  });
+
+  test('swap derives its fiat equivalent from the same padded minimum', () {
+    // Swap pads for deliverability exactly like buy does, but puts the
+    // padding in BOTH halves, so the pair still divides to _fromPrice.
+    expect(read(swap), contains('_minFromForDeliverable * _fromPrice'),
+        reason: 'the fiat equivalent must be the SAME minimum the screen '
+            'enforces, converted at the price it quotes');
+  });
+
+  test('swap sizes its minimum off the POST-margin rate', () {
+    // Its own comment records this: using the pre-margin rate over-estimated
+    // the delivery and could pass a swap that lands under the floor, with the
+    // 2% headroom "masking it rather than covering it".
+    final s = read(swap);
+    final i = s.indexOf('double get _exchangeRate');
+    final body = s.substring(i, s.indexOf('\n  }', i));
+    expect(body, contains('1 - _convertMarginFraction'),
+        reason: 'the rate feeding the deliverability minimum must be the one '
+            'the user actually receives');
+  });
 }
