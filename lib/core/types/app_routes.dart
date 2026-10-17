@@ -539,6 +539,7 @@ abstract class AppRoutes {
   static const String crowdfundLeaderboard = '/crowdfund/leaderboard';
   static const String crowdfundMyCampaigns = '/crowdfund/my-campaigns';
   static const String crowdfundMyDonations = '/crowdfund/my-donations';
+  static const String crowdfundStatistics = '/crowdfund/statistics';
 
   // Public Group Discovery Routes
   static const String publicGroups = '/groups/public';

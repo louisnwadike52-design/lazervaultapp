@@ -386,6 +386,7 @@ import 'package:lazervault/src/features/crowdfund/presentation/views/donation_re
 import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_entities.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_leaderboard_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/my_campaigns_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_statistics_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/my_donations_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard_cubit.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/notification_channels_screen.dart';
@@ -3735,6 +3736,10 @@ class AppRouter {
         child: const CrowdfundLeaderboardScreen(),
       ),
       transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.crowdfundStatistics,
+      page: () => const CrowdfundStatisticsScreen(),
     ),
     GetPage(
       name: AppRoutes.crowdfundMyCampaigns,

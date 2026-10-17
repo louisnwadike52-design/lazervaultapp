@@ -619,11 +619,16 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
         ),
         SizedBox(width: 10.w),
         Expanded(
+          // STATISTICS, NOT A LIST. This opened My Campaigns — a list of
+          // rows — under a bar-chart icon, so "how much have I raised, how
+          // much can I take out, how much have I given" had to be answered
+          // by adding the rows up by hand. The statistics page answers all
+          // three and links on to both lists.
           child: _buildActionButton(
             icon: Icons.bar_chart_outlined,
             label: 'My Activity',
             color: const Color(0xFFFB923C),
-            onTap: () => Get.toNamed(AppRoutes.crowdfundMyCampaigns),
+            onTap: () => Get.toNamed(AppRoutes.crowdfundStatistics),
           ),
         ),
       ],
