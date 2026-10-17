@@ -293,12 +293,12 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
             controller: _searchCtrl,
             textInputAction: TextInputAction.search,
             style: const TextStyle(color: Colors.white),
-            // NO setState HERE. This used to rebuild the whole screen —
-            // app bar, tabs and both live TabBarView children — on every
-            // keystroke, just to show or hide the clear icon below. The
-            // ValueListenableBuilder on the controller rebuilds only the
-            // icon.
-            onChanged: (_) {},
+            // NO onChanged AT ALL. It used to call setState, rebuilding the
+            // whole screen — app bar, tabs and both live TabBarView children
+            // — on every keystroke, just to show or hide the clear icon
+            // below. The icon now listens to the controller directly, and
+            // the search itself runs on submit, so there is nothing left for
+            // a per-keystroke handler to do.
             onSubmitted: (v) => _cubit.searchDiscover(query: v.trim()),
             decoration: InputDecoration(
               hintText: 'Search funds',
