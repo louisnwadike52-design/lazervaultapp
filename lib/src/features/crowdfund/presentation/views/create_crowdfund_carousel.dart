@@ -550,7 +550,20 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                           _pickedImageFile = file;
                         });
                       },
-                      onImageUrlChanged: (_) {
+                      onImageUrlChanged: (url) {
+                        // ONLY a real URL clears the picked file.
+                        //
+                        // This used to clear unconditionally, and
+                        // _pickImage calls onLocalFilePicked(file) and then
+                        // onImageUrlChanged('') back to back — so every pick
+                        // handed the file up and wiped it on the very next
+                        // line. The step kept its own _selectedImage, so
+                        // slide 3 previewed correctly while the carousel held
+                        // null: the review slide fell through to the
+                        // placeholder and the submit-time upload never ran,
+                        // which is why no campaign image ever reached the
+                        // details page either.
+                        if (url.trim().isEmpty) return;
                         setState(() {
                           // URL paste path: clear any picked file so
                           // _proceedToCreateCrowdfund takes the URL
