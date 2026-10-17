@@ -15,6 +15,7 @@ import '../domain/entities/tag_pay_entity.dart';
 import '../domain/entities/user_tag_entity.dart';
 import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
 import 'package:lazervault/src/features/crypto/utils/crypto_receipt_fields.dart';
+import 'package:lazervault/src/features/invoice/utils/invoice_receipt_fields.dart';
 
 import 'package:lazervault/core/config/receipt_footer.dart';
 import 'package:lazervault/src/features/escrow/utils/escrow_receipt_fields.dart';
@@ -1167,10 +1168,18 @@ class TagPayPdfService {
       final String text;
       final String subject;
       if (transaction.serviceType == TransactionServiceType.invoice) {
-        final invoiceNo = transaction.metadata?['Invoice No.']?.toString() ??
-            transaction.metadata?['Invoice ID']?.toString();
+        // Through the projection, not two hard-coded metadata spellings: the
+        // keys this used to read ('Invoice No.' / 'Invoice ID') only ever
+        // existed in metadata the app assembled on the post-payment screen, so
+        // sharing from HISTORY quoted no invoice number at all — even though
+        // the ledger narration has always carried it.
+        final invoiceNo = InvoiceReceiptFields.numberFrom(
+          transaction.metadata,
+          description: transaction.description,
+          reference: transaction.displayReference,
+        );
         subject = 'Lazervault Invoice Receipt';
-        text = invoiceNo != null && invoiceNo.isNotEmpty
+        text = invoiceNo.isNotEmpty
             ? 'Lazervault Invoice Receipt - $currencySymbol$amount for Invoice #$invoiceNo'
             : 'Lazervault Invoice Receipt - $currencySymbol$amount';
       } else {

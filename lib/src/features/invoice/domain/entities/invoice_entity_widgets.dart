@@ -159,6 +159,18 @@ class AddressDetails extends Equatable {
     );
   }
 
+  /// The one name to print for this party: the business it trades as, else
+  /// the person. Empty when neither is set, so a caller omits the row rather
+  /// than printing a blank one.
+  ///
+  /// Shared so a receipt, its PDF and the invoice page cannot each pick a
+  /// different half of the same party block.
+  String get partyName {
+    final company = (companyName ?? '').trim();
+    if (company.isNotEmpty) return company;
+    return (contactName ?? '').trim();
+  }
+
   bool get isEmpty {
     return companyName == null &&
         contactName == null &&

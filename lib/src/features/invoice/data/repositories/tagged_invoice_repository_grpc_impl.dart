@@ -270,6 +270,13 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
           'paid_at': inv.paidAt,
           'from_name': fromName,
           'to_name': toName,
+          // What the invoice was FOR, which document type it is, and when it
+          // was due. The receipt (and the PDF generated from it) could name
+          // none of these, so a paid invoice read as an anonymous debit for an
+          // arbitrary amount once the success screen was dismissed.
+          'invoice_title': inv.title,
+          'invoice_type': inv.invoiceType,
+          'due_date': inv.dueDate,
           'message': response.message,
         };
       },

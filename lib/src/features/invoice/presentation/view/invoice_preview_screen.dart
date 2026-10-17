@@ -103,6 +103,20 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       ? 'Pay Service Fee'
       : 'Pay Service Fee ($_feeCurrencySymbol${formatFeeAmount(_feeAmount, _feeCurrencyCode)})';
 
+  /// The rows that say WHICH invoice a receipt belongs to.
+  ///
+  /// Every receipt launched from this screen used to carry the invoice's id
+  /// and nothing else, so the document named no number, no title and no
+  /// document type — and the id alone is not something a person recognises.
+  /// Shared by all three CTAs here so they cannot drift apart.
+  Map<String, dynamic> _invoiceIdentityArgs(Invoice inv) => {
+        if (inv.invoiceNumber.trim().isNotEmpty)
+          'invoice_number': inv.invoiceNumber.trim(),
+        if (inv.title.trim().isNotEmpty) 'invoice_title': inv.title.trim(),
+        'invoice_type': inv.type.name,
+        if (inv.dueDate != null) 'due_date': inv.dueDate!.toIso8601String(),
+      };
+
   // Get the invoice from arguments (handles both direct invoice and wrapped in map)
   Invoice get _invoice {
     final args = Get.arguments as Map<String, dynamic>?;
@@ -1009,6 +1023,11 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                     'amount': _feeAmount,
                     'currency': _feeCurrencyCode,
                     'status': 'completed',
+                    // WHICH invoice this fee unlocked. Deliberately no
+                    // total/parties: the document is the FEE, and printing the
+                    // invoice total beside a 99-naira charge invites the reader
+                    // to think they were billed it.
+                    ..._invoiceIdentityArgs(invoice),
                   });
                 } else if (state is InvoiceServiceFeePaid) {
                   setState(() => _isProcessingPayment = false);
@@ -1019,6 +1038,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                     'amount': _feeAmount,
                     'currency': _feeCurrencyCode,
                     'status': 'completed',
+                    ..._invoiceIdentityArgs(invoice),
                   });
                 } else if (state is InvoiceError) {
                   setState(() => _isProcessingPayment = false);
@@ -1079,6 +1099,17 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                       : invoice.amount,
                   'currency': invoice.currency,
                   'status': 'completed',
+                  // This receipt used to carry the id and nothing else, so the
+                  // one CTA on the invoice itself opened a receipt that could
+                  // not name the invoice it came from.
+                  ..._invoiceIdentityArgs(invoice),
+                  'total_amount': invoice.totalAmount,
+                  if (invoice.paidAt != null)
+                    'paid_at': invoice.paidAt!.toIso8601String(),
+                  if (invoice.recipientDetails?.partyName.isNotEmpty == true)
+                    'from_name': invoice.recipientDetails!.partyName,
+                  if (invoice.payerDetails?.partyName.isNotEmpty == true)
+                    'to_name': invoice.payerDetails!.partyName,
                 }),
                 style: ElevatedButton.styleFrom(
                   backgroundColor:

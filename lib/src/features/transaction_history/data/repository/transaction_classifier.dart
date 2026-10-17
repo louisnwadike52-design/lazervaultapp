@@ -1,4 +1,5 @@
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/invoice/utils/invoice_receipt_fields.dart';
 
 /// Pure classification logic for wallet transactions — extracted from
 /// [TransactionHistoryRepositoryGrpc] so it can be unit-tested in isolation
@@ -86,6 +87,30 @@ String classifyDomain(String category, String description, String reference,
   if (cat == 'service_fee' &&
       (s.contains('invoice') || invoiceIdFromReference(reference) != null)) {
     return 'invoice_fee';
+  }
+
+  // AN INVOICE PAYMENT IS NOT A PLAIN TRANSFER.
+  //
+  // invoice-service settles through core-payments-service, so both legs reach
+  // the ledger as `transfer_out` / `transfer_in` stamped
+  // service_name=core-payments-service — which the branch below reads as
+  // 'transfer'. Every invoice payment in prod therefore titled itself
+  // "Transfer Sent" / "Transfer Received" under the transfers filter, with the
+  // invoice number buried in the narration.
+  //
+  // Gated on the INVOICE NUMBER's own shape (INV-<unix>-<8 hex>), not on the
+  // word "invoice": a user is free to type "invoice payment" as the narration
+  // of an ordinary transfer, and that must stay a transfer. The shape is only
+  // ever produced by generateInvoiceNumber() in invoice-service.
+  //
+  // Placed AFTER the fee branches above so a creation/unlock fee — whose
+  // description also carries the number — stays a fee.
+  if (InvoiceReceiptFields.numberFrom(
+    null,
+    description: description,
+    reference: reference,
+  ).isNotEmpty) {
+    return 'invoice';
   }
 
   // AutoSave. financial-products-service is a MULTI-PRODUCT service — autosave,

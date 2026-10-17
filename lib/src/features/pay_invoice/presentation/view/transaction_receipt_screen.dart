@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
 import '../../domain/entities/tagged_invoice_entity.dart';
@@ -31,10 +30,28 @@ class TransactionReceiptScreen extends StatelessWidget {
 
     final metadata = <String, dynamic>{};
 
-    metadata['Invoice Number'] = '#${invoice.invoiceNumber}';
-    metadata['From'] = invoice.fromUserName;
-    if (invoice.fromCompanyName != null) {
-      metadata['Company'] = invoice.fromCompanyName!;
+    // CANONICAL IDENTITY KEYS — the same ones invoice-service stamps on the
+    // ledger and InvoiceReceiptFields renders. This screen used to invent its
+    // own spellings ('Invoice Number' with a '#', 'From', 'Company'), so the
+    // receipt it produced and the one the same payment shows in history were
+    // laid out differently and labelled differently.
+    metadata['invoice_id'] = invoice.id;
+    metadata['invoice_number'] = invoice.invoiceNumber;
+    if (invoice.title.trim().isNotEmpty) {
+      metadata['invoice_title'] = invoice.title.trim();
+    }
+    // The business is what the invoice is headed with; the person is the
+    // fallback, exactly as the PDF's participant card resolves it.
+    metadata['invoice_billed_by'] =
+        (invoice.fromCompanyName?.trim().isNotEmpty ?? false)
+            ? invoice.fromCompanyName!.trim()
+            : invoice.fromUserName;
+    if (invoice.toUserName.trim().isNotEmpty) {
+      metadata['invoice_billed_to'] = invoice.toUserName.trim();
+    }
+    metadata['invoice_currency'] = invoice.currency.toUpperCase();
+    if (invoice.totalAmount > 0) {
+      metadata['invoice_total_minor'] = (invoice.totalAmount * 100).round();
     }
     metadata['Payment Method'] = methodInfo;
     if (selectedAccount != null) {
@@ -58,7 +75,7 @@ class TransactionReceiptScreen extends StatelessWidget {
           '-$_currencySymbol${invoice.discountAmount!.toStringAsFixed(2)}';
     }
     if (invoice.dueDate != null) {
-      metadata['Due Date'] = DateFormat('d MMM yyyy').format(invoice.dueDate!);
+      metadata['invoice_due_date'] = invoice.dueDate!.toIso8601String();
     }
     if (invoice.notes != null && invoice.notes!.isNotEmpty) {
       metadata['Notes'] = invoice.notes!;

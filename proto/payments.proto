@@ -1607,6 +1607,20 @@ message InitiateInternalTransferRequest {
   string verification_token = 9;
   string transaction_id = 10;
   RecipientInfo recipient_info = 11;
+  // JSON metadata stamped onto BOTH ledger legs (accounts-service merges it
+  // into the debit and the credit, stripping fee keys from the credit so a
+  // payee is never shown the payer's fee).
+  //
+  // This is how a caller makes its own transaction legible in history. An
+  // invoice payment reached the ledger as a bare transfer whose only trace of
+  // the invoice was the narration string, so the receipt opened from
+  // TRANSACTION HISTORY could not name the invoice — while the receipt opened
+  // straight after paying showed the invoice number, both parties and the
+  // totals, because the APP built those rows client-side and then discarded
+  // them. Callers now stamp that payload here and both receipts render it.
+  //
+  // Optional: an empty string leaves the legs exactly as they were.
+  string metadata = 12;
 }
 
 message RecipientInfo {

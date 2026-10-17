@@ -895,10 +895,26 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         'settled_full': !isPartial && invoice.status == InvoiceStatus.paid,
         if (invoice.paidAt != null)
           'paid_at': invoice.paidAt!.toIso8601String(),
-        if (invoice.recipientDetails?.contactName?.isNotEmpty == true)
-          'to_name': invoice.recipientDetails!.contactName,
-        if (invoice.payerDetails?.contactName?.isNotEmpty == true)
-          'from_name': invoice.payerDetails!.contactName,
+        // WHO ISSUED IT vs WHO IS BILLED — these were the wrong way round.
+        //
+        // `recipientDetails` is the SENDER/issuer block ("Invoice From") and
+        // `payerDetails` the customer ("Bill To") — see the mapping in
+        // invoice_repository_grpc_impl.dart and the PDF's own participant
+        // cards. Passing them as to_name/from_name respectively made every
+        // receipt opened from here name the customer as the issuer and the
+        // issuer as the person billed.
+        //
+        // partyName prefers the business the party trades as, which is what
+        // the invoice itself is headed with.
+        if (invoice.recipientDetails?.partyName.isNotEmpty == true)
+          'from_name': invoice.recipientDetails!.partyName,
+        if (invoice.payerDetails?.partyName.isNotEmpty == true)
+          'to_name': invoice.payerDetails!.partyName,
+        // What the invoice was for, and when it was due — the rows that make
+        // the receipt recognisable as THIS invoice a month later.
+        if (invoice.title.trim().isNotEmpty) 'invoice_title': invoice.title.trim(),
+        if (invoice.dueDate != null)
+          'due_date': invoice.dueDate!.toIso8601String(),
       },
     );
   }

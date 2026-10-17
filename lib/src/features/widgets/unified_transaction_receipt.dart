@@ -27,6 +27,7 @@ import 'package:lazervault/core/utils/transfer_bank_display.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
 import 'package:lazervault/src/features/escrow/utils/escrow_receipt_fields.dart';
+import 'package:lazervault/src/features/invoice/utils/invoice_receipt_fields.dart';
 part 'unified_transaction_receipt_widgets.dart';
 
 class UnifiedTransactionReceipt extends StatefulWidget {
@@ -206,6 +207,35 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     return null;
   }
 
+  /// Symbol for an ARBITRARY currency code — the invoice's own currency on a
+  /// cross-currency payment, which need not be the leg's currency.
+  ///
+  /// Separate from [_currencySymbol] deliberately: that getter answers with a
+  /// naira sign for anything it does not recognise, which is a safe default
+  /// for the headline of a row whose currency we already know, and a wrong
+  /// one for a code arriving from a document. Here an unknown code prints
+  /// itself.
+  static String _symbolForCurrency(String code) {
+    switch (code.toUpperCase()) {
+      case 'NGN':
+        return '\u20a6';
+      case 'GBP':
+        return '\u00a3';
+      case 'EUR':
+        return '\u20ac';
+      case 'ZAR':
+        return 'R';
+      case 'USD':
+        return '\$';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      default:
+        return '${code.toUpperCase()} ';
+    }
+  }
+
   String get _currencySymbol {
     switch (tx.currency.toUpperCase()) {
       case 'NGN':
@@ -279,6 +309,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                                 SizedBox(height: 16.h),
                                 _buildDetailsCard(),
                                 if (!capturing) _buildOpenEscrowDealButton(),
+                                if (!capturing) _buildOpenInvoiceButton(),
                                 SizedBox(height: 24.h),
                                 if (capturing) _buildBrandingFooter(),
                               ],
@@ -327,6 +358,57 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           onPressed: () => Get.toNamed(AppRoutes.escrowDetail, arguments: dealId),
           icon: Icon(Icons.receipt_long_outlined, size: 17.sp),
           label: Text('Open the escrow deal',
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF8B5CF6),
+            side: const BorderSide(color: Color(0xFF8B5CF6)),
+            padding: EdgeInsets.symmetric(vertical: 13.h),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// "View the invoice" — only on a leg that carries the invoice's id, and
+  /// never in the exported document.
+  ///
+  /// The receipt names the invoice, its parties and its totals; the invoice
+  /// itself holds the line items, the notes and the shareable PDF. Pointing at
+  /// it is what completes "which invoice was this" without duplicating the
+  /// whole document onto a ledger row.
+  ///
+  /// Hidden when the row predates the stamped payload: there is no lookup by
+  /// invoice NUMBER, so a button built from one would be dead. Those receipts
+  /// still name the invoice — they just cannot open it.
+  Widget _buildOpenInvoiceButton() {
+    final invoiceId = InvoiceReceiptFields.idFrom(tx.metadata);
+    if (invoiceId.isEmpty) return const SizedBox.shrink();
+    // A creation/unlock FEE already opens the invoice when its history row is
+    // tapped (TransactionReceiptRouter), so it never reaches this screen with
+    // an id; guarding on the projection keeps the button to real payments.
+    if (!InvoiceReceiptFields.describes(tx.metadata,
+        description: tx.description, reference: tx.displayReference)) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: EdgeInsets.only(top: 14.h),
+      child: SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () => Get.toNamed(
+            AppRoutes.invoiceDetails,
+            arguments: {
+              'invoiceId': invoiceId,
+              // The payer reached this through the invoice they were SENT, so
+              // the details screen must open in the recipient perspective;
+              // the creator's own leg is a credit and opens as the sender.
+              'isFromReceivedTab': tx.flow != TransactionFlow.incoming,
+            },
+          ),
+          icon: Icon(Icons.description_outlined, size: 17.sp),
+          label: Text('View the invoice',
               style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
           style: OutlinedButton.styleFrom(
             foregroundColor: const Color(0xFF8B5CF6),
@@ -630,7 +712,35 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       ]);
     }
 
-    final rows = <_DetailEntry>[
+    // AN INVOICE PAYMENT RENDERS THE INVOICE, NOT A BARE TRANSFER.
+    //
+    // invoice-service settles through core-payments, so the ledger legs are
+    // `transfer_out` / `transfer_in` and the only trace of the invoice used to
+    // be the narration "Invoice payment: INV-…". The receipt opened straight
+    // after paying DID show the number, the parties and the total — but the
+    // app had assembled those rows from the pay response and never persisted
+    // them, so the copy people keep (history, and the PDF generated from it)
+    // could not name the document at all.
+    //
+    // invoice-service now stamps the invoice on both legs and
+    // InvoiceReceiptFields projects it. Rows that predate the payload still
+    // recover the invoice NUMBER from the narration, so even those say which
+    // invoice was paid; anything the row cannot supply is omitted rather than
+    // invented. The leftover-metadata loop below still runs, so a fresh
+    // receipt's extra rows (its message) are appended.
+    final invoiceRows = InvoiceReceiptFields.rows(
+      tx.metadata,
+      currency: tx.currency,
+      isIncoming: tx.flow == TransactionFlow.incoming,
+      symbolFor: _symbolForCurrency,
+      amountPaid: tx.amount,
+      description: tx.description,
+      reference: tx.displayReference,
+      counterpartyName: tx.counterpartyName,
+      counterpartyAccount: tx.counterpartyAccount,
+    );
+
+    final genericRows = <_DetailEntry>[
       if (isSwap && swapFromAmt.isNotEmpty && swapFromCcy.isNotEmpty)
         _DetailEntry('From', '$swapFromAmt $swapFromCcy'),
       if (isSwap && swapToAmt.isNotEmpty && swapToCcy.isNotEmpty)
@@ -713,6 +823,17 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
               : 'Scheduled',
         ),
     ];
+
+    // The invoice projection OWNS the card when it describes the row: these
+    // are the same labels, in the same order, that the post-payment receipt
+    // shows — one definition, so the two can no longer disagree.
+    final rows = invoiceRows.isEmpty
+        ? genericRows
+        : <_DetailEntry>[
+            for (final r in invoiceRows)
+              _DetailEntry(r.key, r.value,
+                  copyable: r.key.endsWith('No.') || r.key == 'Reference'),
+          ];
 
     // Add metadata rows (skip internal/already-shown keys)
     const baseHiddenKeys = {
@@ -807,6 +928,10 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     // them at full ledger precision ("To amount: 1.080000000000000000").
     final hiddenKeys = {
       ...baseHiddenKeys,
+      // Keys the invoice projection already rendered as designed rows. Without
+      // this every value appears twice — once as "Invoice No." and once as a
+      // raw `invoice_number` row one line below it.
+      if (invoiceRows.isNotEmpty) ...InvoiceReceiptFields.consumedKeys,
       // THE RECEIVER NEVER PAID THE FEE.
       //
       // A fee is the SENDER's cost. The export path already knows this
@@ -1133,28 +1258,28 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       tx.serviceType == TransactionServiceType.sprayme ||
       tx.serviceType == TransactionServiceType.withdrawal;
 
-  /// Invoice-payload rows for the PDF body — mirrored from the metadata the
-  /// on-screen receipt shows (set by invoice_payment_receipt_screen), so the
-  /// exported document names the invoice instead of reading as a bare
-  /// transfer. Empty for every other service type.
-  List<MapEntry<String, String>> get _invoiceRows {
-    if (tx.serviceType != TransactionServiceType.invoice) return const [];
-    final md = tx.metadata ?? {};
-    const keys = [
-      'Invoice No.',
-      'Invoice ID',
-      'From',
-      'Bill To',
-      'Invoice Amount',
-      'Exchange Rate',
-      'Message',
-    ];
-    return [
-      for (final k in keys)
-        if ((md[k] ?? '').toString().trim().isNotEmpty)
-          MapEntry(k, md[k].toString()),
-    ];
-  }
+  /// Invoice-payload rows for the PDF body — THE SAME PROJECTION the on-screen
+  /// card renders, so a saved or shared document is never a poorer copy of the
+  /// page it was exported from.
+  ///
+  /// This used to read seven hard-coded Title-Case keys that only ever existed
+  /// in metadata the APP built in `invoice_payment_receipt_screen` and never
+  /// persisted. Nothing in the ledger carried them, so exporting the receipt
+  /// of an invoice payment from HISTORY — the common case, and the document
+  /// people actually file — produced a bare transfer with no invoice on it.
+  /// It was also gated on `serviceType == invoice`, which the money legs are
+  /// not: accounts books them as a transfer (see InvoiceReceiptFields).
+  List<MapEntry<String, String>> get _invoiceRows => InvoiceReceiptFields.rows(
+        tx.metadata,
+        currency: tx.currency,
+        isIncoming: tx.flow == TransactionFlow.incoming,
+        symbolFor: _symbolForCurrency,
+        amountPaid: tx.amount,
+        description: tx.description,
+        reference: tx.displayReference,
+        counterpartyName: tx.counterpartyName,
+        counterpartyAccount: tx.counterpartyAccount,
+      );
 
   /// Bill-payload rows for the PDF body, mirroring [_invoiceRows].
   ///
