@@ -159,7 +159,12 @@ class UpliftCubit extends Cubit<UpliftState> {
     try {
       final funds = await _repo.myFunds();
       final apps = await _repo.listApplications(mineOnly: true);
-      _safeEmit(state.copyWith(myFunds: funds, myApplications: apps));
+      // clearError on success, like refreshAfterFundChange: without it one
+      // failed refresh pinned the error state on an EMPTY tab forever —
+      // every later success kept the stale message, because the tab bodies
+      // render the error whenever their list is empty.
+      _safeEmit(state.copyWith(
+          myFunds: funds, myApplications: apps, clearError: true));
     } catch (e) {
       _safeEmit(state.copyWith(error: upFriendlyError(e)));
     }

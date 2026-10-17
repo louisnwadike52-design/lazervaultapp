@@ -9,6 +9,7 @@ import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/src/features/uplift/presentation/cubit/uplift_cubit.dart';
+import 'package:lazervault/src/features/uplift/presentation/views/uplift_tab_rebuilds.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/apply_uplift_screen.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/create_uplift_screen.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_detail_screen.dart';
@@ -40,6 +41,11 @@ const _kUpliftCategories = [
 ];
 
 class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
+  /// The one inherited body style for this screen. `GoogleFonts.inter(...)`
+  /// was being called inside `build`.
+  static final TextStyle _bodyTextStyle =
+      GoogleFonts.inter(color: Colors.white);
+
   late final UpliftCubit _cubit;
   final _searchCtrl = TextEditingController();
 
@@ -210,7 +216,10 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
           // AppBar (the "Lazerfunds" title) stays static; the content below —
           // segmented tabs + tab views — rises + fades in on load.
           body: DefaultTextStyle.merge(
-            style: GoogleFonts.inter(color: Colors.white),
+            // Resolved once, not per build: a fresh TextStyle on every
+            // rebuild invalidates the inherited style for the whole subtree,
+            // so every Text under it re-resolves its font.
+            style: _bodyTextStyle,
             child: ServiceEntranceAnimation(
               child: Column(
                 children: [
@@ -227,17 +236,32 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
                             icon: Icons.inbox_outlined,
                             text: 'My Applications')),
                   ]),
+                  // ONE BlocBuilder PER TAB, NOT ONE AROUND ALL THREE.
+                  //
+                  // The TabBarView itself is now OUTSIDE the builders, so it
+                  // is never reconstructed mid-swipe, and each child rebuilds
+                  // only when its own slice changes — see
+                  // uplift_tab_rebuilds.dart for why that is what stops the
+                  // flicker. TabBarView builds its adjacent child, so with a
+                  // single outer builder every emission rebuilt two live
+                  // subtrees, lists, scroll positions and images included.
                   Expanded(
-                    child: BlocBuilder<UpliftCubit, UpliftState>(
-                      builder: (context, state) {
-                        return TabBarView(
-                          children: [
-                            _discoverTab(state),
-                            _myFundsTab(state),
-                            _myApplicationsTab(state),
-                          ],
-                        );
-                      },
+                    child: TabBarView(
+                      children: [
+                        BlocBuilder<UpliftCubit, UpliftState>(
+                          buildWhen: upliftDiscoverTabChanged,
+                          builder: (context, state) => _discoverTab(state),
+                        ),
+                        BlocBuilder<UpliftCubit, UpliftState>(
+                          buildWhen: upliftMyFundsTabChanged,
+                          builder: (context, state) => _myFundsTab(state),
+                        ),
+                        BlocBuilder<UpliftCubit, UpliftState>(
+                          buildWhen: upliftMyApplicationsTabChanged,
+                          builder: (context, state) =>
+                              _myApplicationsTab(state),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -269,21 +293,32 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
             controller: _searchCtrl,
             textInputAction: TextInputAction.search,
             style: const TextStyle(color: Colors.white),
-            onChanged: (_) => setState(() {}),
+            // NO setState HERE. This used to rebuild the whole screen —
+            // app bar, tabs and both live TabBarView children — on every
+            // keystroke, just to show or hide the clear icon below. The
+            // ValueListenableBuilder on the controller rebuilds only the
+            // icon.
+            onChanged: (_) {},
             onSubmitted: (v) => _cubit.searchDiscover(query: v.trim()),
             decoration: InputDecoration(
               hintText: 'Search funds',
               hintStyle: const TextStyle(color: kUpTextSecondary),
               prefixIcon: const Icon(Icons.search, color: kUpTextSecondary),
-              suffixIcon: _searchCtrl.text.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.close, color: kUpTextSecondary),
-                      onPressed: () {
-                        _searchCtrl.clear();
-                        _cubit.searchDiscover(query: '');
-                      },
-                    ),
+              suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _searchCtrl,
+                builder: (_, value, __) => value.text.isEmpty
+                    // SizedBox.shrink, not null: returning null from the
+                    // builder is not allowed, and an empty box occupies the
+                    // same slot without resizing the field as you type.
+                    ? const SizedBox.shrink()
+                    : IconButton(
+                        icon: const Icon(Icons.close, color: kUpTextSecondary),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          _cubit.searchDiscover(query: '');
+                        },
+                      ),
+              ),
               filled: true,
               fillColor: kUpCard,
               isDense: true,
@@ -332,6 +367,7 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
     return RefreshIndicator(
       onRefresh: _cubit.refreshDiscover,
       child: ListView(
+        key: const PageStorageKey('uplift_discover'),
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         children: [
           if (state.discover.isEmpty)
@@ -481,6 +517,7 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
     return RefreshIndicator(
       onRefresh: _cubit.refreshMine,
       child: ListView.builder(
+        key: const PageStorageKey('uplift_my_funds'),
         padding: const EdgeInsets.all(16),
         itemCount: state.myFunds.length,
         itemBuilder: (_, i) {
@@ -524,6 +561,7 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
     return RefreshIndicator(
       onRefresh: _cubit.refreshMine,
       child: ListView.builder(
+        key: const PageStorageKey('uplift_my_applications'),
         padding: const EdgeInsets.all(16),
         itemCount: state.myApplications.length,
         itemBuilder: (_, i) {
