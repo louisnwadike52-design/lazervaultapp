@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_commit_screen.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -140,7 +141,8 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
   /// what is genuinely free, so the two can never disagree.
   Future<void> _withdrawPool() async {
     final fund = _fund!;
-    final availableKobo = _escrow?.available.toInt() ?? fund.escrowAvailable.toInt();
+    final availableKobo =
+        _escrow?.available.toInt() ?? fund.escrowAvailable.toInt();
     if (availableKobo <= 0) {
       Get.snackbar('Nothing to withdraw',
           'This pool is either empty or fully promised to businesses you have selected.',
@@ -150,61 +152,111 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
       return;
     }
 
-    final ctrl = TextEditingController(
-        text: (availableKobo / 100).toStringAsFixed(2));
+    final ctrl =
+        TextEditingController(text: (availableKobo / 100).toStringAsFixed(2));
+
+    // LIVE VALIDATION, inside the dialog.
+    //
+    // The cap was only enforced after the dialog closed — an over-limit
+    // amount dismissed the sheet and then threw a snackbar, and a blank or
+    // zero amount hit `if (major == null || major <= 0) return;`, which did
+    // nothing at all: the funder tapped Withdraw and the button appeared
+    // dead. Both now resolve in place, against the same availableKobo the
+    // server will enforce, so the Withdraw action is only ever offered for an
+    // amount that can actually succeed.
+    String? errorFor(String raw) {
+      final text = raw.trim();
+      if (text.isEmpty) return 'Enter an amount';
+      final major = double.tryParse(text);
+      if (major == null) return 'Enter a valid amount';
+      if (major <= 0) return 'Amount must be more than zero';
+      // Compare in MINOR units: 0.1 + 0.2 style drift in major units can
+      // reject an amount that is exactly the available balance.
+      final kobo = (major * 100).round();
+      if (kobo > availableKobo) {
+        return 'Only ${upNaira(availableKobo, fund.currency)} is free to '
+            'withdraw — the rest is promised to businesses you selected.';
+      }
+      return null;
+    }
+
     final amount = await showDialog<int>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: kUpCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Withdraw from pool',
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Up to ${upNaira(availableKobo, fund.currency)} is free to take '
-              'back. Money already promised to a selected business stays put.',
-              style: const TextStyle(color: kUpTextSecondary, height: 1.4),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: ctrl,
-              autofocus: true,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Amount (${fund.currency})',
-                labelStyle: const TextStyle(color: kUpTextSecondary),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text('It returns to your personal account.',
-                style: TextStyle(color: kUpTextSecondary, fontSize: 11.5)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel',
-                style: TextStyle(color: kUpTextSecondary)),
-          ),
-          TextButton(
-            onPressed: () {
-              final major = double.tryParse(ctrl.text.trim());
-              if (major == null || major <= 0) return;
-              Navigator.of(ctx).pop((major * 100).round());
-            },
-            child: const Text('Withdraw',
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final error = errorFor(ctrl.text);
+          return AlertDialog(
+            backgroundColor: kUpCard,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text('Withdraw from pool',
                 style: TextStyle(
-                    color: kUpPrimary, fontWeight: FontWeight.w600)),
-          ),
-        ],
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Up to ${upNaira(availableKobo, fund.currency)} is free to take '
+                  'back. Money already promised to a selected business stays put.',
+                  style: const TextStyle(color: kUpTextSecondary, height: 1.4),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: ctrl,
+                  autofocus: true,
+                  onChanged: (_) => setDialogState(() {}),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Amount (${fund.currency})',
+                    labelStyle: const TextStyle(color: kUpTextSecondary),
+                    errorText: error,
+                    errorMaxLines: 3,
+                    // One tap to take everything that is actually free, so the
+                    // funder never has to retype the cap they were just shown.
+                    suffixIcon: TextButton(
+                      onPressed: () => setDialogState(() {
+                        ctrl.text = (availableKobo / 100).toStringAsFixed(2);
+                        ctrl.selection = TextSelection.fromPosition(
+                            TextPosition(offset: ctrl.text.length));
+                      }),
+                      child: const Text('Max',
+                          style: TextStyle(
+                              color: kUpPrimary, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text('It returns to your personal account.',
+                    style: TextStyle(color: kUpTextSecondary, fontSize: 11.5)),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel',
+                    style: TextStyle(color: kUpTextSecondary)),
+              ),
+              TextButton(
+                // Disabled rather than silently doing nothing: the old handler
+                // returned on an invalid amount, which looked like a broken
+                // button.
+                onPressed: error != null
+                    ? null
+                    : () => Navigator.of(ctx)
+                        .pop((double.parse(ctrl.text.trim()) * 100).round()),
+                child: Text('Withdraw',
+                    style: TextStyle(
+                        color: error != null ? kUpTextSecondary : kUpPrimary,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ],
+          );
+        },
       ),
     );
     if (amount == null || !mounted) return;
@@ -276,8 +328,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Remove',
-                style:
-                    TextStyle(color: kUpError, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: kUpError, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -579,8 +630,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
             ? const UpLoading()
             : _error != null
                 ? UpErrorState(
-                    message: _error!,
-                    onRetry: () => _load(showSpinner: true))
+                    message: _error!, onRetry: () => _load(showSpinner: true))
                 : _content(),
       ),
     );
@@ -648,8 +698,8 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
                     '${f.isFunder ? ' (you)' : ''}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        color: kUpTextSecondary, fontSize: 13),
+                    style:
+                        const TextStyle(color: kUpTextSecondary, fontSize: 13),
                   ),
                 ),
               ],
@@ -740,8 +790,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
             UpProgressBar(value: progress, height: 5),
             const SizedBox(height: 4),
             Text('${upNaira(released, f.currency)} released',
-                style:
-                    const TextStyle(color: kUpTextSecondary, fontSize: 11)),
+                style: const TextStyle(color: kUpTextSecondary, fontSize: 11)),
           ],
           if (pairs.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -1035,9 +1084,8 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
               // which one. "Commit funds" on a pool that already holds money
               // reads as starting over; a funder topping up to cover a bigger
               // raise is UPDATING what they committed.
-              label: Text(f.committedPool.toInt() > 0
-                  ? 'Add to pool'
-                  : 'Commit funds'),
+              label: Text(
+                  f.committedPool.toInt() > 0 ? 'Add to pool' : 'Commit funds'),
             ),
           ),
           const SizedBox(width: 12),
@@ -1123,10 +1171,18 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         // refuses otherwise, and a button that can only fail is worse than
         // no button. On a live fund the route out is Cancel or Withdraw,
         // which are both right there.
-        if (f.committedPool.toInt() -
-                f.releasedTotal.toInt() -
-                f.refundedTotal.toInt() <=
-            0)
+        //
+        // ADMIN-TOGGLABLE on top of that settled check, via
+        // `uplift_remove_cta_visible`. The flag can only ever HIDE the
+        // control: it is ANDed with the settled condition, so flipping it on
+        // can never expose a Remove the server would refuse. Defaults to
+        // visible, because the control shipped that way and an unset key
+        // must not quietly withdraw it.
+        if (FeatureFlags.upliftRemoveCta &&
+            f.committedPool.toInt() -
+                    f.releasedTotal.toInt() -
+                    f.refundedTotal.toInt() <=
+                0)
           Expanded(
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(

@@ -151,6 +151,10 @@ class EndpointRegistry {
     'card_acceptance_visible',
     'auto_biometric_login_enabled',
     'crowdfund_donation_alerts_visible',
+    // Omitting a key here is the documented way this wiring fails:
+    // nonUrlSnapshot() only emits keys in this set, so the flag would
+    // never reach the app and would sit on its code default for ever.
+    'uplift_remove_cta_visible',
     'locale_non_ngn_money_actions',
     'locale_non_ngn_account_tabs',
     'session_inactivity_logout_seconds',
@@ -576,8 +580,7 @@ class EndpointRegistry {
         final key = raw['key'];
         final value = raw['value'];
         if (key is! String || value is! String) continue;
-        if (!key.startsWith('url_') && !_isPersistedNonUrlKey(key))
-          continue;
+        if (!key.startsWith('url_') && !_isPersistedNonUrlKey(key)) continue;
         if (_cache[key] == value) continue;
         _cache[key] = value;
         await prefs.setString(_prefix + key, value);

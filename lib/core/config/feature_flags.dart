@@ -58,6 +58,9 @@ class FeatureFlags {
   static const String crowdfundDonationAlertsVisible =
       'crowdfund_donation_alerts_visible';
 
+  /// Show/hide the "Remove this fund" CTA on the Lazerfund details screen.
+  static const String upliftRemoveCtaVisible = 'uplift_remove_cta_visible';
+
   // ── International payout (Exchange → Send Abroad) ────────────────────────
   //
   // OFF by default, because the Fincra corridor it runs on is not finished.
@@ -225,8 +228,7 @@ class FeatureFlags {
   // degrades to the built-in default rather than printing an empty footer on
   // a document the user keeps as proof of payment.
   static const String receiptFooterCompanyKey = 'receipt_footer_company';
-  static const String receiptFooterDisclaimerKey =
-      'receipt_footer_disclaimer';
+  static const String receiptFooterDisclaimerKey = 'receipt_footer_disclaimer';
   static const String receiptFooterSupportKey = 'receipt_footer_support';
 
   // spraymeLikeSoundKey: false (DEFAULT) = tapping to like in a Lazerspray room
@@ -500,6 +502,7 @@ class FeatureFlags {
       autoBiometricLoginEnabled,
       appUpdateEnabledKey,
       crowdfundDonationAlertsVisible,
+      upliftRemoveCtaVisible,
       intlPayoutEnabled,
       groupFundsEnabled,
       groupFundsOneTimeEnabled,
@@ -802,7 +805,8 @@ class FeatureFlags {
   /// The whitelist is an OVERRIDE and is checked FIRST: an address on an
   /// enabled list sees the surface even while it is switched off for everyone
   /// else, which is the entire point of shipping to testers.
-  static bool gateAllowed(String prefix, {String? email, bool defaultOn = true}) {
+  static bool gateAllowed(String prefix,
+      {String? email, bool defaultOn = true}) {
     if (whitelisted(prefix, email ?? currentUserEmail())) return true;
     return gateAvailable(prefix, defaultOn: defaultOn);
   }
@@ -1161,7 +1165,8 @@ class FeatureFlags {
   /// Capped at 100 because prod traffic crosses the Cloudflare tunnel, which
   /// refuses a body over 100MB on our plan — a higher admin value would only
   /// produce uploads that die at the edge.
-  static int get mediaMaxImageMb => _positiveSetting(mediaMaxImageMbKey, 10, cap: 100);
+  static int get mediaMaxImageMb =>
+      _positiveSetting(mediaMaxImageMbKey, 10, cap: 100);
 
   /// Largest video, in MB. Default 70.
   ///
@@ -1266,6 +1271,15 @@ class FeatureFlags {
   ///
   /// Defaults to FALSE (hidden) — unlike the other visibility flags, which
   /// default true. This surface is deliberately off until an admin turns it on.
+  /// Whether the Lazerfund details screen offers "Remove this fund".
+  ///
+  /// Defaults TRUE — the control shipped visible, so an unset key must not
+  /// silently remove it. Unset keys are omitted by the bulk read, which means
+  /// the default here is what applies until an admin flips it.
+  static bool get upliftRemoveCta {
+    return _prefs?.getBool(upliftRemoveCtaVisible) ?? true;
+  }
+
   static bool get crowdfundDonationAlerts {
     return _prefs?.getBool(crowdfundDonationAlertsVisible) ?? false;
   }
