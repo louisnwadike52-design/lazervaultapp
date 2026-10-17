@@ -711,49 +711,26 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // payout — same question ("what has this circle actually done"), one tap
     // apart.
     //
-    // Only once the circle has STARTED. Before that there is genuinely no
-    // history, and a CTA that opens an empty list teaches the user it is not
-    // worth tapping again.
-    final showCycles =
-        contribution.isRotatingSavings && !contribution.awaitingOpen;
-    final cyclesChip = !showCycles
-        ? null
-        : _StatusChip(
-            icon: Icons.history_rounded,
-            iconColor: const Color(0xFF9CA3AF),
-            label: 'Cycles',
-            value: 'View past',
-            onTap: () => _openCyclesHistory(contribution),
-          );
-
-    final autoPayoutRow = autoPayoutChip == null && cyclesChip == null
+    // The "Cycles / View past" chip USED to live here. It is gone: the Cycles
+    // TAB shows on exactly the same condition it did
+    // (isRotatingSavings && !awaitingOpen — see [_showCyclesTab]), so the chip
+    // was a second door onto a surface already visible one row below, and it
+    // cost a row of the header block that pushes the tab bar down on a small
+    // screen.
+    final autoPayoutRow = autoPayoutChip == null
         ? null
         : Padding(
             // Same 20.w gutter the chip row above uses — this sits OUTSIDE
             // that row's Padding, so it has to carry its own.
             padding: EdgeInsets.fromLTRB(
-                20.w,
-                (_autoPayoutChipVisible || cyclesChip != null) ? 8.h : 0,
-                20.w,
-                0),
-            // STATIC shape, whatever the auto-payout chip decides to render.
-            //
-            // Both slots are always in the tree when this row exists, so the
-            // auto-payout chip never changes position — moving it is what
-            // destroyed its State and produced the endless fetch-rebuild loop
-            // documented above. It collapses to SizedBox.shrink() on its own
-            // when it has nothing to say, which costs no height.
-            child: autoPayoutChip == null
-                ? cyclesChip
-                : Row(
-                    children: [
-                      Expanded(child: autoPayoutChip),
-                      if (cyclesChip != null) ...[
-                        SizedBox(width: 10.w),
-                        Expanded(child: cyclesChip),
-                      ],
-                    ],
-                  ),
+                20.w, _autoPayoutChipVisible ? 8.h : 0, 20.w, 0),
+            // The auto-payout chip must keep a STABLE position in the tree:
+            // moving it destroys its State and produced the endless
+            // fetch-rebuild loop documented above. It collapses to
+            // SizedBox.shrink() on its own when it has nothing to say, which
+            // costs no height. It used to share this row with the cycles
+            // chip; now that the chip is gone it occupies the row alone.
+            child: autoPayoutChip,
           );
 
     Widget withAutoPayout(Widget row) => autoPayoutRow == null
@@ -1436,19 +1413,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     ],
                   ),
                 ),
-                PopupMenuItem(
-                  value: 'history',
-                  child: Row(
-                    children: [
-                      Icon(Icons.timeline, color: Colors.white, size: 20.sp),
-                      SizedBox(width: 12.w),
-                      Text(
-                        'View Cycles History',
-                        style: GoogleFonts.inter(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
+                // "View Cycles History" removed — the Cycles tab replaces it.
+                // This entry was UNGATED, so it also offered a cycles list for
+                // one-time contributions, which have none: it opened an empty
+                // screen and taught the user the control does nothing.
                 // Leaving. This is where a member looks for it — the
                 // only other way in was a row inside the Members tab,
                 // which is where you go to act on SOMEBODY ELSE.
@@ -1816,6 +1784,24 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   bool _showCyclesTab(Contribution? c) =>
       c != null && c.isRotatingSavings && !c.awaitingOpen;
 
+  /// "Cycle 3 of 6", or "Cycle 3" when the total is not known yet.
+  ///
+  /// ONE DEFINITION. The summary card's badge, the Overview tab's Current
+  /// Cycle stat and the Cycles tab's header all render this, so they cannot
+  /// disagree about which round the circle is on — three places showing two
+  /// different cycle numbers is the same class of bug as the crypto sheet
+  /// showing two rates.
+  ///
+  /// total_cycles is nullable because a contribution created but not yet
+  /// OPENED has no roster to size the rotation against (open() sets it from
+  /// the member count — see rotationCycleCount server-side). With no total we
+  /// show the round alone rather than inventing a denominator.
+  String _cycleLabelFor(Contribution c) {
+    final current = c.currentCycle ?? 0;
+    final total = c.totalCycles ?? 0;
+    return total > 0 ? 'Cycle $current of $total' : 'Cycle $current';
+  }
+
   /// Index of the Cycles tab, or -1 when it is not showing.
   int get _cyclesTabIndex => _showCyclesTab(_currentContribution) ? 3 : -1;
 
@@ -1845,27 +1831,6 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // listening to it until they rebuild, and disposing mid-build makes the
     // next notification throw "used after being disposed".
     WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
-  }
-
-  /// Cycles, from the overflow menu or the Cycles chip.
-  ///
-  /// When the tab is showing, SWITCH TO IT rather than pushing the same screen
-  /// on top of itself — otherwise the back stack holds two routes rendering
-  /// the same list and Back from the pushed one lands on a details screen
-  /// whose Cycles tab shows the very thing the user just dismissed. The push
-  /// is kept for the states that have no tab.
-  void _openCyclesHistory(Contribution contribution) {
-    if (_cyclesTabIndex >= 0 && _tabController.length > _cyclesTabIndex) {
-      _tabController.animateTo(_cyclesTabIndex);
-      return;
-    }
-    final histCubit = context.read<GroupAccountCubit>();
-    Get.to(
-      () => BlocProvider<GroupAccountCubit>.value(
-        value: histCubit,
-        child: ContributionCyclesHistoryScreen(contribution: contribution),
-      ),
-    );
   }
 
   Future<void> _showChangeReceiverFlow(Contribution contribution) async {
@@ -2049,11 +2014,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // — see rotationCycleCount). When the total is unknown we show the round
     // we are on rather than inventing a denominator.
     final currentCycle = contribution.currentCycle ?? 0;
-    final totalCycles = contribution.totalCycles ?? 0;
     final showCycleBadge = contribution.isRotatingSavings && currentCycle > 0;
-    final cycleBadgeLabel = totalCycles > 0
-        ? 'Cycle $currentCycle of $totalCycles'
-        : 'Cycle $currentCycle';
+    final cycleBadgeLabel = _cycleLabelFor(contribution);
 
     // Partial-aware stat inputs. The "Contributors" stat counts every
     // user who has made any payment attempt (completed, processing,
@@ -2651,6 +2613,25 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       : const Color(0xFF10B981),
             ),
             SizedBox(height: 16.h),
+            // WHICH ROUND IS THIS? Every figure on this tab is scoped to the
+            // current cycle, so without the round number the whole tab is
+            // ambiguous the moment cycle 2 starts and the numbers reset. The
+            // summary card carries the same badge; this repeats it where the
+            // per-cycle statistics actually are.
+            //
+            // Rotating savings only — a one-time collection has no cycles.
+            if (_showCyclesTab(contribution)) ...[
+              _buildStatCard(
+                title: 'Current Cycle',
+                value: _cycleLabelFor(contribution),
+                icon: Icons.loop_rounded,
+                // Same lighter purple as the Cycles tab's identity badges
+                // (_kCycleBadgePurple) so the cycle reads as one idea across
+                // the summary card, this stat and the cycle list.
+                color: const Color(0xFFA78BFA),
+              ),
+              SizedBox(height: 16.h),
+            ],
             _buildStatCard(
               title: 'Average Payment',
               // sum / count over **completed** payments only. Pending /
@@ -3802,18 +3783,6 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         break;
       case 'transcript':
         _openTranscriptSheet(contribution);
-        break;
-      case 'history':
-        // Wrap with BlocProvider.value so the cycles screen and any
-        // bottom sheets it opens read the same GroupAccountCubit
-        // instance (cycle list + per-cycle details RPCs).
-        final histCubit = context.read<GroupAccountCubit>();
-        Get.to(
-          () => BlocProvider<GroupAccountCubit>.value(
-            value: histCubit,
-            child: ContributionCyclesHistoryScreen(contribution: contribution),
-          ),
-        );
         break;
       case 'exit_contribution':
         final myUserId = context.read<GroupAccountCubit>().currentUserId;

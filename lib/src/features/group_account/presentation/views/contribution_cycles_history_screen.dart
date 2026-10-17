@@ -18,6 +18,20 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 /// Visual treatment: dark scaffold, no borders, elevation +
 /// background contrast on each card. Tapping a card opens
 /// [CycleDetailsBottomSheet] with the per-cycle deep dive.
+/// Lighter purple for the IDENTITY badges — the cycle number and the
+/// "Current" marker.
+///
+/// Deliberately one constant rather than the status accent: a cycle's NUMBER
+/// is not a status, and tinting it by status made "Cycle 3" turn red on a
+/// failed round, which reads as though the number itself were the problem.
+const Color _kCycleBadgePurple = Color(0xFFA78BFA);
+
+/// The in-progress status accent, lightened to sit beside the identity badges
+/// instead of fighting them. Settled/failed/cancelled keep their semantic
+/// green/red/grey — turning those purple too would throw away the only signal
+/// that distinguishes a paid-out round from a failed one.
+const Color _kCycleLivePurple = Color(0xFF9F7AEA);
+
 class ContributionCyclesHistoryScreen extends StatefulWidget {
   final Contribution contribution;
 
@@ -226,6 +240,7 @@ class _ContributionCyclesHistoryScreenState
 
   Widget _buildCycleCard(ContributionCycle c) {
     final accent = _statusColor(c.status);
+    final isCurrent = widget.contribution.currentCycle == c.cycleIndex;
     final dateFmt = DateFormat('MMM d, yyyy');
     final progress = c.progressPercent / 100.0;
     final raised =
@@ -259,21 +274,17 @@ class _ContributionCyclesHistoryScreenState
           children: [
             Row(
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    'Cycle ${c.cycleIndex}',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w700,
-                      color: accent,
-                    ),
-                  ),
-                ),
+                _buildBadge('Cycle ${c.cycleIndex}', _kCycleBadgePurple),
+                // WHICH ROUND IS THE CIRCLE ON. "Live" is a STATUS — a round
+                // can be in progress — whereas "Current" says this is the one
+                // the contribution itself is pointing at, which is what the
+                // summary card and the Overview stat also report. They read
+                // off the same contribution.currentCycle, so the three cannot
+                // disagree.
+                if (isCurrent) ...[
+                  SizedBox(width: 8.w),
+                  _buildBadge('Current', _kCycleBadgePurple),
+                ],
                 SizedBox(width: 8.w),
                 _buildStatusPill(c.status, accent),
                 const Spacer(),
@@ -417,6 +428,26 @@ class _ContributionCyclesHistoryScreenState
     );
   }
 
+  /// One pill shape for every identity badge on a cycle card, so the cycle
+  /// number and the "Current" marker cannot drift apart visually.
+  Widget _buildBadge(String label, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+    );
+  }
+
   Widget _buildStatusPill(ContributionCycleStatus status, Color accent) {
     final label = switch (status) {
       ContributionCycleStatus.inProgress => 'Live',
@@ -444,7 +475,7 @@ class _ContributionCyclesHistoryScreenState
   Color _statusColor(ContributionCycleStatus status) {
     switch (status) {
       case ContributionCycleStatus.inProgress:
-        return const Color(0xFF4E03D0);
+        return _kCycleLivePurple;
       case ContributionCycleStatus.closedSettled:
         return const Color(0xFF10B981);
       case ContributionCycleStatus.closedFailed:
