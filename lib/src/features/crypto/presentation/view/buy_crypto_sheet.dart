@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/crypto/presentation/utils/buy_limits_caption.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -964,14 +965,21 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
               SizedBox(height: 14.h),
               Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
               SizedBox(height: 12.h),
+              // Both halves must be able to shrink. Unconstrained, the
+              // converted amount and the limits ran into each other with no
+              // gap and the limits were clipped mid-word
+              // ("…Min 1.02 USDT (≈₦1403) · Max ≈37.677021 US").
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(approx,
-                      style: GoogleFonts.inter(
-                          fontSize: 13.sp,
-                          color: Colors.white.withValues(alpha: 0.55))),
-                  _buildLimitsHint(available),
+                  Flexible(
+                    child: Text(approx,
+                        style: GoogleFonts.inter(
+                            fontSize: 13.sp,
+                            color: Colors.white.withValues(alpha: 0.55))),
+                  ),
+                  SizedBox(width: 12.w),
+                  Flexible(child: _buildLimitsHint(available)),
                 ],
               ),
             ],
@@ -1090,7 +1098,6 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
         final minC = _minCrypto();
         final r = _rate();
         final tkr = widget.crypto.symbol.toUpperCase();
-        final parts = <String>[];
         // The "max" is just the spendable balance — when it's BELOW the
         // minimum, showing both reads as a contradiction ("Min ₦3,451 · Max
         // ₦2,837"). Collapse to the minimum + an explicit insufficient-balance
@@ -1113,35 +1120,27 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
             .clamp(0.0, available)
             .toDouble();
         final balanceBelowMin = min > 0 && available > 0 && spendable < min;
-        // Min/Max in the unit the user is TYPING so the numbers are directly
-        // comparable to the field value; the fiat equivalent rides along for
-        // the crypto-unit min so the cost is never a surprise.
-        if (_isAmountInCrypto) {
-          if (minC > 0) {
-            parts.add('Min ${_trimNum(minC)} $tkr'
-                '${min > 0 ? ' (≈$sym${min.toStringAsFixed(0)})' : ''}');
-          }
-          if (balanceBelowMin) {
-            parts.add('Insufficient balance');
-          } else if (available > 0 && r > 0) {
-            parts.add('Max ≈${_trimNum(spendable / r)} $tkr');
-          }
-        } else {
-          if (min > 0) {
-            parts.add('Min $sym${min.toStringAsFixed(0)}'
-                '${minC > 0 ? ' (${_trimNum(minC)} $tkr)' : ''}');
-          }
-          if (balanceBelowMin) {
-            parts.add('Insufficient balance');
-          } else if (available > 0) {
-            parts.add('Max $sym${available.toStringAsFixed(0)}');
-          }
-        }
+        // ONLY Min and Max, in the unit being typed. The rate is already
+        // stated at the top of the sheet; the old caption repeated it as a
+        // parenthetical ("Min 1.02 USDT (≈₦1403)") that did not divide back
+        // into the quoted 1,379 — two correctly-rounded numbers reading as a
+        // second, contradictory exchange rate. See buy_limits_caption.dart.
+        final caption = buyLimitsCaption(
+          amountInCrypto: _isAmountInCrypto,
+          minFiat: min,
+          minCrypto: minC,
+          maxFiat: available,
+          maxCrypto: r > 0 ? spendable / r : 0,
+          insufficientBalance: balanceBelowMin,
+          fiatSymbol: sym,
+          ticker: tkr,
+        );
         // Red when the typed amount is below the floor OR the balance can't
         // reach it at all — the floor must be unmissable before the Buy tap.
         final belowMin = _fiatAmount > 0 && min > 0 && _fiatAmount < min;
         final alert = belowMin || balanceBelowMin;
-        return Text(parts.join(' · '),
+        return Text(caption,
+            textAlign: TextAlign.right,
             style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: alert ? FontWeight.w600 : FontWeight.w400,

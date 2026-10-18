@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/split_bills/presentation/utils/split_method_copy.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
@@ -27,6 +28,7 @@ import '../../domain/repositories/split_bill_repository.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 part 'create_split_bill_screen_widgets.dart';
+part 'create_split_bill_screen_method_hint.dart';
 
 class CreateSplitBillScreen extends StatefulWidget {
   const CreateSplitBillScreen({super.key});
@@ -1758,6 +1760,13 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                 child: _buildMethodChip(_SplitMethod.percentage, 'Percentage')),
           ],
         ),
+        // Says where the per-person fields are. Without this, choosing
+        // Custom or Percentage here changed a chip and nothing else — the
+        // amount/% inputs are on the next step, inside each co-payer's card.
+        if (splitMethodHint(_shareInputFor(_splitMethod),
+                coPayerCount: _selectedParticipants.length)
+            case final hint?)
+          _buildSplitMethodHintStrip(hint),
       ],
     );
   }
@@ -1827,9 +1836,22 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (_includeMyself && _myShare > 0)
+                // Under custom/percentage the creator's share is the
+                // REMAINDER, so before anything is allocated this figure is
+                // the whole bill. Printing it as "My share" told the creator
+                // they were paying for everyone.
+                if (myShareSubtitle(
+                      input: _shareInputFor(_splitMethod),
+                      includeMyself: _includeMyself,
+                      myShare: _myShare,
+                      totalAmount: _totalAmount,
+                      assignedToOthers: _customAmounts.values
+                          .fold(0.0, (sum, amt) => sum + amt),
+                      currencySymbol: _currencySymbol,
+                    )
+                    case final subtitle?)
                   Text(
-                    'My share: $_currencySymbol${NumberFormat('#,##0.00').format(_myShare)}',
+                    subtitle,
                     style: const TextStyle(
                       color: Color(0xFF9CA3AF),
                       fontSize: 12,
@@ -1935,6 +1957,18 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     final amount = _customAmounts[participant.key] ?? 0.0;
 
     return Container(
+      // KEYED BY PERSON, NOT BY POSITION.
+      //
+      // The amount/% field inside is an uncontrolled TextField: its text
+      // lives in the element, not in _percentages. Without a key Flutter
+      // matches these same-typed cards BY INDEX, so removing a co-payer
+      // slides everyone up and leaves the departed person's typed figure
+      // sitting against whoever took their row — while _percentages, keyed
+      // by person, holds the right values. Three co-payers at 50/30/20 with
+      // the first removed showed "50, 30" over the two who actually had
+      // 30 and 20. The split that gets created is the model's, so the screen
+      // was simply lying about who pays what.
+      key: ValueKey(participant.key),
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

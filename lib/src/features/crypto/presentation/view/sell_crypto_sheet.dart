@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/crypto/presentation/utils/buy_limits_caption.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -846,35 +847,28 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
         final price = _price();
         final tkr = widget.crypto.symbol.toUpperCase();
         final minC = price > 0 && min > 0 ? min / price : 0.0;
-        final parts = <String>[];
         // Holding worth less than the sell minimum → "Min ₦X · Max ₦Y" reads
         // as a contradiction. Collapse to the minimum + why it can't be met.
         final holdingBelowMin = min > 0 && maxFiat > 0 && maxFiat < min;
-        // Min/Max in the unit being TYPED, with the other in parentheses.
-        if (_isAmountInCrypto) {
-          if (minC > 0) {
-            parts.add(
-                'Min ${_trimNum(minC)} $tkr (≈$sym${min.toStringAsFixed(0)})');
-          }
-          if (holdingBelowMin) {
-            parts.add('Holding too small to sell');
-          } else if (h != null && h.quantity > 0) {
-            parts.add('Max ${_trimNum(h.quantity)} $tkr');
-          }
-        } else {
-          if (min > 0) {
-            parts.add('Min $sym${min.toStringAsFixed(0)}'
-                '${minC > 0 ? ' (${_trimNum(minC)} $tkr)' : ''}');
-          }
-          if (holdingBelowMin) {
-            parts.add('Holding too small to sell');
-          } else if (maxFiat > 0) {
-            parts.add('Max $sym${maxFiat.toStringAsFixed(0)}');
-          }
-        }
+        // ONLY Min and Max, in the unit being typed. The price is already on
+        // the sheet; the parenthetical cross-rate that used to ride along
+        // here is the same thing that made the buy sheet look like it quoted
+        // two different rates. See buy_limits_caption.dart.
+        final caption = buyLimitsCaption(
+          amountInCrypto: _isAmountInCrypto,
+          minFiat: min,
+          minCrypto: minC,
+          maxFiat: maxFiat,
+          maxCrypto: h?.quantity ?? 0,
+          insufficientBalance: holdingBelowMin,
+          fiatSymbol: sym,
+          ticker: tkr,
+          blockedLabel: 'Holding too small to sell',
+        );
         final belowMin = _fiatAmount > 0 && min > 0 && _fiatAmount < min;
         final alert = belowMin || holdingBelowMin;
-        return Text(parts.join(' · '),
+        return Text(caption,
+            textAlign: TextAlign.right,
             style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: alert ? FontWeight.w600 : FontWeight.w400,
