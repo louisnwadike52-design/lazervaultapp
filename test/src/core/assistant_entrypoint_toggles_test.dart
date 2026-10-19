@@ -12,6 +12,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 // The two widgets do NOT agree on service names ('Auto-Save' vs 'autosave',
 // 'Currency Exchange' vs 'exchange'), so each normalises its own name into a
 // slug. An admin never has to know which spelling a surface happens to use.
+//
+// THE TWO SURFACES HAVE OPPOSITE DEFAULTS, deliberately. Chat is ON until an
+// admin says otherwise. Per-service VOICE is OFF until an admin turns it on:
+// the mic sits on 45 service screens and each one opens a live agent session,
+// so defaulting it on surfaces a voice agent for every service added later
+// before anyone has decided it should exist. Chat carries no such cost.
+//
+// That asymmetry is why most voice assertions below first switch the master
+// on — they are testing the per-service rules, not the default.
 
 void main() {
   setUp(() async {
@@ -45,15 +54,30 @@ void main() {
   });
 
   group('defaults', () {
-    test('every entry point is visible until an admin says otherwise', () {
+    test('chat is visible until an admin says otherwise', () {
       expect(FeatureFlags.chatIconVisible('Crypto'), isTrue);
-      expect(FeatureFlags.voiceAgentVisible('crypto'), isTrue);
-      expect(FeatureFlags.chatIconVisible('ServiceAddedTomorrow'), isTrue);
+      expect(FeatureFlags.chatIconVisible('ServiceAddedTomorrow'), isTrue,
+          reason: 'a service added later keeps its chat assistant');
+    });
+
+    test('per-service VOICE is hidden until an admin turns it on', () {
+      // The asymmetry described at the top of this file. Nothing is seeded,
+      // so this is what a phone does on a fresh install.
+      expect(FeatureFlags.voiceAgentVisible('crypto'), isFalse);
+      expect(FeatureFlags.voiceAgentVisible('ServiceAddedTomorrow'), isFalse,
+          reason: 'a service added later must not ship a voice agent nobody '
+              'decided to offer');
     });
 
     test('an empty service name never hides the entry point', () {
       // A slug we cannot compute must not silently remove a user's way in.
       expect(FeatureFlags.chatIconVisible(''), isTrue);
+    });
+
+    test('with voice switched on, an uncomputable slug still shows', () async {
+      await FeatureFlags.applyRemoteSnapshot({
+        'voice_agent_all_enabled': 'true',
+      });
       expect(FeatureFlags.voiceAgentVisible('!!!'), isTrue);
     });
   });
@@ -69,6 +93,7 @@ void main() {
 
     test('chat and voice are independent for the same service', () async {
       await FeatureFlags.applyRemoteSnapshot({
+        'voice_agent_all_enabled': 'true',
         'chat_icon_crypto_enabled': 'false',
       });
       expect(FeatureFlags.chatIconVisible('Crypto'), isFalse);
@@ -78,6 +103,7 @@ void main() {
 
     test('a malformed value leaves the entry point VISIBLE', () async {
       await FeatureFlags.applyRemoteSnapshot({
+        'voice_agent_all_enabled': 'true',
         'voice_agent_crypto_enabled': 'off',
       });
       expect(FeatureFlags.voiceAgentVisible('crypto'), isTrue,
@@ -97,9 +123,21 @@ void main() {
 
     test('chat master does not mute voice', () async {
       await FeatureFlags.applyRemoteSnapshot({
+        'voice_agent_all_enabled': 'true',
         'chat_icon_all_enabled': 'false',
       });
       expect(FeatureFlags.voiceAgentVisible('crypto'), isTrue);
+    });
+
+    test('a per-service voice enable does not reopen a master that is off',
+        () async {
+      // The mirror of 'the master WINS over a per-service enable', for the
+      // surface whose master is off by DEFAULT: a leftover per-service row
+      // must not put mics back on 45 screens.
+      await FeatureFlags.applyRemoteSnapshot({
+        'voice_agent_crypto_enabled': 'true',
+      });
+      expect(FeatureFlags.voiceAgentVisible('crypto'), isFalse);
     });
 
     test('voice master off hides every per-service voice button', () async {

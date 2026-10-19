@@ -970,9 +970,23 @@ class FeatureFlags {
     return _prefs?.getBool(chatIconKey(slug)) ?? true;
   }
 
-  /// Whether a per-service VOICE button should render. Same rules.
+  /// Whether a per-service VOICE button should render.
+  ///
+  /// PER-SERVICE VOICE IS OFF UNTIL AN ADMIN TURNS IT ON — the opposite
+  /// default to chat, and deliberate. The mic appears on 45 service screens,
+  /// and each one opens a live agent session; shipping that on by default
+  /// means every new service surfaces a voice agent before anyone has decided
+  /// it should. Chat has no such cost and stays on.
+  ///
+  /// The CENTRAL assistant is untouched: NOVA is its own bottom-nav screen,
+  /// not one of these icons, so none of these keys can reach it.
+  ///
+  /// Reading the master as `?? false` is what makes the default OFF. Once an
+  /// admin sets voice_agent_all_enabled=true the per-service keys apply
+  /// normally, each defaulting ON, so individual services can then be turned
+  /// off one at a time.
   static bool voiceAgentVisible(String serviceName) {
-    if (_prefs?.getBool(voiceAgentsAllEnabled) == false) return false;
+    if (!(_prefs?.getBool(voiceAgentsAllEnabled) ?? false)) return false;
     final slug = assistantSlug(serviceName);
     if (slug.isEmpty) return true;
     return _prefs?.getBool(voiceAgentKey(slug)) ?? true;
