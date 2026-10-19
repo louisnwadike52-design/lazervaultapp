@@ -295,6 +295,40 @@ bool looksTechnical(String? msg) {
       _namesAProviderWithACode(m)) {
     return true;
   }
+  // A DATABASE error, leaked verbatim. Measured 2026-10-19 on the family
+  // close flow: closing a Family & Friends account wrote status='archived'
+  // against a CHECK constraint that permitted only active/frozen/closed/
+  // pending_setup, so accounts-service returned
+  //
+  //   failed to archive family account: ERROR: new row for relation
+  //   "family_accounts" violates check constraint "check_status_valid"
+  //   (SQLSTATE 23514)
+  //
+  // and the cubit emitted it straight into a red banner. The creator trying
+  // to close their account was shown our table name, our constraint name and
+  // a Postgres error code.
+  //
+  // That one was caught only INCIDENTALLY, by the `error:` marker above,
+  // because Postgres happens to prefix "ERROR:". The driver's own shape does
+  // not: `pq: duplicate key value violates unique constraint "idx_…"` carries
+  // no "error:", no "exception" and no JSON — and the comment further down
+  // this file records that exact string reaching a user in testing. So the
+  // markers are the DB vocabulary itself, matched in combinations specific
+  // enough that an ordinary product sentence cannot trip them ("violates" and
+  // "constraint" alone are deliberately NOT markers — a limits message could
+  // legitimately say a transfer violates a constraint).
+  if (m.contains('sqlstate') ||
+      m.contains('pq: ') ||
+      m.contains('duplicate key value') ||
+      m.contains('violates check constraint') ||
+      m.contains('violates unique constraint') ||
+      m.contains('violates foreign key constraint') ||
+      m.contains('violates not-null constraint') ||
+      m.contains('new row for relation') ||
+      m.contains('relation "') ||
+      m.contains('column "')) {
+    return true;
+  }
   // Dart runtime type failures. "type 'Null' is not a subtype of type 'String'"
   // carries no "exception", no "error:" and no JSON, so every filter above let
   // it through — it only stayed hidden because the sole caller unwrapped just
