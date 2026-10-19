@@ -165,6 +165,20 @@ class Contribution extends Equatable {
 
   bool get isCompleted => status == ContributionStatus.completed;
 
+  /// Whether the server will accept money into this contribution at all.
+  ///
+  /// MakePayment refuses every non-active status with its own sentence —
+  /// completed ("it has reached its target and is now closed"), paused
+  /// ("the organiser can resume it") and cancelled ("it was cancelled") —
+  /// but the Contribute CTA was gated on [isCompleted] ALONE. A paused or
+  /// cancelled contribution therefore still offered the button, and the only
+  /// way to find out was to go through the pay screen, pick an amount and be
+  /// refused at the end.
+  ///
+  /// Mirrors the server's own state check so the two cannot disagree about
+  /// what "collecting" means.
+  bool get isCollecting => status == ContributionStatus.active;
+
   /// Whether this contribution has STARTED.
   ///
   /// A one-time goal always has: there is no roster to freeze and nothing

@@ -4212,7 +4212,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   // stale UI shows a button that 401s on tap.
   bool _shouldShowContributeFab() {
     final c = _currentContribution;
-    if (c == null || c.isCompleted) return false;
+    // Not just completed: the server refuses PAUSED and CANCELLED too, each
+    // with its own sentence, and gating on isCompleted alone left the button
+    // on a contribution that could not take money — discoverable only by
+    // going through the pay screen and being refused at the end.
+    if (c == null || !c.isCollecting) return false;
     // An esusu that has not been started has no cycle to pay into — the pot,
     // the schedule and the rotation are all decided at start. Offering
     // Contribute here produced a payment the server would refuse.

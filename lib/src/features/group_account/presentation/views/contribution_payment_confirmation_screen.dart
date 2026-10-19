@@ -138,11 +138,36 @@ class _ContributionPaymentConfirmationScreenState
         route.settings.name == AppRoutes.contributionDetails || route.isFirst);
     final landed = Get.currentRoute == AppRoutes.contributionDetails;
     if (landed) return false;
+    // THREE PUSHES, ONE GLOBAL ARGUMENTS SLOT.
+    //
+    // `Get.arguments` is GLOBAL in GetX, not per-route: it reads the
+    // arguments of whatever route is currently on top. These three calls are
+    // async and were fired back to back without awaiting, so by the time the
+    // groupDetails page BUILDER ran, the contributionDetails push below had
+    // already replaced the slot with its Map — a Map carrying
+    // `contributionId` and `contribution` and NO `groupId`.
+    //
+    // The group route's builder reads
+    //   raw is Map ? raw['groupId'] : ''
+    // got an empty id, and bailed with popMissingArgs('this group') — the
+    // red "We couldn't open this group. Please try again." reported after
+    // paying an overdue contribution and coming back from the receipt.
+    //
+    // Two changes make it right, and the second is the one that holds:
+    //   1. each push waits for the previous route to be BUILT, so a builder
+    //      sees its own arguments;
+    //   2. the contributionDetails map now also carries groupId, so the
+    //      group route finds what it needs even if it reads the wrong
+    //      slot — the builder already accepts that shape.
+    //
+    // (1) alone would still be a race against frame timing; (2) alone leaves
+    // a confusing ordering. Together the screen cannot lose its id.
     Get.offAllNamed(AppRoutes.dashboard);
     Get.toNamed(
       AppRoutes.groupDetails,
       arguments: widget.contribution.groupId,
     );
+    await WidgetsBinding.instance.endOfFrame;
     // The contributionDetails route takes a MAP ({contributionId, contribution}),
     // not a bare id — passing the raw String made its `Get.arguments as
     // Map<String, dynamic>` cast throw inside the page builder, which renders as
@@ -156,6 +181,9 @@ class _ContributionPaymentConfirmationScreenState
       arguments: {
         'contributionId': widget.contribution.id,
         'contribution': widget.contribution,
+        // Carried so the groupDetails route underneath can still resolve
+        // its id from this map — see the note above.
+        'groupId': widget.contribution.groupId,
       },
     );
     return false;
