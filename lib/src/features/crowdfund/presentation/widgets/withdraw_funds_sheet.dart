@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_withdrawal_receipt_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/utils/crowdfund_withdrawal_receipt.dart';
+import 'package:get/get.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -202,6 +205,36 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
   /// optimistically show "Net = Gross" with a faint "Calculating..."
   /// hint instead of an empty box, so the user never confirms a PIN
   /// with no breakdown shown.
+  /// Names the withdrawal destination in words. See the call site.
+  Widget _buildDestinationNotice() {
+    final currency = widget.crowdfund.currency.trim().isEmpty
+        ? 'NGN'
+        : widget.crowdfund.currency.trim().toUpperCase();
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.account_balance_wallet_outlined,
+              size: 16.sp, color: const Color(0xFFB69BF5)),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              'This is paid into your personal $currency account.',
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.white.withValues(alpha: 0.85),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFeeBreakdown() {
     final currency = widget.crowdfund.currency;
     final q = _quote;
@@ -343,20 +376,20 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
         listener: (context, state) {
           if (!mounted) return;
           if (state is WithdrawalCompleted) {
-            // Pop the sheet first so the details screen owns the
-            // remaining UI surface; SnackBar is shown on the route
-            // below the sheet, which the parent context now points
-            // at after the pop.
-            final cf = widget.crowdfund;
-            final amountText =
-                '${cf.currency} ${_formatAmount(state.result.amountWithdrawn)}';
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Withdrew $amountText successfully'),
-                backgroundColor: const Color(0xFF10B981),
-              ),
+            // A SnackBar was the whole acknowledgement for the one moment
+            // real money leaves a campaign — no record of what was taken,
+            // what the platform charged, what landed, or where. Pop the
+            // sheet, then push a receipt the creator can read and share.
+            //
+            // Pushed, not offAll: the campaign details screen underneath is
+            // where "Done" and back should return to.
+            final receipt = CrowdfundWithdrawalReceipt.from(
+              crowdfund: widget.crowdfund,
+              result: state.result,
             );
+            Navigator.pop(context);
+            Get.to(() =>
+                CrowdfundWithdrawalReceiptScreen(receipt: receipt));
           } else if (state is CrowdfundError) {
             setState(() => _isSubmitting = false);
             _showError(state.message);
@@ -555,6 +588,14 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
                   SizedBox(height: 16.h),
                   _buildFeeBreakdown(),
                 ],
+                SizedBox(height: 14.h),
+                // SAY WHERE THE MONEY IS GOING, BEFORE THE PIN.
+                //
+                // The destination is resolved server-side to the creator's own
+                // primary account and there is no picker, so the sheet asked
+                // for a transaction PIN without ever naming where the money
+                // would land. The receipt afterwards repeats the same sentence.
+                _buildDestinationNotice(),
                 SizedBox(height: 20.h),
                 SizedBox(
                   width: double.infinity,
