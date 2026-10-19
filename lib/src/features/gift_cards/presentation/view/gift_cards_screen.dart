@@ -384,31 +384,43 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     );
   }
 
-  // Quick actions section — My Cards + Sales History
+  // Quick actions section — My Cards, and My Sales only when selling exists.
+  //
+  // MY SALES FOLLOWS THE SELL GATE. With selling switched off the Sell tab
+  // is gone, so this tile was the one remaining way into a flow the user
+  // cannot take part in: it opens a history of sales they can never make,
+  // and on a fresh account an empty screen with no explanation of why.
+  //
+  // Hidden rather than disabled, for the same reason the Buy/Sell toggle is
+  // not drawn as a single option: a dead control is worse than no control.
+  // When it is hidden, My Cards takes the full width rather than leaving a
+  // half-row gap where the second tile used to be.
   Widget _buildQuickActions() {
+    final myCards = _buildQuickActionCard(
+      icon: Icons.card_giftcard_rounded,
+      label: 'My Cards',
+      color: InvoiceThemeColors.primaryPurple,
+      onTap: () => Get.toNamed(AppRoutes.myGiftCards),
+    );
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildQuickActionCard(
-              icon: Icons.card_giftcard_rounded,
-              label: 'My Cards',
-              color: InvoiceThemeColors.primaryPurple,
-              onTap: () => Get.toNamed(AppRoutes.myGiftCards),
-            ),
-          ),
-          SizedBox(width: 8.w),
-          Expanded(
-            child: _buildQuickActionCard(
-              icon: Icons.history_rounded,
-              label: 'My Sales',
-              color: const Color(0xFFF59E0B),
-              onTap: () => Get.toNamed(AppRoutes.mySales),
-            ),
-          ),
-        ],
-      ),
+      child: _sellVisible
+          ? Row(
+              children: [
+                Expanded(child: myCards),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: _buildQuickActionCard(
+                    icon: Icons.history_rounded,
+                    label: 'My Sales',
+                    color: const Color(0xFFF59E0B),
+                    onTap: () => Get.toNamed(AppRoutes.mySales),
+                  ),
+                ),
+              ],
+            )
+          : SizedBox(width: double.infinity, child: myCards),
     );
   }
 

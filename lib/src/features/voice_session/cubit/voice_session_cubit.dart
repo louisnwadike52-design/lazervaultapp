@@ -436,7 +436,37 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   ///     LiveKit mic and re-arm speech_to_text to capture the user's turn.
   /// Server STT stays gated off (client text drives turns); the published mic only
   /// feeds the interruption detector during agent speech.
-  static const bool _hybridAecBargeIn = true;
+  /// iOS ONLY, and the asymmetry is the whole point.
+  ///
+  /// Publishing the LiveKit mic through the agent's turn earns its keep on
+  /// iOS: it keeps Apple's voice-processing I/O unit (hardware AEC) engaged
+  /// and holds the AVAudioSession category stable, which is what stopped the
+  /// agent's own voice leaking into the recognizer and the output gain
+  /// ramping between `playback` and `playAndRecord`.
+  ///
+  /// On Android it buys none of that and costs both of the things a voice
+  /// session is for. Reported 2026-10-19: "the Voice Agent still can't hear
+  /// me", and the agent inaudible on both platforms.
+  ///
+  ///   * ANDROID HAS ONE MIC CONSUMER. speech_to_text's SpeechRecognizer and
+  ///     a published WebRTC capture track contend for it; whichever asks
+  ///     second loses. `_speech.listen()` then throws, and the only handling
+  ///     is a `print` — so the recognizer silently never starts and the user
+  ///     talks to a session that is not listening. No error, no state, no
+  ///     symptom beyond "it can't hear me".
+  ///   * THE RECOGNIZER TAKES AUDIO FOCUS. Starting it moves AudioManager to
+  ///     MODE_IN_COMMUNICATION, which ducks whatever is playing — the agent —
+  ///     and pops the system volume HUD. Re-arming once per turn
+  ///     (_reArmListeningSoon) makes that happen on every single turn, which
+  ///     is the ramp being reported.
+  ///
+  /// THE TRADE, STATED: Android loses SERVER-SIDE barge-in during agent
+  /// speech, because nothing is published for the interruption detector to
+  /// listen to. Hands-free client barge-in was already off there
+  /// (`_bargeInEnabled => isPushToTalk`), and push-to-talk does not need it —
+  /// the gesture ends the agent's turn. Being able to hear the agent, and
+  /// being heard at all, is worth more than talking over her.
+  static bool get _hybridAecBargeIn => _isIOS;
 
   /// Topic for the on-device user-text data packets the agent listens for.
   static const String _userTextTopic = 'lv-user-text';
@@ -2006,10 +2036,46 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         ),
       );
     } catch (e) {
+      // A FAILED listen() USED TO BE INVISIBLE.
+      //
+      // The only handling was this print. On Android the commonest cause is
+      // mic contention — another consumer (a published WebRTC capture track,
+      // the biometric recorder) holds the single recognizer-eligible input,
+      // so listen() throws and the session goes deaf with no error, no state
+      // change and nothing on screen. That is exactly how "the Voice Agent
+      // can't hear me" presents.
+      //
+      // One retry, after a beat long enough for the other consumer to let
+      // go. It is deliberately ONE: a permanently contended mic must not
+      // become a spin loop behind a silent UI, and the retry only re-enters
+      // through the same permission checks.
       _isLocalListening = false;
       print('VoiceSessionCubit: startLocalListening failed: $e');
+      if (!_listenRetryPending) {
+        _listenRetryPending = true;
+        Future.delayed(const Duration(milliseconds: 600), () {
+          _listenRetryPending = false;
+          if (isClosed || _teardownRequested) return;
+          if (_listeningPermitted() &&
+              !_speech.isListening &&
+              !_isLocalListening) {
+            print('VoiceSessionCubit: retrying listen after contention');
+            startLocalListening();
+          }
+        });
+      }
     }
   }
+
+  /// Guards the single listen retry above so a contended mic cannot spin.
+  bool _listenRetryPending = false;
+
+  /// How long Android waits after the agent's turn before opening the mic.
+  ///
+  /// Matches VoiceEchoGuard's tailWindow — the same loudspeaker tail, named
+  /// once. Re-arming inside it makes the recognizer's audio-focus duck land
+  /// on the agent's final words.
+  static const int _androidReArmDelayMs = 1500;
 
   /// Stop the current listening window (no-op if not listening).
   Future<void> stopLocalListening() async {
@@ -2068,7 +2134,25 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // window where a user's continuation after a mid-sentence pause would be
     // dropped. Android already re-arms fast enough at 350ms (kept to avoid a
     // 'done'-status recursion right after stop()).
-    Future.delayed(Duration(milliseconds: _isIOS ? 200 : 350), () {
+    // ANDROID WAITS FOR THE SPEAKER TO DRAIN.
+    //
+    // Starting Android's SpeechRecognizer requests audio focus and moves
+    // AudioManager to MODE_IN_COMMUNICATION, which DUCKS whatever is
+    // playing. Re-arming 350ms after the agent's turn ends put that duck on
+    // top of the tail still coming out of the loudspeaker, once per turn —
+    // the agent's last few words quietly dropping in level, reported as
+    // "volume changes making the AI not hearable".
+    //
+    // VoiceEchoGuard already has a name for how long that tail lasts
+    // (tailWindow, 1500ms, covering the TTS buffer plus room reverb), so
+    // this reuses that number rather than inventing a second one: the two
+    // are describing the same physical fact and must not drift.
+    //
+    // iOS keeps 200ms. Its route is held stable by the published-but-muted
+    // track and there is no focus-duck to avoid, so waiting there would only
+    // make the mic slower to open.
+    Future.delayed(
+        Duration(milliseconds: _isIOS ? 200 : _androidReArmDelayMs), () {
       if (_listeningPermitted() && !_speech.isListening && !_isLocalListening) {
         startLocalListening();
       }
