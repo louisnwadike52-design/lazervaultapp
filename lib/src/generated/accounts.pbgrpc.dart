@@ -50,6 +50,19 @@ class AccountsServiceClient extends $grpc.Client {
   }
 
   /// Get user accounts summary (lightweight, for dashboard carousel)
+  /// FilterPayableUsers narrows a set of user ids to those that can actually
+  /// RECEIVE money — i.e. hold an active personal account.
+  ///
+  /// Internal only: deliberately NO google.api.http annotation, so it is not
+  /// reachable from the public gateway surface. It answers a yes/no about other
+  /// people's accounts and must stay a service-to-service call.
+  $grpc.ResponseFuture<$0.FilterPayableUsersResponse> filterPayableUsers(
+    $0.FilterPayableUsersRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$filterPayableUsers, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.GetUserAccountsResponse> getUserAccounts(
     $0.GetUserAccountsRequest request, {
     $grpc.CallOptions? options,
@@ -543,6 +556,50 @@ class AccountsServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// Approve a plan that was created `pending_approval`.
+  ///
+  /// The deposit is ALREADY reserved against the plan — a lock reduces
+  /// available balance while total balance is untouched — so approving cannot
+  /// fail for want of funds. It flips the status, arms the maturity clock and
+  /// shifts unlock_date by the time spent waiting, so a plan that sat in the
+  /// queue does not lose that time from the term the user agreed to.
+  $grpc.ResponseFuture<$0.AdminApproveLockFundsResponse> adminApproveLockFunds(
+    $0.AdminApproveLockFundsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminApproveLockFunds, request, options: options);
+  }
+
+  /// Reject a plan awaiting approval: releases the reservation and closes it.
+  $grpc.ResponseFuture<$0.AdminRejectLockFundsResponse> adminRejectLockFunds(
+    $0.AdminRejectLockFundsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminRejectLockFunds, request, options: options);
+  }
+
+  /// The review queue: plans waiting on a decision, oldest first.
+  $grpc.ResponseFuture<$0.AdminListPendingLockFundsResponse>
+      adminListPendingLockFunds(
+    $0.AdminListPendingLockFundsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminListPendingLockFunds, request,
+        options: options);
+  }
+
+  /// The USER's choice of what happens at maturity. Settable any time while
+  /// the plan is running, because somebody decides what to do with money as
+  /// the date approaches, not a year ahead when they opened it.
+  $grpc.ResponseFuture<$0.SetLockFundsMaturityActionResponse>
+      setLockFundsMaturityAction(
+    $0.SetLockFundsMaturityActionRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$setLockFundsMaturityAction, request,
+        options: options);
+  }
+
   /// PiggyVault config management (backend-configurable interest rates)
   $grpc.ResponseFuture<$0.GetPiggyVaultConfigResponse> getPiggyVaultConfig(
     $0.GetPiggyVaultConfigRequest request, {
@@ -642,6 +699,58 @@ class AccountsServiceClient extends $grpc.Client {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$getForeignVirtualAccountStatus, request,
+        options: options);
+  }
+
+  /// Promote an FCY virtual account from a provider lifecycle event.
+  ///
+  /// INTERNAL, SERVICE-TO-SERVICE ONLY. Deliberately carries NO google.api.http
+  /// annotation, so grpc-gateway generates no REST route and it cannot be reached
+  /// from the public edge at all. The only caller is banking-service, which receives
+  /// Fincra's signed virtualaccount.* webhooks.
+  ///
+  /// Exists because those webhooks arrive within SECONDS of issuance and were
+  /// previously only logged — the payload was discarded and the account waited up to
+  /// ten minutes for the approval poll to notice something the provider had already
+  /// told us. The poll remains the backstop for a dropped or unverifiable event.
+  ///
+  /// Idempotent. Fincra retries webhooks and the poll runs regardless, so this may
+  /// be called repeatedly and in either order relative to the poll; a second call
+  /// reports outcome "noop" rather than re-stamping or failing. It moves no money —
+  /// it stamps an account number, bank and routing details — so it needs no CAS.
+  ///
+  /// The event is NOT trusted as a description of state: the handler re-fetches the
+  /// account from the provider and applies its own reading, so a forged or stale
+  /// event cannot assert an issuance that did not happen.
+  $grpc.ResponseFuture<$0.PromoteForeignVirtualAccountResponse>
+      promoteForeignVirtualAccount(
+    $0.PromoteForeignVirtualAccountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$promoteForeignVirtualAccount, request,
+        options: options);
+  }
+
+  /// What the FCY KYC form does NOT have to ask for.
+  ///
+  /// Fincra requires 24 fields plus two uploaded documents, and the form asked for
+  /// every one by hand — including the name, date of birth and phone Mono had
+  /// already verified for that same user. This returns each recoverable value with
+  /// a `prefilled` flag, and the flag is the instruction: prefilled means hide the
+  /// input, absent means ask.
+  ///
+  /// Deciding that here and not in the app is deliberate. The app cannot tell an
+  /// empty address that means "the user has none" from one that means
+  /// "banking-service was unreachable", and both must produce "ask", never a blank
+  /// submission.
+  ///
+  /// Read-only, per-caller (the user id comes from the token, never the request).
+  $grpc.ResponseFuture<$0.GetForeignVirtualAccountPrefillResponse>
+      getForeignVirtualAccountPrefill(
+    $0.GetForeignVirtualAccountPrefillRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getForeignVirtualAccountPrefill, request,
         options: options);
   }
 
@@ -842,6 +951,50 @@ class AccountsServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// Admin: Move money between two platform wallets in ONE transaction.
+  ///
+  /// The only safe way to fund a platform wallet from another. Calling
+  /// DebitPlatformWallet then CreditPlatformWallet is two transactions, so a
+  /// failure between them commits the debit and loses the credit — and nothing
+  /// reconciles platform wallets, so the shortfall would never be found. Both
+  /// legs here commit together or not at all.
+  $grpc.ResponseFuture<$0.AdminTransferBetweenPlatformWalletsResponse>
+      adminTransferBetweenPlatformWallets(
+    $0.AdminTransferBetweenPlatformWalletsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminTransferBetweenPlatformWallets, request,
+        options: options);
+  }
+
+  /// Admin: post a CORRECTING ENTRY to one platform wallet.
+  ///
+  /// The single-sided operation, and the dangerous one: a transfer moves
+  /// balance between wallets and cannot change the platform total, while this
+  /// creates or destroys it. It exists because some corrections have no
+  /// counterparty — a reconciler that invented ₦4,800 of PIGGYVAULT_POOL
+  /// balance out of nothing took it from nowhere, so giving it back goes
+  /// nowhere.
+  ///
+  /// It is NOT a balance setter. You post an entry describing what is being
+  /// corrected and the balance moves as a consequence, so every change has a
+  /// ledger row by construction — which is exactly the property the boot
+  /// "backfill" violated when it set a balance and wrote a fiction beside it.
+  ///
+  /// Controls, all of them deliberate: super_admin only (stricter than a
+  /// transfer), a reason is mandatory, the category comes from a fixed
+  /// correction vocabulary rather than the caller, an idempotency key is
+  /// required, and every call raises an ops alert because this should be rare
+  /// and visible.
+  $grpc.ResponseFuture<$0.AdminPostPlatformWalletCorrectionResponse>
+      adminPostPlatformWalletCorrection(
+    $0.AdminPostPlatformWalletCorrectionRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminPostPlatformWalletCorrection, request,
+        options: options);
+  }
+
   /// Admin: List the latest wallet reconciliation row per
   /// (wallet_code, currency). Optional filters narrow the result set
   /// for dashboards that only show one wallet at a time.
@@ -1009,6 +1162,11 @@ class AccountsServiceClient extends $grpc.Client {
           '/accounts.AccountsService/GetAccounts',
           ($0.GetAccountsRequest value) => value.writeToBuffer(),
           $0.GetAccountsResponse.fromBuffer);
+  static final _$filterPayableUsers = $grpc.ClientMethod<
+          $0.FilterPayableUsersRequest, $0.FilterPayableUsersResponse>(
+      '/accounts.AccountsService/FilterPayableUsers',
+      ($0.FilterPayableUsersRequest value) => value.writeToBuffer(),
+      $0.FilterPayableUsersResponse.fromBuffer);
   static final _$getUserAccounts =
       $grpc.ClientMethod<$0.GetUserAccountsRequest, $0.GetUserAccountsResponse>(
           '/accounts.AccountsService/GetUserAccounts',
@@ -1275,6 +1433,28 @@ class AccountsServiceClient extends $grpc.Client {
       '/accounts.AccountsService/AdminForceCancelLockFunds',
       ($0.AdminForceCancelLockFundsRequest value) => value.writeToBuffer(),
       $0.AdminForceCancelLockFundsResponse.fromBuffer);
+  static final _$adminApproveLockFunds = $grpc.ClientMethod<
+          $0.AdminApproveLockFundsRequest, $0.AdminApproveLockFundsResponse>(
+      '/accounts.AccountsService/AdminApproveLockFunds',
+      ($0.AdminApproveLockFundsRequest value) => value.writeToBuffer(),
+      $0.AdminApproveLockFundsResponse.fromBuffer);
+  static final _$adminRejectLockFunds = $grpc.ClientMethod<
+          $0.AdminRejectLockFundsRequest, $0.AdminRejectLockFundsResponse>(
+      '/accounts.AccountsService/AdminRejectLockFunds',
+      ($0.AdminRejectLockFundsRequest value) => value.writeToBuffer(),
+      $0.AdminRejectLockFundsResponse.fromBuffer);
+  static final _$adminListPendingLockFunds = $grpc.ClientMethod<
+          $0.AdminListPendingLockFundsRequest,
+          $0.AdminListPendingLockFundsResponse>(
+      '/accounts.AccountsService/AdminListPendingLockFunds',
+      ($0.AdminListPendingLockFundsRequest value) => value.writeToBuffer(),
+      $0.AdminListPendingLockFundsResponse.fromBuffer);
+  static final _$setLockFundsMaturityAction = $grpc.ClientMethod<
+          $0.SetLockFundsMaturityActionRequest,
+          $0.SetLockFundsMaturityActionResponse>(
+      '/accounts.AccountsService/SetLockFundsMaturityAction',
+      ($0.SetLockFundsMaturityActionRequest value) => value.writeToBuffer(),
+      $0.SetLockFundsMaturityActionResponse.fromBuffer);
   static final _$getPiggyVaultConfig = $grpc.ClientMethod<
           $0.GetPiggyVaultConfigRequest, $0.GetPiggyVaultConfigResponse>(
       '/accounts.AccountsService/GetPiggyVaultConfig',
@@ -1333,6 +1513,19 @@ class AccountsServiceClient extends $grpc.Client {
       '/accounts.AccountsService/GetForeignVirtualAccountStatus',
       ($0.GetForeignVirtualAccountStatusRequest value) => value.writeToBuffer(),
       $0.GetForeignVirtualAccountStatusResponse.fromBuffer);
+  static final _$promoteForeignVirtualAccount = $grpc.ClientMethod<
+          $0.PromoteForeignVirtualAccountRequest,
+          $0.PromoteForeignVirtualAccountResponse>(
+      '/accounts.AccountsService/PromoteForeignVirtualAccount',
+      ($0.PromoteForeignVirtualAccountRequest value) => value.writeToBuffer(),
+      $0.PromoteForeignVirtualAccountResponse.fromBuffer);
+  static final _$getForeignVirtualAccountPrefill = $grpc.ClientMethod<
+          $0.GetForeignVirtualAccountPrefillRequest,
+          $0.GetForeignVirtualAccountPrefillResponse>(
+      '/accounts.AccountsService/GetForeignVirtualAccountPrefill',
+      ($0.GetForeignVirtualAccountPrefillRequest value) =>
+          value.writeToBuffer(),
+      $0.GetForeignVirtualAccountPrefillResponse.fromBuffer);
   static final _$getTransfer =
       $grpc.ClientMethod<$0.GetTransferRequest, $0.GetTransferResponse>(
           '/accounts.AccountsService/GetTransfer',
@@ -1450,6 +1643,20 @@ class AccountsServiceClient extends $grpc.Client {
       ($0.AdminGetPlatformWalletTransactionsRequest value) =>
           value.writeToBuffer(),
       $0.AdminGetPlatformWalletTransactionsResponse.fromBuffer);
+  static final _$adminTransferBetweenPlatformWallets = $grpc.ClientMethod<
+          $0.AdminTransferBetweenPlatformWalletsRequest,
+          $0.AdminTransferBetweenPlatformWalletsResponse>(
+      '/accounts.AccountsService/AdminTransferBetweenPlatformWallets',
+      ($0.AdminTransferBetweenPlatformWalletsRequest value) =>
+          value.writeToBuffer(),
+      $0.AdminTransferBetweenPlatformWalletsResponse.fromBuffer);
+  static final _$adminPostPlatformWalletCorrection = $grpc.ClientMethod<
+          $0.AdminPostPlatformWalletCorrectionRequest,
+          $0.AdminPostPlatformWalletCorrectionResponse>(
+      '/accounts.AccountsService/AdminPostPlatformWalletCorrection',
+      ($0.AdminPostPlatformWalletCorrectionRequest value) =>
+          value.writeToBuffer(),
+      $0.AdminPostPlatformWalletCorrectionResponse.fromBuffer);
   static final _$adminListWalletReconciliations = $grpc.ClientMethod<
           $0.AdminListWalletReconciliationsRequest,
           $0.AdminListWalletReconciliationsResponse>(
@@ -1559,6 +1766,15 @@ abstract class AccountsServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.GetAccountsRequest.fromBuffer(value),
             ($0.GetAccountsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.FilterPayableUsersRequest,
+            $0.FilterPayableUsersResponse>(
+        'FilterPayableUsers',
+        filterPayableUsers_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.FilterPayableUsersRequest.fromBuffer(value),
+        ($0.FilterPayableUsersResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetUserAccountsRequest,
             $0.GetUserAccountsResponse>(
         'GetUserAccounts',
@@ -2016,6 +2232,43 @@ abstract class AccountsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.AdminForceCancelLockFundsRequest.fromBuffer(value),
         ($0.AdminForceCancelLockFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminApproveLockFundsRequest,
+            $0.AdminApproveLockFundsResponse>(
+        'AdminApproveLockFunds',
+        adminApproveLockFunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminApproveLockFundsRequest.fromBuffer(value),
+        ($0.AdminApproveLockFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminRejectLockFundsRequest,
+            $0.AdminRejectLockFundsResponse>(
+        'AdminRejectLockFunds',
+        adminRejectLockFunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminRejectLockFundsRequest.fromBuffer(value),
+        ($0.AdminRejectLockFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminListPendingLockFundsRequest,
+            $0.AdminListPendingLockFundsResponse>(
+        'AdminListPendingLockFunds',
+        adminListPendingLockFunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminListPendingLockFundsRequest.fromBuffer(value),
+        ($0.AdminListPendingLockFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SetLockFundsMaturityActionRequest,
+            $0.SetLockFundsMaturityActionResponse>(
+        'SetLockFundsMaturityAction',
+        setLockFundsMaturityAction_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SetLockFundsMaturityActionRequest.fromBuffer(value),
+        ($0.SetLockFundsMaturityActionResponse value) =>
+            value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetPiggyVaultConfigRequest,
             $0.GetPiggyVaultConfigResponse>(
         'GetPiggyVaultConfig',
@@ -2116,6 +2369,26 @@ abstract class AccountsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetForeignVirtualAccountStatusRequest.fromBuffer(value),
         ($0.GetForeignVirtualAccountStatusResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PromoteForeignVirtualAccountRequest,
+            $0.PromoteForeignVirtualAccountResponse>(
+        'PromoteForeignVirtualAccount',
+        promoteForeignVirtualAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.PromoteForeignVirtualAccountRequest.fromBuffer(value),
+        ($0.PromoteForeignVirtualAccountResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetForeignVirtualAccountPrefillRequest,
+            $0.GetForeignVirtualAccountPrefillResponse>(
+        'GetForeignVirtualAccountPrefill',
+        getForeignVirtualAccountPrefill_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetForeignVirtualAccountPrefillRequest.fromBuffer(value),
+        ($0.GetForeignVirtualAccountPrefillResponse value) =>
             value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.GetTransferRequest, $0.GetTransferResponse>(
@@ -2316,6 +2589,27 @@ abstract class AccountsServiceBase extends $grpc.Service {
             $0.AdminGetPlatformWalletTransactionsRequest.fromBuffer(value),
         ($0.AdminGetPlatformWalletTransactionsResponse value) =>
             value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<
+            $0.AdminTransferBetweenPlatformWalletsRequest,
+            $0.AdminTransferBetweenPlatformWalletsResponse>(
+        'AdminTransferBetweenPlatformWallets',
+        adminTransferBetweenPlatformWallets_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminTransferBetweenPlatformWalletsRequest.fromBuffer(value),
+        ($0.AdminTransferBetweenPlatformWalletsResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminPostPlatformWalletCorrectionRequest,
+            $0.AdminPostPlatformWalletCorrectionResponse>(
+        'AdminPostPlatformWalletCorrection',
+        adminPostPlatformWalletCorrection_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminPostPlatformWalletCorrectionRequest.fromBuffer(value),
+        ($0.AdminPostPlatformWalletCorrectionResponse value) =>
+            value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.AdminListWalletReconciliationsRequest,
             $0.AdminListWalletReconciliationsResponse>(
         'AdminListWalletReconciliations',
@@ -2474,6 +2768,15 @@ abstract class AccountsServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetAccountsResponse> getAccounts(
       $grpc.ServiceCall call, $0.GetAccountsRequest request);
+
+  $async.Future<$0.FilterPayableUsersResponse> filterPayableUsers_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.FilterPayableUsersRequest> $request) async {
+    return filterPayableUsers($call, await $request);
+  }
+
+  $async.Future<$0.FilterPayableUsersResponse> filterPayableUsers(
+      $grpc.ServiceCall call, $0.FilterPayableUsersRequest request);
 
   $async.Future<$0.GetUserAccountsResponse> getUserAccounts_Pre(
       $grpc.ServiceCall $call,
@@ -2936,6 +3239,43 @@ abstract class AccountsServiceBase extends $grpc.Service {
   $async.Future<$0.AdminForceCancelLockFundsResponse> adminForceCancelLockFunds(
       $grpc.ServiceCall call, $0.AdminForceCancelLockFundsRequest request);
 
+  $async.Future<$0.AdminApproveLockFundsResponse> adminApproveLockFunds_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AdminApproveLockFundsRequest> $request) async {
+    return adminApproveLockFunds($call, await $request);
+  }
+
+  $async.Future<$0.AdminApproveLockFundsResponse> adminApproveLockFunds(
+      $grpc.ServiceCall call, $0.AdminApproveLockFundsRequest request);
+
+  $async.Future<$0.AdminRejectLockFundsResponse> adminRejectLockFunds_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AdminRejectLockFundsRequest> $request) async {
+    return adminRejectLockFunds($call, await $request);
+  }
+
+  $async.Future<$0.AdminRejectLockFundsResponse> adminRejectLockFunds(
+      $grpc.ServiceCall call, $0.AdminRejectLockFundsRequest request);
+
+  $async.Future<$0.AdminListPendingLockFundsResponse>
+      adminListPendingLockFunds_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.AdminListPendingLockFundsRequest> $request) async {
+    return adminListPendingLockFunds($call, await $request);
+  }
+
+  $async.Future<$0.AdminListPendingLockFundsResponse> adminListPendingLockFunds(
+      $grpc.ServiceCall call, $0.AdminListPendingLockFundsRequest request);
+
+  $async.Future<$0.SetLockFundsMaturityActionResponse>
+      setLockFundsMaturityAction_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.SetLockFundsMaturityActionRequest> $request) async {
+    return setLockFundsMaturityAction($call, await $request);
+  }
+
+  $async.Future<$0.SetLockFundsMaturityActionResponse>
+      setLockFundsMaturityAction(
+          $grpc.ServiceCall call, $0.SetLockFundsMaturityActionRequest request);
+
   $async.Future<$0.GetPiggyVaultConfigResponse> getPiggyVaultConfig_Pre(
       $grpc.ServiceCall $call,
       $async.Future<$0.GetPiggyVaultConfigRequest> $request) async {
@@ -3040,6 +3380,30 @@ abstract class AccountsServiceBase extends $grpc.Service {
   $async.Future<$0.GetForeignVirtualAccountStatusResponse>
       getForeignVirtualAccountStatus($grpc.ServiceCall call,
           $0.GetForeignVirtualAccountStatusRequest request);
+
+  $async.Future<$0.PromoteForeignVirtualAccountResponse>
+      promoteForeignVirtualAccount_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.PromoteForeignVirtualAccountRequest>
+              $request) async {
+    return promoteForeignVirtualAccount($call, await $request);
+  }
+
+  $async.Future<$0.PromoteForeignVirtualAccountResponse>
+      promoteForeignVirtualAccount($grpc.ServiceCall call,
+          $0.PromoteForeignVirtualAccountRequest request);
+
+  $async.Future<$0.GetForeignVirtualAccountPrefillResponse>
+      getForeignVirtualAccountPrefill_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetForeignVirtualAccountPrefillRequest>
+              $request) async {
+    return getForeignVirtualAccountPrefill($call, await $request);
+  }
+
+  $async.Future<$0.GetForeignVirtualAccountPrefillResponse>
+      getForeignVirtualAccountPrefill($grpc.ServiceCall call,
+          $0.GetForeignVirtualAccountPrefillRequest request);
 
   $async.Future<$0.GetTransferResponse> getTransfer_Pre($grpc.ServiceCall $call,
       $async.Future<$0.GetTransferRequest> $request) async {
@@ -3242,6 +3606,30 @@ abstract class AccountsServiceBase extends $grpc.Service {
   $async.Future<$0.AdminGetPlatformWalletTransactionsResponse>
       adminGetPlatformWalletTransactions($grpc.ServiceCall call,
           $0.AdminGetPlatformWalletTransactionsRequest request);
+
+  $async.Future<$0.AdminTransferBetweenPlatformWalletsResponse>
+      adminTransferBetweenPlatformWallets_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.AdminTransferBetweenPlatformWalletsRequest>
+              $request) async {
+    return adminTransferBetweenPlatformWallets($call, await $request);
+  }
+
+  $async.Future<$0.AdminTransferBetweenPlatformWalletsResponse>
+      adminTransferBetweenPlatformWallets($grpc.ServiceCall call,
+          $0.AdminTransferBetweenPlatformWalletsRequest request);
+
+  $async.Future<$0.AdminPostPlatformWalletCorrectionResponse>
+      adminPostPlatformWalletCorrection_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.AdminPostPlatformWalletCorrectionRequest>
+              $request) async {
+    return adminPostPlatformWalletCorrection($call, await $request);
+  }
+
+  $async.Future<$0.AdminPostPlatformWalletCorrectionResponse>
+      adminPostPlatformWalletCorrection($grpc.ServiceCall call,
+          $0.AdminPostPlatformWalletCorrectionRequest request);
 
   $async.Future<$0.AdminListWalletReconciliationsResponse>
       adminListWalletReconciliations_Pre(

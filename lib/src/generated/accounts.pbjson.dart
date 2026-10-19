@@ -71,6 +71,13 @@ const Account$json = {
       '5': 8,
       '10': 'allowInternationalTransfers'
     },
+    {
+      '1': 'virtual_account_holder_name',
+      '3': 30,
+      '4': 1,
+      '5': 9,
+      '10': 'virtualAccountHolderName'
+    },
   ],
 };
 
@@ -93,7 +100,9 @@ final $typed_data.Uint8List accountDescriptor = $convert.base64Decode(
     'bWUYGSABKAlSCGJhbmtOYW1lEjgKGHNpbmdsZV90cmFuc2FjdGlvbl9saW1pdBgaIAEoAVIWc2'
     'luZ2xlVHJhbnNhY3Rpb25MaW1pdBIpChByZXNlcnZlZF9iYWxhbmNlGBsgASgBUg9yZXNlcnZl'
     'ZEJhbGFuY2USGQoIa3ljX3RpZXIYHCABKAVSB2t5Y1RpZXISQgodYWxsb3dfaW50ZXJuYXRpb2'
-    '5hbF90cmFuc2ZlcnMYHSABKAhSG2FsbG93SW50ZXJuYXRpb25hbFRyYW5zZmVycw==');
+    '5hbF90cmFuc2ZlcnMYHSABKAhSG2FsbG93SW50ZXJuYXRpb25hbFRyYW5zZmVycxI9Cht2aXJ0'
+    'dWFsX2FjY291bnRfaG9sZGVyX25hbWUYHiABKAlSGHZpcnR1YWxBY2NvdW50SG9sZGVyTmFtZQ'
+    '==');
 
 @$core.Deprecated('Use accountSummaryDescriptor instead')
 const AccountSummary$json = {
@@ -126,6 +135,13 @@ const AccountSummary$json = {
     {'1': 'trend_period', '3': 13, '4': 1, '5': 9, '10': 'trendPeriod'},
     {'1': 'bank_name', '3': 14, '4': 1, '5': 9, '10': 'bankName'},
     {'1': 'bank_code', '3': 15, '4': 1, '5': 9, '10': 'bankCode'},
+    {
+      '1': 'virtual_account_holder_name',
+      '3': 16,
+      '4': 1,
+      '5': 9,
+      '10': 'virtualAccountHolderName'
+    },
   ],
 };
 
@@ -140,7 +156,65 @@ final $typed_data.Uint8List accountSummaryDescriptor = $convert.base64Decode(
     'cnZlZEJhbGFuY2USIQoMYWNjb3VudF9uYW1lGAsgASgJUgthY2NvdW50TmFtZRIpChB0cmVuZF'
     '9wZXJjZW50YWdlGAwgASgBUg90cmVuZFBlcmNlbnRhZ2USIQoMdHJlbmRfcGVyaW9kGA0gASgJ'
     'Ugt0cmVuZFBlcmlvZBIbCgliYW5rX25hbWUYDiABKAlSCGJhbmtOYW1lEhsKCWJhbmtfY29kZR'
-    'gPIAEoCVIIYmFua0NvZGU=');
+    'gPIAEoCVIIYmFua0NvZGUSPQobdmlydHVhbF9hY2NvdW50X2hvbGRlcl9uYW1lGBAgASgJUhh2'
+    'aXJ0dWFsQWNjb3VudEhvbGRlck5hbWU=');
+
+@$core.Deprecated('Use filterPayableUsersRequestDescriptor instead')
+const FilterPayableUsersRequest$json = {
+  '1': 'FilterPayableUsersRequest',
+  '2': [
+    {'1': 'user_ids', '3': 1, '4': 3, '5': 9, '10': 'userIds'},
+    {'1': 'currency', '3': 2, '4': 1, '5': 9, '10': 'currency'},
+    {
+      '1': 'preferred_currency',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'preferredCurrency'
+    },
+  ],
+};
+
+/// Descriptor for `FilterPayableUsersRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List filterPayableUsersRequestDescriptor = $convert.base64Decode(
+    'ChlGaWx0ZXJQYXlhYmxlVXNlcnNSZXF1ZXN0EhkKCHVzZXJfaWRzGAEgAygJUgd1c2VySWRzEh'
+    'oKCGN1cnJlbmN5GAIgASgJUghjdXJyZW5jeRItChJwcmVmZXJyZWRfY3VycmVuY3kYAyABKAlS'
+    'EXByZWZlcnJlZEN1cnJlbmN5');
+
+@$core.Deprecated('Use filterPayableUsersResponseDescriptor instead')
+const FilterPayableUsersResponse$json = {
+  '1': 'FilterPayableUsersResponse',
+  '2': [
+    {'1': 'payable_user_ids', '3': 1, '4': 3, '5': 9, '10': 'payableUserIds'},
+    {
+      '1': 'primary_account_ids',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.accounts.FilterPayableUsersResponse.PrimaryAccountIdsEntry',
+      '10': 'primaryAccountIds'
+    },
+  ],
+  '3': [FilterPayableUsersResponse_PrimaryAccountIdsEntry$json],
+};
+
+@$core.Deprecated('Use filterPayableUsersResponseDescriptor instead')
+const FilterPayableUsersResponse_PrimaryAccountIdsEntry$json = {
+  '1': 'PrimaryAccountIdsEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `FilterPayableUsersResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List filterPayableUsersResponseDescriptor = $convert.base64Decode(
+    'ChpGaWx0ZXJQYXlhYmxlVXNlcnNSZXNwb25zZRIoChBwYXlhYmxlX3VzZXJfaWRzGAEgAygJUg'
+    '5wYXlhYmxlVXNlcklkcxJrChNwcmltYXJ5X2FjY291bnRfaWRzGAIgAygLMjsuYWNjb3VudHMu'
+    'RmlsdGVyUGF5YWJsZVVzZXJzUmVzcG9uc2UuUHJpbWFyeUFjY291bnRJZHNFbnRyeVIRcHJpbW'
+    'FyeUFjY291bnRJZHMaRAoWUHJpbWFyeUFjY291bnRJZHNFbnRyeRIQCgNrZXkYASABKAlSA2tl'
+    'eRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgB');
 
 @$core.Deprecated('Use getUserAccountsRequestDescriptor instead')
 const GetUserAccountsRequest$json = {
@@ -941,6 +1015,45 @@ const LockFunds$json = {
     {'1': 'auto_renew', '3': 13, '4': 1, '5': 8, '10': 'autoRenew'},
     {'1': 'config_id', '3': 14, '4': 1, '5': 9, '10': 'configId'},
     {'1': 'interest_rate', '3': 15, '4': 1, '5': 1, '10': 'interestRate'},
+    {
+      '1': 'interest_paid_through',
+      '3': 16,
+      '4': 1,
+      '5': 9,
+      '10': 'interestPaidThrough'
+    },
+    {
+      '1': 'interest_paid_out',
+      '3': 17,
+      '4': 1,
+      '5': 1,
+      '10': 'interestPaidOut'
+    },
+    {'1': 'maturity_action', '3': 18, '4': 1, '5': 9, '10': 'maturityAction'},
+    {
+      '1': 'maturity_settled_at',
+      '3': 19,
+      '4': 1,
+      '5': 9,
+      '10': 'maturitySettledAt'
+    },
+    {
+      '1': 'reinvested_into_id',
+      '3': 20,
+      '4': 1,
+      '5': 9,
+      '10': 'reinvestedIntoId'
+    },
+    {'1': 'maturity_note', '3': 21, '4': 1, '5': 9, '10': 'maturityNote'},
+    {
+      '1': 'approval_decided_at',
+      '3': 22,
+      '4': 1,
+      '5': 9,
+      '10': 'approvalDecidedAt'
+    },
+    {'1': 'approval_note', '3': 23, '4': 1, '5': 9, '10': 'approvalNote'},
+    {'1': 'currency', '3': 24, '4': 1, '5': 9, '10': 'currency'},
   ],
 };
 
@@ -953,7 +1066,14 @@ final $typed_data.Uint8List lockFundsDescriptor = $convert.base64Decode(
     'dF9hbW91bnQYCSABKAFSDHRhcmdldEFtb3VudBIhCgxwZW5hbHR5X3JhdGUYCiABKAFSC3Blbm'
     'FsdHlSYXRlEh0KCmNyZWF0ZWRfYXQYCyABKAlSCWNyZWF0ZWRBdBIdCgptYXR1cmVkX2F0GAwg'
     'ASgJUgltYXR1cmVkQXQSHQoKYXV0b19yZW5ldxgNIAEoCFIJYXV0b1JlbmV3EhsKCWNvbmZpZ1'
-    '9pZBgOIAEoCVIIY29uZmlnSWQSIwoNaW50ZXJlc3RfcmF0ZRgPIAEoAVIMaW50ZXJlc3RSYXRl');
+    '9pZBgOIAEoCVIIY29uZmlnSWQSIwoNaW50ZXJlc3RfcmF0ZRgPIAEoAVIMaW50ZXJlc3RSYXRl'
+    'EjIKFWludGVyZXN0X3BhaWRfdGhyb3VnaBgQIAEoCVITaW50ZXJlc3RQYWlkVGhyb3VnaBIqCh'
+    'FpbnRlcmVzdF9wYWlkX291dBgRIAEoAVIPaW50ZXJlc3RQYWlkT3V0EicKD21hdHVyaXR5X2Fj'
+    'dGlvbhgSIAEoCVIObWF0dXJpdHlBY3Rpb24SLgoTbWF0dXJpdHlfc2V0dGxlZF9hdBgTIAEoCV'
+    'IRbWF0dXJpdHlTZXR0bGVkQXQSLAoScmVpbnZlc3RlZF9pbnRvX2lkGBQgASgJUhByZWludmVz'
+    'dGVkSW50b0lkEiMKDW1hdHVyaXR5X25vdGUYFSABKAlSDG1hdHVyaXR5Tm90ZRIuChNhcHByb3'
+    'ZhbF9kZWNpZGVkX2F0GBYgASgJUhFhcHByb3ZhbERlY2lkZWRBdBIjCg1hcHByb3ZhbF9ub3Rl'
+    'GBcgASgJUgxhcHByb3ZhbE5vdGUSGgoIY3VycmVuY3kYGCABKAlSCGN1cnJlbmN5');
 
 @$core.Deprecated('Use createLockFundsRequestDescriptor instead')
 const CreateLockFundsRequest$json = {
@@ -1658,6 +1778,157 @@ final $typed_data.Uint8List getLockFundsSettlementsResponseDescriptor =
         'Ch9HZXRMb2NrRnVuZHNTZXR0bGVtZW50c1Jlc3BvbnNlEkQKC3NldHRsZW1lbnRzGAEgAygLMi'
         'IuYWNjb3VudHMuTG9ja0Z1bmRzU2V0dGxlbWVudFByb3RvUgtzZXR0bGVtZW50cxIfCgt0b3Rh'
         'bF9jb3VudBgCIAEoBVIKdG90YWxDb3VudA==');
+
+@$core.Deprecated('Use adminApproveLockFundsRequestDescriptor instead')
+const AdminApproveLockFundsRequest$json = {
+  '1': 'AdminApproveLockFundsRequest',
+  '2': [
+    {'1': 'lockfunds_id', '3': 1, '4': 1, '5': 9, '10': 'lockfundsId'},
+    {'1': 'admin_user_id', '3': 2, '4': 1, '5': 9, '10': 'adminUserId'},
+    {'1': 'note', '3': 3, '4': 1, '5': 9, '10': 'note'},
+  ],
+};
+
+/// Descriptor for `AdminApproveLockFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminApproveLockFundsRequestDescriptor =
+    $convert.base64Decode(
+        'ChxBZG1pbkFwcHJvdmVMb2NrRnVuZHNSZXF1ZXN0EiEKDGxvY2tmdW5kc19pZBgBIAEoCVILbG'
+        '9ja2Z1bmRzSWQSIgoNYWRtaW5fdXNlcl9pZBgCIAEoCVILYWRtaW5Vc2VySWQSEgoEbm90ZRgD'
+        'IAEoCVIEbm90ZQ==');
+
+@$core.Deprecated('Use adminApproveLockFundsResponseDescriptor instead')
+const AdminApproveLockFundsResponse$json = {
+  '1': 'AdminApproveLockFundsResponse',
+  '2': [
+    {
+      '1': 'lockfunds',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.LockFunds',
+      '10': 'lockfunds'
+    },
+  ],
+};
+
+/// Descriptor for `AdminApproveLockFundsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminApproveLockFundsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1BZG1pbkFwcHJvdmVMb2NrRnVuZHNSZXNwb25zZRIxCglsb2NrZnVuZHMYASABKAsyEy5hY2'
+        'NvdW50cy5Mb2NrRnVuZHNSCWxvY2tmdW5kcw==');
+
+@$core.Deprecated('Use adminRejectLockFundsRequestDescriptor instead')
+const AdminRejectLockFundsRequest$json = {
+  '1': 'AdminRejectLockFundsRequest',
+  '2': [
+    {'1': 'lockfunds_id', '3': 1, '4': 1, '5': 9, '10': 'lockfundsId'},
+    {'1': 'admin_user_id', '3': 2, '4': 1, '5': 9, '10': 'adminUserId'},
+    {'1': 'note', '3': 3, '4': 1, '5': 9, '10': 'note'},
+  ],
+};
+
+/// Descriptor for `AdminRejectLockFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminRejectLockFundsRequestDescriptor =
+    $convert.base64Decode(
+        'ChtBZG1pblJlamVjdExvY2tGdW5kc1JlcXVlc3QSIQoMbG9ja2Z1bmRzX2lkGAEgASgJUgtsb2'
+        'NrZnVuZHNJZBIiCg1hZG1pbl91c2VyX2lkGAIgASgJUgthZG1pblVzZXJJZBISCgRub3RlGAMg'
+        'ASgJUgRub3Rl');
+
+@$core.Deprecated('Use adminRejectLockFundsResponseDescriptor instead')
+const AdminRejectLockFundsResponse$json = {
+  '1': 'AdminRejectLockFundsResponse',
+  '2': [
+    {
+      '1': 'lockfunds',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.LockFunds',
+      '10': 'lockfunds'
+    },
+    {'1': 'released_amount', '3': 2, '4': 1, '5': 1, '10': 'releasedAmount'},
+  ],
+};
+
+/// Descriptor for `AdminRejectLockFundsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminRejectLockFundsResponseDescriptor =
+    $convert.base64Decode(
+        'ChxBZG1pblJlamVjdExvY2tGdW5kc1Jlc3BvbnNlEjEKCWxvY2tmdW5kcxgBIAEoCzITLmFjY2'
+        '91bnRzLkxvY2tGdW5kc1IJbG9ja2Z1bmRzEicKD3JlbGVhc2VkX2Ftb3VudBgCIAEoAVIOcmVs'
+        'ZWFzZWRBbW91bnQ=');
+
+@$core.Deprecated('Use adminListPendingLockFundsRequestDescriptor instead')
+const AdminListPendingLockFundsRequest$json = {
+  '1': 'AdminListPendingLockFundsRequest',
+  '2': [
+    {'1': 'limit', '3': 1, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'offset', '3': 2, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `AdminListPendingLockFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminListPendingLockFundsRequestDescriptor =
+    $convert.base64Decode(
+        'CiBBZG1pbkxpc3RQZW5kaW5nTG9ja0Z1bmRzUmVxdWVzdBIUCgVsaW1pdBgBIAEoBVIFbGltaX'
+        'QSFgoGb2Zmc2V0GAIgASgFUgZvZmZzZXQ=');
+
+@$core.Deprecated('Use adminListPendingLockFundsResponseDescriptor instead')
+const AdminListPendingLockFundsResponse$json = {
+  '1': 'AdminListPendingLockFundsResponse',
+  '2': [
+    {
+      '1': 'lockfunds',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.accounts.LockFunds',
+      '10': 'lockfunds'
+    },
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `AdminListPendingLockFundsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminListPendingLockFundsResponseDescriptor =
+    $convert.base64Decode(
+        'CiFBZG1pbkxpc3RQZW5kaW5nTG9ja0Z1bmRzUmVzcG9uc2USMQoJbG9ja2Z1bmRzGAEgAygLMh'
+        'MuYWNjb3VudHMuTG9ja0Z1bmRzUglsb2NrZnVuZHMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
+
+@$core.Deprecated('Use setLockFundsMaturityActionRequestDescriptor instead')
+const SetLockFundsMaturityActionRequest$json = {
+  '1': 'SetLockFundsMaturityActionRequest',
+  '2': [
+    {'1': 'lockfunds_id', '3': 1, '4': 1, '5': 9, '10': 'lockfundsId'},
+    {'1': 'maturity_action', '3': 2, '4': 1, '5': 9, '10': 'maturityAction'},
+  ],
+};
+
+/// Descriptor for `SetLockFundsMaturityActionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setLockFundsMaturityActionRequestDescriptor =
+    $convert.base64Decode(
+        'CiFTZXRMb2NrRnVuZHNNYXR1cml0eUFjdGlvblJlcXVlc3QSIQoMbG9ja2Z1bmRzX2lkGAEgAS'
+        'gJUgtsb2NrZnVuZHNJZBInCg9tYXR1cml0eV9hY3Rpb24YAiABKAlSDm1hdHVyaXR5QWN0aW9u');
+
+@$core.Deprecated('Use setLockFundsMaturityActionResponseDescriptor instead')
+const SetLockFundsMaturityActionResponse$json = {
+  '1': 'SetLockFundsMaturityActionResponse',
+  '2': [
+    {
+      '1': 'lockfunds',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.LockFunds',
+      '10': 'lockfunds'
+    },
+  ],
+};
+
+/// Descriptor for `SetLockFundsMaturityActionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setLockFundsMaturityActionResponseDescriptor =
+    $convert.base64Decode(
+        'CiJTZXRMb2NrRnVuZHNNYXR1cml0eUFjdGlvblJlc3BvbnNlEjEKCWxvY2tmdW5kcxgBIAEoCz'
+        'ITLmFjY291bnRzLkxvY2tGdW5kc1IJbG9ja2Z1bmRz');
 
 @$core.Deprecated('Use adminForceMatureLockFundsRequestDescriptor instead')
 const AdminForceMatureLockFundsRequest$json = {
@@ -3337,6 +3608,7 @@ const PeriodTotals$json = {
       '5': 5,
       '10': 'transactionCount'
     },
+    {'1': 'total_savings', '3': 5, '4': 1, '5': 1, '10': 'totalSavings'},
   ],
 };
 
@@ -3344,7 +3616,8 @@ const PeriodTotals$json = {
 final $typed_data.Uint8List periodTotalsDescriptor = $convert.base64Decode(
     'CgxQZXJpb2RUb3RhbHMSIQoMdG90YWxfaW5jb21lGAEgASgBUgt0b3RhbEluY29tZRIlCg50b3'
     'RhbF9leHBlbnNlcxgCIAEoAVINdG90YWxFeHBlbnNlcxIQCgNuZXQYAyABKAFSA25ldBIrChF0'
-    'cmFuc2FjdGlvbl9jb3VudBgEIAEoBVIQdHJhbnNhY3Rpb25Db3VudA==');
+    'cmFuc2FjdGlvbl9jb3VudBgEIAEoBVIQdHJhbnNhY3Rpb25Db3VudBIjCg10b3RhbF9zYXZpbm'
+    'dzGAUgASgBUgx0b3RhbFNhdmluZ3M=');
 
 @$core.Deprecated('Use getFinancialAnalyticsRequestDescriptor instead')
 const GetFinancialAnalyticsRequest$json = {
@@ -5027,6 +5300,151 @@ final $typed_data.Uint8List
         'Rpb25zGAEgAygLMhouYWNjb3VudHMuQWRtaW5UcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEhQK'
         'BXRvdGFsGAIgASgDUgV0b3RhbA==');
 
+@$core.Deprecated(
+    'Use adminTransferBetweenPlatformWalletsRequestDescriptor instead')
+const AdminTransferBetweenPlatformWalletsRequest$json = {
+  '1': 'AdminTransferBetweenPlatformWalletsRequest',
+  '2': [
+    {'1': 'from_wallet_code', '3': 1, '4': 1, '5': 9, '10': 'fromWalletCode'},
+    {'1': 'to_wallet_code', '3': 2, '4': 1, '5': 9, '10': 'toWalletCode'},
+    {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
+    {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'category', '3': 5, '4': 1, '5': 9, '10': 'category'},
+    {'1': 'description', '3': 6, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'metadata', '3': 7, '4': 1, '5': 9, '10': 'metadata'},
+    {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
+  ],
+};
+
+/// Descriptor for `AdminTransferBetweenPlatformWalletsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List
+    adminTransferBetweenPlatformWalletsRequestDescriptor =
+    $convert.base64Decode(
+        'CipBZG1pblRyYW5zZmVyQmV0d2VlblBsYXRmb3JtV2FsbGV0c1JlcXVlc3QSKAoQZnJvbV93YW'
+        'xsZXRfY29kZRgBIAEoCVIOZnJvbVdhbGxldENvZGUSJAoOdG9fd2FsbGV0X2NvZGUYAiABKAlS'
+        'DHRvV2FsbGV0Q29kZRIWCgZhbW91bnQYAyABKANSBmFtb3VudBIaCghjdXJyZW5jeRgEIAEoCV'
+        'IIY3VycmVuY3kSGgoIY2F0ZWdvcnkYBSABKAlSCGNhdGVnb3J5EiAKC2Rlc2NyaXB0aW9uGAYg'
+        'ASgJUgtkZXNjcmlwdGlvbhIaCghtZXRhZGF0YRgHIAEoCVIIbWV0YWRhdGESJwoPaWRlbXBvdG'
+        'VuY3lfa2V5GAggASgJUg5pZGVtcG90ZW5jeUtleQ==');
+
+@$core.Deprecated(
+    'Use adminPostPlatformWalletCorrectionRequestDescriptor instead')
+const AdminPostPlatformWalletCorrectionRequest$json = {
+  '1': 'AdminPostPlatformWalletCorrectionRequest',
+  '2': [
+    {'1': 'wallet_code', '3': 1, '4': 1, '5': 9, '10': 'walletCode'},
+    {'1': 'currency', '3': 2, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'direction', '3': 3, '4': 1, '5': 9, '10': 'direction'},
+    {'1': 'amount', '3': 4, '4': 1, '5': 3, '10': 'amount'},
+    {'1': 'reason', '3': 5, '4': 1, '5': 9, '10': 'reason'},
+    {
+      '1': 'corrects_reference',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '10': 'correctsReference'
+    },
+    {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'correction_type', '3': 8, '4': 1, '5': 9, '10': 'correctionType'},
+  ],
+};
+
+/// Descriptor for `AdminPostPlatformWalletCorrectionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminPostPlatformWalletCorrectionRequestDescriptor =
+    $convert.base64Decode(
+        'CihBZG1pblBvc3RQbGF0Zm9ybVdhbGxldENvcnJlY3Rpb25SZXF1ZXN0Eh8KC3dhbGxldF9jb2'
+        'RlGAEgASgJUgp3YWxsZXRDb2RlEhoKCGN1cnJlbmN5GAIgASgJUghjdXJyZW5jeRIcCglkaXJl'
+        'Y3Rpb24YAyABKAlSCWRpcmVjdGlvbhIWCgZhbW91bnQYBCABKANSBmFtb3VudBIWCgZyZWFzb2'
+        '4YBSABKAlSBnJlYXNvbhItChJjb3JyZWN0c19yZWZlcmVuY2UYBiABKAlSEWNvcnJlY3RzUmVm'
+        'ZXJlbmNlEicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVuY3lLZXkSJwoPY29ycm'
+        'VjdGlvbl90eXBlGAggASgJUg5jb3JyZWN0aW9uVHlwZQ==');
+
+@$core.Deprecated(
+    'Use adminPostPlatformWalletCorrectionResponseDescriptor instead')
+const AdminPostPlatformWalletCorrectionResponse$json = {
+  '1': 'AdminPostPlatformWalletCorrectionResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
+    {'1': 'new_balance', '3': 5, '4': 1, '5': 3, '10': 'newBalance'},
+    {
+      '1': 'idempotent_replay',
+      '3': 6,
+      '4': 1,
+      '5': 8,
+      '10': 'idempotentReplay'
+    },
+  ],
+};
+
+/// Descriptor for `AdminPostPlatformWalletCorrectionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List
+    adminPostPlatformWalletCorrectionResponseDescriptor = $convert.base64Decode(
+        'CilBZG1pblBvc3RQbGF0Zm9ybVdhbGxldENvcnJlY3Rpb25SZXNwb25zZRIYCgdzdWNjZXNzGA'
+        'EgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9t'
+        'ZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USJQoOdHJhbnNhY3Rpb25faWQYBCABKAlSDXRyYW'
+        '5zYWN0aW9uSWQSHwoLbmV3X2JhbGFuY2UYBSABKANSCm5ld0JhbGFuY2USKwoRaWRlbXBvdGVu'
+        'dF9yZXBsYXkYBiABKAhSEGlkZW1wb3RlbnRSZXBsYXk=');
+
+@$core.Deprecated(
+    'Use adminTransferBetweenPlatformWalletsResponseDescriptor instead')
+const AdminTransferBetweenPlatformWalletsResponse$json = {
+  '1': 'AdminTransferBetweenPlatformWalletsResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    {
+      '1': 'source_transaction_id',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '10': 'sourceTransactionId'
+    },
+    {
+      '1': 'destination_transaction_id',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '10': 'destinationTransactionId'
+    },
+    {
+      '1': 'source_new_balance',
+      '3': 6,
+      '4': 1,
+      '5': 3,
+      '10': 'sourceNewBalance'
+    },
+    {
+      '1': 'destination_new_balance',
+      '3': 7,
+      '4': 1,
+      '5': 3,
+      '10': 'destinationNewBalance'
+    },
+    {
+      '1': 'idempotent_replay',
+      '3': 8,
+      '4': 1,
+      '5': 8,
+      '10': 'idempotentReplay'
+    },
+  ],
+};
+
+/// Descriptor for `AdminTransferBetweenPlatformWalletsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminTransferBetweenPlatformWalletsResponseDescriptor = $convert.base64Decode(
+    'CitBZG1pblRyYW5zZmVyQmV0d2VlblBsYXRmb3JtV2FsbGV0c1Jlc3BvbnNlEhgKB3N1Y2Nlc3'
+    'MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9y'
+    'X21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIyChVzb3VyY2VfdHJhbnNhY3Rpb25faWQYBC'
+    'ABKAlSE3NvdXJjZVRyYW5zYWN0aW9uSWQSPAoaZGVzdGluYXRpb25fdHJhbnNhY3Rpb25faWQY'
+    'BSABKAlSGGRlc3RpbmF0aW9uVHJhbnNhY3Rpb25JZBIsChJzb3VyY2VfbmV3X2JhbGFuY2UYBi'
+    'ABKANSEHNvdXJjZU5ld0JhbGFuY2USNgoXZGVzdGluYXRpb25fbmV3X2JhbGFuY2UYByABKANS'
+    'FWRlc3RpbmF0aW9uTmV3QmFsYW5jZRIrChFpZGVtcG90ZW50X3JlcGxheRgIIAEoCFIQaWRlbX'
+    'BvdGVudFJlcGxheQ==');
+
 @$core.Deprecated('Use adminListWalletReconciliationsRequestDescriptor instead')
 const AdminListWalletReconciliationsRequest$json = {
   '1': 'AdminListWalletReconciliationsRequest',
@@ -5961,6 +6379,23 @@ const GetForeignVirtualAccountStatusResponse$json = {
       '10': 'routingDetailsJson'
     },
     {'1': 'message', '3': 9, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'supported_currencies',
+      '3': 10,
+      '4': 3,
+      '5': 9,
+      '10': 'supportedCurrencies'
+    },
+    {'1': 'provider', '3': 11, '4': 1, '5': 9, '10': 'provider'},
+    {
+      '1': 'activatable_currencies',
+      '3': 12,
+      '4': 3,
+      '5': 9,
+      '10': 'activatableCurrencies'
+    },
+    {'1': 'gated_currencies', '3': 13, '4': 3, '5': 9, '10': 'gatedCurrencies'},
+    {'1': 'currency_gated', '3': 14, '4': 1, '5': 8, '10': 'currencyGated'},
   ],
 };
 
@@ -5971,4 +6406,229 @@ final $typed_data.Uint8List getForeignVirtualAccountStatusResponseDescriptor = $
     'KAlSCGN1cnJlbmN5EiUKDmFjY291bnRfbnVtYmVyGAQgASgJUg1hY2NvdW50TnVtYmVyEhsKCW'
     'JhbmtfbmFtZRgFIAEoCVIIYmFua05hbWUSGwoJYmFua19jb2RlGAYgASgJUghiYW5rQ29kZRIh'
     'CgxhY2NvdW50X25hbWUYByABKAlSC2FjY291bnROYW1lEjAKFHJvdXRpbmdfZGV0YWlsc19qc2'
-    '9uGAggASgJUhJyb3V0aW5nRGV0YWlsc0pzb24SGAoHbWVzc2FnZRgJIAEoCVIHbWVzc2FnZQ==');
+    '9uGAggASgJUhJyb3V0aW5nRGV0YWlsc0pzb24SGAoHbWVzc2FnZRgJIAEoCVIHbWVzc2FnZRIx'
+    'ChRzdXBwb3J0ZWRfY3VycmVuY2llcxgKIAMoCVITc3VwcG9ydGVkQ3VycmVuY2llcxIaCghwcm'
+    '92aWRlchgLIAEoCVIIcHJvdmlkZXISNQoWYWN0aXZhdGFibGVfY3VycmVuY2llcxgMIAMoCVIV'
+    'YWN0aXZhdGFibGVDdXJyZW5jaWVzEikKEGdhdGVkX2N1cnJlbmNpZXMYDSADKAlSD2dhdGVkQ3'
+    'VycmVuY2llcxIlCg5jdXJyZW5jeV9nYXRlZBgOIAEoCFINY3VycmVuY3lHYXRlZA==');
+
+@$core.Deprecated('Use promoteForeignVirtualAccountRequestDescriptor instead')
+const PromoteForeignVirtualAccountRequest$json = {
+  '1': 'PromoteForeignVirtualAccountRequest',
+  '2': [
+    {'1': 'provider_ref', '3': 1, '4': 1, '5': 9, '10': 'providerRef'},
+    {'1': 'provider', '3': 2, '4': 1, '5': 9, '10': 'provider'},
+    {'1': 'service_name', '3': 3, '4': 1, '5': 9, '10': 'serviceName'},
+  ],
+};
+
+/// Descriptor for `PromoteForeignVirtualAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List promoteForeignVirtualAccountRequestDescriptor =
+    $convert.base64Decode(
+        'CiNQcm9tb3RlRm9yZWlnblZpcnR1YWxBY2NvdW50UmVxdWVzdBIhCgxwcm92aWRlcl9yZWYYAS'
+        'ABKAlSC3Byb3ZpZGVyUmVmEhoKCHByb3ZpZGVyGAIgASgJUghwcm92aWRlchIhCgxzZXJ2aWNl'
+        'X25hbWUYAyABKAlSC3NlcnZpY2VOYW1l');
+
+@$core.Deprecated('Use fCYPrefillFieldDescriptor instead')
+const FCYPrefillField$json = {
+  '1': 'FCYPrefillField',
+  '2': [
+    {'1': 'value', '3': 1, '4': 1, '5': 9, '10': 'value'},
+    {'1': 'prefilled', '3': 2, '4': 1, '5': 8, '10': 'prefilled'},
+  ],
+};
+
+/// Descriptor for `FCYPrefillField`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List fCYPrefillFieldDescriptor = $convert.base64Decode(
+    'Cg9GQ1lQcmVmaWxsRmllbGQSFAoFdmFsdWUYASABKAlSBXZhbHVlEhwKCXByZWZpbGxlZBgCIA'
+    'EoCFIJcHJlZmlsbGVk');
+
+@$core
+    .Deprecated('Use getForeignVirtualAccountPrefillRequestDescriptor instead')
+const GetForeignVirtualAccountPrefillRequest$json = {
+  '1': 'GetForeignVirtualAccountPrefillRequest',
+  '2': [
+    {'1': 'currency', '3': 1, '4': 1, '5': 9, '10': 'currency'},
+  ],
+};
+
+/// Descriptor for `GetForeignVirtualAccountPrefillRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getForeignVirtualAccountPrefillRequestDescriptor =
+    $convert.base64Decode(
+        'CiZHZXRGb3JlaWduVmlydHVhbEFjY291bnRQcmVmaWxsUmVxdWVzdBIaCghjdXJyZW5jeRgBIA'
+        'EoCVIIY3VycmVuY3k=');
+
+@$core
+    .Deprecated('Use getForeignVirtualAccountPrefillResponseDescriptor instead')
+const GetForeignVirtualAccountPrefillResponse$json = {
+  '1': 'GetForeignVirtualAccountPrefillResponse',
+  '2': [
+    {
+      '1': 'first_name',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'firstName'
+    },
+    {
+      '1': 'last_name',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'lastName'
+    },
+    {
+      '1': 'middle_name',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'middleName'
+    },
+    {
+      '1': 'email',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'email'
+    },
+    {
+      '1': 'phone',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'phone'
+    },
+    {
+      '1': 'birth_date',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'birthDate'
+    },
+    {
+      '1': 'nationality',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'nationality'
+    },
+    {
+      '1': 'country_of_residence',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'countryOfResidence'
+    },
+    {
+      '1': 'address_street',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'addressStreet'
+    },
+    {
+      '1': 'address_city',
+      '3': 10,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'addressCity'
+    },
+    {
+      '1': 'address_state',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'addressState'
+    },
+    {
+      '1': 'address_zip',
+      '3': 12,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'addressZip'
+    },
+    {
+      '1': 'document_type',
+      '3': 13,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'documentType'
+    },
+    {
+      '1': 'document_number',
+      '3': 14,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'documentNumber'
+    },
+    {
+      '1': 'document_issued_country',
+      '3': 15,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.FCYPrefillField',
+      '10': 'documentIssuedCountry'
+    },
+    {
+      '1': 'identity_verified',
+      '3': 16,
+      '4': 1,
+      '5': 8,
+      '10': 'identityVerified'
+    },
+  ],
+};
+
+/// Descriptor for `GetForeignVirtualAccountPrefillResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getForeignVirtualAccountPrefillResponseDescriptor = $convert.base64Decode(
+    'CidHZXRGb3JlaWduVmlydHVhbEFjY291bnRQcmVmaWxsUmVzcG9uc2USOAoKZmlyc3RfbmFtZR'
+    'gBIAEoCzIZLmFjY291bnRzLkZDWVByZWZpbGxGaWVsZFIJZmlyc3ROYW1lEjYKCWxhc3RfbmFt'
+    'ZRgCIAEoCzIZLmFjY291bnRzLkZDWVByZWZpbGxGaWVsZFIIbGFzdE5hbWUSOgoLbWlkZGxlX2'
+    '5hbWUYAyABKAsyGS5hY2NvdW50cy5GQ1lQcmVmaWxsRmllbGRSCm1pZGRsZU5hbWUSLwoFZW1h'
+    'aWwYBCABKAsyGS5hY2NvdW50cy5GQ1lQcmVmaWxsRmllbGRSBWVtYWlsEi8KBXBob25lGAUgAS'
+    'gLMhkuYWNjb3VudHMuRkNZUHJlZmlsbEZpZWxkUgVwaG9uZRI4CgpiaXJ0aF9kYXRlGAYgASgL'
+    'MhkuYWNjb3VudHMuRkNZUHJlZmlsbEZpZWxkUgliaXJ0aERhdGUSOwoLbmF0aW9uYWxpdHkYBy'
+    'ABKAsyGS5hY2NvdW50cy5GQ1lQcmVmaWxsRmllbGRSC25hdGlvbmFsaXR5EksKFGNvdW50cnlf'
+    'b2ZfcmVzaWRlbmNlGAggASgLMhkuYWNjb3VudHMuRkNZUHJlZmlsbEZpZWxkUhJjb3VudHJ5T2'
+    'ZSZXNpZGVuY2USQAoOYWRkcmVzc19zdHJlZXQYCSABKAsyGS5hY2NvdW50cy5GQ1lQcmVmaWxs'
+    'RmllbGRSDWFkZHJlc3NTdHJlZXQSPAoMYWRkcmVzc19jaXR5GAogASgLMhkuYWNjb3VudHMuRk'
+    'NZUHJlZmlsbEZpZWxkUgthZGRyZXNzQ2l0eRI+Cg1hZGRyZXNzX3N0YXRlGAsgASgLMhkuYWNj'
+    'b3VudHMuRkNZUHJlZmlsbEZpZWxkUgxhZGRyZXNzU3RhdGUSOgoLYWRkcmVzc196aXAYDCABKA'
+    'syGS5hY2NvdW50cy5GQ1lQcmVmaWxsRmllbGRSCmFkZHJlc3NaaXASPgoNZG9jdW1lbnRfdHlw'
+    'ZRgNIAEoCzIZLmFjY291bnRzLkZDWVByZWZpbGxGaWVsZFIMZG9jdW1lbnRUeXBlEkIKD2RvY3'
+    'VtZW50X251bWJlchgOIAEoCzIZLmFjY291bnRzLkZDWVByZWZpbGxGaWVsZFIOZG9jdW1lbnRO'
+    'dW1iZXISUQoXZG9jdW1lbnRfaXNzdWVkX2NvdW50cnkYDyABKAsyGS5hY2NvdW50cy5GQ1lQcm'
+    'VmaWxsRmllbGRSFWRvY3VtZW50SXNzdWVkQ291bnRyeRIrChFpZGVudGl0eV92ZXJpZmllZBgQ'
+    'IAEoCFIQaWRlbnRpdHlWZXJpZmllZA==');
+
+@$core.Deprecated('Use promoteForeignVirtualAccountResponseDescriptor instead')
+const PromoteForeignVirtualAccountResponse$json = {
+  '1': 'PromoteForeignVirtualAccountResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'outcome', '3': 2, '4': 1, '5': 9, '10': 'outcome'},
+    {'1': 'account_id', '3': 3, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `PromoteForeignVirtualAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List promoteForeignVirtualAccountResponseDescriptor =
+    $convert.base64Decode(
+        'CiRQcm9tb3RlRm9yZWlnblZpcnR1YWxBY2NvdW50UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCF'
+        'IHc3VjY2VzcxIYCgdvdXRjb21lGAIgASgJUgdvdXRjb21lEh0KCmFjY291bnRfaWQYAyABKAlS'
+        'CWFjY291bnRJZBIYCgdtZXNzYWdlGAQgASgJUgdtZXNzYWdl');

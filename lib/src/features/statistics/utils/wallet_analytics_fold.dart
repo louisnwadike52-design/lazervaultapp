@@ -47,15 +47,25 @@ class WalletAnalyticsFold {
     for (final p in parts) {
       d.currentPeriod.totalIncome += p.currentPeriod.totalIncome;
       d.currentPeriod.totalExpenses += p.currentPeriod.totalExpenses;
+      // Savings is summed like any other total. Dropping it here would make
+      // the multi-wallet view disagree with every single-wallet one, and
+      // silently re-merge saving into "unaccounted for".
+      d.currentPeriod.totalSavings += p.currentPeriod.totalSavings;
       d.currentPeriod.transactionCount += p.currentPeriod.transactionCount;
       d.previousPeriod.totalIncome += p.previousPeriod.totalIncome;
       d.previousPeriod.totalExpenses += p.previousPeriod.totalExpenses;
+      d.previousPeriod.totalSavings += p.previousPeriod.totalSavings;
       d.previousPeriod.transactionCount += p.previousPeriod.transactionCount;
     }
-    d.currentPeriod.net =
-        d.currentPeriod.totalIncome - d.currentPeriod.totalExpenses;
-    d.previousPeriod.net =
-        d.previousPeriod.totalIncome - d.previousPeriod.totalExpenses;
+    // income - spending - savings, matching what accounts-service computes
+    // per wallet. Leaving savings out would overstate what the user has free
+    // by exactly the amount they put away.
+    d.currentPeriod.net = d.currentPeriod.totalIncome -
+        d.currentPeriod.totalExpenses -
+        d.currentPeriod.totalSavings;
+    d.previousPeriod.net = d.previousPeriod.totalIncome -
+        d.previousPeriod.totalExpenses -
+        d.previousPeriod.totalSavings;
     d.incomeChangePercent = changePercent(
         d.currentPeriod.totalIncome, d.previousPeriod.totalIncome);
     d.expenseChangePercent = changePercent(

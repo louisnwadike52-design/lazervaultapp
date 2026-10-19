@@ -420,7 +420,18 @@ class Account extends $pb.GeneratedMessage {
   @$pb.TagNumber(29)
   void clearAllowInternationalTransfers() => $_clearField(29);
 
-  /// Holder name from the rail currently issuing this account's number.
+  /// Holder name as the CURRENTLY ACTIVE rail issued it — "LAZERVAULT/Praiz Onah"
+  /// on Nomba, "Praiz Onah FLW" on Flutterwave.
+  ///
+  /// Separate from account_name because account_name is the USER'S label for the
+  /// wallet ("Smith Family", "Investment"), which must survive a provider switch
+  /// untouched. The two were conflated, so a re-mint onto Nomba left the card
+  /// showing a Nomba number and Nombank as the bank while still labelled with
+  /// Flutterwave's name for the holder.
+  ///
+  /// Sourced from account_virtual_accounts for the account's active provider,
+  /// which already records the right name per rail — so this follows a switch
+  /// automatically and never needs backfilling.
   @$pb.TagNumber(30)
   $core.String get virtualAccountHolderName => $_getSZ(29);
   @$pb.TagNumber(30)
@@ -680,6 +691,10 @@ class AccountSummary extends $pb.GeneratedMessage {
   @$pb.TagNumber(15)
   void clearBankCode() => $_clearField(15);
 
+  /// Holder name as the CURRENTLY ACTIVE rail issued it. Distinct from
+  /// account_name above, which is the user's own label for the wallet and must
+  /// survive a provider switch untouched — conflating the two is what left a
+  /// Nomba number under a Nombank heading still labelled "Praiz Onah FLW".
   @$pb.TagNumber(16)
   $core.String get virtualAccountHolderName => $_getSZ(15);
   @$pb.TagNumber(16)
@@ -692,6 +707,183 @@ class AccountSummary extends $pb.GeneratedMessage {
 
 /// ===== Get User Accounts Summary (for dashboard carousel) =====
 /// NOTE: user_id extracted from JWT token, not from request
+/// FilterPayableUsers: which of these users can be sent money?
+///
+/// Exists because the user directory and the accounts ledger are different
+/// services: auth-service can find a person, but only accounts-service knows
+/// whether they ever finished onboarding and got a wallet. Recipient pickers
+/// listed everyone, so a user who never completed KYC appeared as a valid
+/// destination and the transfer could only fail after the sender had typed an
+/// amount and their PIN.
+class FilterPayableUsersRequest extends $pb.GeneratedMessage {
+  factory FilterPayableUsersRequest({
+    $core.Iterable<$core.String>? userIds,
+    $core.String? currency,
+    $core.String? preferredCurrency,
+  }) {
+    final result = create();
+    if (userIds != null) result.userIds.addAll(userIds);
+    if (currency != null) result.currency = currency;
+    if (preferredCurrency != null) result.preferredCurrency = preferredCurrency;
+    return result;
+  }
+
+  FilterPayableUsersRequest._();
+
+  factory FilterPayableUsersRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FilterPayableUsersRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FilterPayableUsersRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..pPS(1, _omitFieldNames ? '' : 'userIds')
+    ..aOS(2, _omitFieldNames ? '' : 'currency')
+    ..aOS(3, _omitFieldNames ? '' : 'preferredCurrency')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FilterPayableUsersRequest clone() =>
+      FilterPayableUsersRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FilterPayableUsersRequest copyWith(
+          void Function(FilterPayableUsersRequest) updates) =>
+      super.copyWith((message) => updates(message as FilterPayableUsersRequest))
+          as FilterPayableUsersRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FilterPayableUsersRequest create() => FilterPayableUsersRequest._();
+  @$core.override
+  FilterPayableUsersRequest createEmptyInstance() => create();
+  static $pb.PbList<FilterPayableUsersRequest> createRepeated() =>
+      $pb.PbList<FilterPayableUsersRequest>();
+  @$core.pragma('dart2js:noInline')
+  static FilterPayableUsersRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FilterPayableUsersRequest>(create);
+  static FilterPayableUsersRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<$core.String> get userIds => $_getList(0);
+
+  /// Optional. When set, the user must hold an ACTIVE PERSONAL account in this
+  /// currency specifically — sending NGN to someone who only holds USD is just
+  /// as dead an end as sending to someone with no wallet at all.
+  @$pb.TagNumber(2)
+  $core.String get currency => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set currency($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCurrency() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCurrency() => $_clearField(2);
+
+  /// Optional, and deliberately NOT a filter: it only decides WHICH account is
+  /// named in primary_account_ids when a user holds several.
+  ///
+  /// The distinction matters. Recipient search has no amount or source wallet
+  /// yet, so filtering by currency there would hide people who are perfectly
+  /// payable — but naming a GBP wallet as the destination for a caller who
+  /// sends NGN is its own wrong answer. This lets the caller express a
+  /// preference without narrowing who is offered.
+  @$pb.TagNumber(3)
+  $core.String get preferredCurrency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set preferredCurrency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPreferredCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPreferredCurrency() => $_clearField(3);
+}
+
+class FilterPayableUsersResponse extends $pb.GeneratedMessage {
+  factory FilterPayableUsersResponse({
+    $core.Iterable<$core.String>? payableUserIds,
+    $core.Iterable<$core.MapEntry<$core.String, $core.String>>?
+        primaryAccountIds,
+  }) {
+    final result = create();
+    if (payableUserIds != null) result.payableUserIds.addAll(payableUserIds);
+    if (primaryAccountIds != null)
+      result.primaryAccountIds.addEntries(primaryAccountIds);
+    return result;
+  }
+
+  FilterPayableUsersResponse._();
+
+  factory FilterPayableUsersResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FilterPayableUsersResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FilterPayableUsersResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..pPS(1, _omitFieldNames ? '' : 'payableUserIds')
+    ..m<$core.String, $core.String>(
+        2, _omitFieldNames ? '' : 'primaryAccountIds',
+        entryClassName: 'FilterPayableUsersResponse.PrimaryAccountIdsEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('accounts'))
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FilterPayableUsersResponse clone() =>
+      FilterPayableUsersResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FilterPayableUsersResponse copyWith(
+          void Function(FilterPayableUsersResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as FilterPayableUsersResponse))
+          as FilterPayableUsersResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FilterPayableUsersResponse create() => FilterPayableUsersResponse._();
+  @$core.override
+  FilterPayableUsersResponse createEmptyInstance() => create();
+  static $pb.PbList<FilterPayableUsersResponse> createRepeated() =>
+      $pb.PbList<FilterPayableUsersResponse>();
+  @$core.pragma('dart2js:noInline')
+  static FilterPayableUsersResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FilterPayableUsersResponse>(create);
+  static FilterPayableUsersResponse? _defaultInstance;
+
+  /// Only the ids that can receive. Absence is the answer for everyone else;
+  /// returning a reason per user would leak who has and has not onboarded.
+  @$pb.TagNumber(1)
+  $pb.PbList<$core.String> get payableUserIds => $_getList(0);
+
+  /// The ACCOUNT each payable user should be paid into, keyed by user id.
+  ///
+  /// This exists because nobody else could answer it. auth-service's user
+  /// search returns primary_account_id as "" with the comment "Populated by
+  /// calling service via accounts-service lookup" — and no calling service ever
+  /// did, so every directory hit in every surface carried an empty account id.
+  /// The chat and voice agents then fell back to sending the USER id as the
+  /// destination, which is how "send to praiz" resolved the right person and
+  /// still could not be paid.
+  ///
+  /// Returned here rather than from a new RPC because this call already finds
+  /// the account in order to decide payability: the id was in hand and thrown
+  /// away, and a separate lookup would be an N+1 on the busiest search in the
+  /// app.
+  @$pb.TagNumber(2)
+  $pb.PbMap<$core.String, $core.String> get primaryAccountIds => $_getMap(1);
+}
+
 class GetUserAccountsRequest extends $pb.GeneratedMessage {
   factory GetUserAccountsRequest({
     $core.String? targetUserId,
@@ -4053,6 +4245,15 @@ class LockFunds extends $pb.GeneratedMessage {
     $core.bool? autoRenew,
     $core.String? configId,
     $core.double? interestRate,
+    $core.String? interestPaidThrough,
+    $core.double? interestPaidOut,
+    $core.String? maturityAction,
+    $core.String? maturitySettledAt,
+    $core.String? reinvestedIntoId,
+    $core.String? maturityNote,
+    $core.String? approvalDecidedAt,
+    $core.String? approvalNote,
+    $core.String? currency,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -4070,6 +4271,16 @@ class LockFunds extends $pb.GeneratedMessage {
     if (autoRenew != null) result.autoRenew = autoRenew;
     if (configId != null) result.configId = configId;
     if (interestRate != null) result.interestRate = interestRate;
+    if (interestPaidThrough != null)
+      result.interestPaidThrough = interestPaidThrough;
+    if (interestPaidOut != null) result.interestPaidOut = interestPaidOut;
+    if (maturityAction != null) result.maturityAction = maturityAction;
+    if (maturitySettledAt != null) result.maturitySettledAt = maturitySettledAt;
+    if (reinvestedIntoId != null) result.reinvestedIntoId = reinvestedIntoId;
+    if (maturityNote != null) result.maturityNote = maturityNote;
+    if (approvalDecidedAt != null) result.approvalDecidedAt = approvalDecidedAt;
+    if (approvalNote != null) result.approvalNote = approvalNote;
+    if (currency != null) result.currency = currency;
     return result;
   }
 
@@ -4104,6 +4315,16 @@ class LockFunds extends $pb.GeneratedMessage {
     ..aOS(14, _omitFieldNames ? '' : 'configId')
     ..a<$core.double>(
         15, _omitFieldNames ? '' : 'interestRate', $pb.PbFieldType.OD)
+    ..aOS(16, _omitFieldNames ? '' : 'interestPaidThrough')
+    ..a<$core.double>(
+        17, _omitFieldNames ? '' : 'interestPaidOut', $pb.PbFieldType.OD)
+    ..aOS(18, _omitFieldNames ? '' : 'maturityAction')
+    ..aOS(19, _omitFieldNames ? '' : 'maturitySettledAt')
+    ..aOS(20, _omitFieldNames ? '' : 'reinvestedIntoId')
+    ..aOS(21, _omitFieldNames ? '' : 'maturityNote')
+    ..aOS(22, _omitFieldNames ? '' : 'approvalDecidedAt')
+    ..aOS(23, _omitFieldNames ? '' : 'approvalNote')
+    ..aOS(24, _omitFieldNames ? '' : 'currency')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4269,6 +4490,114 @@ class LockFunds extends $pb.GeneratedMessage {
   $core.bool hasInterestRate() => $_has(14);
   @$pb.TagNumber(15)
   void clearInterestRate() => $_clearField(15);
+
+  /// RFC3339 watermark: interest up to this instant has already been PAID
+  /// OUT to the user (an ROI-only withdrawal advances it). Accrual for the
+  /// next payout is measured from GREATEST(created_at, this) — so anything
+  /// that projects a lock's value must start here too, or it re-counts ROI
+  /// the user has already been paid. Empty means nothing has been paid yet.
+  @$pb.TagNumber(16)
+  $core.String get interestPaidThrough => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set interestPaidThrough($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasInterestPaidThrough() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearInterestPaidThrough() => $_clearField(16);
+
+  /// Lifetime interest actually PAID OUT on this lock, in major units. Sum
+  /// of the completed interest settlement legs. Display-only: it is history,
+  /// not part of the lock's current value.
+  @$pb.TagNumber(17)
+  $core.double get interestPaidOut => $_getN(16);
+  @$pb.TagNumber(17)
+  set interestPaidOut($core.double value) => $_setDouble(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasInterestPaidOut() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearInterestPaidOut() => $_clearField(17);
+
+  /// What happens when the term ends: "payout" (default), "reinvest_all",
+  /// "reinvest_principal", "reinvest_interest". EMPTY means the user never
+  /// chose and the server falls back to auto_renew — so a client must not
+  /// render empty as "payout", it is genuinely "not decided".
+  @$pb.TagNumber(18)
+  $core.String get maturityAction => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set maturityAction($core.String value) => $_setString(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasMaturityAction() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearMaturityAction() => $_clearField(18);
+
+  /// RFC3339. When the maturity settlement actually ran — distinct from
+  /// matured_at, which is only the status flip. Empty on a plan that has
+  /// matured but not yet been paid.
+  @$pb.TagNumber(19)
+  $core.String get maturitySettledAt => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set maturitySettledAt($core.String value) => $_setString(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasMaturitySettledAt() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearMaturitySettledAt() => $_clearField(19);
+
+  /// The plan this one rolled into, when the user chose a reinvestment.
+  @$pb.TagNumber(20)
+  $core.String get reinvestedIntoId => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set reinvestedIntoId($core.String value) => $_setString(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasReinvestedIntoId() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearReinvestedIntoId() => $_clearField(20);
+
+  /// Why a reinvestment did not happen. Reinvesting INTEREST ALONE routinely
+  /// lands under a plan's minimum, and in that case the money was paid out
+  /// instead — which is safe but not what the user asked for, so the app has
+  /// to be able to say why.
+  @$pb.TagNumber(21)
+  $core.String get maturityNote => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set maturityNote($core.String value) => $_setString(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasMaturityNote() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearMaturityNote() => $_clearField(21);
+
+  /// Approval decision on a plan that was created `pending_approval`.
+  /// Empty until a decision is made.
+  @$pb.TagNumber(22)
+  $core.String get approvalDecidedAt => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set approvalDecidedAt($core.String value) => $_setString(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasApprovalDecidedAt() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearApprovalDecidedAt() => $_clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get approvalNote => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set approvalNote($core.String value) => $_setString(22, value);
+  @$pb.TagNumber(23)
+  $core.bool hasApprovalNote() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearApprovalNote() => $_clearField(23);
+
+  /// The plan's currency, resolved from its account.
+  ///
+  /// Carried because an approval queue that cannot tell 500,000 NGN from
+  /// 500,000 USD is worse than no queue: the operator is deciding whether to
+  /// commit that money to a real asset, and the figure is the decision.
+  @$pb.TagNumber(24)
+  $core.String get currency => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set currency($core.String value) => $_setString(23, value);
+  @$pb.TagNumber(24)
+  $core.bool hasCurrency() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearCurrency() => $_clearField(24);
 }
 
 /// NOTE: user_id extracted from JWT token, not from request
@@ -6870,6 +7199,602 @@ class GetLockFundsSettlementsResponse extends $pb.GeneratedMessage {
 /// required — typed strings preferred ("regulatory_close",
 /// "kyc_revoked", "plan_discontinued") but free-form accepted so
 /// novel ops cases aren't blocked.
+class AdminApproveLockFundsRequest extends $pb.GeneratedMessage {
+  factory AdminApproveLockFundsRequest({
+    $core.String? lockfundsId,
+    $core.String? adminUserId,
+    $core.String? note,
+  }) {
+    final result = create();
+    if (lockfundsId != null) result.lockfundsId = lockfundsId;
+    if (adminUserId != null) result.adminUserId = adminUserId;
+    if (note != null) result.note = note;
+    return result;
+  }
+
+  AdminApproveLockFundsRequest._();
+
+  factory AdminApproveLockFundsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminApproveLockFundsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminApproveLockFundsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'lockfundsId')
+    ..aOS(2, _omitFieldNames ? '' : 'adminUserId')
+    ..aOS(3, _omitFieldNames ? '' : 'note')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminApproveLockFundsRequest clone() =>
+      AdminApproveLockFundsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminApproveLockFundsRequest copyWith(
+          void Function(AdminApproveLockFundsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminApproveLockFundsRequest))
+          as AdminApproveLockFundsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminApproveLockFundsRequest create() =>
+      AdminApproveLockFundsRequest._();
+  @$core.override
+  AdminApproveLockFundsRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminApproveLockFundsRequest> createRepeated() =>
+      $pb.PbList<AdminApproveLockFundsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminApproveLockFundsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminApproveLockFundsRequest>(create);
+  static AdminApproveLockFundsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get lockfundsId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set lockfundsId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLockfundsId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLockfundsId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get adminUserId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set adminUserId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAdminUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAdminUserId() => $_clearField(2);
+
+  /// Optional, kept on the plan so support can answer "why was mine approved
+  /// / turned down" without reading a log.
+  @$pb.TagNumber(3)
+  $core.String get note => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set note($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasNote() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearNote() => $_clearField(3);
+}
+
+class AdminApproveLockFundsResponse extends $pb.GeneratedMessage {
+  factory AdminApproveLockFundsResponse({
+    LockFunds? lockfunds,
+  }) {
+    final result = create();
+    if (lockfunds != null) result.lockfunds = lockfunds;
+    return result;
+  }
+
+  AdminApproveLockFundsResponse._();
+
+  factory AdminApproveLockFundsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminApproveLockFundsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminApproveLockFundsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOM<LockFunds>(1, _omitFieldNames ? '' : 'lockfunds',
+        subBuilder: LockFunds.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminApproveLockFundsResponse clone() =>
+      AdminApproveLockFundsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminApproveLockFundsResponse copyWith(
+          void Function(AdminApproveLockFundsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminApproveLockFundsResponse))
+          as AdminApproveLockFundsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminApproveLockFundsResponse create() =>
+      AdminApproveLockFundsResponse._();
+  @$core.override
+  AdminApproveLockFundsResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminApproveLockFundsResponse> createRepeated() =>
+      $pb.PbList<AdminApproveLockFundsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminApproveLockFundsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminApproveLockFundsResponse>(create);
+  static AdminApproveLockFundsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  LockFunds get lockfunds => $_getN(0);
+  @$pb.TagNumber(1)
+  set lockfunds(LockFunds value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLockfunds() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLockfunds() => $_clearField(1);
+  @$pb.TagNumber(1)
+  LockFunds ensureLockfunds() => $_ensure(0);
+}
+
+class AdminRejectLockFundsRequest extends $pb.GeneratedMessage {
+  factory AdminRejectLockFundsRequest({
+    $core.String? lockfundsId,
+    $core.String? adminUserId,
+    $core.String? note,
+  }) {
+    final result = create();
+    if (lockfundsId != null) result.lockfundsId = lockfundsId;
+    if (adminUserId != null) result.adminUserId = adminUserId;
+    if (note != null) result.note = note;
+    return result;
+  }
+
+  AdminRejectLockFundsRequest._();
+
+  factory AdminRejectLockFundsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminRejectLockFundsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminRejectLockFundsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'lockfundsId')
+    ..aOS(2, _omitFieldNames ? '' : 'adminUserId')
+    ..aOS(3, _omitFieldNames ? '' : 'note')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRejectLockFundsRequest clone() =>
+      AdminRejectLockFundsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRejectLockFundsRequest copyWith(
+          void Function(AdminRejectLockFundsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminRejectLockFundsRequest))
+          as AdminRejectLockFundsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminRejectLockFundsRequest create() =>
+      AdminRejectLockFundsRequest._();
+  @$core.override
+  AdminRejectLockFundsRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminRejectLockFundsRequest> createRepeated() =>
+      $pb.PbList<AdminRejectLockFundsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminRejectLockFundsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminRejectLockFundsRequest>(create);
+  static AdminRejectLockFundsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get lockfundsId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set lockfundsId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLockfundsId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLockfundsId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get adminUserId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set adminUserId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAdminUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAdminUserId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get note => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set note($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasNote() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearNote() => $_clearField(3);
+}
+
+class AdminRejectLockFundsResponse extends $pb.GeneratedMessage {
+  factory AdminRejectLockFundsResponse({
+    LockFunds? lockfunds,
+    $core.double? releasedAmount,
+  }) {
+    final result = create();
+    if (lockfunds != null) result.lockfunds = lockfunds;
+    if (releasedAmount != null) result.releasedAmount = releasedAmount;
+    return result;
+  }
+
+  AdminRejectLockFundsResponse._();
+
+  factory AdminRejectLockFundsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminRejectLockFundsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminRejectLockFundsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOM<LockFunds>(1, _omitFieldNames ? '' : 'lockfunds',
+        subBuilder: LockFunds.create)
+    ..a<$core.double>(
+        2, _omitFieldNames ? '' : 'releasedAmount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRejectLockFundsResponse clone() =>
+      AdminRejectLockFundsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRejectLockFundsResponse copyWith(
+          void Function(AdminRejectLockFundsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminRejectLockFundsResponse))
+          as AdminRejectLockFundsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminRejectLockFundsResponse create() =>
+      AdminRejectLockFundsResponse._();
+  @$core.override
+  AdminRejectLockFundsResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminRejectLockFundsResponse> createRepeated() =>
+      $pb.PbList<AdminRejectLockFundsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminRejectLockFundsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminRejectLockFundsResponse>(create);
+  static AdminRejectLockFundsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  LockFunds get lockfunds => $_getN(0);
+  @$pb.TagNumber(1)
+  set lockfunds(LockFunds value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLockfunds() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLockfunds() => $_clearField(1);
+  @$pb.TagNumber(1)
+  LockFunds ensureLockfunds() => $_ensure(0);
+
+  /// What became spendable again. The reservation is released, not refunded —
+  /// the total balance was never reduced.
+  @$pb.TagNumber(2)
+  $core.double get releasedAmount => $_getN(1);
+  @$pb.TagNumber(2)
+  set releasedAmount($core.double value) => $_setDouble(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReleasedAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReleasedAmount() => $_clearField(2);
+}
+
+class AdminListPendingLockFundsRequest extends $pb.GeneratedMessage {
+  factory AdminListPendingLockFundsRequest({
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final result = create();
+    if (limit != null) result.limit = limit;
+    if (offset != null) result.offset = offset;
+    return result;
+  }
+
+  AdminListPendingLockFundsRequest._();
+
+  factory AdminListPendingLockFundsRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminListPendingLockFundsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminListPendingLockFundsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListPendingLockFundsRequest clone() =>
+      AdminListPendingLockFundsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListPendingLockFundsRequest copyWith(
+          void Function(AdminListPendingLockFundsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminListPendingLockFundsRequest))
+          as AdminListPendingLockFundsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListPendingLockFundsRequest create() =>
+      AdminListPendingLockFundsRequest._();
+  @$core.override
+  AdminListPendingLockFundsRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminListPendingLockFundsRequest> createRepeated() =>
+      $pb.PbList<AdminListPendingLockFundsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListPendingLockFundsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminListPendingLockFundsRequest>(
+          create);
+  static AdminListPendingLockFundsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get limit => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set limit($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLimit() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLimit() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get offset => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set offset($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasOffset() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOffset() => $_clearField(2);
+}
+
+class AdminListPendingLockFundsResponse extends $pb.GeneratedMessage {
+  factory AdminListPendingLockFundsResponse({
+    $core.Iterable<LockFunds>? lockfunds,
+    $core.int? total,
+  }) {
+    final result = create();
+    if (lockfunds != null) result.lockfunds.addAll(lockfunds);
+    if (total != null) result.total = total;
+    return result;
+  }
+
+  AdminListPendingLockFundsResponse._();
+
+  factory AdminListPendingLockFundsResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminListPendingLockFundsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminListPendingLockFundsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..pc<LockFunds>(1, _omitFieldNames ? '' : 'lockfunds', $pb.PbFieldType.PM,
+        subBuilder: LockFunds.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListPendingLockFundsResponse clone() =>
+      AdminListPendingLockFundsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListPendingLockFundsResponse copyWith(
+          void Function(AdminListPendingLockFundsResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminListPendingLockFundsResponse))
+          as AdminListPendingLockFundsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListPendingLockFundsResponse create() =>
+      AdminListPendingLockFundsResponse._();
+  @$core.override
+  AdminListPendingLockFundsResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminListPendingLockFundsResponse> createRepeated() =>
+      $pb.PbList<AdminListPendingLockFundsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListPendingLockFundsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminListPendingLockFundsResponse>(
+          create);
+  static AdminListPendingLockFundsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<LockFunds> get lockfunds => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+}
+
+class SetLockFundsMaturityActionRequest extends $pb.GeneratedMessage {
+  factory SetLockFundsMaturityActionRequest({
+    $core.String? lockfundsId,
+    $core.String? maturityAction,
+  }) {
+    final result = create();
+    if (lockfundsId != null) result.lockfundsId = lockfundsId;
+    if (maturityAction != null) result.maturityAction = maturityAction;
+    return result;
+  }
+
+  SetLockFundsMaturityActionRequest._();
+
+  factory SetLockFundsMaturityActionRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SetLockFundsMaturityActionRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetLockFundsMaturityActionRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'lockfundsId')
+    ..aOS(2, _omitFieldNames ? '' : 'maturityAction')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetLockFundsMaturityActionRequest clone() =>
+      SetLockFundsMaturityActionRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetLockFundsMaturityActionRequest copyWith(
+          void Function(SetLockFundsMaturityActionRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as SetLockFundsMaturityActionRequest))
+          as SetLockFundsMaturityActionRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetLockFundsMaturityActionRequest create() =>
+      SetLockFundsMaturityActionRequest._();
+  @$core.override
+  SetLockFundsMaturityActionRequest createEmptyInstance() => create();
+  static $pb.PbList<SetLockFundsMaturityActionRequest> createRepeated() =>
+      $pb.PbList<SetLockFundsMaturityActionRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SetLockFundsMaturityActionRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetLockFundsMaturityActionRequest>(
+          create);
+  static SetLockFundsMaturityActionRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get lockfundsId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set lockfundsId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLockfundsId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLockfundsId() => $_clearField(1);
+
+  /// "payout" | "reinvest_all" | "reinvest_principal" | "reinvest_interest".
+  /// Empty CLEARS the choice, which hands the plan back to auto_renew — the
+  /// only way to undo a decision without closing the plan.
+  @$pb.TagNumber(2)
+  $core.String get maturityAction => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set maturityAction($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMaturityAction() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMaturityAction() => $_clearField(2);
+}
+
+class SetLockFundsMaturityActionResponse extends $pb.GeneratedMessage {
+  factory SetLockFundsMaturityActionResponse({
+    LockFunds? lockfunds,
+  }) {
+    final result = create();
+    if (lockfunds != null) result.lockfunds = lockfunds;
+    return result;
+  }
+
+  SetLockFundsMaturityActionResponse._();
+
+  factory SetLockFundsMaturityActionResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SetLockFundsMaturityActionResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetLockFundsMaturityActionResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOM<LockFunds>(1, _omitFieldNames ? '' : 'lockfunds',
+        subBuilder: LockFunds.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetLockFundsMaturityActionResponse clone() =>
+      SetLockFundsMaturityActionResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetLockFundsMaturityActionResponse copyWith(
+          void Function(SetLockFundsMaturityActionResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as SetLockFundsMaturityActionResponse))
+          as SetLockFundsMaturityActionResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetLockFundsMaturityActionResponse create() =>
+      SetLockFundsMaturityActionResponse._();
+  @$core.override
+  SetLockFundsMaturityActionResponse createEmptyInstance() => create();
+  static $pb.PbList<SetLockFundsMaturityActionResponse> createRepeated() =>
+      $pb.PbList<SetLockFundsMaturityActionResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SetLockFundsMaturityActionResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetLockFundsMaturityActionResponse>(
+          create);
+  static SetLockFundsMaturityActionResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  LockFunds get lockfunds => $_getN(0);
+  @$pb.TagNumber(1)
+  set lockfunds(LockFunds value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLockfunds() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLockfunds() => $_clearField(1);
+  @$pb.TagNumber(1)
+  LockFunds ensureLockfunds() => $_ensure(0);
+}
+
 class AdminForceMatureLockFundsRequest extends $pb.GeneratedMessage {
   factory AdminForceMatureLockFundsRequest({
     $core.String? lockfundsId,
@@ -14106,12 +15031,14 @@ class PeriodTotals extends $pb.GeneratedMessage {
     $core.double? totalExpenses,
     $core.double? net,
     $core.int? transactionCount,
+    $core.double? totalSavings,
   }) {
     final result = create();
     if (totalIncome != null) result.totalIncome = totalIncome;
     if (totalExpenses != null) result.totalExpenses = totalExpenses;
     if (net != null) result.net = net;
     if (transactionCount != null) result.transactionCount = transactionCount;
+    if (totalSavings != null) result.totalSavings = totalSavings;
     return result;
   }
 
@@ -14135,6 +15062,8 @@ class PeriodTotals extends $pb.GeneratedMessage {
     ..a<$core.double>(3, _omitFieldNames ? '' : 'net', $pb.PbFieldType.OD)
     ..a<$core.int>(
         4, _omitFieldNames ? '' : 'transactionCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(
+        5, _omitFieldNames ? '' : 'totalSavings', $pb.PbFieldType.OD)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -14167,6 +15096,10 @@ class PeriodTotals extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearTotalIncome() => $_clearField(1);
 
+  /// SPENDING ONLY. Money moved into savings is reported in total_savings, not
+  /// here: a PiggyVault lock or an AutoSave sweep is a debit, but the user
+  /// still has the money, and counting it as spending made saving read as
+  /// spending (and fed the AI budget engine an inflated outflow).
   @$pb.TagNumber(2)
   $core.double get totalExpenses => $_getN(1);
   @$pb.TagNumber(2)
@@ -14176,6 +15109,7 @@ class PeriodTotals extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearTotalExpenses() => $_clearField(2);
 
+  /// income - expenses - savings: what is actually left over.
   @$pb.TagNumber(3)
   $core.double get net => $_getN(2);
   @$pb.TagNumber(3)
@@ -14193,6 +15127,17 @@ class PeriodTotals extends $pb.GeneratedMessage {
   $core.bool hasTransactionCount() => $_has(3);
   @$pb.TagNumber(4)
   void clearTransactionCount() => $_clearField(4);
+
+  /// Money moved INTO savings during the period. Added 2026-10-19 alongside
+  /// the expense split so the three figures still reconcile against income.
+  @$pb.TagNumber(5)
+  $core.double get totalSavings => $_getN(4);
+  @$pb.TagNumber(5)
+  set totalSavings($core.double value) => $_setDouble(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasTotalSavings() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalSavings() => $_clearField(5);
 }
 
 /// GetFinancialAnalytics - Compare current vs previous period
@@ -21048,6 +21993,586 @@ class AdminGetPlatformWalletTransactionsResponse extends $pb.GeneratedMessage {
   void clearTotal() => $_clearField(2);
 }
 
+class AdminTransferBetweenPlatformWalletsRequest extends $pb.GeneratedMessage {
+  factory AdminTransferBetweenPlatformWalletsRequest({
+    $core.String? fromWalletCode,
+    $core.String? toWalletCode,
+    $fixnum.Int64? amount,
+    $core.String? currency,
+    $core.String? category,
+    $core.String? description,
+    $core.String? metadata,
+    $core.String? idempotencyKey,
+  }) {
+    final result = create();
+    if (fromWalletCode != null) result.fromWalletCode = fromWalletCode;
+    if (toWalletCode != null) result.toWalletCode = toWalletCode;
+    if (amount != null) result.amount = amount;
+    if (currency != null) result.currency = currency;
+    if (category != null) result.category = category;
+    if (description != null) result.description = description;
+    if (metadata != null) result.metadata = metadata;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    return result;
+  }
+
+  AdminTransferBetweenPlatformWalletsRequest._();
+
+  factory AdminTransferBetweenPlatformWalletsRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminTransferBetweenPlatformWalletsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminTransferBetweenPlatformWalletsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'fromWalletCode')
+    ..aOS(2, _omitFieldNames ? '' : 'toWalletCode')
+    ..aInt64(3, _omitFieldNames ? '' : 'amount')
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..aOS(5, _omitFieldNames ? '' : 'category')
+    ..aOS(6, _omitFieldNames ? '' : 'description')
+    ..aOS(7, _omitFieldNames ? '' : 'metadata')
+    ..aOS(8, _omitFieldNames ? '' : 'idempotencyKey')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminTransferBetweenPlatformWalletsRequest clone() =>
+      AdminTransferBetweenPlatformWalletsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminTransferBetweenPlatformWalletsRequest copyWith(
+          void Function(AdminTransferBetweenPlatformWalletsRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminTransferBetweenPlatformWalletsRequest))
+          as AdminTransferBetweenPlatformWalletsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminTransferBetweenPlatformWalletsRequest create() =>
+      AdminTransferBetweenPlatformWalletsRequest._();
+  @$core.override
+  AdminTransferBetweenPlatformWalletsRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminTransferBetweenPlatformWalletsRequest>
+      createRepeated() =>
+          $pb.PbList<AdminTransferBetweenPlatformWalletsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminTransferBetweenPlatformWalletsRequest getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          AdminTransferBetweenPlatformWalletsRequest>(create);
+  static AdminTransferBetweenPlatformWalletsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get fromWalletCode => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set fromWalletCode($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFromWalletCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFromWalletCode() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get toWalletCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set toWalletCode($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasToWalletCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearToWalletCode() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get amount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set amount($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get category => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set category($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasCategory() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCategory() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get description => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set description($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasDescription() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDescription() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get metadata => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set metadata($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasMetadata() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMetadata() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get idempotencyKey => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set idempotencyKey($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasIdempotencyKey() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearIdempotencyKey() => $_clearField(8);
+}
+
+class AdminPostPlatformWalletCorrectionRequest extends $pb.GeneratedMessage {
+  factory AdminPostPlatformWalletCorrectionRequest({
+    $core.String? walletCode,
+    $core.String? currency,
+    $core.String? direction,
+    $fixnum.Int64? amount,
+    $core.String? reason,
+    $core.String? correctsReference,
+    $core.String? idempotencyKey,
+    $core.String? correctionType,
+  }) {
+    final result = create();
+    if (walletCode != null) result.walletCode = walletCode;
+    if (currency != null) result.currency = currency;
+    if (direction != null) result.direction = direction;
+    if (amount != null) result.amount = amount;
+    if (reason != null) result.reason = reason;
+    if (correctsReference != null) result.correctsReference = correctsReference;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    if (correctionType != null) result.correctionType = correctionType;
+    return result;
+  }
+
+  AdminPostPlatformWalletCorrectionRequest._();
+
+  factory AdminPostPlatformWalletCorrectionRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminPostPlatformWalletCorrectionRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminPostPlatformWalletCorrectionRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'walletCode')
+    ..aOS(2, _omitFieldNames ? '' : 'currency')
+    ..aOS(3, _omitFieldNames ? '' : 'direction')
+    ..aInt64(4, _omitFieldNames ? '' : 'amount')
+    ..aOS(5, _omitFieldNames ? '' : 'reason')
+    ..aOS(6, _omitFieldNames ? '' : 'correctsReference')
+    ..aOS(7, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(8, _omitFieldNames ? '' : 'correctionType')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminPostPlatformWalletCorrectionRequest clone() =>
+      AdminPostPlatformWalletCorrectionRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminPostPlatformWalletCorrectionRequest copyWith(
+          void Function(AdminPostPlatformWalletCorrectionRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminPostPlatformWalletCorrectionRequest))
+          as AdminPostPlatformWalletCorrectionRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminPostPlatformWalletCorrectionRequest create() =>
+      AdminPostPlatformWalletCorrectionRequest._();
+  @$core.override
+  AdminPostPlatformWalletCorrectionRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminPostPlatformWalletCorrectionRequest>
+      createRepeated() =>
+          $pb.PbList<AdminPostPlatformWalletCorrectionRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminPostPlatformWalletCorrectionRequest getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          AdminPostPlatformWalletCorrectionRequest>(create);
+  static AdminPostPlatformWalletCorrectionRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get walletCode => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set walletCode($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasWalletCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearWalletCode() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get currency => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set currency($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCurrency() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCurrency() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get direction => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set direction($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasDirection() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDirection() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get amount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set amount($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => $_clearField(4);
+
+  /// REQUIRED. A correcting entry with no stated cause is indistinguishable
+  /// from the bug it is correcting.
+  @$pb.TagNumber(5)
+  $core.String get reason => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set reason($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasReason() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearReason() => $_clearField(5);
+
+  /// The reference this entry corrects, when there is one — a reversal names
+  /// the transaction it reverses, a late posting names the event it was
+  /// missing for. Carried into metadata so the pair is findable from either
+  /// side.
+  @$pb.TagNumber(6)
+  $core.String get correctsReference => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set correctsReference($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasCorrectsReference() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCorrectsReference() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get idempotencyKey => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set idempotencyKey($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasIdempotencyKey() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearIdempotencyKey() => $_clearField(7);
+
+  /// "reversal" (undo an entry that should never have existed) or
+  /// "late_posting" (record an event whose leg was never written). Anything
+  /// else is refused: a free-text category is how a correction stops being
+  /// distinguishable from ordinary traffic.
+  @$pb.TagNumber(8)
+  $core.String get correctionType => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set correctionType($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasCorrectionType() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCorrectionType() => $_clearField(8);
+}
+
+class AdminPostPlatformWalletCorrectionResponse extends $pb.GeneratedMessage {
+  factory AdminPostPlatformWalletCorrectionResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? transactionId,
+    $fixnum.Int64? newBalance,
+    $core.bool? idempotentReplay,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (errorCode != null) result.errorCode = errorCode;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    if (transactionId != null) result.transactionId = transactionId;
+    if (newBalance != null) result.newBalance = newBalance;
+    if (idempotentReplay != null) result.idempotentReplay = idempotentReplay;
+    return result;
+  }
+
+  AdminPostPlatformWalletCorrectionResponse._();
+
+  factory AdminPostPlatformWalletCorrectionResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminPostPlatformWalletCorrectionResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminPostPlatformWalletCorrectionResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..aOS(4, _omitFieldNames ? '' : 'transactionId')
+    ..aInt64(5, _omitFieldNames ? '' : 'newBalance')
+    ..aOB(6, _omitFieldNames ? '' : 'idempotentReplay')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminPostPlatformWalletCorrectionResponse clone() =>
+      AdminPostPlatformWalletCorrectionResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminPostPlatformWalletCorrectionResponse copyWith(
+          void Function(AdminPostPlatformWalletCorrectionResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminPostPlatformWalletCorrectionResponse))
+          as AdminPostPlatformWalletCorrectionResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminPostPlatformWalletCorrectionResponse create() =>
+      AdminPostPlatformWalletCorrectionResponse._();
+  @$core.override
+  AdminPostPlatformWalletCorrectionResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminPostPlatformWalletCorrectionResponse>
+      createRepeated() =>
+          $pb.PbList<AdminPostPlatformWalletCorrectionResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminPostPlatformWalletCorrectionResponse getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          AdminPostPlatformWalletCorrectionResponse>(create);
+  static AdminPostPlatformWalletCorrectionResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get transactionId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set transactionId($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasTransactionId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTransactionId() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get newBalance => $_getI64(4);
+  @$pb.TagNumber(5)
+  set newBalance($fixnum.Int64 value) => $_setInt64(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasNewBalance() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearNewBalance() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get idempotentReplay => $_getBF(5);
+  @$pb.TagNumber(6)
+  set idempotentReplay($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasIdempotentReplay() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearIdempotentReplay() => $_clearField(6);
+}
+
+class AdminTransferBetweenPlatformWalletsResponse extends $pb.GeneratedMessage {
+  factory AdminTransferBetweenPlatformWalletsResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? sourceTransactionId,
+    $core.String? destinationTransactionId,
+    $fixnum.Int64? sourceNewBalance,
+    $fixnum.Int64? destinationNewBalance,
+    $core.bool? idempotentReplay,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (errorCode != null) result.errorCode = errorCode;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    if (sourceTransactionId != null)
+      result.sourceTransactionId = sourceTransactionId;
+    if (destinationTransactionId != null)
+      result.destinationTransactionId = destinationTransactionId;
+    if (sourceNewBalance != null) result.sourceNewBalance = sourceNewBalance;
+    if (destinationNewBalance != null)
+      result.destinationNewBalance = destinationNewBalance;
+    if (idempotentReplay != null) result.idempotentReplay = idempotentReplay;
+    return result;
+  }
+
+  AdminTransferBetweenPlatformWalletsResponse._();
+
+  factory AdminTransferBetweenPlatformWalletsResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminTransferBetweenPlatformWalletsResponse.fromJson(
+          $core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminTransferBetweenPlatformWalletsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..aOS(4, _omitFieldNames ? '' : 'sourceTransactionId')
+    ..aOS(5, _omitFieldNames ? '' : 'destinationTransactionId')
+    ..aInt64(6, _omitFieldNames ? '' : 'sourceNewBalance')
+    ..aInt64(7, _omitFieldNames ? '' : 'destinationNewBalance')
+    ..aOB(8, _omitFieldNames ? '' : 'idempotentReplay')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminTransferBetweenPlatformWalletsResponse clone() =>
+      AdminTransferBetweenPlatformWalletsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminTransferBetweenPlatformWalletsResponse copyWith(
+          void Function(AdminTransferBetweenPlatformWalletsResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminTransferBetweenPlatformWalletsResponse))
+          as AdminTransferBetweenPlatformWalletsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminTransferBetweenPlatformWalletsResponse create() =>
+      AdminTransferBetweenPlatformWalletsResponse._();
+  @$core.override
+  AdminTransferBetweenPlatformWalletsResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminTransferBetweenPlatformWalletsResponse>
+      createRepeated() =>
+          $pb.PbList<AdminTransferBetweenPlatformWalletsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminTransferBetweenPlatformWalletsResponse getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          AdminTransferBetweenPlatformWalletsResponse>(create);
+  static AdminTransferBetweenPlatformWalletsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get sourceTransactionId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set sourceTransactionId($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasSourceTransactionId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSourceTransactionId() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get destinationTransactionId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set destinationTransactionId($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasDestinationTransactionId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDestinationTransactionId() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get sourceNewBalance => $_getI64(5);
+  @$pb.TagNumber(6)
+  set sourceNewBalance($fixnum.Int64 value) => $_setInt64(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasSourceNewBalance() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSourceNewBalance() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get destinationNewBalance => $_getI64(6);
+  @$pb.TagNumber(7)
+  set destinationNewBalance($fixnum.Int64 value) => $_setInt64(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasDestinationNewBalance() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearDestinationNewBalance() => $_clearField(7);
+
+  /// True when this idempotency key had already moved the money and nothing new
+  /// was written. The UI must say "already applied", not report a second success.
+  @$pb.TagNumber(8)
+  $core.bool get idempotentReplay => $_getBF(7);
+  @$pb.TagNumber(8)
+  set idempotentReplay($core.bool value) => $_setBool(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasIdempotentReplay() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearIdempotentReplay() => $_clearField(8);
+}
+
 class AdminListWalletReconciliationsRequest extends $pb.GeneratedMessage {
   factory AdminListWalletReconciliationsRequest({
     $core.String? walletCode,
@@ -25062,6 +26587,11 @@ class GetForeignVirtualAccountStatusResponse extends $pb.GeneratedMessage {
     $core.String? accountName,
     $core.String? routingDetailsJson,
     $core.String? message,
+    $core.Iterable<$core.String>? supportedCurrencies,
+    $core.String? provider,
+    $core.Iterable<$core.String>? activatableCurrencies,
+    $core.Iterable<$core.String>? gatedCurrencies,
+    $core.bool? currencyGated,
   }) {
     final result = create();
     if (status != null) result.status = status;
@@ -25074,6 +26604,13 @@ class GetForeignVirtualAccountStatusResponse extends $pb.GeneratedMessage {
     if (routingDetailsJson != null)
       result.routingDetailsJson = routingDetailsJson;
     if (message != null) result.message = message;
+    if (supportedCurrencies != null)
+      result.supportedCurrencies.addAll(supportedCurrencies);
+    if (provider != null) result.provider = provider;
+    if (activatableCurrencies != null)
+      result.activatableCurrencies.addAll(activatableCurrencies);
+    if (gatedCurrencies != null) result.gatedCurrencies.addAll(gatedCurrencies);
+    if (currencyGated != null) result.currencyGated = currencyGated;
     return result;
   }
 
@@ -25100,6 +26637,11 @@ class GetForeignVirtualAccountStatusResponse extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'accountName')
     ..aOS(8, _omitFieldNames ? '' : 'routingDetailsJson')
     ..aOS(9, _omitFieldNames ? '' : 'message')
+    ..pPS(10, _omitFieldNames ? '' : 'supportedCurrencies')
+    ..aOS(11, _omitFieldNames ? '' : 'provider')
+    ..pPS(12, _omitFieldNames ? '' : 'activatableCurrencies')
+    ..pPS(13, _omitFieldNames ? '' : 'gatedCurrencies')
+    ..aOB(14, _omitFieldNames ? '' : 'currencyGated')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -25210,6 +26752,686 @@ class GetForeignVirtualAccountStatusResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(8);
   @$pb.TagNumber(9)
   void clearMessage() => $_clearField(9);
+
+  /// Every currency the ACTIVE foreign-VA provider can issue, so the app stops
+  /// deciding that for itself.
+  ///
+  /// account_preview_card hardcoded {USD, GBP, EUR, CAD}. Fincra issues ten —
+  /// USD, GBP, EUR, CAD, XAF, GHS, KES, TZS, RWF, UGX — so a user sitting on a
+  /// GHS or KES wallet was never offered activation at all, for currencies the
+  /// active provider supports today. A hardcoded client list also cannot follow
+  /// a provider switch: the set is the PROVIDER's, and only the server knows
+  /// which provider is active.
+  @$pb.TagNumber(10)
+  $pb.PbList<$core.String> get supportedCurrencies => $_getList(9);
+
+  /// The provider that answered, so the app and the admin console can say which
+  /// rail a user's foreign account is on rather than assuming one.
+  @$pb.TagNumber(11)
+  $core.String get provider => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set provider($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasProvider() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearProvider() => $_clearField(11);
+
+  /// The subset of supported_currencies a request would be ACCEPTED for right
+  /// now. supported_currencies says what the provider's catalogue lists; this
+  /// says what its account-level entitlement actually permits, measured live.
+  ///
+  /// In production the two differ for four of ten currencies: USD, GBP, EUR and
+  /// CAD answer "Access denied, FCY request is disabled" while GHS, KES, XAF,
+  /// TZS, RWF and UGX are open. The app was offering the KYC wizard for exactly
+  /// the blocked four, so every applicant's package could only be queued.
+  ///
+  /// Prefer this over supported_currencies when deciding what to OFFER; keep
+  /// using supported_currencies to decide what to acknowledge exists.
+  @$pb.TagNumber(12)
+  $pb.PbList<$core.String> get activatableCurrencies => $_getList(11);
+
+  /// The complement: declared by the provider, refused at the account level.
+  /// Present so the app can say "not available yet" about a specific currency
+  /// instead of silently omitting it, which reads as a bug to a user who knows
+  /// the feature exists.
+  @$pb.TagNumber(13)
+  $pb.PbList<$core.String> get gatedCurrencies => $_getList(12);
+
+  /// Whether THIS request's currency is one of the gated ones.
+  @$pb.TagNumber(14)
+  $core.bool get currencyGated => $_getBF(13);
+  @$pb.TagNumber(14)
+  set currencyGated($core.bool value) => $_setBool(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasCurrencyGated() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearCurrencyGated() => $_clearField(14);
+}
+
+/// PromoteForeignVirtualAccountRequest asks us to re-read a provider request and
+/// apply whatever it now says. See the RPC comment for why this is internal-only.
+class PromoteForeignVirtualAccountRequest extends $pb.GeneratedMessage {
+  factory PromoteForeignVirtualAccountRequest({
+    $core.String? providerRef,
+    $core.String? provider,
+    $core.String? serviceName,
+  }) {
+    final result = create();
+    if (providerRef != null) result.providerRef = providerRef;
+    if (provider != null) result.provider = provider;
+    if (serviceName != null) result.serviceName = serviceName;
+    return result;
+  }
+
+  PromoteForeignVirtualAccountRequest._();
+
+  factory PromoteForeignVirtualAccountRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PromoteForeignVirtualAccountRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PromoteForeignVirtualAccountRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'providerRef')
+    ..aOS(2, _omitFieldNames ? '' : 'provider')
+    ..aOS(3, _omitFieldNames ? '' : 'serviceName')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PromoteForeignVirtualAccountRequest clone() =>
+      PromoteForeignVirtualAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PromoteForeignVirtualAccountRequest copyWith(
+          void Function(PromoteForeignVirtualAccountRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as PromoteForeignVirtualAccountRequest))
+          as PromoteForeignVirtualAccountRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PromoteForeignVirtualAccountRequest create() =>
+      PromoteForeignVirtualAccountRequest._();
+  @$core.override
+  PromoteForeignVirtualAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<PromoteForeignVirtualAccountRequest> createRepeated() =>
+      $pb.PbList<PromoteForeignVirtualAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static PromoteForeignVirtualAccountRequest getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          PromoteForeignVirtualAccountRequest>(create);
+  static PromoteForeignVirtualAccountRequest? _defaultInstance;
+
+  /// provider_ref is the provider's virtual-account REQUEST id (Fincra data._id),
+  /// which equals accounts.provider_ref. It is the only input, because the event
+  /// body is not trusted — the state is re-fetched from the provider.
+  @$pb.TagNumber(1)
+  $core.String get providerRef => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set providerRef($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasProviderRef() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProviderRef() => $_clearField(1);
+
+  /// provider names the rail, so this does not silently assume Fincra forever.
+  /// Empty is treated as "fincra" for compatibility with the single current caller.
+  @$pb.TagNumber(2)
+  $core.String get provider => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set provider($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasProvider() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearProvider() => $_clearField(2);
+
+  /// service_name identifies the caller for audit, matching the convention on the
+  /// other internal RPCs.
+  @$pb.TagNumber(3)
+  $core.String get serviceName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set serviceName($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasServiceName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearServiceName() => $_clearField(3);
+}
+
+/// FCYPrefillField is one value already on file.
+class FCYPrefillField extends $pb.GeneratedMessage {
+  factory FCYPrefillField({
+    $core.String? value,
+    $core.bool? prefilled,
+  }) {
+    final result = create();
+    if (value != null) result.value = value;
+    if (prefilled != null) result.prefilled = prefilled;
+    return result;
+  }
+
+  FCYPrefillField._();
+
+  factory FCYPrefillField.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FCYPrefillField.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FCYPrefillField',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'value')
+    ..aOB(2, _omitFieldNames ? '' : 'prefilled')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FCYPrefillField clone() => FCYPrefillField()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FCYPrefillField copyWith(void Function(FCYPrefillField) updates) =>
+      super.copyWith((message) => updates(message as FCYPrefillField))
+          as FCYPrefillField;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FCYPrefillField create() => FCYPrefillField._();
+  @$core.override
+  FCYPrefillField createEmptyInstance() => create();
+  static $pb.PbList<FCYPrefillField> createRepeated() =>
+      $pb.PbList<FCYPrefillField>();
+  @$core.pragma('dart2js:noInline')
+  static FCYPrefillField getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FCYPrefillField>(create);
+  static FCYPrefillField? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get value => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set value($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasValue() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearValue() => $_clearField(1);
+
+  /// prefilled: true = the client MUST hide this input; false = ask the user.
+  /// Never true with an empty value — a hidden empty input becomes a blank
+  /// submission that the provider rejects.
+  @$pb.TagNumber(2)
+  $core.bool get prefilled => $_getBF(1);
+  @$pb.TagNumber(2)
+  set prefilled($core.bool value) => $_setBool(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPrefilled() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPrefilled() => $_clearField(2);
+}
+
+class GetForeignVirtualAccountPrefillRequest extends $pb.GeneratedMessage {
+  factory GetForeignVirtualAccountPrefillRequest({
+    $core.String? currency,
+  }) {
+    final result = create();
+    if (currency != null) result.currency = currency;
+    return result;
+  }
+
+  GetForeignVirtualAccountPrefillRequest._();
+
+  factory GetForeignVirtualAccountPrefillRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetForeignVirtualAccountPrefillRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetForeignVirtualAccountPrefillRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'currency')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetForeignVirtualAccountPrefillRequest clone() =>
+      GetForeignVirtualAccountPrefillRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetForeignVirtualAccountPrefillRequest copyWith(
+          void Function(GetForeignVirtualAccountPrefillRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as GetForeignVirtualAccountPrefillRequest))
+          as GetForeignVirtualAccountPrefillRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetForeignVirtualAccountPrefillRequest create() =>
+      GetForeignVirtualAccountPrefillRequest._();
+  @$core.override
+  GetForeignVirtualAccountPrefillRequest createEmptyInstance() => create();
+  static $pb.PbList<GetForeignVirtualAccountPrefillRequest> createRepeated() =>
+      $pb.PbList<GetForeignVirtualAccountPrefillRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetForeignVirtualAccountPrefillRequest getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          GetForeignVirtualAccountPrefillRequest>(create);
+  static GetForeignVirtualAccountPrefillRequest? _defaultInstance;
+
+  /// Currency the form is being opened for. Present so per-currency rules can differ
+  /// later (USD additionally requires a tax number); not used to scope the
+  /// identity, which is per-user.
+  @$pb.TagNumber(1)
+  $core.String get currency => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set currency($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCurrency() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCurrency() => $_clearField(1);
+}
+
+class GetForeignVirtualAccountPrefillResponse extends $pb.GeneratedMessage {
+  factory GetForeignVirtualAccountPrefillResponse({
+    FCYPrefillField? firstName,
+    FCYPrefillField? lastName,
+    FCYPrefillField? middleName,
+    FCYPrefillField? email,
+    FCYPrefillField? phone,
+    FCYPrefillField? birthDate,
+    FCYPrefillField? nationality,
+    FCYPrefillField? countryOfResidence,
+    FCYPrefillField? addressStreet,
+    FCYPrefillField? addressCity,
+    FCYPrefillField? addressState,
+    FCYPrefillField? addressZip,
+    FCYPrefillField? documentType,
+    FCYPrefillField? documentNumber,
+    FCYPrefillField? documentIssuedCountry,
+    $core.bool? identityVerified,
+  }) {
+    final result = create();
+    if (firstName != null) result.firstName = firstName;
+    if (lastName != null) result.lastName = lastName;
+    if (middleName != null) result.middleName = middleName;
+    if (email != null) result.email = email;
+    if (phone != null) result.phone = phone;
+    if (birthDate != null) result.birthDate = birthDate;
+    if (nationality != null) result.nationality = nationality;
+    if (countryOfResidence != null)
+      result.countryOfResidence = countryOfResidence;
+    if (addressStreet != null) result.addressStreet = addressStreet;
+    if (addressCity != null) result.addressCity = addressCity;
+    if (addressState != null) result.addressState = addressState;
+    if (addressZip != null) result.addressZip = addressZip;
+    if (documentType != null) result.documentType = documentType;
+    if (documentNumber != null) result.documentNumber = documentNumber;
+    if (documentIssuedCountry != null)
+      result.documentIssuedCountry = documentIssuedCountry;
+    if (identityVerified != null) result.identityVerified = identityVerified;
+    return result;
+  }
+
+  GetForeignVirtualAccountPrefillResponse._();
+
+  factory GetForeignVirtualAccountPrefillResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetForeignVirtualAccountPrefillResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetForeignVirtualAccountPrefillResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOM<FCYPrefillField>(1, _omitFieldNames ? '' : 'firstName',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(2, _omitFieldNames ? '' : 'lastName',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(3, _omitFieldNames ? '' : 'middleName',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(4, _omitFieldNames ? '' : 'email',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(5, _omitFieldNames ? '' : 'phone',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(6, _omitFieldNames ? '' : 'birthDate',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(7, _omitFieldNames ? '' : 'nationality',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(8, _omitFieldNames ? '' : 'countryOfResidence',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(9, _omitFieldNames ? '' : 'addressStreet',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(10, _omitFieldNames ? '' : 'addressCity',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(11, _omitFieldNames ? '' : 'addressState',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(12, _omitFieldNames ? '' : 'addressZip',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(13, _omitFieldNames ? '' : 'documentType',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(14, _omitFieldNames ? '' : 'documentNumber',
+        subBuilder: FCYPrefillField.create)
+    ..aOM<FCYPrefillField>(15, _omitFieldNames ? '' : 'documentIssuedCountry',
+        subBuilder: FCYPrefillField.create)
+    ..aOB(16, _omitFieldNames ? '' : 'identityVerified')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetForeignVirtualAccountPrefillResponse clone() =>
+      GetForeignVirtualAccountPrefillResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetForeignVirtualAccountPrefillResponse copyWith(
+          void Function(GetForeignVirtualAccountPrefillResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as GetForeignVirtualAccountPrefillResponse))
+          as GetForeignVirtualAccountPrefillResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetForeignVirtualAccountPrefillResponse create() =>
+      GetForeignVirtualAccountPrefillResponse._();
+  @$core.override
+  GetForeignVirtualAccountPrefillResponse createEmptyInstance() => create();
+  static $pb.PbList<GetForeignVirtualAccountPrefillResponse> createRepeated() =>
+      $pb.PbList<GetForeignVirtualAccountPrefillResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetForeignVirtualAccountPrefillResponse getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          GetForeignVirtualAccountPrefillResponse>(create);
+  static GetForeignVirtualAccountPrefillResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FCYPrefillField get firstName => $_getN(0);
+  @$pb.TagNumber(1)
+  set firstName(FCYPrefillField value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFirstName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFirstName() => $_clearField(1);
+  @$pb.TagNumber(1)
+  FCYPrefillField ensureFirstName() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  FCYPrefillField get lastName => $_getN(1);
+  @$pb.TagNumber(2)
+  set lastName(FCYPrefillField value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLastName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLastName() => $_clearField(2);
+  @$pb.TagNumber(2)
+  FCYPrefillField ensureLastName() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  FCYPrefillField get middleName => $_getN(2);
+  @$pb.TagNumber(3)
+  set middleName(FCYPrefillField value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMiddleName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMiddleName() => $_clearField(3);
+  @$pb.TagNumber(3)
+  FCYPrefillField ensureMiddleName() => $_ensure(2);
+
+  @$pb.TagNumber(4)
+  FCYPrefillField get email => $_getN(3);
+  @$pb.TagNumber(4)
+  set email(FCYPrefillField value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasEmail() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearEmail() => $_clearField(4);
+  @$pb.TagNumber(4)
+  FCYPrefillField ensureEmail() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  FCYPrefillField get phone => $_getN(4);
+  @$pb.TagNumber(5)
+  set phone(FCYPrefillField value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasPhone() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPhone() => $_clearField(5);
+  @$pb.TagNumber(5)
+  FCYPrefillField ensurePhone() => $_ensure(4);
+
+  @$pb.TagNumber(6)
+  FCYPrefillField get birthDate => $_getN(5);
+  @$pb.TagNumber(6)
+  set birthDate(FCYPrefillField value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasBirthDate() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearBirthDate() => $_clearField(6);
+  @$pb.TagNumber(6)
+  FCYPrefillField ensureBirthDate() => $_ensure(5);
+
+  @$pb.TagNumber(7)
+  FCYPrefillField get nationality => $_getN(6);
+  @$pb.TagNumber(7)
+  set nationality(FCYPrefillField value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasNationality() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearNationality() => $_clearField(7);
+  @$pb.TagNumber(7)
+  FCYPrefillField ensureNationality() => $_ensure(6);
+
+  @$pb.TagNumber(8)
+  FCYPrefillField get countryOfResidence => $_getN(7);
+  @$pb.TagNumber(8)
+  set countryOfResidence(FCYPrefillField value) => $_setField(8, value);
+  @$pb.TagNumber(8)
+  $core.bool hasCountryOfResidence() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCountryOfResidence() => $_clearField(8);
+  @$pb.TagNumber(8)
+  FCYPrefillField ensureCountryOfResidence() => $_ensure(7);
+
+  @$pb.TagNumber(9)
+  FCYPrefillField get addressStreet => $_getN(8);
+  @$pb.TagNumber(9)
+  set addressStreet(FCYPrefillField value) => $_setField(9, value);
+  @$pb.TagNumber(9)
+  $core.bool hasAddressStreet() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearAddressStreet() => $_clearField(9);
+  @$pb.TagNumber(9)
+  FCYPrefillField ensureAddressStreet() => $_ensure(8);
+
+  @$pb.TagNumber(10)
+  FCYPrefillField get addressCity => $_getN(9);
+  @$pb.TagNumber(10)
+  set addressCity(FCYPrefillField value) => $_setField(10, value);
+  @$pb.TagNumber(10)
+  $core.bool hasAddressCity() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearAddressCity() => $_clearField(10);
+  @$pb.TagNumber(10)
+  FCYPrefillField ensureAddressCity() => $_ensure(9);
+
+  @$pb.TagNumber(11)
+  FCYPrefillField get addressState => $_getN(10);
+  @$pb.TagNumber(11)
+  set addressState(FCYPrefillField value) => $_setField(11, value);
+  @$pb.TagNumber(11)
+  $core.bool hasAddressState() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearAddressState() => $_clearField(11);
+  @$pb.TagNumber(11)
+  FCYPrefillField ensureAddressState() => $_ensure(10);
+
+  @$pb.TagNumber(12)
+  FCYPrefillField get addressZip => $_getN(11);
+  @$pb.TagNumber(12)
+  set addressZip(FCYPrefillField value) => $_setField(12, value);
+  @$pb.TagNumber(12)
+  $core.bool hasAddressZip() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearAddressZip() => $_clearField(12);
+  @$pb.TagNumber(12)
+  FCYPrefillField ensureAddressZip() => $_ensure(11);
+
+  @$pb.TagNumber(13)
+  FCYPrefillField get documentType => $_getN(12);
+  @$pb.TagNumber(13)
+  set documentType(FCYPrefillField value) => $_setField(13, value);
+  @$pb.TagNumber(13)
+  $core.bool hasDocumentType() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearDocumentType() => $_clearField(13);
+  @$pb.TagNumber(13)
+  FCYPrefillField ensureDocumentType() => $_ensure(12);
+
+  @$pb.TagNumber(14)
+  FCYPrefillField get documentNumber => $_getN(13);
+  @$pb.TagNumber(14)
+  set documentNumber(FCYPrefillField value) => $_setField(14, value);
+  @$pb.TagNumber(14)
+  $core.bool hasDocumentNumber() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearDocumentNumber() => $_clearField(14);
+  @$pb.TagNumber(14)
+  FCYPrefillField ensureDocumentNumber() => $_ensure(13);
+
+  @$pb.TagNumber(15)
+  FCYPrefillField get documentIssuedCountry => $_getN(14);
+  @$pb.TagNumber(15)
+  set documentIssuedCountry(FCYPrefillField value) => $_setField(15, value);
+  @$pb.TagNumber(15)
+  $core.bool hasDocumentIssuedCountry() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearDocumentIssuedCountry() => $_clearField(15);
+  @$pb.TagNumber(15)
+  FCYPrefillField ensureDocumentIssuedCountry() => $_ensure(14);
+
+  /// Display only — a partially-verified identity still yields a usable name and
+  /// date of birth, so prefill is offered either way and this gates nothing.
+  @$pb.TagNumber(16)
+  $core.bool get identityVerified => $_getBF(15);
+  @$pb.TagNumber(16)
+  set identityVerified($core.bool value) => $_setBool(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasIdentityVerified() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearIdentityVerified() => $_clearField(16);
+}
+
+class PromoteForeignVirtualAccountResponse extends $pb.GeneratedMessage {
+  factory PromoteForeignVirtualAccountResponse({
+    $core.bool? success,
+    $core.String? outcome,
+    $core.String? accountId,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (outcome != null) result.outcome = outcome;
+    if (accountId != null) result.accountId = accountId;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  PromoteForeignVirtualAccountResponse._();
+
+  factory PromoteForeignVirtualAccountResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PromoteForeignVirtualAccountResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PromoteForeignVirtualAccountResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'outcome')
+    ..aOS(3, _omitFieldNames ? '' : 'accountId')
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PromoteForeignVirtualAccountResponse clone() =>
+      PromoteForeignVirtualAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PromoteForeignVirtualAccountResponse copyWith(
+          void Function(PromoteForeignVirtualAccountResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as PromoteForeignVirtualAccountResponse))
+          as PromoteForeignVirtualAccountResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PromoteForeignVirtualAccountResponse create() =>
+      PromoteForeignVirtualAccountResponse._();
+  @$core.override
+  PromoteForeignVirtualAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<PromoteForeignVirtualAccountResponse> createRepeated() =>
+      $pb.PbList<PromoteForeignVirtualAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static PromoteForeignVirtualAccountResponse getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          PromoteForeignVirtualAccountResponse>(create);
+  static PromoteForeignVirtualAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  /// outcome is one of issued | declined | pending | noop.
+  ///
+  /// "noop" is a SUCCESS, not a failure: it means the account had already reached
+  /// its final state, which is the normal result of a redelivered webhook or of the
+  /// poll having won the race. A caller must not retry on it.
+  @$pb.TagNumber(2)
+  $core.String get outcome => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set outcome($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasOutcome() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOutcome() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get accountId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set accountId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAccountId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAccountId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => $_clearField(4);
 }
 
 const $core.bool _omitFieldNames =
