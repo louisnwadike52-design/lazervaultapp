@@ -25,6 +25,7 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/currency_holdings_service.dart';
 import '../widgets/invoice_cross_currency_notice.dart';
 import '../widgets/invoice_fx_confirm_sheet.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 class InvoiceItemPaymentScreen extends StatefulWidget {
   final Invoice invoice;
@@ -197,12 +198,28 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
           );
         } else if (state is TaggedInvoiceError) {
           setState(() => _isProcessingPayment = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-            ),
-          );
+          // SANITISED. This rendered the backend's words verbatim, so a payer
+          // trying to settle an invoice from their business account was shown
+          //
+          //   Payment failed: HOLD_FAILED: failed to create fund hold: fund
+          //   hold failed: HOLD_FAILED - failed to create reserve: ERROR:
+          //   duplicate key value violates unique constraint
+          //   "idx_account_reserves_idempotency" (SQLSTATE 23505)
+          //
+          // — our index name and a Postgres error code, on a payment screen.
+          // (That underlying defect is fixed; the leak is fixed separately
+          // because the next backend error should not reach a payer either.)
+          // Business refusals like "Insufficient balance" are not technical,
+          // so the sanitizer passes them through untouched.
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(sanitizeUserFacingError(state.message)),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+              ),
+            );
         }
       },
       child: Scaffold(
@@ -273,20 +290,39 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Pay ${widget.invoice.typeDisplayName}',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w700,
+                // THE TITLE WRAPPED ONTO TWO LINES. At 24sp "Pay Payment
+                // Request" did not fit the available width beside the back
+                // button, so it broke after "Pay" and pushed the subtitle and
+                // everything under it down.
+                //
+                // typeDisplayName is variable ("Invoice", "Quote", "Payment
+                // Request"), so a smaller fixed size alone only moves the
+                // problem to the longest name. FittedBox.scaleDown keeps one
+                // line for every type: it shrinks only when it has to, and
+                // never truncates — an ellipsis on "Pay Payment Reques…"
+                // would read worse than small text.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Pay ${widget.invoice.typeDisplayName}',
+                    maxLines: 1,
+                    softWrap: false,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 2.h),
                 Text(
                   'Payment for invoice items',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
