@@ -24,6 +24,20 @@ class ExchangeRequirements {
   final bool requiresBranch;
   final List<ExchangeFieldSpec> fields;
 
+  /// Whether this rail's flow makes us ask the SENDER to verify themselves
+  /// before the payout ("Verify your details to send abroad").
+  ///
+  /// Resolved by the backend next to the rail that will carry the corridor,
+  /// from an admin-tunable exemption list — so switching the active provider
+  /// in the dashboard moves the prompt with it, with no store release. It is
+  /// our compliance posture rather than a provider API requirement: Nomba's
+  /// Global Payout methods ask for nothing about the sender.
+  ///
+  /// Defaults to TRUE on a missing field. An older backend that does not send
+  /// it must keep today's behaviour, and a compliance prompt is the wrong
+  /// thing to drop on a parsing default.
+  final bool requiresSenderKyc;
+
   const ExchangeRequirements({
     required this.provider,
     required this.currency,
@@ -32,6 +46,7 @@ class ExchangeRequirements {
     this.countryName,
     this.requiresBankCode = false,
     this.requiresBranch = false,
+    this.requiresSenderKyc = true,
   });
 
   /// True when these fields came from the incumbent rail, whose requirements
@@ -62,6 +77,8 @@ class ExchangeRequirements {
       countryName: (json['country_name'] as String?)?.trim(),
       requiresBankCode: json['requires_bank_code'] == true,
       requiresBranch: json['requires_branch'] == true,
+      // Absent means "old backend" — keep the prompt.
+      requiresSenderKyc: json['requires_sender_kyc'] != false,
       fields: fields,
     );
   }

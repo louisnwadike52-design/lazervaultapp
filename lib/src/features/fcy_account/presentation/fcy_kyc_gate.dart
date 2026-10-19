@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 
 import '../../../../core/theme/app_surfaces.dart';
 import '../../../../core/types/app_routes.dart';
+import '../../../../core/services/injection_container.dart';
+import 'package:lazervault/src/features/currency_exchange/data/services/transfer_requirements_service.dart';
 import '../data/fcy_account_service.dart';
 
 /// The gate in front of an international payout.
@@ -25,14 +27,48 @@ import '../data/fcy_account_service.dart';
 /// would invent an outage the server never asked for. Same reasoning as
 /// `ensureCryptoTradeAllowed`, which documents the identical choice.
 ///
+/// WHICH RAILS IT APPLIES TO IS NOW A SETTING, NOT A CONSTANT
+/// ----------------------------------------------------------
+/// Because this is our posture rather than an API requirement, it is not the
+/// same answer for every rail. Nomba's Global Payout methods declare
+/// `purposeOfPaymentRequired: false` and ask for nothing about the sender, so
+/// prompting before a Nomba payout collects details no payout will use.
+///
+/// The backend resolves it next to the rail that will carry the corridor and
+/// returns `requires_sender_kyc` with the recipient requirements, driven by an
+/// admin-tunable exemption list. Switching the active provider in the
+/// dashboard therefore moves this prompt with it, with no store release.
+///
+/// Asking here, before navigation, costs one call that the recipient screen
+/// would make a moment later anyway — and it is the only place that knows the
+/// corridor before the user has invested any effort in the form.
+///
 /// Returns true when the caller should proceed with the payout.
 Future<bool> ensureFcyKycForPayout(
   BuildContext context, {
   required String destinationCurrency,
+  String sourceCurrency = 'NGN',
   FCYAccountService? service,
+  TransferRequirementsService? requirements,
 }) async {
   final svc = service ?? FCYAccountService();
   final currency = destinationCurrency.trim().toUpperCase();
+
+  // Does the rail carrying this corridor need the sender verified at all?
+  //
+  // Fails to the GATE, not past it: an unreadable answer is not permission to
+  // skip a compliance step. That is the opposite of the status lookup below,
+  // which fails open — and deliberately so. There, the backend is still an
+  // authoritative gate that will refuse the payout; here, a wrong "skip"
+  // would mean nothing ever asks.
+  try {
+    final reqs = await (requirements ??
+            serviceLocator<TransferRequirementsService>())
+        .fetch(destCurrency: currency, sourceCurrency: sourceCurrency);
+    if (reqs != null && !reqs.requiresSenderKyc) return true;
+  } catch (_) {
+    // Keep the gate.
+  }
 
   String status;
   try {
