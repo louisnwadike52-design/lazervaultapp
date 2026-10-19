@@ -29,6 +29,21 @@ class ReceiptFonts {
   static pw.Font? regular;
   static pw.Font? bold;
 
+  /// Monochrome emoji, used ONLY as a fallback for glyphs Inter has none of.
+  ///
+  /// Inter covers ₦, em dashes, curly apostrophes and accented names — the
+  /// characters that used to raise — but it has no emoji at all, so an emoji
+  /// in text the user typed drew as a hollow box. Seen on a Tagpay transfer
+  /// receipt whose reference was "Apple 🍎": the apple rendered as tofu in
+  /// the shared PDF.
+  ///
+  /// Noto Emoji is the MONOCHROME family on purpose. Apple Color Emoji is a
+  /// .ttc colour font and the pdf package cannot embed it; the colour Noto
+  /// build is CBDT/sbix bitmap, which it also cannot draw. A monochrome
+  /// outline font is the only kind that embeds, so emoji appear in receipts
+  /// as black-and-white glyphs — legible and shareable, which beats a box.
+  static pw.Font? emoji;
+
   /// Whether a real TrueType face is available.
   ///
   /// When false the caller is drawing with the built-in font and MUST route
@@ -50,8 +65,15 @@ class ReceiptFonts {
   static Future<pw.Document> document() async {
     await load();
     return pw.Document(
-      theme:
-          embedded ? pw.ThemeData.withFont(base: regular!, bold: bold!) : null,
+      theme: embedded
+          ? pw.ThemeData.withFont(
+              base: regular!,
+              bold: bold!,
+              // Consulted per-glyph, only for codepoints the base face
+              // cannot draw, so ordinary text is unaffected.
+              fontFallback: [if (emoji != null) emoji!],
+            )
+          : null,
     );
   }
 
@@ -63,6 +85,15 @@ class ReceiptFonts {
       regular =
           pw.Font.ttf(await rootBundle.load('assets/fonts/Inter-Regular.ttf'));
       bold = pw.Font.ttf(await rootBundle.load('assets/fonts/Inter-Bold.ttf'));
+      // Best-effort and independent: a missing emoji face must not cost the
+      // receipt its real typeface, which is the one that stops exports
+      // raising.
+      try {
+        emoji = pw.Font.ttf(
+            await rootBundle.load('assets/fonts/NotoEmoji-Regular.ttf'));
+      } catch (_) {
+        emoji = null;
+      }
       return;
     } catch (_) {
       regular = null;

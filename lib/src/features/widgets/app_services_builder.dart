@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/widgets/dashboard/dashboard_refresh_signal.dart';
 import 'package:flutter/services.dart';
 import 'package:lazervault/core/services/service_order_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -773,6 +774,18 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   @override
   void initState() {
     super.initState();
+    // REPLAY THE STAGGER ON AN EXPLICIT REFRESH.
+    //
+    // _introPlayed makes the tiles animate once and then hold still through
+    // every rebuild behind the grid — a balance tick, an account switch, a
+    // reorder drag. That is right for incidental rebuilds and wrong for the
+    // one gesture that means "show me this again": the user's own pull-to-
+    // refresh. Clearing the set lets the sweep run a second time.
+    //
+    // Only the MANUAL signal fires here. Silent refreshes (login, app-resume,
+    // scroll-into-view, WebSocket) deliberately do not, so the grid does not
+    // twitch on its own while someone is reading it.
+    DashboardRefreshSignal.instance.listenable.addListener(_replayIntro);
     _currentIndex = _stateManager.servicesCarouselIndex;
     _checkActiveAccountType();
     _accountSubscription = _accountManager.accountIdStream.listen((_) {
@@ -818,9 +831,16 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
 
   @override
   void dispose() {
+    DashboardRefreshSignal.instance.listenable.removeListener(_replayIntro);
     _accountSubscription?.cancel();
     _currencySubscription?.cancel();
     super.dispose();
+  }
+
+  /// Let the entrance animation run again after a manual refresh.
+  void _replayIntro() {
+    if (!mounted || _introPlayed.isEmpty) return;
+    setState(_introPlayed.clear);
   }
 
   /// Currency of the active family wallet, used when the canonical resolver has
