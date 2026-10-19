@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/utils/debouncer.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
+import '../utils/crowdfund_ownership.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
@@ -217,13 +218,10 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   /// id is a UUID — usernames are the only stable cross-walk.
   /// Same logic the details screen uses for its withdraw / edit
   /// gating, kept here as a one-liner for the per-row check.
-  bool _isOwnCampaign(Crowdfund c) {
-    final auth = context.read<AuthenticationCubit>();
-    final me = auth.currentProfile?.user.username?.trim();
-    final creator = c.creator.username.trim();
-    if (me == null || me.isEmpty || creator.isEmpty) return false;
-    return me.toLowerCase() == creator.toLowerCase();
-  }
+  bool _isOwnCampaign(Crowdfund c) => crowdfundIsMine(
+        c,
+        context.read<AuthenticationCubit>().currentProfile?.user.username,
+      );
 
   String? get _statusParam {
     switch (_selectedFilter) {

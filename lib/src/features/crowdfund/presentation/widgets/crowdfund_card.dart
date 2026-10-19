@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/widgets/crowdfund_ownership_badge.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../utils/crowdfund_status_display.dart';
@@ -55,7 +56,7 @@ class CrowdfundCard extends StatelessWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       _buildStatusBadge(),
-                      if (isMine) _buildOwnershipBadge(),
+                      if (isMine) const CrowdfundOwnershipBadge(),
                     ],
                   ),
                 ),
@@ -268,38 +269,4 @@ class CrowdfundCard extends StatelessWidget {
     );
   }
 
-  /// "Yours" pill rendered next to the status badge when the
-  /// authenticated user owns the campaign. Uses the brand purple
-  /// + a person-icon glyph so it reads at a glance against the
-  /// other status colours and stays distinct from the verified
-  /// (green) or active (green) palettes.
-  Widget _buildOwnershipBadge() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF4E03D0).withValues(alpha: 0.22),
-        borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(
-          color: const Color(0xFF8B5CF6).withValues(alpha: 0.45),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.person_outline,
-              color: const Color(0xFF8B5CF6), size: 12.sp),
-          SizedBox(width: 3.w),
-          Text(
-            'Yours',
-            style: TextStyle(
-              color: const Color(0xFF8B5CF6),
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

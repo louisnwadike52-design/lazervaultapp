@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/utils/emulator_url.dart';
 import '../../domain/entities/crowdfund_entities.dart';
+import 'crowdfund_ownership_badge.dart';
 import 'progress_indicator_widget.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
@@ -14,10 +15,16 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
   final LeaderboardEntry entry;
   final VoidCallback? onTap;
 
+  /// True when the signed-in user created this campaign. The leaderboard is
+  /// where a creator is most likely to meet their own campaign among
+  /// strangers', and it was the one listing with no ownership signal at all.
+  final bool isMine;
+
   const LeaderboardCrowdfundCard({
     super.key,
     required this.entry,
     this.onTap,
+    this.isMine = false,
   });
 
   @override
@@ -80,16 +87,28 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Title
-                      Text(
-                        crowdfund.title,
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      // Title, with the ownership pill beside it. Flexible
+                      // so a long title ellipsises instead of pushing the
+                      // badge off the row.
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              crowdfund.title,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isMine) ...[
+                            SizedBox(width: 6.w),
+                            const CrowdfundOwnershipBadge(compact: true),
+                          ],
+                        ],
                       ),
                       SizedBox(height: 4.h),
                       // Creator name + verified

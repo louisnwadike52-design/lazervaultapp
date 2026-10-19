@@ -4,7 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../domain/entities/crowdfund_entities.dart';
+import '../utils/crowdfund_ownership.dart';
 import '../cubit/leaderboard_cubit.dart';
 import '../cubit/leaderboard_state.dart';
 import '../widgets/leaderboard_crowdfund_card.dart';
@@ -203,8 +205,17 @@ class _CrowdfundLeaderboardScreenState extends State<CrowdfundLeaderboardScreen>
               itemCount: state.entries.length,
               itemBuilder: (context, index) {
                 final entry = state.entries[index];
+                // Read once per row rather than per build of the card: the
+                // profile is already in memory, and the card stays a plain
+                // StatelessWidget with no cubit dependency of its own.
+                final me = context
+                    .read<AuthenticationCubit>()
+                    .currentProfile
+                    ?.user
+                    .username;
                 return LeaderboardCrowdfundCard(
                   entry: entry,
+                  isMine: crowdfundIsMine(entry.crowdfund, me),
                   onTap: () => CampaignQuickViewBottomSheet.show(
                     context,
                     entry.crowdfund,

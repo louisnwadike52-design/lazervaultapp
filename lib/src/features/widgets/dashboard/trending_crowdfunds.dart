@@ -5,8 +5,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_entities.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard_cubit.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard_state.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/utils/crowdfund_ownership.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/widgets/crowdfund_ownership_badge.dart';
 
 class TrendingCrowdfunds extends StatefulWidget {
   const TrendingCrowdfunds({super.key});
@@ -246,16 +249,34 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Title
-            Text(
-              crowdfund.title,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-                color: DashboardLightStyle.textPrimary,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            // Title, with the ownership pill. The rail is 200.w wide, so
+            // the title is Flexible and the badge uses its compact form —
+            // otherwise a long title pushes the pill out of the card.
+            Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    crowdfund.title,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: DashboardLightStyle.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (crowdfundIsMine(
+                    crowdfund,
+                    context
+                        .read<AuthenticationCubit>()
+                        .currentProfile
+                        ?.user
+                        .username)) ...[
+                  SizedBox(width: 4.w),
+                  const CrowdfundOwnershipBadge(compact: true),
+                ],
+              ],
             ),
             SizedBox(height: 4.h),
             // Creator name
