@@ -1324,26 +1324,44 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showCancelConfirmation(context),
-                      icon: const Icon(Icons.cancel_outlined, size: 18),
-                      label: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFEF4444),
-                        side: const BorderSide(color: Color(0xFFEF4444)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  // CANCEL DISAPPEARS ONCE ANYONE HAS PAID.
+                  //
+                  // Someone has parted with real money against this bill, so
+                  // cancelling reverses a decision that is no longer only the
+                  // organiser's to make — and the organiser chose the
+                  // receiver, so the person who loses certainty is never the
+                  // one who cancelled.
+                  //
+                  // The server refuses it too (CancelSplitBill returns
+                  // "this bill can no longer be cancelled — N co-payer(s) have
+                  // already paid"). Hiding the button is the courtesy; the
+                  // server rule is the guarantee, since an older build or a
+                  // direct call would otherwise still reach it.
+                  //
+                  // Send Reminder stays: with shares outstanding, nudging the
+                  // people who have not paid is exactly what is left to do.
+                  if (bill.paidCount == 0) ...[
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _showCancelConfirmation(context),
+                        icon: const Icon(Icons.cancel_outlined, size: 18),
+                        label: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFEF4444),
+                          side: const BorderSide(color: Color(0xFFEF4444)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ],

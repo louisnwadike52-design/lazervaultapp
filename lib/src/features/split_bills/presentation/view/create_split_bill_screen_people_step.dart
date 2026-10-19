@@ -248,10 +248,18 @@ Widget buildSplitSummaryRow(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // CONTRAST. These sat at gray-400 (label) over gray-500 (note)
+              // on a dark navy card, and the explanatory lines under each row
+              // — the ones that say WHY "Split between" is 2 when one
+              // co-payer is listed — were the hardest text on the screen to
+              // read. Both tiers move one step lighter (gray-300 / gray-400)
+              // so the note is legible while staying visibly secondary to its
+              // label; making them the same colour would have fixed the
+              // contrast and lost the hierarchy.
               Text(
                 label,
                 style: TextStyle(
-                  color: emphasise ? Colors.white : const Color(0xFF9CA3AF),
+                  color: emphasise ? Colors.white : const Color(0xFFD1D5DB),
                   fontSize: 14,
                   fontWeight: emphasise ? FontWeight.w600 : FontWeight.w400,
                 ),
@@ -265,7 +273,7 @@ Widget buildSplitSummaryRow(
                   child: Text(
                     note,
                     style: const TextStyle(
-                        color: Color(0xFF6B7280), fontSize: 11.5, height: 1.3),
+                        color: Color(0xFF9CA3AF), fontSize: 12, height: 1.35),
                   ),
                 ),
             ],

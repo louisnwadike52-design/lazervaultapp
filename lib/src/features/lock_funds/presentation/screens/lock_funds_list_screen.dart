@@ -301,6 +301,17 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                         builder: (context, state) {
                           if (state is LockFundsLoaded) {
                             _lastLoaded = state;
+                            // A LOADED result with nothing in it is the only
+                            // honest place for the welcome screen. It used to
+                            // be reachable ONLY from the fallback below, which
+                            // also catches LockFundsInitial — so "Welcome to
+                            // Piggyvault" was really a not-loaded-yet
+                            // placeholder wearing an empty state's clothes,
+                            // and it flashed over a page that was still
+                            // loading.
+                            if (state.lockFunds.isEmpty) {
+                              return _buildEmptyState();
+                            }
                             return _buildLocksView(state);
                           }
 
@@ -323,7 +334,21 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                                 : _buildErrorState(state.message);
                           }
 
-                          return _buildEmptyState();
+                          // LockFundsInitial, or anything else before a
+                          // result exists. NOT the empty state: nothing has
+                          // been loaded yet, so claiming the user has no locks
+                          // is a guess — and it was the wrong one every time
+                          // the page was re-entered from a lock's detail, when
+                          // the cubit is back at Initial while the refetch is
+                          // in flight.
+                          //
+                          // Prefer the last result we actually held, so coming
+                          // back from a detail re-renders the list in place
+                          // and refreshes underneath, instead of tearing the
+                          // page down to a full-screen reload.
+                          return _lastLoaded != null
+                              ? _buildLocksView(_lastLoaded!)
+                              : _buildLoadingState();
                         },
                       ),
                     ),
