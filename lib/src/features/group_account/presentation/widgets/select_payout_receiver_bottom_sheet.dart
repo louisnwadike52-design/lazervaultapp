@@ -23,6 +23,7 @@ import 'package:lazervault/src/features/group_account/data/services/payout_assig
 import 'package:lazervault/src/features/group_account/domain/entities/group_entities.dart';
 import 'package:lazervault/src/generated/group_account.pb.dart' as pb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 class SelectPayoutReceiverBottomSheet extends StatefulWidget {
   final Contribution contribution;
@@ -215,7 +216,12 @@ class _SelectPayoutReceiverBottomSheetState
       case StatusCode.permissionDenied:
         return 'You need to be an admin to assign the receiver.';
       case StatusCode.invalidArgument:
-        return e.message ?? 'Invalid selection';
+        // NOT verbatim. invalidArgument carries the genuinely useful refusals
+        // ("Pick a member who is up to date"), but it also carried
+        // "accounts-service unavailable (circuit open): circuit breaker is
+        // open" to a user's screen. sanitizeUserFacingError lets a human
+        // sentence through and replaces anything that reads like plumbing.
+        return sanitizeUserFacingError(e.message);
       case StatusCode.notFound:
         return 'Contribution not found.';
       case StatusCode.unauthenticated:

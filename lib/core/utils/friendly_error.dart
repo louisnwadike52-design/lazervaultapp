@@ -268,6 +268,21 @@ bool looksTechnical(String? msg) {
       m.contains('grpcerror') ||
       m.contains('dioexception') ||
       m.contains('rpc error') || // raw gRPC status string
+      // INFRASTRUCTURE STATE, by meaning rather than by accident. A circle
+      // admin picking a payout receiver was shown "accounts-service
+      // unavailable (circuit open): circuit breaker is open" — our service
+      // names and our transport internals, none of it actionable by them
+      // (prod, 2026-10-19). That particular string happened to contain
+      // 'error:' and was caught by luck; these catch it for the right reason,
+      // and catch the siblings that would not have been.
+      m.contains('circuit breaker') ||
+      m.contains('circuit open') ||
+      m.contains('service unavailable') ||
+      m.contains('connection refused') ||
+      m.contains('context deadline exceeded') ||
+      m.contains('dial tcp') ||
+      m.contains('i/o timeout') ||
+      m.contains('no such host') ||
       // A provider/JSON blob leaked to the client (e.g. Klasha's
       // {"message":"…","error":"com.…Exception"}). Never show raw JSON.
       trimmed.startsWith('{') ||
