@@ -11,6 +11,8 @@ import 'package:lazervault/src/features/transaction_history/presentation/widgets
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_states.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/statements/presentation/widgets/statement_export_host.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 
 /// Revolut-style service-specific transaction history
 class ServiceTransactionHistoryScreen extends StatefulWidget {
@@ -34,6 +36,19 @@ class _ServiceTransactionHistoryScreenState
   @override
   void initState() {
     super.initState();
+    // WITHOUT THIS, ONLY THE 38 BUNDLED BANKS GET A LOGO HERE.
+    //
+    // A bank transfer's row asks BankLogoLookup for the recipient bank's
+    // logo, and that index is filled by the BANK LIST — which only loads when
+    // somebody opens a bank picker. Reaching history without having started a
+    // transfer this session left the index empty, so the ~280 URL-backed
+    // banks all fell through to initials while the handful with a bundled
+    // asset (Zenith among them) rendered properly. That is exactly how it was
+    // reported: one row with a real mark, the next with two letters.
+    //
+    // warmUp serves the cache and never blocks the screen; the lookup's
+    // revision notifier repaints the logos when it lands.
+    serviceLocator<BankRepository>().warmUp('NG');
     context
         .read<TransactionHistoryCubit>()
         .loadServiceTransactions(widget.serviceType);
