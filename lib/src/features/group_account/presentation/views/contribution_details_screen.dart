@@ -37,6 +37,8 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/group_account/data/services/payout_assignment_service.dart';
 import 'package:lazervault/src/features/group_account/domain/cycle_scoped_progress.dart';
+import 'package:lazervault/src/features/group_account/presentation/widgets/extend_rotation_sheet.dart';
+import 'package:lazervault/src/features/group_account/domain/rotation_extension.dart';
 import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
 part 'contribution_details_sheets.dart';
 part 'contribution_details_banners.dart';
@@ -1685,6 +1687,17 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       // it clears the moment one of them pays. Saying "failed" there would
       // send the creator looking for a bug.
       final raw = e.toString();
+
+      // THE CIRCLE HAS RUN OUT OF CALENDAR — offer the fix, don't report a
+      // failure. The server refuses to open a cycle whose due date has
+      // already gone by, because that marks every member as in arrears the
+      // same instant and the pot becomes unpayable. Only the creator can
+      // choose a new end date, so ask for one and then carry on.
+      if (looksLikeRotationNeedsExtension(e)) {
+        await _extendThenStart(contribution, serverExplanation: raw);
+        return;
+      }
+
       final deferred = raw.contains('arrears') || raw.contains('deferred');
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -1698,6 +1711,70 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 4),
         ));
+    } finally {
+      if (mounted) setState(() => _advancingRotation = false);
+    }
+  }
+
+  /// Asks the creator for a new end date, applies it, and starts the cycle.
+  ///
+  /// Sequenced deliberately: the extension is saved FIRST and confirmed
+  /// before the advance is retried, so a circle is never left having been
+  /// told it was extended when it was not. If the retry still refuses — a
+  /// member in arrears, say — that refusal is reported on its own terms,
+  /// because the extension did land and re-asking for a date would be wrong.
+  Future<void> _extendThenStart(
+    Contribution contribution, {
+    String? serverExplanation,
+  }) async {
+    if (!mounted) return;
+    final chosen = await ExtendRotationSheet.show(
+      context,
+      contribution: contribution,
+      serverExplanation: sanitizeUserFacingError(serverExplanation),
+    );
+    if (chosen == null || !mounted) return;
+
+    setState(() => _advancingRotation = true);
+    try {
+      // The server accepts an extension on a started circle but refuses a
+      // shortening, so this only ever moves the date later.
+      await context
+          .read<GroupAccountCubit>()
+          .updateContributionDetails(contribution.copyWith(deadline: chosen));
+      if (!mounted) return;
+      await serviceLocator<PayoutAssignmentService>()
+          .advanceRotation(contributionId: contribution.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: const Text(
+              'End date extended, and the circle has moved on to its next cycle'),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ));
+      _loadContributionDetails(force: true);
+    } catch (e) {
+      if (!mounted) return;
+      final raw = e.toString();
+      final deferred = raw.contains('arrears') || raw.contains('deferred');
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: Text(deferred
+              ? 'End date extended. The circle moves on once a member who is '
+                  'due a turn has caught up on their own payments.'
+              : sanitizeUserFacingError(raw)),
+          backgroundColor:
+              deferred ? const Color(0xFFF59E0B) : const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ));
+      // The deadline may well have been saved before the advance refused, so
+      // re-read rather than leaving the screen showing the old one.
+      _loadContributionDetails(force: true);
     } finally {
       if (mounted) setState(() => _advancingRotation = false);
     }
