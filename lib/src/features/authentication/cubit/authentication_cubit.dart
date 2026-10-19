@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/family_account/presentation/utils/family_archive_session.dart';
 
 import 'package:dartz/dartz.dart' hide State;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -516,6 +517,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // through, including the auto-login path that clears a definitively
     // rejected refresh token without the user ever pressing Log out.
     PendingDeepLink.instance.clear();
+    // Closed Family & Friends accounts are shown on the dashboard only for the
+    // session the creator asked for them in. The same chokepoint, for the same
+    // reason: the next login — or the next person on a shared device — starts
+    // with only the active accounts, which is the rule the per-creator cap is
+    // expressed in.
+    FamilyArchiveSession.instance.clear();
     // The Group Funds terms are shown once per LOGIN SESSION, tracked in
     // memory because "this session" means until sign-out, not until a date.
     // Cleared at the same chokepoint for the same reason as the stash above:
