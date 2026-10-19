@@ -33,6 +33,9 @@ import '../widgets/mention_picker.dart';
 import '../utils/group_funds_palette.dart';
 import '../widgets/full_text_details_dialog.dart';
 import '../widgets/auto_debit_attempts_sheet.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/src/features/group_account/data/services/payout_assignment_service.dart';
 part 'contribution_details_sheets.dart';
 part 'contribution_details_banners.dart';
 part 'contribution_details_payment_widgets.dart';
@@ -522,6 +525,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     // should be reading it anyway.
                     if (contribution.awaitingOpen)
                       _buildAwaitingOpenActions(contribution, isAdmin),
+                    // A STALLED ROTATION HAD NOWHERE TO GO.
+                    //
+                    // displayState already detects it and the badge already
+                    // says "Needs attention" in amber — but nothing in the app
+                    // could move the circle on, so the person looking at the
+                    // warning had no way to act on it. The rotation normally
+                    // advances itself right after a payout settles; that call
+                    // is non-fatal by design (the money has already moved), so
+                    // when it fails the circle simply stops and waits for
+                    // someone to advance it.
+                    if (contribution.displayState ==
+                        ContributionDisplayState.stalled)
+                      _buildStalledRotationBanner(contribution, isCreator),
                     // Payout receiver banner — surfaces the scheduled-payout state
                     // (pending_receiver / ready / scheduled / in_flight / settled
                     // / failed / exhausted) with the right CTA for the role. Only
@@ -1463,6 +1479,149 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// of the screen and pushed the tab bar out of reach. The explanatory copy
   /// is not lost — it moves into the dialog, in front of the button that
   /// commits the action, which is where it is actually read.
+  /// Whether a manual "start next cycle" is in flight, so the CTA cannot be
+  /// pressed twice. The server is idempotent under its own lock, but a second
+  /// tap would still show a second outcome.
+  bool _advancingRotation = false;
+
+  /// The way out of a stalled rotation.
+  ///
+  /// Shown only for [ContributionDisplayState.stalled] — a ROSCA closed with
+  /// cycles still owed, whose next payout slot cannot run. Measured on prod
+  /// 2026-10-19 ("fanthom daily savings"): cycle 1 collected NGN 400 and paid
+  /// it out, the contribution was then marked completed, and position 2 sat in
+  /// manual_review reading "contribution status is completed (must be
+  /// active)".
+  ///
+  /// Only the creator gets the button — the server refuses anyone else — but
+  /// members still see the explanation, because the person waiting for a turn
+  /// that never came deserves to know why rather than seeing a silent screen.
+  Widget _buildStalledRotationBanner(Contribution contribution, bool isCreator) {
+    final total = contribution.totalCycles ?? 0;
+    final current = contribution.currentCycle ?? 0;
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.warning_amber_rounded,
+                  color: const Color(0xFFF59E0B), size: 18.sp),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  'This circle stopped early',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            total > 0 && current > 0
+                ? 'Cycle $current of $total has paid out, but the circle was '
+                    'closed before the remaining cycles ran. Members still '
+                    'waiting for their turn cannot be paid until it moves on.'
+                : 'A cycle has paid out, but the circle was closed before its '
+                    'remaining cycles ran.',
+            style: GoogleFonts.inter(
+                color: Colors.grey[300], fontSize: 12.sp, height: 1.4),
+          ),
+          if (isCreator) ...[
+            SizedBox(height: 12.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _advancingRotation
+                    ? null
+                    : () => _startNextCycle(contribution),
+                icon: _advancingRotation
+                    ? SizedBox(
+                        width: 14.w,
+                        height: 14.w,
+                        child: const CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    : Icon(Icons.play_arrow_rounded, size: 18.sp),
+                label: Text(
+                  _advancingRotation ? 'Starting…' : 'Start next cycle',
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, fontWeight: FontWeight.w600),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF59E0B),
+                  foregroundColor: Colors.black,
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.r)),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Advance the rotation by hand, through the same server path the payout
+  /// supervisor uses automatically. The server closes the finished cycle,
+  /// bumps the lifetime counter, moves the pointer to the next member and
+  /// re-anchors the cycle calendar — so this is a resume, not a repair.
+  Future<void> _startNextCycle(Contribution contribution) async {
+    if (_advancingRotation) return;
+    setState(() => _advancingRotation = true);
+    try {
+      await serviceLocator<PayoutAssignmentService>()
+          .advanceRotation(contributionId: contribution.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: const Text('The circle has moved on to its next cycle'),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ));
+      // Not awaited: _loadContributionDetails returns void and drives the
+      // refresh through the cubit, so the screen repaints when its state
+      // lands rather than when this future completes.
+      _loadContributionDetails(force: true);
+    } catch (e) {
+      if (!mounted) return;
+      // A DEFERRAL IS NOT A FAULT. The server refuses to send the pot to
+      // someone who has not been contributing, so "every remaining position
+      // is held by a member in arrears" is the circle working as intended —
+      // it clears the moment one of them pays. Saying "failed" there would
+      // send the creator looking for a bug.
+      final raw = e.toString();
+      final deferred = raw.contains('arrears') || raw.contains('deferred');
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: Text(deferred
+              ? 'Not yet — everyone still due a turn is behind on their own '
+                  'payments. The circle moves on once one of them pays.'
+              : sanitizeUserFacingError(raw)),
+          backgroundColor:
+              deferred ? const Color(0xFFF59E0B) : const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ));
+    } finally {
+      if (mounted) setState(() => _advancingRotation = false);
+    }
+  }
+
   Widget _buildAwaitingOpenActions(Contribution contribution, bool isAdmin) {
     final cubit = context.read<GroupAccountCubit>();
     final myUserId = cubit.currentUserId;

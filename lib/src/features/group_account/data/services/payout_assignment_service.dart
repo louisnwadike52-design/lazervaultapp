@@ -35,6 +35,39 @@ class PayoutAssignmentService {
   Future<CallOptions> _opts() => _callOptionsHelper.withAuth();
 
   // --------------------------------------------------------------------------
+  // Rotation
+  // --------------------------------------------------------------------------
+
+  /// Move a ROSCA on to its next cycle by hand.
+  ///
+  /// The rotation normally advances itself: the payout supervisor calls the
+  /// same server path right after a cycle's payout succeeds. But that call is
+  /// deliberately non-fatal — the money has already moved by then, so a
+  /// failure there is logged and the circle simply stops, waiting for someone
+  /// to advance it. Until now nothing in the app could, so a circle that
+  /// missed its advance was stuck with no way forward: its next cycle's slot
+  /// sits in `manual_review` reading "contribution status is completed (must
+  /// be active)".
+  ///
+  /// Server-side this closes the finished cycle (writing its row into
+  /// contribution_cycles), bumps the lifetime counter, moves the pointer to
+  /// the next member in the rotation and re-anchors the cycle calendar.
+  ///
+  /// Expected refusals, which callers should show rather than retry:
+  ///   * FAILED_PRECONDITION — every remaining position is held by a member
+  ///     in arrears, so the pot is deliberately NOT sent on. It clears when
+  ///     one of them pays.
+  ///   * PERMISSION_DENIED — only the creator may advance the circle.
+  Future<pb_msg.AdvancePayoutRotationResponse> advanceRotation({
+    required String contributionId,
+  }) async {
+    final req = pb_msg.AdvancePayoutRotationRequest(
+      contributionId: contributionId,
+    );
+    return _client.advancePayoutRotation(req, options: await _opts());
+  }
+
+  // --------------------------------------------------------------------------
   // Receiver assignment
   // --------------------------------------------------------------------------
 
