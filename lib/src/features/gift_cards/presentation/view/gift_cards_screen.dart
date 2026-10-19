@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/prepaid_badge.dart';
 
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
@@ -83,14 +84,30 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   List<String> _dynamicCategories = [];
   String _sellSearchQuery = '';
 
+  /// Whether selling is switched on for this user.
+  ///
+  /// Resolved ONCE in initState rather than per build: the gate reads
+  /// SharedPreferences synchronously, and a value that could change
+  /// mid-screen would let the tab vanish under a user who is part-way
+  /// through listing a card.
+  late final bool _sellVisible;
+
   @override
   void initState() {
     super.initState();
+    _sellVisible = FeatureFlags.giftcardSellTabIsVisible();
     // Read optional initialTab argument (e.g., from MySales back button)
     // so callers can land users on a specific tab. "sell" → Sell tab,
     // anything else (or absent) → Buy tab default.
+    //
+    // The gate is checked HERE too, not only on the toggle: a deep link
+    // carrying initialTab=sell would otherwise open the hidden tab directly,
+    // with no way back to Buy because the toggle that switches tabs is the
+    // thing being hidden.
     final args = Get.arguments;
-    if (args is Map && args['initialTab']?.toString().toLowerCase() == 'sell') {
+    if (_sellVisible &&
+        args is Map &&
+        args['initialTab']?.toString().toLowerCase() == 'sell') {
       _currentTab = 1;
     }
     final cubit = context.read<GiftCardCubit>();
@@ -270,7 +287,10 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                             SizedBox(height: 12.h),
                             _buildQuickActions(),
                             SizedBox(height: 12.h),
-                            _buildBuySellToggle(),
+                            // Buy is the whole screen when selling is off, so
+                            // the toggle is not drawn at all — a single-option
+                            // switch reads as a broken control.
+                            if (_sellVisible) _buildBuySellToggle(),
                             SizedBox(height: 8.h),
                             _buildSearchAndFilters(),
                             Expanded(

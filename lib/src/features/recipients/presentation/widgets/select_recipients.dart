@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/models/device_contact.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
@@ -601,7 +602,13 @@ class _SelectRecipientsState extends State<SelectRecipients>
                               // Opaque hit-test so taps anywhere in the padded
                               // box register, not only on the icon glyph.
                               behavior: HitTestBehavior.opaque,
-                              onTap: () => Get.offAllNamed(AppRoutes.dashboard),
+                              // Pop when there is something to pop. This was
+                              // an unconditional offAllNamed(dashboard),
+                              // which destroyed the stack even when the user
+                              // had arrived here from somewhere — coming back
+                              // from Recurring Payments landed them on the
+                              // dashboard having lost the whole flow.
+                              onTap: backOrHome,
                               child: Container(
                                 width: 46.w,
                                 height: 46.w,

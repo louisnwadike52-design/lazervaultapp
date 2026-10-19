@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
+import 'package:lazervault/core/navigation/back_or_home.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
@@ -69,7 +71,7 @@ class _RecurringTransferDetailScreenState
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: backOrHome,
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(

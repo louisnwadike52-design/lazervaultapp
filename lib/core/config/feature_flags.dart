@@ -811,6 +811,26 @@ class FeatureFlags {
     return gateAvailable(prefix, defaultOn: defaultOn);
   }
 
+  /// The gift-card SELL tab.
+  ///
+  /// DEFAULT OFF, so the gift-cards screen shows Buy alone until an operator
+  /// turns selling on. Selling is the side with the manual settlement queue,
+  /// the per-brand sell rates and the reversal path behind it; shipping the
+  /// tab before that is staffed puts users into a flow nobody is watching.
+  ///
+  /// Uses the generic gate family, so it comes with its whitelist for free:
+  ///
+  ///   feature_giftcard_sell_available   "false" (the default) hides the tab
+  ///   feature_giftcard_sell_whitelist   CSV of emails that always see it
+  ///
+  /// The whitelist is checked FIRST and overrides the switch, which is how
+  /// the people running the pilot keep access while it stays hidden from
+  /// everyone else.
+  static const String giftcardSellPrefix = 'feature_giftcard_sell';
+
+  static bool giftcardSellTabIsVisible({String? email}) =>
+      gateAllowed(giftcardSellPrefix, email: email, defaultOn: false);
+
   /// Whether Lazerfunds should show the FULL first-run guide card on its tabs,
   /// instead of the one-line info link that is now the standing state.
   ///
