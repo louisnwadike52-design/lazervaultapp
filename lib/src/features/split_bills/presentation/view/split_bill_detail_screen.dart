@@ -237,7 +237,15 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
                       // in — the server refuses that too, so this is the
                       // honest surface of the same rule rather than a second
                       // one that could drift.
-                      if (_isTerminalStatus(bill.status))
+                      // ...and only when no one paid into it. A bill money
+                      // passed through is not clutter: the row is the only
+                      // record that a co-payer's share moved and came back,
+                      // and the organiser — who chose the receiver — is not
+                      // the one who decides it stops being visible. The
+                      // server refuses it too ("this bill can no longer be
+                      // removed — N co-payer(s) paid into it"); this is the
+                      // honest surface of the same rule.
+                      if (_isTerminalStatus(bill.status) && bill.paidCount == 0)
                         _buildRemoveFromListAction(context, bill.id),
                       const SizedBox(height: 24),
                     ],
