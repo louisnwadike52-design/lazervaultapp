@@ -111,6 +111,21 @@ class ContributionCard extends StatelessWidget {
                             const CreatedByYouBadge(compact: true),
                           ContributionTypeBadge(
                               type: contribution.type, compact: true),
+                          // WHICH CYCLE THIS IS.
+                          //
+                          // A rotating circle's numbers below — raised, pot,
+                          // progress — are all about ONE cycle, and the
+                          // listing never said which. Two members comparing
+                          // the same card could reasonably read it as the
+                          // whole rotation's total. Shown only when the wire
+                          // supplied both counters, so a card whose numbers
+                          // we do not have is never labelled with a guess.
+                          if (contribution.isRotatingSavings &&
+                              (contribution.currentCycle ?? 0) > 0 &&
+                              (contribution.totalCycles ?? 0) > 0)
+                            _cyclePill(
+                              'Cycle ${contribution.currentCycle} of ${contribution.totalCycles}',
+                            ),
                         ],
                       ),
                       SizedBox(height: 4.h),
@@ -205,8 +220,21 @@ class ContributionCard extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 2.h),
+                    // THE SAME SOURCE THE PERCENTAGE ABOVE USES.
+                    //
+                    // The bar read `contribution.progressPercentage` (which
+                    // follows amountRaised) while this figure read
+                    // currentAmount — the LIVE POT, which a payout empties.
+                    // One card therefore showed "Progress 100%" directly above
+                    // "Raised NGN 0" for an esusu whose cycle had collected
+                    // NGN 400 and paid it out. Measured on prod 2026-10-19
+                    // ("fanthom daily savings").
+                    //
+                    // amountRaised answers what this CYCLE collected, falling
+                    // back to the pot when no cycle figure is on the wire, so
+                    // the two halves of this card can no longer disagree.
                     Text(
-                      '${contribution.currency} ${_formatAmount(contribution.currentAmount)}',
+                      '${contribution.currency} ${_formatAmount(contribution.amountRaised)}',
                       style: GoogleFonts.inter(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w700,
@@ -371,6 +399,37 @@ class ContributionCard extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  /// A quiet pill naming the ACTIVE cycle on a rotating contribution.
+  ///
+  /// Deliberately neutral, not a status colour: it states a fact about which
+  /// cycle the figures below describe, and colouring it would compete with
+  /// the status badge that says how the circle is actually doing.
+  Widget _cyclePill(String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(6.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.autorenew_rounded, size: 11.sp, color: Colors.grey[400]),
+          SizedBox(width: 4.w),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[300],
+            ),
+          ),
+        ],
       ),
     );
   }
