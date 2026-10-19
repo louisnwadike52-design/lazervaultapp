@@ -630,16 +630,45 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         );
       });
 
-      if (response.success && response.hasTransaction()) {
+      // EVERY MANUAL SAVE REPORTED FAILURE, INCLUDING THE ONES THAT MOVED
+      // MONEY.
+      //
+      // The app's autosave.proto copy has drifted from the server's contract
+      // on THIS message. The server answers
+      //
+      //     TriggerAutoSaveResponse2 { transaction = 1, message = 2 }
+      //
+      // and this copy declares
+      //
+      //     TriggerAutoSaveResponse  { success = 1, msg = 2, transaction = 3 }
+      //
+      // Protobuf matches on field NUMBER, so the reply's nested transaction
+      // arrives where a bool is expected and is skipped, `success` stays
+      // false, field 3 never arrives, and `msg` picks up the server's
+      // constant "Auto-save triggered successfully". That is precisely the
+      // snackbar people were shown: a red "Couldn't save" titled above the
+      // words "Auto-save triggered successfully", on a save that had worked.
+      //
+      // Read the contract the server actually implements instead: TriggerSave
+      // returns a gRPC ERROR for every refusal (mapServiceError in
+      // autosave_handler.go) — insufficient funds, goal reached, rule not
+      // active, PIN, minimum balance, all of them. So a reply that did not
+      // throw IS the save being accepted.
+      //
+      // The figures come from the refresh the caller performs, not from here,
+      // because this response cannot carry them until the protos are
+      // realigned. Deliberately NOT inventing a transaction id: a receipt
+      // keyed on a made-up id would be worse than one the refresh fills in.
+      if (response.hasTransaction()) {
+        // Future-proof: if the protos are realigned, use the real thing.
         return Right(AutoSaveTransactionModel.fromProto(response.transaction));
-      } else {
-        return Left(ServerFailure(
-          message: response.msg.isNotEmpty
-              ? response.msg
-              : 'Failed to trigger auto-save.',
-          statusCode: 400,
-        ));
       }
+      return Right(
+        AutoSaveTransactionModel.accepted(
+          ruleId: ruleId,
+          amount: customAmount,
+        ),
+      );
     } on GrpcError catch (e) {
       return Left(ServerFailure(
         message: e.message ?? 'Failed to trigger auto-save.',

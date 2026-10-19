@@ -153,6 +153,38 @@ class AutoSaveTransactionModel extends AutoSaveTransactionEntity {
     super.metadata,
   });
 
+  /// A save the server ACCEPTED, whose figures the refresh will fill in.
+  ///
+  /// TriggerAutoSave's reply cannot be read for the transaction today — the
+  /// app's proto copy declares different field numbers from the contract the
+  /// server implements, so the nested transaction is skipped on decode (see
+  /// autosave_repository_impl.triggerAutoSave). The server returns a gRPC
+  /// error for every refusal, so a reply that did not throw means the save
+  /// was accepted, and that is what this records.
+  ///
+  /// The id is deliberately EMPTY rather than invented: a receipt keyed on a
+  /// made-up id would be worse than one the refresh resolves properly, and an
+  /// empty id is easy to assert on.
+  factory AutoSaveTransactionModel.accepted({
+    required String ruleId,
+    double? amount,
+  }) {
+    return AutoSaveTransactionModel(
+      id: '',
+      ruleId: ruleId,
+      userId: '',
+      sourceAccountId: '',
+      destinationAccountId: '',
+      amount: amount ?? 0,
+      // The rule's own trigger type is unknown from here; the refresh
+      // carries it. `unknown` is honest, where naming a type would not be.
+      triggerType: TriggerType.unknown,
+      triggerReason: 'manual_trigger',
+      success: true,
+      createdAt: DateTime.now(),
+    );
+  }
+
   factory AutoSaveTransactionModel.fromProto(
       autosave_pb.AutoSaveTransaction proto) {
     return AutoSaveTransactionModel(

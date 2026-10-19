@@ -30,6 +30,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
 import '../../utils/autosave_trigger_labels.dart';
 import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
+import 'package:lazervault/core/utils/logger.dart';
 part 'autosave_rule_details_screen_widgets.dart';
 
 class AutoSaveRuleDetailsScreen extends StatefulWidget {
@@ -958,17 +959,31 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
             }
           });
 
+          // SAY WHAT HAPPENED, NOT WHAT WAS "TRIGGERED".
+          //
+          // "Manual save triggered successfully" describes our RPC, not the
+          // member's money, and it sat in a green bar even when the amount
+          // was unknown. The server refuses every failure with an error, so
+          // reaching here means the money moved; the figures land with the
+          // refresh below.
+          final movedAmount = state.transaction.amount > 0
+              ? state.transaction.formattedAmount
+              : null;
           Get.snackbar(
-            'Success',
-            'Manual save triggered successfully for ${state.transaction.formattedAmount}',
+            'Saved',
+            movedAmount != null
+                ? '$movedAmount moved into this goal.'
+                : 'Your save is in. The totals update in a moment.',
             backgroundColor: const Color(0xFF10B981),
             colorText: Colors.white,
             snackPosition: SnackPosition.TOP,
             duration: const Duration(seconds: 3),
           );
 
-          // Refresh rule data to show updated totalSaved
-          context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
+          // Refresh so the page shows what actually happened — Total Saved,
+          // Times Triggered and the progress bar all move on a save, and the
+          // response cannot carry them.
+          _refreshRule();
         } else if (state is AutoSaveRulesLoadedState) {
           // Re-sync THIS rule from the refreshed list.
           //
@@ -1029,36 +1044,43 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
               children: [
                 _buildHeader(),
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Column(
-                      children: [
-                        SizedBox(height: 20.h),
-                        _buildStatusCard(),
-                        SizedBox(height: 20.h),
-                        if (_isLinkedBankRule)
-                          MandateHealthBanner(rule: rule, userId: _userId),
-                        // Only offer the "tap to save" prompt on a rule that
-                        // can actually act on it. A paused rule (including one
-                        // the backend paused because Bank Inflow was switched
-                        // off) would send the user into a refusal.
-                        if (rule.triggerType == TriggerType.externalInflow &&
-                            rule.pendingInflowKobo > 0 &&
-                            rule.isActive) ...[
-                          _buildPendingInflowBanner(),
+                  child: RefreshIndicator(
+                    onRefresh: _onPullToRefresh,
+                    color: _accent,
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    child: SingleChildScrollView(
+                      // Always scrollable, so a short page can still be pulled.
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Column(
+                        children: [
                           SizedBox(height: 20.h),
+                          _buildStatusCard(),
+                          SizedBox(height: 20.h),
+                          if (_isLinkedBankRule)
+                            MandateHealthBanner(rule: rule, userId: _userId),
+                          // Only offer the "tap to save" prompt on a rule that
+                          // can actually act on it. A paused rule (including one
+                          // the backend paused because Bank Inflow was switched
+                          // off) would send the user into a refusal.
+                          if (rule.triggerType == TriggerType.externalInflow &&
+                              rule.pendingInflowKobo > 0 &&
+                              rule.isActive) ...[
+                            _buildPendingInflowBanner(),
+                            SizedBox(height: 20.h),
+                          ],
+                          _buildRuleInfoCard(),
+                          SizedBox(height: 20.h),
+                          _buildAccountsCard(),
+                          SizedBox(height: 20.h),
+                          _buildLimitsCard(),
+                          SizedBox(height: 20.h),
+                          _buildStatisticsCard(),
+                          SizedBox(height: 20.h),
+                          _buildActionsCard(),
+                          SizedBox(height: 120.h),
                         ],
-                        _buildRuleInfoCard(),
-                        SizedBox(height: 20.h),
-                        _buildAccountsCard(),
-                        SizedBox(height: 20.h),
-                        _buildLimitsCard(),
-                        SizedBox(height: 20.h),
-                        _buildStatisticsCard(),
-                        SizedBox(height: 20.h),
-                        _buildActionsCard(),
-                        SizedBox(height: 120.h),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -1641,6 +1663,32 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
     );
   }
 
+  /// Re-reads this rule from the server.
+  ///
+  /// One place, so the three things that must refresh the page — a manual
+  /// save, an auto save landing while the page is open, and a pull — cannot
+  /// drift apart. The cubit re-fetches and emits AutoSaveRulesLoadedState,
+  /// which the listener above uses to re-sync THIS rule.
+  void _refreshRule() {
+    context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
+  }
+
+  /// Pull-to-refresh. Awaits the rule actually arriving rather than returning
+  /// immediately, so the spinner reflects the fetch instead of vanishing
+  /// while the page is still stale.
+  Future<void> _onPullToRefresh() async {
+    final cubit = context.read<AutoSaveCubit>();
+    final before = rule;
+    cubit.getRulesWithCache(forceRefresh: true);
+    // Bounded: a failed or slow fetch must still release the indicator.
+    final deadline = DateTime.now().add(const Duration(seconds: 6));
+    while (mounted &&
+        identical(rule, before) &&
+        DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+    }
+  }
+
   Widget _buildActionsCard() {
     final busy = _isTogglingRule || _isDeletingRule || _isTriggeringRule;
 
@@ -1648,14 +1696,26 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
     // actions sit side-by-side instead of stacking down the screen.
     // Manual Trigger only shows for active rules — when present we
     // pair it with Pause; otherwise Resume gets the lead slot.
-    final pauseResume = _buildActionButton(
-      label: rule.isActive ? 'Pause' : 'Resume',
-      icon:
-          rule.isActive ? Icons.pause_circle_outline : Icons.play_circle_filled,
-      color: rule.isActive ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
-      onPressed: busy ? null : _toggleRule,
-      isLoading: _isTogglingRule,
-    );
+    // RESUME ONLY MAKES SENSE FOR A PAUSED RULE.
+    //
+    // This read `rule.isActive ? Pause : Resume`, so a rule that had reached
+    // its target — status `completed`, nothing left to save — offered
+    // "Resume", inviting someone to restart a goal they had already met. A
+    // cancelled rule did the same. Neither can be resumed; the server would
+    // refuse, and the button was a dead end.
+    final Widget? pauseResume = rule.isFinished
+        ? null
+        : _buildActionButton(
+            label: rule.isActive ? 'Pause' : 'Resume',
+            icon: rule.isActive
+                ? Icons.pause_circle_outline
+                : Icons.play_circle_filled,
+            color: rule.isActive
+                ? const Color(0xFFF59E0B)
+                : const Color(0xFF10B981),
+            onPressed: busy ? null : _toggleRule,
+            isLoading: _isTogglingRule,
+          );
 
     final triggerOrAllRules = rule.isActive
         ? _buildActionButton(
@@ -1672,9 +1732,13 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
             onPressed: _viewTransactions,
           );
 
+    // "Cancel" says what it does. "Delete" reads as erasing the history too,
+    // and the rule's saves and receipts are not erased — the rule simply
+    // stops. A rule that has already finished is only being tidied away, so
+    // it keeps the plainer word.
     final deleteButton = _buildActionButton(
-      label: 'Delete',
-      icon: Icons.delete_outline,
+      label: rule.isFinished ? 'Remove' : 'Cancel rule',
+      icon: Icons.cancel_outlined,
       color: const Color(0xFFEF4444),
       onPressed: busy ? null : _deleteRule,
       isLoading: _isDeletingRule,
@@ -1685,8 +1749,10 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
         Row(
           children: [
             Expanded(child: triggerOrAllRules),
-            SizedBox(width: 12.w),
-            Expanded(child: pauseResume),
+            if (pauseResume != null) ...[
+              SizedBox(width: 12.w),
+              Expanded(child: pauseResume),
+            ],
           ],
         ),
         SizedBox(height: 12.h),
@@ -1872,5 +1938,14 @@ _FriendlyError _humaniseAutosaveError(String raw) {
       'We couldn\'t reach the savings service. The reconciler will retry shortly.',
     );
   }
-  return _FriendlyError('Couldn\'t save', raw);
+  // NEVER the raw text. This fallback printed whatever the backend said
+  // under a "Couldn't save" title, which is how a member was shown
+  // "Couldn't save / Auto-save triggered successfully" — a contradiction
+  // made of our own plumbing. The detail belongs in the logs.
+  AppLogger.error('autosave: unmapped trigger failure',
+      error: raw, flow: 'autosave');
+  return const _FriendlyError(
+    'We couldn\'t complete that save',
+    'Nothing has left your account. Try again in a moment.',
+  );
 }

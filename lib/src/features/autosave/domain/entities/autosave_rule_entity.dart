@@ -138,6 +138,19 @@ class AutoSaveRuleEntity extends Equatable {
   // Helper methods
   bool get isActive => status == AutoSaveStatus.active;
   bool get isPaused => status == AutoSaveStatus.paused;
+
+  /// A rule that has finished or been called off. Nothing about it can be
+  /// resumed, triggered or scheduled again.
+  ///
+  /// "Not active" is NOT the same as "paused" — a rule that reached its
+  /// target is `completed`, and offering "Resume" on it invites someone to
+  /// restart a goal they have already met.
+  bool get isFinished =>
+      status == AutoSaveStatus.completed || status == AutoSaveStatus.cancelled;
+
+  /// True only when pausing is what stopped it, which is the one case a
+  /// Resume makes sense for.
+  bool get canResume => isPaused;
   bool get hasReachedGoal =>
       targetAmount != null && totalSaved >= targetAmount!;
 
