@@ -406,6 +406,13 @@ class ContributionCard extends StatelessWidget {
       case ContributionDisplayState.completed:
         return _statusPill(
             const Color(0xFF10B981), state.label, Icons.check_circle);
+      case ContributionDisplayState.stalled:
+        // AMBER, NOT GREEN. The rotation was closed with cycles still owed,
+        // so the circle stopped early and someone is waiting for a turn
+        // that cannot come. A green "Completed" over that hid the problem
+        // from exactly the people who would have reported it.
+        return _statusPill(
+            const Color(0xFFF59E0B), state.label, Icons.error_outline);
       case ContributionDisplayState.paidOut:
         // Distinct colour from Completed: "funded" and "the money has
         // reached them" are different facts and a member checking on a

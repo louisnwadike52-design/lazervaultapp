@@ -212,6 +212,20 @@ class Contribution extends Equatable {
       case ContributionStatus.paused:
         return ContributionDisplayState.paused;
       case ContributionStatus.completed:
+        // CLOSED WITH CYCLES STILL OWED IS NOT A FINISH.
+        //
+        // AdvancePayoutRotation only awards completion when
+        // cycles_completed >= total_cycles, and it cancels the untouched
+        // slots on the way. A rotation that is `completed` with cycles
+        // remaining was closed by something else and its next slot cannot
+        // run — on prod that slot sits in manual_review reading
+        // "contribution status is completed (must be active)".
+        //
+        // Checked BEFORE paidOut, because the stuck case has a settled
+        // payout too and would otherwise read as a clean "Paid out".
+        if (isRotatingSavings && hasUnrunCycles) {
+          return ContributionDisplayState.stalled;
+        }
         if (paidOut) return ContributionDisplayState.paidOut;
         if (targetMet) return ContributionDisplayState.completed;
         // Closed by its deadline with the target unmet. "Completed" would
@@ -221,6 +235,24 @@ class Contribution extends Equatable {
         if (deadlinePassed) return ContributionDisplayState.overdue;
         return ContributionDisplayState.active;
     }
+  }
+
+  /// True when the server closed a rotation before its agreed cycles ran.
+  ///
+  /// Read from the CYCLE POINTER, because `cycles_completed` is not on the
+  /// wire. A clean finish leaves the pointer on the member who last
+  /// collected — AdvancePayoutRotation deliberately does not advance past
+  /// the end — so a finished rotation has `currentCycle == totalCycles`,
+  /// and a pointer short of the end means cycles were never run.
+  ///
+  /// Deliberately conservative: it needs BOTH counters present and a total
+  /// above one, so a contribution whose numbers the wire did not supply is
+  /// never accused of being stuck.
+  bool get hasUnrunCycles {
+    final total = totalCycles ?? 0;
+    final current = currentCycle ?? 0;
+    if (total <= 1 || current <= 0) return false;
+    return current < total;
   }
 
   bool get isActive => status == ContributionStatus.active;

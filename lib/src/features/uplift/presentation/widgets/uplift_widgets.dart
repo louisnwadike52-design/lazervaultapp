@@ -1212,6 +1212,30 @@ class UpliftApplicationCard extends StatelessWidget {
 
 /// A gradient avatar (rounded square) with the first initial — mirrors the
 /// group-funds group avatar and the crypto asset avatar.
+/// THE FLICKERING "A".
+///
+/// The gradient here is a constant and this widget is stateless, so the
+/// block itself cannot change between builds — but the LETTER was drawn
+/// with `GoogleFonts.inter(...)`, and google_fonts is configured to fetch
+/// at runtime: `allowRuntimeFetching` is never disabled and Inter is not
+/// registered as a Flutter font family, so the TTF comes over the network
+/// and is cached per process. Until it resolves the glyph paints in the
+/// platform fallback and then swaps — a visible flash every time the list
+/// rebuilds with a cold or failing cache, which on a weak connection is
+/// most of the time.
+///
+/// The cards either side of it do not flash because their covers are
+/// UpRemoteImage, which is KEYED (`ValueKey(url#attempt)`), so Flutter
+/// reuses the element and the decoded image survives the rebuild. This
+/// avatar had no such anchor, which is why the symptom looked specific to
+/// the one fund with no cover image.
+///
+/// One glyph does not need a webfont. A plain TextStyle resolves
+/// synchronously from the platform font, so there is nothing to swap in and
+/// nothing to flash — and the avatar renders identically offline.
+///
+/// The underlying setting is app-wide and still worth fixing separately:
+/// every GoogleFonts call in the app pays the same fetch.
 class UpGradientAvatar extends StatelessWidget {
   const UpGradientAvatar(
       {required this.text, this.size = 40, this.radius = 10, super.key});
@@ -1221,20 +1245,26 @@ class UpGradientAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initial = text.trim().isNotEmpty ? text.trim()[0].toUpperCase() : 'L';
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        gradient: kUpAccentGradient,
-        borderRadius: BorderRadius.circular(radius),
-      ),
-      child: Text(
-        initial,
-        style: GoogleFonts.inter(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-            fontSize: size * 0.45),
+    return RepaintBoundary(
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          gradient: kUpAccentGradient,
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        child: Text(
+          initial,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: size * 0.45,
+              // No webfont for a single character: a network-resolved
+              // family is what made this flash.
+              height: 1.0),
+        ),
       ),
     );
   }

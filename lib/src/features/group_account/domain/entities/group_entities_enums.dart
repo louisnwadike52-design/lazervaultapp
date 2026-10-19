@@ -91,6 +91,23 @@ enum ContributionDisplayState {
 
   /// Closed, and a payout has settled.
   paidOut,
+
+  /// Closed by the server while agreed cycles were still outstanding.
+  ///
+  /// A rotation finishes when `cycles_completed >= total_cycles`, and that
+  /// path also cancels the untouched slots. A contribution that is
+  /// `completed` with cycles still owed did NOT finish — it was closed by
+  /// something else, and its next rotation slot is left unable to run.
+  ///
+  /// Measured on prod 2026-10-19, "fanthom daily savings":
+  ///   current_cycle 1 · total_cycles 2 · cycles_completed 0
+  ///   status completed
+  ///   payout_schedules position 2 -> manual_review,
+  ///     "contribution status is completed (must be active)"
+  ///
+  /// The UI showed a green "Completed" badge over that, so a stalled
+  /// rotation was indistinguishable from one that ran its course.
+  stalled,
   cancelled,
 }
 
@@ -107,6 +124,8 @@ extension ContributionDisplayStateLabel on ContributionDisplayState {
         return 'Completed';
       case ContributionDisplayState.closed:
         return 'Closed';
+      case ContributionDisplayState.stalled:
+        return 'Needs attention';
       case ContributionDisplayState.paidOut:
         return 'Paid out';
       case ContributionDisplayState.cancelled:
