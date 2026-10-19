@@ -29,6 +29,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 part 'create_split_bill_screen_widgets.dart';
 part 'create_split_bill_screen_method_hint.dart';
+part 'create_split_bill_screen_people_step.dart';
 
 class CreateSplitBillScreen extends StatefulWidget {
   const CreateSplitBillScreen({super.key});
@@ -1955,213 +1956,110 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
 
   Widget _buildParticipantCard(_SelectedParticipant participant) {
     final amount = _customAmounts[participant.key] ?? 0.0;
+    final floor = _externalShareFloor;
+    final belowFloor =
+        _bankReceiverActive && floor > 0 && amount > 0 && amount < floor;
+    final input = _shareInputFor(_splitMethod);
+    final stored = input == SplitShareInput.percent
+        ? _percentages[participant.key]
+        : _customAmounts[participant.key];
 
-    return Container(
-      // KEYED BY PERSON, NOT BY POSITION.
-      //
-      // The amount/% field inside is an uncontrolled TextField: its text
-      // lives in the element, not in _percentages. Without a key Flutter
-      // matches these same-typed cards BY INDEX, so removing a co-payer
-      // slides everyone up and leaves the departed person's typed figure
-      // sitting against whoever took their row — while _percentages, keyed
-      // by person, holds the right values. Three co-payers at 50/30/20 with
-      // the first removed showed "50, 30" over the two who actually had
-      // 30 and 20. The split that gets created is the model's, so the screen
-      // was simply lying about who pays what.
-      key: ValueKey(participant.key),
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12),
-        // Elevation + background contrast instead of a hairline border,
-        // matching invoices and joint funds. A 1px #2D2D2D line on a
-        // #1F1F1F card is almost invisible and does nothing to separate
-        // the card from the page; a shadow does.
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.2),
-            child: Text(
-              _participantInitial(participant),
-              style: const TextStyle(
-                color: Color(0xFF4834D4),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _participantPrimary(participant),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                // Show @handle as a secondary line only when we have both a
-                // display name AND a username (avoids a lone "@").
-                if (participant.displayName.isNotEmpty &&
-                    participant.username.isNotEmpty)
-                  Text(
-                    '@${participant.username}',
-                    style: const TextStyle(
-                      color: Color(0xFF9CA3AF),
-                      fontSize: 12,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          if (_splitMethod == _SplitMethod.equal)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '$_currencySymbol${NumberFormat('#,##0.00').format(amount)}',
-                style: const TextStyle(
-                  color: Color(0xFF10B981),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            )
-          else if (_splitMethod == _SplitMethod.custom)
-            SizedBox(
-              width: 100,
-              child: TextField(
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                textAlign: TextAlign.right,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: '0.00',
-                  hintStyle: const TextStyle(color: Color(0xFF4B5563)),
-                  prefixText: _currencySymbol,
-                  prefixStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-                  isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                  filled: true,
-                  fillColor: const Color(0xFF2D2D2D),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onChanged: (value) {
-                  _customAmounts[participant.key] =
-                      double.tryParse(value) ?? 0.0;
-                  _calculateSplits();
-                },
-              ),
-            )
-          else
-            SizedBox(
-              width: 80,
-              child: TextField(
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                textAlign: TextAlign.right,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: '0',
-                  hintStyle: const TextStyle(color: Color(0xFF4B5563)),
-                  suffixText: '%',
-                  suffixStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-                  isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                  filled: true,
-                  fillColor: const Color(0xFF2D2D2D),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onChanged: (value) {
-                  _percentages[participant.key] = double.tryParse(value) ?? 0.0;
-                  _calculateSplits();
-                },
-              ),
-            ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => _removeParticipant(participant.key),
-            child: const Icon(Icons.close, color: Color(0xFFEF4444), size: 20),
-          ),
-        ],
-      ),
+    return buildCoPayerCard(
+      // KEYED BY PERSON, NOT BY POSITION. The share field's text lives in
+      // the element, not in _percentages. Without a key Flutter matches
+      // these same-typed cards BY INDEX, so removing a co-payer slides
+      // everyone up and leaves the departed person's typed figure against
+      // whoever took their row — while the model, keyed by person, holds
+      // the right values. Three co-payers at 50/30/20 with the first
+      // removed showed "50, 30" over the two who actually had 30 and 20.
+      // ...and by the INPUT MODE too. The field seeds from initialValue,
+      // which Flutter applies only on an element's first build, so keying
+      // on the person alone would carry a typed PERCENTAGE straight into
+      // the amount field after a switch from Percentage to Custom — the
+      // box would read "5" while the model held it as ₦5.
+      key: ValueKey('${participant.key}:${input.name}'),
+      initial: _participantInitial(participant),
+      primary: _participantPrimary(participant),
+      handle: participant.displayName.isNotEmpty && participant.username.isNotEmpty
+          ? '@${participant.username}'
+          : null,
+      input: input,
+      amount: amount,
+      currencySymbol: _currencySymbol,
+      belowFloor: belowFloor,
+      floor: floor,
+      // Seeds the field from the model so a value survives the rebuild that
+      // follows every keystroke elsewhere on the screen.
+      initialValue:
+          (stored != null && stored > 0) ? _trimShare(stored) : null,
+      onChanged: (value) {
+        final parsed = double.tryParse(value) ?? 0.0;
+        if (input == SplitShareInput.percent) {
+          _percentages[participant.key] = parsed;
+        } else {
+          _customAmounts[participant.key] = parsed;
+        }
+        _calculateSplits();
+      },
+      onRemove: () => _removeParticipant(participant.key),
     );
+  }
+
+  /// "5" not "5.0", "12.5" kept — the field should show what was typed.
+  String _trimShare(double v) {
+    final s = v.toStringAsFixed(2);
+    return s.endsWith('.00') ? s.substring(0, s.length - 3) : s;
   }
 
   Widget _buildSummaryCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF4834D4).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF4834D4).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        children: [
-          _buildSummaryRow('Total Amount',
-              '$_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount)}'),
-          const SizedBox(height: 8),
-          _buildSummaryRow('Paying to', _receiverSummaryLabel),
-          const SizedBox(height: 8),
-          _buildSummaryRow('Co-payers', '$_totalParticipants'),
-          if (_splitMethod == _SplitMethod.equal) ...[
-            const SizedBox(height: 8),
-            _buildSummaryRow('Per Person',
-                '$_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount / _totalParticipants)}'),
-          ],
-          if (_includeMyself && _myShare > 0) ...[
-            const SizedBox(height: 8),
-            _buildSummaryRow('Your Share',
-                '$_currencySymbol${NumberFormat('#,##0.00').format(_myShare)}'),
-          ],
-        ],
-      ),
-    );
-  }
+    final f = NumberFormat('#,##0.00');
+    final others = _selectedParticipants.length;
+    final input = _shareInputFor(_splitMethod);
 
-  Widget _buildSummaryRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+    return buildSplitSummaryCard(rows: [
+      buildSplitSummaryRow(
+        'Bill total',
+        '$_currencySymbol${f.format(_totalAmount)}',
+        note: 'The whole amount being split',
+      ),
+      buildSplitSummaryRow(
+        'Money goes to',
+        _receiverSummaryLabel,
+        note: _bankReceiverActive
+            ? 'Each share is paid out to this bank account separately'
+            : 'Each share is paid into this Lazervault wallet',
+      ),
+      buildSplitSummaryRow(
+        'Split between',
+        '$_totalParticipants',
+        // "Co-payers 2" with one co-payer on screen is only true because it
+        // counts the organiser. Say so rather than leaving them to work it
+        // out from an off-by-one.
+        note: _includeMyself
+            ? '$others ${others == 1 ? 'co-payer' : 'co-payers'} and you'
+            : '$others ${others == 1 ? 'co-payer' : 'co-payers'} — you are not paying a share',
+      ),
+      if (_splitMethod == _SplitMethod.equal && _totalParticipants > 0)
+        buildSplitSummaryRow(
+          'Each person pays',
+          '$_currencySymbol${f.format(_totalAmount / _totalParticipants)}',
+          note: 'Split evenly',
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+      if (_includeMyself) ...[
+        buildSummaryDivider(),
+        buildSplitSummaryRow(
+          'You pay',
+          '$_currencySymbol${f.format(_myShare)}',
+          emphasise: true,
+          // Under custom and percentage the organiser's share is the
+          // REMAINDER, not a number anyone chose. "Your Share" alone never
+          // said that, so a leftover looked like a decision.
+          note: input == SplitShareInput.none
+              ? 'Your equal share'
+              : "Whatever is left after the co-payers' shares",
         ),
       ],
-    );
+    ]);
   }
 
   // Safe display helpers — a globally-searched user may arrive with an empty
