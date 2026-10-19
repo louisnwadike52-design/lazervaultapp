@@ -672,6 +672,19 @@ class _UpRemoteImageState extends State<UpRemoteImage> {
     super.dispose();
   }
 
+  /// True only for a url worth asking the network about.
+  ///
+  /// Empty is the common case — a fund created without a cover — and a
+  /// relative or malformed value cannot be fetched either. Both must take the
+  /// fallback directly rather than failing their way to it.
+  static bool _looksFetchable(String raw) {
+    final url = raw.trim();
+    if (url.isEmpty) return false;
+    final uri = Uri.tryParse(url);
+    if (uri == null || !uri.hasAuthority) return false;
+    return uri.scheme == 'http' || uri.scheme == 'https';
+  }
+
   /// Called FROM BUILD, so it must never call setState synchronously.
   ///
   /// The old version did exactly that on the give-up branch — setState during
@@ -716,6 +729,21 @@ class _UpRemoteImageState extends State<UpRemoteImage> {
               color: kUpTextSecondary, size: 18),
         );
     if (_givenUp) return fallback;
+
+    // A FUND WITH NO COVER MUST NOT GO THROUGH THE RETRY MACHINERY AT ALL.
+    //
+    // This is why funds WITHOUT images flickered, on the listing and on the
+    // details page. An empty (or non-http) url still went to Image.network,
+    // which fails immediately — and a failure runs errorBuilder, which calls
+    // _retry(), which evicts the cache and setStates, which rebuilds, which
+    // fails again. Three delayed attempts of that per widget, restarted every
+    // time a rebuild recreated it, is a visible flicker on exactly the items
+    // that have nothing to load.
+    //
+    // There is no question to ask the network here: no url means no image.
+    // Answer it synchronously and permanently.
+    if (!_looksFetchable(widget.url)) return fallback;
+
     return Image.network(
       widget.url,
       // The key forces a fresh ImageProvider each attempt; without it the
