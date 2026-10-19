@@ -3839,6 +3839,24 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     await sendToVoiceAgent('voice_changed', {'voice_preference': voiceId});
   }
 
+  /// The user changed their transaction-PIN preferences DURING a live call —
+  /// require-PIN, the skip threshold, or WHERE the PIN is entered ("ask me on
+  /// screen" vs "let me say it").
+  ///
+  /// require_pin and the threshold were already live: auth-service re-reads
+  /// them on every money move. The entry MODE was not — the agent resolves it
+  /// once per session and caches it, so switching to spoken PIN mid-call kept
+  /// asking on screen until the user hung up and called back. Every other
+  /// mid-call setting (voice, custom voice, language) already applies
+  /// immediately; this one silently did not.
+  ///
+  /// No-ops when there is no live session, exactly like the voice notifiers:
+  /// the next session resolves the setting fresh at start. Does not transition
+  /// session state — nothing about the call changes until the next PIN prompt.
+  Future<void> notifyTxPinSettingsChanged() async {
+    await sendToVoiceAgent('txpin_settings_changed', const {});
+  }
+
   /// The user opened the voice-cloning setup flow while a voice call is live.
   /// Tell the agent to PAUSE (stop listening / talking) so the mic isn't fought
   /// over while the user records their cloning sample. No-op when there is no

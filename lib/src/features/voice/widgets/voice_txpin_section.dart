@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -146,6 +147,14 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
             entryMode: entryMode,
           ) &&
           ok;
+    }
+    // Tell a LIVE voice session the PIN preferences moved. The agent caches the
+    // entry mode for the session, so without this the change only takes effect
+    // on the next call — while the screen says it is already saved.
+    if (ok && serviceLocator.isRegistered<VoiceSessionCubit>()) {
+      unawaited(
+        serviceLocator<VoiceSessionCubit>().notifyTxPinSettingsChanged(),
+      );
     }
     if (!mounted) return;
     if (ok) {
