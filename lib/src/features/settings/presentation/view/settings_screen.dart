@@ -564,55 +564,7 @@ class _SettingsViewState extends State<_SettingsView> {
         title: 'Security',
         icon: Icons.security_outlined,
         body: _securityBody(),
-        keywords: const [
-          'passcode',
-          'change passcode',
-          'transaction pin',
-          'payment pin',
-          'panic balance',
-          'decoy',
-          'banking channels',
-          'whatsapp banking',
-          'sms banking',
-          'phone banking',
-          'admin alerts',
-          'biometric login',
-          'fingerprint',
-          'face id',
-          'voice login',
-          'google sign-in',
-          'apple sign-in',
-          'social login',
-          'verify email',
-          'verify phone number',
-          'two factor',
-          '2fa',
-          'mfa',
-          'otp',
-          'authenticator',
-          'totp',
-          'update password',
-          'device permissions',
-          // Tiles this list had fallen behind on. Each is rendered by
-          // _securityBody and was unreachable from the search bar: the
-          // section was filtered out before the tile filter ever ran.
-          'auto-logout',
-          'auto logout',
-          'idle timeout',
-          'session timeout',
-          'login activity',
-          'recent sign-ins',
-          'sign in history',
-          'fraud detection',
-          'fraud',
-          'trusted devices',
-          'camera',
-          'microphone',
-          'contacts access',
-          'permissions',
-          'set password',
-          'change password',
-        ],
+        keywords: SettingsSearchVocabulary.security,
       ),
       // Dedicated Account Lock section — a scheduled or emergency self-lock that
       // blocks sign-in and all transactions until the timer elapses (no early
@@ -664,27 +616,7 @@ class _SettingsViewState extends State<_SettingsView> {
         title: 'Notifications & Display',
         icon: Icons.tune_outlined,
         body: _notificationsBody(state),
-        keywords: const [
-          'notifications',
-          'push',
-          'email notifications',
-          'sms',
-          'dark mode',
-          'theme',
-          'display',
-          'sound',
-          'alerts',
-          'chat sound',
-          'message sound',
-          'vibration',
-          'haptics',
-          'balance vibration',
-          'balance update',
-          'vibrate on balance',
-          'haptic feedback',
-          'balance animation',
-          'account update',
-        ],
+        keywords: SettingsSearchVocabulary.notifications,
       ),
       // Voice & Chat Assistant — hidden unless the admin enables it via the
       // Feature Flags tab (voice_chat_assistant_section_visible). OFF by default.
@@ -695,36 +627,13 @@ class _SettingsViewState extends State<_SettingsView> {
           // No subtitle — the section header stays clean like the other
           // accordion sections; details live inside the body.
           body: _voiceAssistantBody(),
-          keywords: const [
-            'voice assistant', 'chat assistant', 'ai', 'chatbot', 'voice agent',
-            'voice setup', 'voice clone', 'cloning', 'clone my voice',
-            'voice enrollment', 'enroll', 'voice recognition', 'my voice',
-            'assistant voice', 'tts', 'voice selection', 'voice language',
-            // Voice transaction-PIN controls (VoiceTxPinSection).
-            'pin', 'transaction pin', 'ask for my pin',
-            'ask for my pin in voice',
-            'require pin', 'voice pin', 'skip pin', 'pin entry', 'say my pin',
-            // Per-service tuning entry points.
-            'per-service voice', 'per service', 'transfers voice',
-            'crypto voice',
-            'bills voice', 'exchange voice',
-          ],
+          keywords: SettingsSearchVocabulary.voiceAssistant,
         ),
       _SectionSpec(
         title: 'Group Funds',
         icon: Icons.groups_outlined,
         body: _groupFundsBody(),
-        keywords: const [
-          'group funds',
-          'esusu',
-          'rosca',
-          'contribution',
-          'terms',
-          'terms and conditions',
-          'how it works',
-          'show terms again',
-          'reset terms',
-        ],
+        keywords: SettingsSearchVocabulary.groupFunds,
       ),
       _SectionSpec(
         title: 'Statements & Data',
@@ -1372,14 +1281,7 @@ class _SettingsViewState extends State<_SettingsView> {
                 'Automatically pause unusually large transfers on your account for review',
             value: _fraudDetectionEnabled,
             onChanged: _fraudSettingBusy ? (_) {} : _setFraudSetting,
-            keywords: const [
-              'fraud',
-              'fraud detection',
-              'security',
-              'anomaly',
-              'freeze',
-              'protection',
-            ],
+            keywords: SettingsSearchVocabulary.fraudDetection,
           ),
           _navTile(
             icon: Icons.lock_clock_outlined,
@@ -1422,19 +1324,7 @@ class _SettingsViewState extends State<_SettingsView> {
             // Names Google/Apple so the search reveals WHY this tile matched —
             // their Social-login toggles live inside this screen.
             subtitle: 'Fingerprint, Face ID, voice · Google/Apple sign-in',
-            keywords: const [
-              'google',
-              'apple',
-              'google sign-in',
-              'apple sign-in',
-              'sign in with google',
-              'sign in with apple',
-              'social login',
-              'biometric',
-              'fingerprint',
-              'face id',
-              'voice login',
-            ],
+            keywords: SettingsSearchVocabulary.socialAndBiometricLogin,
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
@@ -1446,14 +1336,7 @@ class _SettingsViewState extends State<_SettingsView> {
             icon: Icons.timer_outlined,
             title: 'Auto-logout',
             subtitle: _autoLogoutSubtitle(),
-            keywords: const [
-              'auto logout',
-              'timeout',
-              'idle',
-              'inactivity',
-              'session',
-              'lock'
-            ],
+            keywords: SettingsSearchVocabulary.autoLogout,
             onTap: _showAutoLogoutPicker,
           ),
           _navTile(
@@ -1514,7 +1397,7 @@ class _SettingsViewState extends State<_SettingsView> {
           ),
           _navTile(
             icon: Icons.vpn_key_outlined,
-            keywords: const ['2fa', 'mfa', 'otp', 'authenticator', 'totp'],
+            keywords: SettingsSearchVocabulary.twoFactor,
             title: 'Two-Factor Authentication',
             subtitle: twoFaOn
                 ? 'On${twoFaMethod != null && twoFaMethod.isNotEmpty ? ' · ${twoFaMethod.toUpperCase()}' : ''}. Extra login security'
@@ -1707,17 +1590,7 @@ class _SettingsViewState extends State<_SettingsView> {
           setState(() => _escrowNoticeOn = v);
           await EscrowTerms.setIntroDismissed(!v);
         },
-        keywords: const [
-          'escrow',
-          'escrow pay',
-          'escrow notice',
-          'escrow terms',
-          'escrow rules',
-          'liability',
-          'show again',
-          'middleman',
-          'payment channel',
-        ],
+        keywords: SettingsSearchVocabulary.escrowNotice,
       ),
       _switchTile(
         icon: Icons.notifications_outlined,
@@ -1791,7 +1664,7 @@ class _SettingsViewState extends State<_SettingsView> {
         _FilterableTile(
           title: 'Message sound volume',
           subtitle: 'How loud chat message tones play',
-          keywords: const ['volume', 'loud', 'quiet', 'sound'],
+          keywords: SettingsSearchVocabulary.chatToneVolume,
           child: Padding(
             padding: EdgeInsets.fromLTRB(16.w, 4.h, 12.w, 4.h),
             child: Row(
@@ -1942,21 +1815,7 @@ class _SettingsViewState extends State<_SettingsView> {
         title: 'Voice assistant setup',
         subtitle: 'Recognition, voice cloning, voice & language',
         onTap: () => Get.toNamed(AppRoutes.voiceSettings),
-        keywords: const [
-          'voice setup',
-          'set up voice',
-          'voice clone',
-          'cloning',
-          'clone my voice',
-          'voice enrollment',
-          'enroll',
-          'voice recognition',
-          'my voice',
-          'assistant voice',
-          'tts',
-          'voice selection',
-          'language',
-        ],
+        keywords: SettingsSearchVocabulary.voiceSetup,
       ),
       SizedBox(height: 14.h),
       // Group labels are organisational only — hide them while a settings
@@ -2002,14 +1861,11 @@ class _SettingsViewState extends State<_SettingsView> {
           subtitle: 'Language, voice and prompt hints',
           onTap: () => _openVoiceSettingsFor(s.slug),
           keywords: [
-            'voice',
-            'chat',
-            'assistant',
-            'voice agent',
-            'per-service',
-            'language',
-            'voice selection',
-            'prompt hint',
+            ...SettingsSearchVocabulary.perServiceVoice,
+            // The service's own name is searchable too — and because this
+            // list is per-service and dynamic, the SECTION cannot spread it.
+            // SettingsSearchVocabulary.perServiceServiceNames carries the
+            // same labels and slugs so stage one lets the query through.
             s.label.toLowerCase(),
             s.slug,
           ],
@@ -2054,15 +1910,7 @@ class _SettingsViewState extends State<_SettingsView> {
         subtitle:
             'Open the terms when you next visit Group Funds. Nothing about '
             'your groups changes.',
-        keywords: const [
-          'group funds terms',
-          'terms',
-          'first visit',
-          'show terms again',
-          'reset terms',
-          'dont show again',
-          "don't show again",
-        ],
+        keywords: SettingsSearchVocabulary.groupFundsTerms,
         value: !_groupFundsTermsDismissed,
         onChanged: (v) async {
           if (uid.isEmpty) return; // no profile yet — nothing to scope to

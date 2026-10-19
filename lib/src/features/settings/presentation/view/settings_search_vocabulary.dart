@@ -1,3 +1,5 @@
+library;
+
 /// The vocabulary the settings search bar answers to.
 ///
 /// A LIBRARY OF ITS OWN, not a private class inside the screen, for one
@@ -82,6 +84,131 @@ class SettingsSearchVocabulary {
     'customize', 'customise', 'customization', 'customisation',
     'preferences', 'personalisation', 'personalization',
     'entrance animation', 'service tiles', 'home tiles',
+  ];
+
+  // ── Security ───────────────────────────────────────────────────────────
+  // The same two-stage drift that hid the Customize tiles was still live
+  // here: each list below declared good terms that the SECTION had never
+  // been told about, so the section was filtered out before the tile filter
+  // ran and the setting could not be found at all.
+  static const fraudDetection = [
+    'fraud', 'fraud detection', 'security', 'anomaly', 'freeze',
+    'protection', 'suspicious', 'risk', 'unusual activity',
+  ];
+  static const socialAndBiometricLogin = [
+    'google', 'apple', 'google sign-in', 'apple sign-in',
+    'sign in with google', 'sign in with apple', 'social login',
+    'biometric', 'fingerprint', 'face id', 'voice login',
+  ];
+  static const autoLogout = [
+    'auto logout', 'auto-logout', 'timeout', 'idle', 'idle timeout',
+    'inactivity', 'session', 'session timeout', 'lock',
+  ];
+  static const twoFactor = [
+    '2fa', 'mfa', 'otp', 'authenticator', 'totp', 'two factor',
+  ];
+
+  /// Everything the Security section can answer to.
+  static const security = [
+    ...fraudDetection,
+    ...socialAndBiometricLogin,
+    ...autoLogout,
+    ...twoFactor,
+    // Words for tiles that were already reachable, kept verbatim.
+    'passcode', 'change passcode', 'transaction pin', 'payment pin',
+    'panic balance', 'decoy', 'banking channels', 'whatsapp banking',
+    'sms banking', 'phone banking', 'admin alerts', 'biometric login',
+    'verify email', 'verify phone number', 'update password',
+    'device permissions', 'login activity', 'recent sign-ins',
+    'sign in history', 'trusted devices', 'camera', 'microphone',
+    'contacts access', 'permissions', 'set password', 'change password',
+  ];
+
+  // ── Notifications & Display ────────────────────────────────────────────
+  static const escrowNotice = [
+    'escrow', 'escrow pay', 'escrow notice', 'escrow terms',
+    'escrow rules', 'liability', 'show again', 'middleman',
+    'payment channel', 'notice', 'rules',
+  ];
+  static const chatToneVolume = [
+    'volume', 'loud', 'quiet', 'sound', 'chat tone', 'message tone',
+  ];
+
+  /// Everything the Notifications & Display section can answer to.
+  static const notifications = [
+    ...escrowNotice,
+    ...chatToneVolume,
+    'notifications', 'push', 'email notifications', 'sms', 'dark mode',
+    'theme', 'display', 'alerts', 'chat sound', 'message sound',
+    'vibration', 'haptics', 'balance vibration', 'balance update',
+    'vibrate on balance', 'haptic feedback', 'balance animation',
+    'account update',
+  ];
+
+  // ── Voice & Chat Assistant ─────────────────────────────────────────────
+  static const voiceSetup = [
+    'voice setup', 'set up voice', 'voice clone', 'cloning',
+    'clone my voice', 'voice enrollment', 'enroll', 'voice recognition',
+    'my voice', 'assistant voice', 'tts', 'voice selection', 'language',
+  ];
+  static const perServiceVoice = [
+    'voice', 'chat', 'assistant', 'voice agent', 'per-service',
+    'language', 'voice selection', 'prompt hint', 'prompt', 'hint',
+  ];
+
+  /// The per-service voice tiles' own names — every `slug` and lowercased
+  /// `label` of the `_VoiceServiceTile` catalogue in `_voiceAssistantBody`.
+  ///
+  /// Those tiles build their keywords DYNAMICALLY (`s.label`, `s.slug`), so
+  /// the section cannot spread the tile's list the way it does elsewhere.
+  /// Without these, searching "insurance", "payroll" or "lazerspray" was
+  /// filtered out at stage one and never reached the tile that matched it.
+  ///
+  /// Keep in step with that catalogue: a new per-service voice tile needs its
+  /// slug and label here or it is unreachable from the search bar.
+  static const perServiceServiceNames = [
+    'transfers', 'send funds & transfers',
+    'crypto',
+    'investments',
+    'exchange', 'currency exchange',
+    'banking', 'banking (deposits & withdrawals)', 'deposits', 'withdrawals',
+    'products', 'bills & utilities', 'bills', 'utilities',
+    'commerce', 'invoices & gift cards', 'invoices', 'gift cards',
+    'insurance',
+    'business', 'business (payroll & customers)', 'payroll', 'customers',
+    'statistics', 'spending insights', 'insights',
+    'sprayme', 'lazerspray',
+    'lifestyle',
+    'accounts', 'accounts & cards', 'cards',
+  ];
+
+  /// Everything the Voice & Chat Assistant section can answer to.
+  static const voiceAssistant = [
+    ...voiceSetup,
+    ...perServiceVoice,
+    ...perServiceServiceNames,
+    'voice assistant', 'chat assistant', 'ai', 'chatbot',
+    'voice language',
+    // Voice transaction-PIN controls (VoiceTxPinSection).
+    'pin', 'transaction pin', 'ask for my pin', 'ask for my pin in voice',
+    'require pin', 'voice pin', 'skip pin', 'pin entry', 'say my pin',
+    // Per-service tuning entry points.
+    'per service', 'transfers voice', 'crypto voice', 'bills voice',
+    'exchange voice',
+  ];
+
+  // ── Group Funds ────────────────────────────────────────────────────────
+  static const groupFundsTerms = [
+    'group funds terms', 'terms', 'first visit', 'first', 'visit',
+    'show terms again', 'reset terms', 'dont show again',
+    "don't show again",
+  ];
+
+  /// Everything the Group Funds section can answer to.
+  static const groupFunds = [
+    ...groupFundsTerms,
+    'group funds', 'esusu', 'rosca', 'contribution',
+    'terms and conditions', 'how it works',
   ];
 }
 
