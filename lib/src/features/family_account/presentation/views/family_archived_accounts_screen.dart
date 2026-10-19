@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'dart:async';
+import 'package:lazervault/src/features/family_account/presentation/utils/family_archive_session.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -109,7 +114,16 @@ class _FamilyArchivedAccountsScreenState
                 padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
                 itemCount: archived.length + 1,
                 itemBuilder: (context, i) {
-                  if (i == 0) return _buildHeaderNote(archived.length);
+                  if (i == 0) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildHeaderNote(archived.length),
+                        _buildDashboardToggle(),
+                        SizedBox(height: 16.h),
+                      ],
+                    );
+                  }
                   return _buildArchivedCard(archived[i - 1]);
                 },
               ),
@@ -118,6 +132,103 @@ class _FamilyArchivedAccountsScreenState
           return const Center(child: LazerVaultLoader.medium());
         },
       ),
+    );
+  }
+
+  /// Puts these closed accounts on the DASHBOARD for the rest of the session.
+  ///
+  /// This list answers "which accounts did I close". It does not answer "how
+  /// did the money move through one of them" — that needs the real card and
+  /// the real detail screen, with the activity feed, the members and the
+  /// receipts, exactly as they were when the account was live.
+  ///
+  /// So this is a VIEW MODE, not a setting (FamilyArchiveSession): in memory
+  /// only, cleared at logout, so every login starts with the active accounts
+  /// again. Repeatable — it can be turned on and off as often as the creator
+  /// likes — and it re-opens nothing: an archived account stays read-only and
+  /// keeps the slot it gave back.
+  /// Re-reads the dashboard cards so the toggle takes effect immediately.
+  ///
+  /// Best-effort by design: this is a view option, and failing to refresh must
+  /// not throw out of a switch callback. The next natural dashboard refresh
+  /// picks the change up regardless.
+  void _refreshDashboardCards() {
+    try {
+      if (!serviceLocator.isRegistered<AccountCardsSummaryCubit>()) return;
+      final userId = context.read<AuthenticationCubit>().userId;
+      if (userId == null || userId.isEmpty) return;
+      unawaited(
+        serviceLocator<AccountCardsSummaryCubit>()
+            .fetchAccountSummaries(userId: userId, silent: true),
+      );
+    } catch (_) {
+      // See above.
+    }
+  }
+
+  Widget _buildDashboardToggle() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: FamilyArchiveSession.instance.showClosed,
+      builder: (context, showing, _) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: _card,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: _border),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                showing ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                size: 18.sp,
+                color: showing ? const Color(0xFF4F46E5) : _muted,
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Show on my dashboard',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      showing
+                          ? 'Closed accounts appear with your active ones until you sign out.'
+                          : 'See them as full cards, with their activity and receipts.',
+                      style: TextStyle(
+                          color: _muted, fontSize: 11.sp, height: 1.35),
+                    ),
+                  ],
+                ),
+              ),
+              Switch.adaptive(
+                value: showing,
+                activeThumbColor: const Color(0xFF4F46E5),
+                onChanged: (v) {
+                  v
+                      ? FamilyArchiveSession.instance.show()
+                      : FamilyArchiveSession.instance.hide();
+                  // The carousel reads the flag when it FETCHES, so flipping
+                  // it has to trigger a re-read — otherwise the cards only
+                  // change on whatever refresh happens next, and the switch
+                  // looks broken on the way back to the dashboard.
+                  //
+                  // silent: the dashboard should not flash a loader because
+                  // somebody toggled a view option on another screen.
+                  _refreshDashboardCards();
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -1650,6 +1650,33 @@ class _AccountCarouselState extends State<AccountCarousel> {
                               ),
                             ),
                         ],
+                        // CLOSED, in the user's words. "archived" is our
+                        // storage word. The card only appears at all while the
+                        // creator has asked to see closed accounts, so the
+                        // badge is what tells them WHICH of the cards in front
+                        // of them is the one that is no longer live.
+                        if (familyStatusRaw == 'archived') ...[
+                          SizedBox(width: 8.w),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 3.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(8.r),
+                              border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.35)),
+                            ),
+                            child: Text(
+                              'CLOSED',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ),
+                        ],
                         const Spacer(),
                         if (account.isFamilyProcessing)
                           Container(

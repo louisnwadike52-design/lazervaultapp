@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:lazervault/src/features/family_account/presentation/utils/family_archive_session.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/error/failure.dart';
@@ -178,6 +179,35 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
         options: callOptions,
       );
 
+      // CLOSED ACCOUNTS, ONLY WHILE THE CREATOR IS LOOKING AT THEM.
+      //
+      // An unfiltered read excludes archived rows by design, so a closed
+      // family is invisible everywhere — which is right for the dashboard a
+      // creator opens each day, and wrong when they want to look back at how
+      // the money actually moved. FamilyArchiveSession is that "looking back"
+      // mode: in memory only, cleared at logout, so every login starts with
+      // the active accounts again.
+      //
+      // A SEPARATE call rather than one unfiltered read: the server honours an
+      // explicit status filter and excludes archived otherwise, so there is no
+      // single request that returns both.
+      //
+      // Failure here is swallowed deliberately. The archive is a convenience
+      // layered on top of the real dashboard; if it cannot be fetched the
+      // active accounts must still render, not disappear behind an error.
+      final protos = <family_pb.FamilyAccount>[...response.familyAccounts];
+      if (FamilyArchiveSession.instance.isShowing) {
+        try {
+          final archived = await _familyAccountsClient.getFamilyAccounts(
+            family_pb.GetFamilyAccountsRequest()..status = 'archived',
+            options: callOptions,
+          );
+          protos.addAll(archived.familyAccounts);
+        } catch (_) {
+          // Active accounts still render — see above.
+        }
+      }
+
       print(
           'gRPC GetFamilyAccounts Response received with ${response.familyAccounts.length} items');
 
@@ -203,7 +233,7 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
 
       final localeCurrency = serviceLocator<LocaleManager>().currentCurrency;
       final familyCurrency = localeCurrency.isNotEmpty ? localeCurrency : 'NGN';
-      return response.familyAccounts.map((proto) {
+      return protos.map((proto) {
         final status = proto.status.isNotEmpty ? proto.status : 'active';
         return AccountSummaryEntity.familyAccount(
           id: proto.id,
