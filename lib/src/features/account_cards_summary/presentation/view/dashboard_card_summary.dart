@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/fcy_account/data/fcy_capabilities.dart';
-import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_receipt_screen.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
@@ -345,22 +344,29 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
             // Show snackbar for transfer events when user is on dashboard
             if (event.eventType == 'transfer_out' ||
                 event.eventType == 'transfer') {
-              // The transfer receipt IS the confirmation. It is pushed over
-              // this dashboard, whose listener stays alive, so a green
-              // "Transfer Completed" banner landed on top of a receipt reading
-              // "Transfer Processing · Pending" and contradicted it outright.
-              // A submitted transfer is not a settled one; the receipt polls
-              // and tells the truth as the rail answers. Same guard the deposit
-              // branch below already applies, for the same reason.
-              if (TransferReceiptScreen.isShowing) return;
-              if (event.status == 'completed') {
-                LVSnackbar.showSuccess(
-                  title: 'Transfer Completed',
-                  message: event.amount != null
-                      ? 'Transfer of ${event.currency} ${event.amount!.toStringAsFixed(2)} successful'
-                      : 'Your transfer was successful',
-                );
-              } else if (event.status == 'failed') {
+              // NO SUCCESS BANNER FOR AN OUTGOING TRANSFER. Deliberately
+              // removed, not suppressed.
+              //
+              // There WAS a guard here — `if (TransferReceiptScreen.isShowing)
+              // return;` — and it kept failing: the banner was reported landing
+              // on top of a receipt reading "Transfer Processing · Pending"
+              // again on 2026-10-19, for an external bank transfer. Each time
+              // the fix was a better guard, and each time another route
+              // reached the listener without registering its depth.
+              //
+              // The guard was the wrong shape of fix. The receipt IS the
+              // confirmation for a transfer the user just made: it is on
+              // screen, it polls, and it tells the truth as the rail answers.
+              // A submitted transfer is NOT a settled one, so a green
+              // "successful" banner is at best duplicate and at worst — as in
+              // that screenshot — a flat contradiction of the screen under it.
+              // For a transfer that settles later, the push notification and
+              // the transaction history are the surfaces that carry it.
+              //
+              // The FAILURE branch stays: a failure is not visible on a
+              // receipt the user may have already left, and it says where the
+              // money went.
+              if (event.status == 'failed') {
                 LVSnackbar.showError(
                   title: 'Transfer Failed',
                   message:

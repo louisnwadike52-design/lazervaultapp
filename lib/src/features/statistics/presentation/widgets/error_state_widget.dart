@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/src/features/support/presentation/support_tickets_screen.dart';
 
 /// Error State Widget for Statistics Screen
 /// Shows when there's an error loading data
@@ -8,10 +10,15 @@ class ErrorStateWidget extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
+  /// Overrides where "Contact Support" goes. Null opens the support tickets
+  /// screen, which is what every other surface does.
+  final VoidCallback? onContactSupport;
+
   const ErrorStateWidget({
     super.key,
     required this.message,
     required this.onRetry,
+    this.onContactSupport,
   });
 
   @override
@@ -83,9 +90,18 @@ class ErrorStateWidget extends StatelessWidget {
 
             // Secondary Actions
             OutlinedButton.icon(
-              onPressed: () {
-                // Contact support
-              },
+              // WAS A DEAD BUTTON: `onPressed: () { /* Contact support */ }`.
+              //
+              // This is the one screen where a dead support button costs the
+              // most — it is shown precisely when the app has already failed
+              // the user, and the Troubleshooting card below it ends with
+              // "If the problem persists, contact support". Tapping did
+              // nothing, so the only offered way out was a no-op.
+              //
+              // Get.to matches how every other surface opens it (settings,
+              // the help tab, lifestyle, the drawer).
+              onPressed: onContactSupport ??
+                  () => Get.to(() => const SupportTicketsScreen()),
               icon: const Icon(Icons.support_agent),
               label: const Text('Contact Support'),
               style: OutlinedButton.styleFrom(
