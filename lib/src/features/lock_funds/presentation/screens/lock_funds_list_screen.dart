@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/lock_funds/presentation/utils/lock_interest_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -1011,7 +1012,12 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'Interest Earned',
+                      // A finished plan's interest is a LIFETIME total, not
+                      // the unpaid remainder: on a withdrawn plan
+                      // formattedInterest is +0, so this tile used to tell
+                      // somebody who had banked real ROI that the plan earned
+                      // them nothing.
+                      LockInterestChip.of(lock).statLabel,
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: _kMutedPurple,
@@ -1020,7 +1026,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      lock.formattedInterest,
+                      LockInterestChip.of(lock).amount,
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,

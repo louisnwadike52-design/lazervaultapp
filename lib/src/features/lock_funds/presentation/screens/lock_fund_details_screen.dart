@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/lock_funds/presentation/utils/lock_interest_chip.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -44,6 +45,10 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   /// the pre-withdrawal figures indefinitely: the money had moved, the
   /// backend knew, and the screen was rendering a stale copy.
   late LockFund _lock;
+
+  /// Amount + caption for the interest chip, kept together so they cannot
+  /// disagree. See LockInterestChip.
+  LockInterestChip get _interestChip => LockInterestChip.of(_lock);
 
   /// True while a refetch is in flight over content we are already showing —
   /// drives a thin bar rather than blanking the screen, since provisioning
@@ -533,7 +538,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                 ),
                 SizedBox(width: 6.w),
                 Text(
-                  _lock.formattedInterest,
+                  _interestChip.amount,
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     color: Colors.white,
@@ -542,13 +547,12 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  // Once ROI has been withdrawn, this chip is only the part
-                  // still riding on the plan — say so, or a user who just
-                  // banked their interest reads a smaller number as the plan
-                  // having lost it.
-                  _lock.hasPaidOutInterest
-                      ? 'still accruing'
-                      : 'interest earned',
+                  // Both halves come from one place because they have to agree:
+                  // a finished plan reports LIFETIME interest, a running one
+                  // reports only what is still riding on it. Choosing the
+                  // caption from hasPaidOutInterest alone said "still accruing"
+                  // on withdrawn and cancelled plans.
+                  _interestChip.caption,
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
                     color: Colors.white.withValues(alpha: 0.8),
@@ -921,8 +925,10 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
               SizedBox(width: 12.w),
               Expanded(
                 child: _buildInterestStat(
-                  'Interest',
-                  lock.formattedInterest,
+                  // Same rule as the chip above, so the two cannot disagree
+                  // on the same screen: a stopped term reports lifetime ROI.
+                  LockInterestChip.of(lock).statLabel,
+                  LockInterestChip.of(lock).amount,
                   const Color(0xFF10B981),
                 ),
               ),
