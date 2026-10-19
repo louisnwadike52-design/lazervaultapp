@@ -168,7 +168,14 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     try {
       _statusSub =
           serviceLocator<BalanceWebSocketService>().balanceUpdates.listen((e) {
-        const splitBillEvents = {'split_bill_paid', 'split_bill_failed'};
+        const splitBillEvents = {
+          'split_bill_paid',
+          'split_bill_failed',
+          // The one terminal outcome the socket used to carry nothing for. A
+          // co-payer watched their receipt keep saying "Paid" while the money
+          // was on its way back to them.
+          'split_bill_refunded',
+        };
         if (!splitBillEvents.contains(e.eventType)) return;
         // transaction_id carries the split-bill reference; match on either it
         // or the bill id so a change in what the server stamps cannot silently
@@ -177,6 +184,20 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
         final ref = e.reference ?? '';
         if (!id.contains(_billId!) && !ref.contains(_billId!)) return;
         if (!mounted) return;
+
+        // A REFUND IS NOT READABLE FROM THE PARTICIPANT STATUS.
+        //
+        // There is no `refunded` participant status: a refunded share still
+        // reads `paid` on the bill, because what changed is where the money
+        // is, not whether the share was ever settled. So the event itself is
+        // the only thing that knows, and refreshing alone would repaint
+        // "Paid" over a refund.
+        if (e.eventType == 'split_bill_refunded') {
+          setState(() => _statusLabel = 'Refunded');
+          // Still refresh, for the counts and the rest of the bill.
+          _refresh(keepStatusLabel: true);
+          return;
+        }
         _refresh();
       });
     } catch (_) {
@@ -192,7 +213,10 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     super.dispose();
   }
 
-  Future<void> _refresh() async {
+  /// [keepStatusLabel] preserves a label the SOCKET established that the
+  /// bill cannot express — today that is only "Refunded", which no
+  /// participant status carries.
+  Future<void> _refresh({bool keepStatusLabel = false}) async {
     if (_billId == null || _payerUserId == null || _refreshing) return;
     setState(() => _refreshing = true);
     try {
@@ -204,7 +228,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
         paidCount = bill.paidCount;
         totalParticipants = bill.totalParticipants;
         _paidAt = p?.paidAt;
-        _statusLabel = _statusText(p?.status);
+        if (!keepStatusLabel) _statusLabel = _statusText(p?.status);
       });
     } catch (_) {
       // Silent — leave the current state; the user can pull again.

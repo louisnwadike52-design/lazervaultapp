@@ -2,6 +2,26 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/split_bill_entity.dart';
 import 'split_bill_progress_bar.dart';
 
+/// A short, unambiguous date for telling same-titled bills apart.
+///
+/// Today and yesterday read as words because that is how people talk about a
+/// bill they just made; anything older gets the day and month, and a bill from
+/// another year gets the year too.
+String _shortDate(DateTime when) {
+  final now = DateTime.now();
+  final d = DateTime(when.year, when.month, when.day);
+  final today = DateTime(now.year, now.month, now.day);
+  final diff = today.difference(d).inDays;
+  if (diff == 0) return 'Today';
+  if (diff == 1) return 'Yesterday';
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  final base = '${when.day} ${months[when.month - 1]}';
+  return when.year == now.year ? base : '$base ${when.year}';
+}
+
 class SplitBillCard extends StatelessWidget {
   final SplitBillEntity bill;
   final bool isIncoming;
@@ -75,9 +95,18 @@ class SplitBillCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
+                        // TWO BILLS MAY SHARE A TITLE, AND THAT IS FINE.
+                        //
+                        // "Dinner" is a thing people split every week, so a
+                        // uniqueness rule would refuse something perfectly
+                        // reasonable. What was missing is a way to TELL TWO
+                        // APART: the list showed the same title, the same
+                        // amount and the same "Created by you" twice over.
+                        // The date is the cheapest honest discriminator, and
+                        // the receiver line below adds the other one.
                         isIncoming
-                            ? 'From @${bill.creatorUsername}'
-                            : 'Created by you',
+                            ? 'From @${bill.creatorUsername} · ${_shortDate(bill.createdAt)}'
+                            : 'Created by you · ${_shortDate(bill.createdAt)}',
                         style: const TextStyle(
                           color: Color(0xFF9CA3AF),
                           fontSize: 12,
@@ -90,7 +119,11 @@ class SplitBillCard extends StatelessWidget {
                             const Icon(
                               Icons.south_east,
                               size: 11,
-                              color: Color(0xFF4834D4),
+                              // Lighter purple. #4834D4 is the brand indigo
+                              // and all but disappears on this near-black
+                              // card; #8B5CF6 is the accent the rest of the
+                              // app uses on dark surfaces.
+                              color: Color(0xFF8B5CF6),
                             ),
                             const SizedBox(width: 4),
                             Flexible(
@@ -99,7 +132,7 @@ class SplitBillCard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  color: Color(0xFF4834D4),
+                                  color: Color(0xFF8B5CF6),
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),

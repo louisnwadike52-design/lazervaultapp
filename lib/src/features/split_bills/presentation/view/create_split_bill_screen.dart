@@ -340,7 +340,71 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     };
   }
 
-  void _createSplitBill() {
+  /// Open bills this person already created under the same title.
+  ///
+  /// NOT a uniqueness rule. "Dinner" is a thing people split every week, and
+  /// refusing a repeat would block something perfectly reasonable. But
+  /// creating a second one by accident — a double tap, a forgotten bill from
+  /// this morning — leaves two identical rows that can only be told apart by
+  /// opening them, and a co-payer can then pay the wrong one.
+  ///
+  /// So: say it, name when the other was made, and let them decide.
+  List<SplitBillEntity> _openBillsWithSameTitle(String title) {
+    final cubit = context.read<SplitBillCubit>();
+    final state = cubit.state;
+    if (state is! CreatedSplitBillsLoaded) return const [];
+    final wanted = title.trim().toLowerCase();
+    if (wanted.isEmpty) return const [];
+    return state.bills
+        .where((b) =>
+            b.isActive && b.displayTitle.trim().toLowerCase() == wanted)
+        .toList(growable: false);
+  }
+
+  Future<bool> _confirmDuplicateTitle(List<SplitBillEntity> existing) async {
+    if (existing.isEmpty) return true;
+    final other = existing.first;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: Text('You already have a "${other.displayTitle}"',
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700)),
+        content: Text(
+          existing.length == 1
+              ? 'An open split bill with this name is already waiting on '
+                  '${other.totalParticipants - other.paidCount} of '
+                  '${other.totalParticipants} people. Create another one?'
+              : 'You have ${existing.length} open split bills with this name. '
+                  'Create another one?',
+          style: TextStyle(
+              color: Colors.grey[400], fontSize: 13, height: 1.45),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Go back',
+                style: TextStyle(color: Colors.grey[400])),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Create anyway',
+                style: TextStyle(
+                    color: Color(0xFF8B5CF6),
+                    fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
+  Future<void> _createSplitBill() async {
     if (_titleController.text.trim().isEmpty) {
       showAppSnackbar(
         'Title Required',
@@ -487,6 +551,14 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         ),
       _ => null,
     };
+
+    // Last gate before the bill exists: a same-named open bill is allowed,
+    // but not by accident.
+    if (!await _confirmDuplicateTitle(
+        _openBillsWithSameTitle(_titleController.text))) {
+      return;
+    }
+    if (!mounted) return;
 
     context.read<SplitBillCubit>().createSplitBill(
           title: _titleController.text.trim(),
