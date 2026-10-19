@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/utils/crowdfund_progress.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/widgets/crowdfund_ownership_badge.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/crowdfund_entities.dart';
@@ -28,6 +29,7 @@ class CrowdfundCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final progress = CrowdfundProgress.of(crowdfund);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14.r),
@@ -163,37 +165,57 @@ class CrowdfundCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
+                // WHAT IT RAISED, NOT WHAT IS LEFT IN THE POT. Drawing
+                // currentAmount made a fully withdrawn campaign report that
+                // it had raised nothing — "NGN 0 / 500 · 0.0%" under a green
+                // Completed badge. See CrowdfundProgress.
                 Text(
-                  '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(0)}',
+                  '${crowdfund.currency} ${progress.raised.toStringAsFixed(0)}',
                   style: TextStyle(
                       color: PayFlowTheme.accentOnDark,
                       fontSize: 14.sp,
                       fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  ' / ${crowdfund.targetAmount.toStringAsFixed(0)}',
-                  style: TextStyle(color: Colors.grey[500], fontSize: 11.sp),
+                  ' / ${progress.target.toStringAsFixed(0)}',
+                  style: TextStyle(color: Colors.grey[400], fontSize: 11.sp),
                 ),
               ],
             ),
             SizedBox(height: 6.h),
             CrowdfundProgressIndicator(
-                progressPercentage: crowdfund.progressPercentage),
+                progressPercentage: progress.percent),
             SizedBox(height: 6.h),
             // Footer
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.people, color: Colors.grey[500], size: 14.sp),
-                    SizedBox(width: 3.w),
-                    Text(
-                      '${crowdfund.donorCount} ${crowdfund.donorCount == 1 ? 'donor' : 'donors'}',
-                      style:
-                          TextStyle(color: Colors.grey[400], fontSize: 11.sp),
-                    ),
-                  ],
+                // A READABLE PILL, NOT GREY-ON-DARK. grey[500] on grey[400]
+                // over a #1a1030 card is close to invisible, and it is the
+                // one number that says whether anyone backed this at all.
+                Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 8.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.people,
+                          color: Colors.white.withValues(alpha: 0.85),
+                          size: 13.sp),
+                      SizedBox(width: 4.w),
+                      Text(
+                        '${crowdfund.donorCount} ${crowdfund.donorCount == 1 ? 'donor' : 'donors'}',
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
                 ),
                 // The clock line. `daysRemaining < 7` drove the amber
                 // urgency colour, and it is 0 for every finished campaign,

@@ -9,6 +9,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
+import '../utils/crowdfund_progress.dart';
 import '../utils/crowdfund_status_display.dart';
 import '../cubit/crowdfund_state.dart';
 import '../cubit/leaderboard_cubit.dart';
@@ -844,14 +845,14 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${CurrencySymbols.getSymbol(crowdfund.currency)}${crowdfund.currentAmount.toStringAsFixed(0)}',
+                  '${CurrencySymbols.getSymbol(crowdfund.currency)}${CrowdfundProgress.of(crowdfund).raised.toStringAsFixed(0)}',
                   style: GoogleFonts.inter(
                       color: PayFlowTheme.accentOnDark,
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w700),
                 ),
                 Text(
-                  '${crowdfund.progressPercentage.toStringAsFixed(0)}%',
+                  '${CrowdfundProgress.of(crowdfund).percent.toStringAsFixed(0)}%',
                   style: GoogleFonts.inter(
                       color: const Color(0xFF9CA3AF), fontSize: 10.sp),
                 ),
@@ -1137,7 +1138,10 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
   }
 
   Widget _buildMyCampaignItem(Crowdfund campaign) {
-    final progress = campaign.progressPercentage;
+    // Raised, not residual. A withdrawn campaign used to read
+    // "₦0 / ₦500 • 0%" here too. See CrowdfundProgress.
+    final campaignProgress = CrowdfundProgress.of(campaign);
+    final progress = campaignProgress.percent;
     // Was: active green, completed purple, EVERYTHING ELSE the same grey —
     // so paused, cancelling, cancelled and expired were indistinguishable
     // in the owner's own list.
@@ -1198,7 +1202,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                   ),
                   SizedBox(height: 3.h),
                   Text(
-                    '${CurrencySymbols.getSymbol(campaign.currency)}${campaign.currentAmount.toStringAsFixed(0)} / ${CurrencySymbols.getSymbol(campaign.currency)}${campaign.targetAmount.toStringAsFixed(0)} \u2022 ${progress.toStringAsFixed(0)}%',
+                    '${CurrencySymbols.getSymbol(campaign.currency)}${campaignProgress.raised.toStringAsFixed(0)} / ${CurrencySymbols.getSymbol(campaign.currency)}${campaignProgress.target.toStringAsFixed(0)} \u2022 ${progress.toStringAsFixed(0)}%',
                     style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF), fontSize: 10.sp),
                   ),
@@ -1450,7 +1454,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                     borderRadius: BorderRadius.circular(3.r),
                     child: LinearProgressIndicator(
                       value:
-                          (crowdfund.progressPercentage / 100).clamp(0.0, 1.0),
+                          CrowdfundProgress.of(crowdfund).fraction,
                       backgroundColor: Colors.white.withValues(alpha: 0.1),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                           Color(0xFF4E03D0)),
@@ -1462,7 +1466,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${CurrencySymbols.getSymbol(crowdfund.currency)}${crowdfund.currentAmount.toStringAsFixed(0)} raised',
+                        '${CurrencySymbols.getSymbol(crowdfund.currency)}${CrowdfundProgress.of(crowdfund).raised.toStringAsFixed(0)} raised',
                         style: GoogleFonts.inter(
                             color: PayFlowTheme.accentOnDark,
                             fontSize: 12.sp,
