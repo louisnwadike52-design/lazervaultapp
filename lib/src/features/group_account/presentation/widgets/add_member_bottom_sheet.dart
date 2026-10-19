@@ -19,6 +19,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../../data/datasources/group_join_link_remote_data_source.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/utils/logger.dart';
 part 'add_member_bottom_sheet_widgets.dart';
 
 class AddMemberBottomSheet extends StatefulWidget {
@@ -849,7 +851,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$e'),
+          content: Text(friendlyError(e, context: 'add that member')),
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           shape:

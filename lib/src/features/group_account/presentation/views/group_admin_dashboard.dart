@@ -17,6 +17,8 @@ import 'activity_log_screen.dart';
 import 'edit_contribution_screen.dart';
 import 'edit_group_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/utils/logger.dart';
 
 class GroupAdminDashboard extends StatefulWidget {
   final GroupAccount group;
@@ -1078,7 +1080,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                            content: Text('Export failed: $e'),
+                            content: Text(friendlyError(e, context: 'export that report')),
                             backgroundColor: const Color(0xFFEF4444)),
                       );
                     }
@@ -1102,7 +1104,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                            content: Text('Export failed: $e'),
+                            content: Text(friendlyError(e, context: 'export that report')),
                             backgroundColor: const Color(0xFFEF4444)),
                       );
                     }

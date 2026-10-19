@@ -12,6 +12,8 @@ import 'contribution_type_badge.dart';
 import 'past_contribution_details_sheet.dart';
 import 'status_pill.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/utils/logger.dart';
 
 /// Tap-into bottom sheet for a past group. Mirrors the
 /// PastContributionDetailsSheet layout: drag handle + title row, then
@@ -97,7 +99,9 @@ class _PastGroupDetailsSheetState extends State<PastGroupDetailsSheet> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = 'Failed to load: $e';
+        AppLogger.error('group-funds: past group details failed',
+            error: e, flow: 'group_accounts');
+        _error = friendlyError(e, context: 'load this group');
       });
     }
   }

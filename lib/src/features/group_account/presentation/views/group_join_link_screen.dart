@@ -9,6 +9,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
 import '../../data/datasources/group_join_link_remote_data_source.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/utils/logger.dart';
 
 /// Landing screen for a shared group invite link
 /// (`https://lazervault.app/family/invite/<token>`).
@@ -74,9 +76,11 @@ class _GroupJoinLinkScreenState extends State<GroupJoinLinkScreen> {
         _loading = false;
       });
     } catch (e) {
+      AppLogger.error('group-funds: invite link failed',
+          error: e, flow: 'group_accounts');
       if (!mounted) return;
       setState(() {
-        _error = '$e';
+        _error = friendlyError(e, context: 'open that invite link');
         _loading = false;
       });
     }
@@ -104,12 +108,14 @@ class _GroupJoinLinkScreenState extends State<GroupJoinLinkScreen> {
         icon: const Icon(Icons.groups, color: Color(0xFF10B981)),
       );
     } catch (e) {
+      AppLogger.error('group-funds: invite link failed',
+          error: e, flow: 'group_accounts');
       if (!mounted) return;
       setState(() {
         _joining = false;
         // Re-resolve so the screen reflects the CURRENT link state (e.g. the
         // last slot was taken while this screen sat open).
-        _error = '$e';
+        _error = friendlyError(e, context: 'open that invite link');
       });
       _load();
     }

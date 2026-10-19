@@ -15,6 +15,7 @@ import '../../domain/usecases/group_account_usecases.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../services/group_account_report_service.dart';
 import 'group_account_state.dart';
+import 'package:lazervault/core/utils/logger.dart';
 
 part 'group_funds_paging.dart';
 
@@ -2282,7 +2283,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
           errorMsg.contains('already a member')) {
         emit(const GroupAccountError('You are already a member of this group'));
       } else {
-        emit(GroupAccountError('Failed to join group: $errorMsg'));
+        AppLogger.error('group-funds: join group failed',
+            error: e, flow: 'group_accounts');
+        emit(GroupAccountError(friendlyError(e, context: 'join that group')));
       }
     }
   }
@@ -2310,7 +2313,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountMyInvitationsLoaded(list));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load invitations: $e'));
+      AppLogger.error('group-funds: load your invitations failed',
+          error: e, flow: 'group_accounts');
+      emit(GroupAccountError(friendlyError(e, context: 'load your invitations')));
     }
   }
 
@@ -2359,7 +2364,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountInvitationCancelled(invitationId));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to cancel invitation: $e'));
+      AppLogger.error('group-funds: cancel that invitation failed',
+          error: e, flow: 'group_accounts');
+      emit(GroupAccountError(friendlyError(e, context: 'cancel that invitation')));
     }
   }
 
@@ -2386,7 +2393,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       return inv;
     } catch (e) {
       if (isClosed) return null;
-      emit(GroupAccountError('Failed to send invite: $e'));
+      AppLogger.error('group-funds: send that invite failed',
+          error: e, flow: 'group_accounts');
+      emit(GroupAccountError(friendlyError(e, context: 'send that invite')));
       return null;
     }
   }
@@ -2413,7 +2422,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load group invitations: $e'));
+      AppLogger.error('group-funds: load the invitations for this group failed',
+          error: e, flow: 'group_accounts');
+      emit(GroupAccountError(friendlyError(e, context: 'load the invitations for this group')));
     }
   }
 
@@ -2565,7 +2576,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load cycles: $e'));
+      AppLogger.error('group-funds: load the cycles failed',
+          error: e, flow: 'group_accounts');
+      emit(GroupAccountError(friendlyError(e, context: 'load the cycles')));
     }
   }
 
@@ -2595,7 +2608,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(ContributionCycleDetailsLoaded(details: details));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load cycle details: $e'));
+      AppLogger.error('group-funds: load this cycle failed',
+          error: e, flow: 'group_accounts');
+      emit(GroupAccountError(friendlyError(e, context: 'load this cycle')));
     }
   }
 
@@ -2634,7 +2649,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       return updated;
     } catch (e) {
       if (isClosed) return null;
-      emit(GroupAccountError('Failed to restart contribution: $e'));
+      AppLogger.error('group-funds: restart this contribution failed',
+          error: e, flow: 'group_accounts');
+      emit(GroupAccountError(friendlyError(e, context: 'restart this contribution')));
       return null;
     }
   }
