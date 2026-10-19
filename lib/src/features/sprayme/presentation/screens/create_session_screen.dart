@@ -1,4 +1,6 @@
 import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
+import 'package:lazervault/src/features/sprayme/data/datasources/sprayme_remote_datasource.dart';
+import 'dart:async';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/tag_people_action.dart';
 import 'dart:io';
@@ -64,10 +66,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   // Image picker state
   File? _selectedImage;
-  String _uploadedImageUrl = '';
-  bool _isUploadingImage = false;
   final _imagePicker = ImagePicker();
   final _uploadService = SpraymeImageUploadService();
+  final _dataSource = serviceLocator<SprayMeRemoteDataSource>();
 
   @override
   void dispose() {
@@ -140,14 +141,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       );
       if (picked == null) return;
 
-      final file = File(picked.path);
+      // PREVIEW ONLY. The upload is deferred to the SessionCreated listener,
+      // for exactly the reason _pendingInvitees is: uploading now makes the
+      // host wait on a round trip before they can submit, and throws the
+      // bytes away entirely if they then abandon the form.
       setState(() {
-        _selectedImage = file;
-        _uploadedImageUrl = '';
+        _selectedImage = File(picked.path);
       });
-
-      // Upload immediately
-      await _uploadImage(file);
     } on PlatformException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -168,40 +168,39 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     }
   }
 
-  Future<void> _uploadImage(File file) async {
-    setState(() => _isUploadingImage = true);
-    try {
-      final url = await _uploadService.uploadImage(file);
-      if (!mounted) return;
-      setState(() {
-        _uploadedImageUrl = url;
-        _isUploadingImage = false;
-      });
-    } on SpraymeImageUploadException catch (e) {
-      if (!mounted) return;
-      setState(() => _isUploadingImage = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-          backgroundColor: const Color(0xFFEF4444),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isUploadingImage = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Upload failed. Please try again.'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
-    }
+  /// Uploads the picked cover photo and attaches it, now that the session
+  /// exists and has an id to attach it to.
+  ///
+  /// Deliberately NOT awaited, exactly like [_flushPendingInvites]: the host
+  /// has just created their celebration and should land on the code screen
+  /// immediately. A cover photo is decoration on a spray that already works,
+  /// so it must not hold up the screen they are waiting for — and a failure
+  /// here must not read as the spray itself having failed.
+  ///
+  /// Silent on failure for that same reason. The host is reading out a
+  /// session code; a red banner about an image would land as "something went
+  /// wrong with my event". The cover can be set again from the session.
+  void _flushPendingCoverImage(String sessionId) {
+    final file = _selectedImage;
+    if (file == null) return;
+    _selectedImage = null;
+
+    unawaited(() async {
+      try {
+        final url = await _uploadService.uploadImage(file);
+        await _dataSource.setSessionCoverImage(
+          sessionId: sessionId,
+          coverImageUrl: url,
+        );
+      } catch (_) {
+        // Intentionally swallowed — see above.
+      }
+    }());
   }
 
   void _removeImage() {
     setState(() {
       _selectedImage = null;
-      _uploadedImageUrl = '';
     });
   }
 
@@ -275,36 +274,17 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       return;
     }
 
-    if (_isUploadingImage) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please wait for image upload to complete'),
-          backgroundColor: Color(0xFFFB923C),
-        ),
-      );
-      return;
-    }
-
-    // Image was picked but its upload failed (preview still shows, URL empty).
-    // Don't silently create a session with no cover — make the user retry the
-    // upload or remove the image first.
-    if (_selectedImage != null && _uploadedImageUrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              "Your cover image didn't upload. Remove it or pick again before creating."),
-          backgroundColor: Color(0xFFFB923C),
-        ),
-      );
-      return;
-    }
-
+    // No upload gate. The picked file is a local preview and is sent AFTER
+    // the session exists, so the cover photo can neither delay creating the
+    // spray nor block it when the upload fails.
     HapticFeedback.lightImpact();
     context.read<SprayMeCubit>().createSession(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
           occasionType: occasionType,
-          coverImageUrl: _uploadedImageUrl,
+          // Empty by design — _flushPendingCoverImage attaches it once the
+          // session has an id.
+          coverImageUrl: '',
           currency: 'NGN',
         );
   }
@@ -354,6 +334,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               // The session now exists, so the people picked on the form can
               // actually be tagged.
               _flushPendingInvites(state.session.id);
+              // ...and the cover photo now has somewhere to attach to.
+              _flushPendingCoverImage(state.session.id);
             } else if (state is SprayMeError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -585,62 +567,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          // Upload status overlay
-          if (_isUploadingImage)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      LazerVaultLoader.medium(),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'Uploading...',
-                        style: TextStyle(color: Colors.white, fontSize: 12.sp),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          // Upload success indicator
-          if (!_isUploadingImage && _uploadedImageUrl.isNotEmpty)
-            Positioned(
-              bottom: 8.h,
-              left: 8.w,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981),
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check, color: Colors.white, size: 14.sp),
-                    SizedBox(width: 4.w),
-                    Text(
-                      'Uploaded',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           // Remove button
           Positioned(
             top: 8.h,
             right: 8.w,
             child: GestureDetector(
-              onTap: _isUploadingImage ? null : _removeImage,
+              onTap: _removeImage,
               child: Container(
                 width: 32.w,
                 height: 32.w,

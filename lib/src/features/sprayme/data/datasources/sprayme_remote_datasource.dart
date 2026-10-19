@@ -39,6 +39,30 @@ class SprayMeRemoteDataSource {
     }
   }
 
+  /// Attaches the cover photo once the session exists.
+  ///
+  /// The upload used to happen at PICK time so the URL could be handed to
+  /// createSession — which made the host wait on a round trip before they
+  /// could submit, and threw the upload away if they abandoned the form.
+  ///
+  /// An EMPTY url is valid and CLEARS the cover; the backend treats it the
+  /// same way, so a host can remove a photo they no longer want.
+  Future<SpraySession> setSessionCoverImage({
+    required String sessionId,
+    required String coverImageUrl,
+  }) async {
+    try {
+      final response = await _dio.put(
+        '/api/v1/sprayme/sessions/$sessionId/cover-image',
+        data: {'cover_image_url': coverImageUrl},
+      );
+      return SpraySession.fromJson(
+          response.data['session'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _mapDioError(e, 'set cover image');
+    }
+  }
+
   Future<SpraySession> getSession(String sessionId) async {
     try {
       final response = await _dio.get('/api/v1/sprayme/sessions/$sessionId');
