@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/transaction_pin/presentation/utils/backup_code_input.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -66,16 +67,21 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
     }
     _newPinController.dispose();
     _confirmPinController.dispose();
+    _backupCodeController.dispose();
     _cooldownTimer?.cancel();
     _autoNavTimer?.cancel();
     super.dispose();
   }
 
   String _getOtpCode() {
+    if (_useBackupCode) {
+      return BackupCodeInput.normalise(_backupCodeController.text);
+    }
     return _otpControllers.map((c) => c.text).join();
   }
 
   void _clearOtpFields() {
+    _backupCodeController.clear();
     for (final c in _otpControllers) {
       c.clear();
     }
@@ -117,6 +123,29 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
   /// (an autofill writes several fields, a paste rewrites them all), and
   /// without this each would spend one of the user's OTP attempts.
   bool _verifyingOtp = false;
+
+  /// BACKUP-CODE MODE (authenticator channel only).
+  ///
+  /// The backend's authenticator check already falls back to the user's unused
+  /// 2FA backup codes — which is the whole point of them, since someone
+  /// resetting a transaction PIN because they lost their phone lost the
+  /// authenticator with it. The six digits-only boxes made an eight-character
+  /// HEX code impossible to type, so the server accepted something this screen
+  /// could not send, and the only routes left were email and SMS — which a
+  /// lost phone may also have taken.
+  bool _useBackupCode = false;
+  final TextEditingController _backupCodeController = TextEditingController();
+
+  /// Auto-verifies once a whole code has been typed, mirroring the six-box
+  /// behaviour. Normalised first: codes are stored hashed over the UNDASHED
+  /// UPPERCASE form, so "a3f9-1b2c" must become "A3F91B2C" or a valid code is
+  /// rejected and one of the user's ten is burned on the retry.
+  void _onBackupCodeChanged(String value) {
+    final code = BackupCodeInput.normalise(value);
+    if (code.length == BackupCodeInput.length) {
+      _verifyThenAdvance(code);
+    }
+  }
 
   void _onOtpChanged(int index, String value) {
     if (value.length == 1 && index < 5) {
@@ -795,6 +824,89 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
 
   // ── Step 2: OTP Verification ──
 
+  /// Single field for an eight-character backup code.
+  ///
+  /// Not six boxes: a backup code is HEX, so digits-only boxes cannot hold it.
+  /// The field accepts the dashed form the user was shown at enrolment and
+  /// normalises on submit, because the stored hash is over the undashed
+  /// uppercase value.
+  Widget _buildBackupCodeField() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: TextField(
+        controller: _backupCodeController,
+        enabled: !_verifyingOtp,
+        autocorrect: false,
+        enableSuggestions: false,
+        textCapitalization: TextCapitalization.characters,
+        textAlign: TextAlign.center,
+        // Nine, not eight: the displayed form carries a dash (A3F9-1B2C) and
+        // a user typing what they were shown must not be cut off one short.
+        maxLength: 9,
+        style: GoogleFonts.inter(
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w700,
+          color: Colors.black,
+          letterSpacing: 2,
+        ),
+        decoration: InputDecoration(
+          counterText: '',
+          hintText: 'XXXX-XXXX',
+          hintStyle: GoogleFonts.inter(
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.black26,
+            letterSpacing: 2,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: EdgeInsets.symmetric(vertical: 16.h),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: _purpleAccent.withValues(alpha: 0.3)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: _purpleAccent.withValues(alpha: 0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: _purpleAccent, width: 1.6),
+          ),
+        ),
+        onChanged: _onBackupCodeChanged,
+      ),
+    );
+  }
+
+  /// Switches between the authenticator code and a backup code.
+  ///
+  /// Clears whichever input is being left behind: a half-typed value carried
+  /// across would be submitted as the other kind and spend an attempt.
+  Widget _buildBackupCodeToggle() {
+    return Padding(
+      padding: EdgeInsets.only(top: 18.h),
+      child: TextButton(
+        onPressed: _verifyingOtp
+            ? null
+            : () => setState(() {
+                  _useBackupCode = !_useBackupCode;
+                  _clearOtpFields();
+                }),
+        child: Text(
+          _useBackupCode
+              ? 'Use my authenticator code instead'
+              : "Lost your authenticator? Use a backup code",
+          style: GoogleFonts.inter(
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
+            color: _purpleAccent,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildOtpStep() {
     final channel = _channelUsed.toLowerCase();
     final isEmail = channel == 'email';
@@ -846,7 +958,12 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 36.h),
-        // OTP fields
+        // OTP fields — swapped for a single field in backup-code mode, because
+        // a backup code is EIGHT hex characters and will not fit six
+        // digits-only boxes.
+        if (_useBackupCode)
+          _buildBackupCodeField()
+        else
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(6, (index) {
@@ -894,6 +1011,9 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
             );
           }),
         ),
+        // The way back in when the authenticator itself is gone. Only on that
+        // channel: email and SMS codes have no backup-code equivalent.
+        if (isAuthenticator) _buildBackupCodeToggle(),
         // Feedback while the code is checked. The check deliberately does not
         // emit a Loading state — that drives the step machine — so without
         // this the screen would sit silent for the round trip and the user
