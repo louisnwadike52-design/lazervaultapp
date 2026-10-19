@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/tag_people_action.dart';
 import 'dart:io';
 
@@ -76,10 +77,63 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     super.dispose();
   }
 
+  /// Lets the host CHOOSE where the cover photo comes from.
+  ///
+  /// The source was hardcoded to the gallery, so a host setting up a spray at
+  /// the event itself — which is when these are created — had to leave the
+  /// app, take a photo, come back and find it. The camera is the obvious
+  /// source for a live occasion and it was the one that was missing.
+  ///
+  /// Returns null when the sheet is dismissed, which is NOT a cancellation of
+  /// the pick so much as a change of mind; the caller simply does nothing.
+  Future<ImageSource?> _chooseImageSource() {
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 8.h),
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_rounded, color: Colors.white),
+              title: Text('Take a photo',
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp)),
+              onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
+            ),
+            ListTile(
+              leading:
+                  const Icon(Icons.photo_library_rounded, color: Colors.white),
+              title: Text('Choose from gallery',
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp)),
+              onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
+            ),
+            SizedBox(height: 8.h),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _pickImage() async {
+    final source = await _chooseImageSource();
+    if (source == null) return;
+    if (!mounted) return;
     try {
       final picked = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
+        source: source,
         maxWidth: 1920,
         maxHeight: 1080,
         imageQuality: 85,
@@ -98,9 +152,16 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.code == 'photo_access_denied'
-              ? 'Please grant photo access in Settings'
-              : 'Could not access photos: ${e.message}'),
+          // camera_access_denied is a DIFFERENT permission from photos, and
+          // telling someone to grant photo access when the camera was refused
+          // sends them to the wrong switch.
+          content: Text(switch (e.code) {
+            'camera_access_denied' =>
+              'Please grant camera access in Settings',
+            'photo_access_denied' =>
+              'Please grant photo access in Settings',
+            _ => 'Could not open that: ${e.message}',
+          }),
           backgroundColor: const Color(0xFFEF4444),
         ),
       );
