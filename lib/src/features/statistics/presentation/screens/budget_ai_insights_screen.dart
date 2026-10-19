@@ -15,6 +15,7 @@ import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import '../../utils/transaction_category_labels.dart';
 import '../../utils/analytics_theme.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'budget_ai_insights_screen_widgets.dart';
 
 /// Budget AI Insights Screen
@@ -308,7 +309,7 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => backOrHome(),
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: const Text(

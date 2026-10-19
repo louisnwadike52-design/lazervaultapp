@@ -24,7 +24,7 @@ class BudgetListView extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => backOrHome(),
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: const Text(

@@ -12,6 +12,7 @@ import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Create/Edit Budget Screen
 class CreateBudgetScreen extends StatefulWidget {
@@ -242,7 +243,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: () => Get.back(),
+            onPressed: () => backOrHome(),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
           title: Text(

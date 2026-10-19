@@ -14,6 +14,7 @@ import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'financial_goals_screen_widgets.dart';
 
 /// Financial Goals Screen
@@ -47,7 +48,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => backOrHome(),
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: const Text(

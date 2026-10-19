@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'recurring_bills_screen_widgets.dart';
 
 /// Recurring Bills Screen
@@ -36,7 +37,7 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => backOrHome(),
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: const Text(
