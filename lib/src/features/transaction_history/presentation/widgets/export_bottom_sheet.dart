@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/transaction_history/utils/export_date_range.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_export_helper.dart';
@@ -74,10 +75,11 @@ class _ExportBottomSheetState extends State<ExportBottomSheet> {
   Future<void> _export() async {
     setState(() => _isExporting = true);
     try {
-      // Set endDate to end of day
-      final endOfDay =
-          DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59, 59);
-      await widget.onExport(_startDate, endOfDay, _selectedFormat);
+      // Whole days, both ends — see ExportDateRange. _endDate was already
+      // widened here, but _startDate kept the clock time it was built with,
+      // so exporting at 06:00 dropped everything before 06:00 on day one.
+      final range = ExportDateRange.wholeDays(_startDate, _endDate);
+      await widget.onExport(range.start, range.end, _selectedFormat);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {

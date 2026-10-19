@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/transaction_history/utils/export_date_range.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -134,9 +135,17 @@ class _StatementExportPanelState extends State<StatementExportPanel> {
       );
       return;
     }
-    final start = _startDate;
-    final end = _endDate;
-    if (start == null || end == null) {
+    // Whole days, both ends — see ExportDateRange. The picker returns
+    // MIDNIGHT, so "1 Oct - 19 Oct" used to ask for everything up to 19 Oct
+    // 00:00:00 and the user's last chosen day was missing from the statement.
+    final rawStart = _startDate;
+    final rawEnd = _endDate;
+    final range = (rawStart == null || rawEnd == null)
+        ? null
+        : ExportDateRange.wholeDays(rawStart, rawEnd);
+    final start = range?.start;
+    final end = range?.end;
+    if (range == null || start == null || end == null) {
       LVSnackbar.showError(
         title: 'No date range',
         message: 'Pick the period the statement should cover.',
@@ -145,14 +154,14 @@ class _StatementExportPanelState extends State<StatementExportPanel> {
     }
     // Both checks mirror the server's, so the user is told what is wrong here
     // instead of waiting for a round trip to be refused.
-    if (end.isBefore(start)) {
+    if (range.isInverted) {
       LVSnackbar.showError(
         title: 'Invalid range',
         message: 'The end date must be on or after the start date.',
       );
       return;
     }
-    if (end.difference(start) > _maxWindow) {
+    if (range.spanInDays > _maxWindow.inDays) {
       LVSnackbar.showError(
         title: 'Range too long',
         message: 'Statements cover up to 366 days. Pick a shorter period.',
