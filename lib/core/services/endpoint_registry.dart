@@ -149,6 +149,14 @@ class EndpointRegistry {
     // added.
     'mobile_service_entrance_animation_enabled',
     'card_acceptance_visible',
+    // WhatsApp/Phone Banking tile visibility. THIS list is the transport —
+    // nonUrlSnapshot() emits only what is named here, so a key hydrated by
+    // FeatureFlags.applyRemoteSnapshot but absent from this set is silently
+    // dropped between the registry cache and FeatureFlags, and the hardcoded
+    // default wins on every launch. Nothing errors; the operator sees the
+    // value saved and the app ignores it forever. (Caught by
+    // feature_flag_chain_is_complete_test, which is why it is caught at all.)
+    'phone_banking_visible',
     'auto_biometric_login_enabled',
     'crowdfund_donation_alerts_visible',
     // Omitting a key here is the documented way this wiring fails:

@@ -41,6 +41,7 @@ import 'package:lazervault/src/features/statistics/presentation/widgets/error_st
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/statistics/utils/analytics_theme.dart';
 import 'dart:async';
+import 'package:lazervault/core/utils/friendly_error.dart';
 part 'statistics_widgets.dart';
 
 /// Returns true for platform/internal fee categories that should be
@@ -354,20 +355,33 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         }
 
         if (state is StatisticsError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-              action: SnackBarAction(
-                label: 'Retry',
-                textColor: Colors.white,
-                onPressed: () {
-                  context.read<StatisticsCubit>().refresh();
-                },
+          // hideCurrentSnackBar FIRST. Without it the banners QUEUE: this
+          // screen loads several analytics calls (financial, category, wallet)
+          // and a failure emits StatisticsError more than once, so four 5s
+          // banners played back to back and the error appeared to sit on
+          // screen for twenty seconds. Replacing rather than queueing is what
+          // makes it short — one banner, one lifetime.
+          //
+          // 3s matches LvSnackbar's default, which is the duration every other
+          // surface in the app uses.
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                // Sanitised: a gRPC/DB failure here used to print the
+                // backend's own words to the user.
+                content: Text(sanitizeUserFacingError(state.message)),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+                action: SnackBarAction(
+                  label: 'Retry',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    context.read<StatisticsCubit>().refresh();
+                  },
+                ),
               ),
-            ),
-          );
+            );
         }
       },
       builder: (context, state) {

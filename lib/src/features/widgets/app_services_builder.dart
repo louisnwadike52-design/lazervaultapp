@@ -384,6 +384,15 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     if (!FeatureFlags.cardAcceptanceVisible) {
       hidden.add(AppServiceName.cardAcceptance);
     }
+    // WhatsApp/Phone Banking. Admin-gated and hidden by DEFAULT, same
+    // mechanics as the three above. The tile opened the Banking Channels hub
+    // unconditionally, and these channels are a per-market arrangement (a
+    // WhatsApp Business number, a telephony rail for the user's locale), so
+    // the entry point was in front of people who could not finish the
+    // registration behind it. Routes and deep links stay registered.
+    if (!FeatureFlags.phoneBankingVisible) {
+      hidden.add(AppServiceName.phoneBanking);
+    }
     // Group Funds. Admin-gated but visible by DEFAULT — unlike the three
     // above, this is a live feature and the switch exists to WITHDRAW it, not
     // to stage a rollout.
@@ -1201,11 +1210,34 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                       child: AppServiceBuilder(appService: service),
                     );
                   }
-                  // The reorderable tile is NOT wrapped: it is a drag target
-                  // whose own AnimatedContainer owns its transform, and
-                  // nesting a second scale under a drag makes the tile jump
-                  // away from the finger.
-                  return _buildReorderableTile(service, staggerIndex);
+                  // THE PERSONAL GRID DID NOT ANIMATE AT ALL.
+                  //
+                  // Reorder is offered only on the PERSONAL account, which is
+                  // the dashboard almost everyone opens — and this branch
+                  // returned the bare tile, so the intro above ran for every
+                  // account type EXCEPT the common one. The grid appeared
+                  // fully formed, which is exactly what ServiceTileScaleIn
+                  // exists to avoid.
+                  //
+                  // The original concern was real but narrower than "do not
+                  // wrap": a scale animating WHILE a drag is in progress makes
+                  // the tile jump away from the finger. So the wrapper is
+                  // skipped only while a drag is actually active. Outside a
+                  // drag it is safe, because ServiceTileScaleIn is one-shot —
+                  // after its 260ms it holds the controller at 1.0, and
+                  // ScaleTransition at 1.0 is an identity transform that
+                  // cannot move the tile under the finger. A drag also needs
+                  // a long-press to start, which cannot complete before the
+                  // intro has.
+                  if (_draggingIndex != null) {
+                    return _buildReorderableTile(service, staggerIndex);
+                  }
+                  return ServiceTileScaleIn(
+                    id: service.serviceName.name,
+                    index: staggerIndex,
+                    played: _introPlayed,
+                    child: _buildReorderableTile(service, staggerIndex),
+                  );
                 },
               );
             },

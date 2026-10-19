@@ -14,6 +14,7 @@ import 'package:lazervault/src/generated/statistics.pb.dart' as stats_pb;
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import '../../utils/transaction_category_labels.dart';
 import '../../utils/analytics_theme.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 part 'budget_ai_insights_screen_widgets.dart';
 
 /// Budget AI Insights Screen
@@ -71,9 +72,24 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
     }
     final cur = statisticsCubit.state;
     if (cur is! StatisticsLoaded || cur.isRefreshing) {
+      // STOP WAITING THE MOMENT THE ANSWER IS KNOWN.
+      //
+      // This waited only for a SETTLED StatisticsLoaded, so when the stats
+      // load FAILED — which emits StatisticsError, not StatisticsLoaded — the
+      // page sat here for the full timeout before rendering anything. The
+      // screen looked like it never opened. Accepting the error state as a
+      // terminal answer means a failure surfaces immediately instead of after
+      // a dead wait.
+      //
+      // The timeout is the backstop for a load that never settles either way
+      // (no emission at all), shortened from 12s: the page has to show the
+      // user something, and a spinner held that long is indistinguishable
+      // from a broken screen.
       await statisticsCubit.stream
-          .firstWhere((s) => s is StatisticsLoaded && !s.isRefreshing)
-          .timeout(const Duration(seconds: 12),
+          .firstWhere((s) =>
+              (s is StatisticsLoaded && !s.isRefreshing) ||
+              s is StatisticsError)
+          .timeout(const Duration(seconds: 6),
               onTimeout: () => statisticsCubit.state);
       if (!mounted) return;
     }
@@ -305,12 +321,20 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
       body: BlocConsumer<BudgetCubit, BudgetState>(
         listener: (context, state) {
           if (state is BudgetError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: const Color(0xFFEF4444),
-              ),
-            );
+            // Replace, don't queue — see statistics.dart for why: a failing
+            // analytics load emits more than once and the banners played back
+            // to back. Explicit 3s rather than Flutter's 4s default, matching
+            // LvSnackbar and every other surface. Sanitised, so a gRPC or DB
+            // failure does not print the backend's own words to the user.
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(sanitizeUserFacingError(state.message)),
+                  backgroundColor: const Color(0xFFEF4444),
+                  duration: const Duration(seconds: 3),
+                ),
+              );
           }
         },
         builder: (context, state) {

@@ -32,8 +32,20 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
   // The catalogue only governs: electricity, airtime, data, cable_tv,
   // internet, water, education. ePIN and betting are NOT in the catalogue, so
   // they are always shown (defaultVisible = true) regardless of the response.
-  // Water defaults to hidden so a fetch failure never re-surfaces it (it only
-  // appears when the catalogue explicitly reports it enabled).
+  // THE SHIPPED PRODUCT IS AIRTIME, DATA, ELECTRICITY AND CABLE TV.
+  //
+  // Only those four default visible. Internet, Water, Education, ePIN and
+  // betting are built but not launched, so they appear ONLY when the
+  // catalogue explicitly reports them enabled — a fetch failure or timeout
+  // must not re-surface an unlaunched product, which is what a `true` default
+  // did.
+  //
+  // ePIN and betting additionally had no catalogue entry at all, so
+  // _catalogueAllows fell through to this default and showed them
+  // unconditionally with no admin toggle able to reach them. They are now in
+  // billServiceCatalogue (utility-payments-service) with DefaultEnabled
+  // false, so `service_epin_enabled` / `service_betting_enabled` govern them
+  // like every other type.
   static const List<_BillType> _allTiles = [
     _BillType(
       type: 'airtime',
@@ -69,6 +81,7 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
       title: 'Internet',
       description: 'Smile, Spectranet & more',
       route: AppRoutes.internetBillHome,
+      defaultVisible: false,
     ),
     _BillType(
       type: 'water',
@@ -84,6 +97,7 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
       title: 'Education PINs',
       description: 'WAEC, NECO & JAMB PINs',
       route: AppRoutes.educationHome,
+      defaultVisible: false,
     ),
     _BillType(
       type: 'epin',
@@ -91,6 +105,7 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
       title: 'Recharge card printing',
       description: 'Generate airtime PINs',
       route: AppRoutes.epinHome,
+      defaultVisible: false,
     ),
     _BillType(
       type: 'betting',
@@ -98,6 +113,7 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
       title: 'Fund betting account',
       description: 'Top up your betting wallet',
       route: AppRoutes.bettingHome,
+      defaultVisible: false,
     ),
   ];
 
@@ -429,7 +445,8 @@ class _BillType {
   final String route;
 
   /// Visibility when the catalogue can't be consulted (fetch error/timeout)
-  /// or doesn't govern this type. Water defaults hidden; everything else shown.
+  /// or doesn't govern this type. Only the four launched types default to
+  /// shown; everything built-but-unlaunched defaults hidden.
   final bool defaultVisible;
 
   const _BillType({

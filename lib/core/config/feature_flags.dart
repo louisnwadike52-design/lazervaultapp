@@ -390,6 +390,10 @@ class FeatureFlags {
   /// Master switch for merchant card acceptance (SoftPOS).
   static const String cardAcceptanceVisibleKey = 'card_acceptance_visible';
 
+  /// Whether the consolidated "WhatsApp/Phone Banking" Quick Services tile is
+  /// shown. Admin-tunable; hidden by DEFAULT — see [phoneBankingVisible].
+  static const String phoneBankingVisibleKey = 'phone_banking_visible';
+
   // ── Airtime landing tabs (admin-toggled) ─────────────────────────────────
   // Show/hide each of the three Airtime tabs (Buy / International / Sell) from
   // the admin dashboard. Buy + International default ON; Sell (airtime-to-cash)
@@ -492,6 +496,7 @@ class FeatureFlags {
       localeGatingEnabled,
       bulkSmsVisibleKey,
       cardAcceptanceVisibleKey,
+      phoneBankingVisibleKey,
       airtimeTabBuyEnabled,
       airtimeTabInternationalEnabled,
       airtimeTabSellEnabled,
@@ -1265,6 +1270,25 @@ class FeatureFlags {
   /// release.
   static bool get cardAcceptanceVisible {
     return _prefs?.getBool(cardAcceptanceVisibleKey) ?? false;
+  }
+
+  // ── WhatsApp / Phone Banking visibility ──────────────────────────────────
+  /// Whether the consolidated "WhatsApp/Phone Banking" tile appears in Quick
+  /// Services. It opens the Banking Channels hub, which registers BOTH the
+  /// WhatsApp and Phone/SMS channels and manages their channel PINs.
+  ///
+  /// Defaults to FALSE — hidden on cold start, offline, and before the admin
+  /// snapshot resolves, the same mechanics as insurance, bulk SMS and card
+  /// acceptance. These channels are a per-market arrangement (a WhatsApp
+  /// Business number and a telephony rail that must exist for the user's
+  /// locale), so offering the tile by default puts an entry point in front of
+  /// people who cannot complete the registration behind it.
+  ///
+  /// The screens, routes and deep links stay compiled in and registered —
+  /// only the Quick Services entry point is withheld, so flipping the admin
+  /// switch restores it without a release.
+  static bool get phoneBankingVisible {
+    return _prefs?.getBool(phoneBankingVisibleKey) ?? false;
   }
 
   // ── Voice & Chat Assistant section visibility ────────────────────────────
