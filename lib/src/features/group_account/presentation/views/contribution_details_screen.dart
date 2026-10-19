@@ -36,6 +36,8 @@ import '../widgets/auto_debit_attempts_sheet.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/group_account/data/services/payout_assignment_service.dart';
+import 'package:lazervault/src/features/group_account/domain/cycle_scoped_progress.dart';
+import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
 part 'contribution_details_sheets.dart';
 part 'contribution_details_banners.dart';
 part 'contribution_details_payment_widgets.dart';
@@ -150,12 +152,83 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     _currentContribution = widget.contribution;
     _loadContributionDetails();
     _loadLocalPayments();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final c = _currentContribution;
+      if (c != null && mounted) _loadCurrentCycleView(c);
+    });
     _refreshChatUnread(widget.contributionId);
   }
+
+  /// THE CURRENT CYCLE'S OWN PAYMENTS.
+  ///
+  /// The Payments tab used to list `contribution.payments`, which is every
+  /// payment this contribution has ever taken. After a rotation advances that
+  /// is the PREVIOUS cycle's money sitting under the new cycle's heading —
+  /// members appeared to have already paid for a cycle nobody had paid into
+  /// (reported from production).
+  ///
+  /// GetContributionCycleDetails answers per cycle and synthesises the live
+  /// one when it has no frozen row yet, so the tab can start from zero the
+  /// moment the cycle turns. History stays reachable in the Cycles tab.
+  ContributionCycleDetails? _cycleView;
+  int? _cycleViewIndex;
+  bool _cycleViewLoading = false;
+  Object? _cycleViewError;
 
   /// Unread messages waiting in this contribution's chat. Drives the badge on
   /// the chat CTA so new messages are discoverable without opening it.
   int _chatUnread = 0;
+
+  int _cycleOf(Contribution c) {
+    final i = c.currentCycle ?? 0;
+    return i > 0 ? i : 1;
+  }
+
+  /// Loads the cycle the contribution is on now. Cheap to call repeatedly:
+  /// it no-ops when the same cycle is already loaded or in flight.
+  Future<void> _loadCurrentCycleView(Contribution c, {bool force = false}) async {
+    final want = _cycleOf(c);
+    if (_cycleViewLoading) return;
+    if (!force && _cycleViewIndex == want && _cycleView != null) return;
+
+    final usecase = context.read<GroupAccountCubit>().getContributionCycleDetails;
+    if (usecase == null) return;
+
+    setState(() {
+      _cycleViewLoading = true;
+      // Only clear the view when moving to a DIFFERENT cycle. A refresh of
+      // the same cycle keeps what is on screen so the tab does not blink
+      // empty between a payment landing and the reload finishing.
+      if (_cycleViewIndex != want) {
+        _cycleView = null;
+        _cycleViewError = null;
+      }
+    });
+    try {
+      final details = await usecase(
+        GetContributionCycleDetailsParams(
+          contributionId: c.id,
+          cycleIndex: want,
+        ),
+      );
+      if (!mounted) return;
+      setState(() {
+        _cycleView = details;
+        _cycleViewIndex = want;
+        _cycleViewError = null;
+        _cycleViewLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _cycleViewLoading = false;
+        // Keep a previously loaded view for THIS cycle rather than emptying
+        // the tab over a blip; only a cycle we have never loaded shows the
+        // error state.
+        if (_cycleViewIndex != want) _cycleViewError = e;
+      });
+    }
+  }
 
   /// Whether the auto-payout chip is currently painting anything.
   ///
@@ -295,6 +368,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     _localPayments = state.payments;
                   }
                 });
+                // The cycle may have turned since this screen opened. The
+                // loader no-ops when the cycle is unchanged and already
+                // loaded, so this is cheap on an ordinary refresh.
+                _loadCurrentCycleView(state.contribution);
                 // The group is what tells this screen the viewer's ROLE, and
                 // the deep link had no group id until now. Fetching it here —
                 // after the contribution is already on screen — fills in the
@@ -326,6 +403,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 setState(() => _currentGroupMember = myMember);
               }
             } else if (state is ContributionPaymentSuccess) {
+              // Re-read THIS cycle so the payment that just landed is the
+              // cycle's own row, not just an optimistic local one.
+              final paid = _currentContribution;
+              if (paid != null) _loadCurrentCycleView(paid, force: true);
               // Show success message and refresh data
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -2185,46 +2266,20 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // "show partials with a badge instead of hiding them" UX the user
     // asked for. Both reads merge local and server-side payment state
     // exactly the way the Payments tab does.
-    final paymentLog = <ContributionPayment>[];
-    final seenIds = <String>{};
-    for (final p in _localPayments) {
-      if (seenIds.add(p.id)) paymentLog.add(p);
-    }
-    for (final p in contribution.payments) {
-      if (seenIds.add(p.id)) paymentLog.add(p);
-    }
-    // Contributors = distinct users with at least one non-failed
-    // payment attempt. Failed/refunded attempts don't qualify because
-    // no money ever moved (or it moved back).
-    final contributorIds = <String>{};
-    final paidByUser = <String, double>{};
-    for (final p in paymentLog) {
-      if (p.status == PaymentStatus.failed ||
-          p.status == PaymentStatus.cancelled ||
-          p.status == PaymentStatus.refunded) {
-        continue;
-      }
-      contributorIds.add(p.userId);
-      if (p.status == PaymentStatus.completed) {
-        paidByUser.update(p.userId, (v) => v + p.amount,
-            ifAbsent: () => p.amount);
-      }
-    }
-    int partialCount = 0;
-    int fullyPaidCount = 0;
-    final memberByUser = <String, ContributionMember>{
-      for (final m in contribution.members) m.userId: m,
-    };
-    for (final entry in paidByUser.entries) {
-      final member = memberByUser[entry.key];
-      final expected = _expectedShareFor(contribution, member);
-      if (expected <= 0) continue;
-      if (entry.value >= expected) {
-        fullyPaidCount++;
-      } else if (entry.value > 0) {
-        partialCount++;
-      }
-    }
+    // THIS CYCLE ONLY. These counts used to fold the contribution's LIFETIME
+    // payment list and compare each member's running total against the
+    // PER-CYCLE share — two different questions, which disagree completely
+    // the moment a rotation advances. Two members who paid their cycle-1
+    // share kept reading as "2 fully paid" all through cycle 2, when nobody
+    // had paid into it (reported from production).
+    //
+    // The members carry the per-cycle truth: the server adds to
+    // cycle_paid_amount on every completed payment and resets it, with
+    // has_paid_current_cycle, for every active member when the cycle
+    // advances. See cycle_scoped_progress.dart.
+    final cycleProgress = cycleProgressFromMembers(contribution.members);
+    final partialCount = cycleProgress.partial;
+    final fullyPaidCount = cycleProgress.fullyPaid;
 
     // Mirrors the compact stat-row treatment from group_details_screen
     // (_buildGroupOverview): three-up KPI row, progress bar, totals
@@ -2274,7 +2329,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 // signal that someone is paying, even before the
                 // payment row clears the completed gate.
                 title: 'Contributors',
-                value: contributorIds.length.toString(),
+                // Who has paid into THIS cycle, not ever.
+                value: cycleProgress.contributors.toString(),
                 icon: Icons.groups_outlined,
               ),
               Container(
@@ -2837,28 +2893,72 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     );
   }
 
+  /// Shown only when THIS cycle has never loaded. A failed refresh of a cycle
+  /// already on screen keeps what is there rather than emptying the tab.
+  Widget _buildCycleViewError(Contribution contribution) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off_outlined,
+                size: 34.sp, color: Colors.grey[600]),
+            SizedBox(height: 12.h),
+            Text(
+              "We couldn't load this cycle's payments",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'Earlier cycles are still available in the Cycles tab.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                  color: Colors.grey[500], fontSize: 12.sp, height: 1.4),
+            ),
+            SizedBox(height: 14.h),
+            TextButton(
+              onPressed: _cycleViewLoading
+                  ? null
+                  : () => _loadCurrentCycleView(contribution, force: true),
+              child: Text(_cycleViewLoading ? 'Loading…' : 'Try again',
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF8B5CF6),
+                      fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPaymentsTab(Contribution contribution) {
-    // Combine local payments with static contribution payments
-    final allPayments = <ContributionPayment>[];
+    // THIS CYCLE'S PAYMENTS, NOT EVERY PAYMENT EVER MADE.
+    //
+    // This tab listed `contribution.payments` — the contribution's lifetime
+    // log — so the moment a rotation advanced, the previous cycle's money sat
+    // under the new cycle's heading and members read as already paid for a
+    // cycle nobody had paid into. _cycleView holds the cycle the circle is on
+    // now; the Cycles tab is where earlier cycles live.
+    final cycle = _cycleView;
 
-    // Add local payments first (these are newer)
-    allPayments.addAll(_localPayments);
-
-    // Add static payments, but avoid duplicates
-    for (final staticPayment in contribution.payments) {
-      final isDuplicate = allPayments.any((localPayment) =>
-          localPayment.id == staticPayment.id ||
-          (localPayment.transactionId != null &&
-              staticPayment.transactionId != null &&
-              localPayment.transactionId == staticPayment.transactionId));
-
-      if (!isDuplicate) {
-        allPayments.add(staticPayment);
+    if (cycle == null) {
+      if (_cycleViewError != null) {
+        return _buildCycleViewError(contribution);
       }
+      // First load for this cycle. Showing the lifetime list "meanwhile"
+      // would show exactly the wrong thing, so wait.
+      return const Center(child: LazerVaultLoader());
     }
 
-    // Sort by payment date, newest first
-    allPayments.sort((a, b) => b.paymentDate.compareTo(a.paymentDate));
+    final allPayments = mergeCyclePayments(
+      local: _localPayments,
+      cycle: cycle.payments,
+    );
 
     if (allPayments.isEmpty) {
       return _buildEmptyPayments();
@@ -3870,30 +3970,20 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     }
   }
 
-  /// Returns the contribution's completed payments deduplicated against
-  /// the local just-made buffer. Used by both the Overview-tab Average
-  /// Payment and any future stat that must agree with what the
-  /// Payments tab actually shows.
+  /// THIS CYCLE'S completed payments, deduplicated against the local
+  /// just-made buffer. Used by the Overview-tab Average Payment and any
+  /// future stat that must agree with what the Payments tab actually shows —
+  /// which is now the current cycle, so this is too. Reading the lifetime log
+  /// here would put the previous cycle's average on a fresh cycle's Overview.
+  ///
+  /// Empty until the cycle has loaded: an average computed from the wrong
+  /// cycle is worse than no average, and the Overview tiles already handle a
+  /// zero-payment cycle (a brand-new one has exactly that).
   List<ContributionPayment> _completedPaymentsFor(Contribution contribution) {
-    final all = <ContributionPayment>[];
-    final seenIds = <String>{};
-    final seenTxIds = <String>{};
-    for (final p in _localPayments) {
-      if (seenIds.add(p.id)) {
-        if (p.transactionId != null) seenTxIds.add(p.transactionId!);
-        all.add(p);
-      }
-    }
-    for (final p in contribution.payments) {
-      if (seenIds.contains(p.id)) continue;
-      if (p.transactionId != null && seenTxIds.contains(p.transactionId!)) {
-        continue;
-      }
-      all.add(p);
-    }
-    return all
-        .where((p) => p.status == PaymentStatus.completed)
-        .toList(growable: false);
+    return mergeCyclePayments(
+      local: _localPayments,
+      cycle: _cycleView?.payments ?? const <ContributionPayment>[],
+    ).where((p) => p.status == PaymentStatus.completed).toList(growable: false);
   }
 
   void _handleMenuAction(String action, Contribution contribution) {
