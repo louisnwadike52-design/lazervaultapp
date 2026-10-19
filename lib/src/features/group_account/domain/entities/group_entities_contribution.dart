@@ -819,6 +819,20 @@ class ContributionCycle extends Equatable {
 
   bool get isLive => status == ContributionCycleStatus.inProgress;
   bool get isSettled => status == ContributionCycleStatus.closedSettled;
+
+  /// Whether the pot actually REACHED this cycle's receiver.
+  ///
+  /// The cycles sheet marked the receiver with a trophy, which says it was
+  /// their TURN — not that they were paid. A member looking at a closed cycle
+  /// could not tell the difference between "collected the pot" and "was due to
+  /// and the payout is still held".
+  ///
+  /// Settled status or a payout transaction id: the transaction id is the
+  /// evidence money moved (it opens the receipt), and a settled close is the
+  /// server's own statement that the payout completed. Failed and cancelled
+  /// cycles are neither, so they correctly answer false.
+  bool get receiverWasPaid =>
+      isSettled || (payoutTransactionId?.trim().isNotEmpty ?? false);
   bool get isFailed => status == ContributionCycleStatus.closedFailed;
   bool get isCancelled => status == ContributionCycleStatus.closedCancelled;
 

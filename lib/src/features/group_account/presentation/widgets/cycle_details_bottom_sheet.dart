@@ -350,11 +350,17 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
     return ListView.builder(
       padding: EdgeInsets.all(16.w),
       itemCount: d.members.length,
-      itemBuilder: (_, i) => _buildMemberRow(d.members[i]),
+      itemBuilder: (_, i) => _buildMemberRow(
+        d.members[i],
+        receiverWasPaid: d.summary.receiverWasPaid,
+      ),
     );
   }
 
-  Widget _buildMemberRow(ContributionCycleMemberSnapshot m) {
+  Widget _buildMemberRow(
+    ContributionCycleMemberSnapshot m, {
+    required bool receiverWasPaid,
+  }) {
     Color tint;
     String label;
     if (m.hasPaid) {
@@ -418,6 +424,15 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
                       SizedBox(width: 6.w),
                       Icon(Icons.emoji_events,
                           size: 13.sp, color: const Color(0xFFF59E0B)),
+                      // The trophy says it was their TURN. Whether the pot
+                      // actually reached them is a different fact, and the
+                      // row said nothing about it — so a receiver whose
+                      // payout was still held looked identical to one who had
+                      // collected.
+                      if (receiverWasPaid) ...[
+                        SizedBox(width: 6.w),
+                        _chip('Paid out', const Color(0xFF10B981)),
+                      ],
                     ],
                   ],
                 ),
@@ -434,25 +449,29 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
             ),
           ),
           SizedBox(width: 10.w),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-            decoration: BoxDecoration(
-              color: tint.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 10.sp,
-                fontWeight: FontWeight.w600,
-                color: tint,
-              ),
-            ),
-          ),
+          _chip(label, tint),
         ],
       ),
     );
   }
+
+  /// The row's status pill, shared with the receiver's "Paid out" badge so the
+  /// two cannot drift into different shapes on the same row.
+  Widget _chip(String label, Color tint) => Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+        decoration: BoxDecoration(
+          color: tint.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 10.sp,
+            fontWeight: FontWeight.w600,
+            color: tint,
+          ),
+        ),
+      );
 
   // -----------------------------------------------------------
   // Payments tab — chronological list scoped to this cycle.
@@ -719,7 +738,12 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
                         Text(
                           s.isLive
                               ? 'Scheduled receiver'
-                              : 'Received this cycle',
+                              // Not "not live": a closed cycle whose payout
+                              // is still held had not paid anybody, and this
+                              // line said it had.
+                              : (s.receiverWasPaid
+                                  ? 'Received this cycle'
+                                  : 'Due to receive this cycle'),
                           style: GoogleFonts.inter(
                             fontSize: 11.sp,
                             color: Colors.grey[500],
@@ -823,13 +847,15 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
               if (showStarted && partial.isNotEmpty) ...[
                 _sectionLabel('Started but incomplete (${partial.length})'),
                 SizedBox(height: 8.h),
-                ...partial.map(_buildMemberRow),
+                ...partial.map((m) => _buildMemberRow(m,
+                    receiverWasPaid: d.summary.receiverWasPaid)),
                 SizedBox(height: 12.h),
               ],
               if (showMissed && missed.isNotEmpty) ...[
                 _sectionLabel('Did not pay (${missed.length})'),
                 SizedBox(height: 8.h),
-                ...missed.map(_buildMemberRow),
+                ...missed.map((m) => _buildMemberRow(m,
+                    receiverWasPaid: d.summary.receiverWasPaid)),
               ],
             ],
           ),
