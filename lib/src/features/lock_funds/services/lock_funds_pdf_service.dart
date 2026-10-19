@@ -542,15 +542,44 @@ class LockFundsPdfService {
                 'Lock Duration',
                 lockFund.durationText,
               ),
-              _buildDetailRow(
-                'Expected Interest',
-                '+$currencySymbol${expectedInterest.toStringAsFixed(2)}',
-                valueColor: PdfColors.green700,
-              ),
+              // WHAT IT EARNED BEATS WHAT IT WAS PROJECTED TO EARN.
+              //
+              // This printed the projection only, so a plan that had actually
+              // paid interest out showed "+0.00" — the projection is computed
+              // from what is still locked, and a withdrawn plan has nothing
+              // locked. Once a plan has earned anything, that figure is the
+              // honest one and the projection is history.
+              if (lockFund.hasEarnedInterest) ...[
+                _buildDetailRow(
+                  'Interest Earned',
+                  '+$currencySymbol${lockFund.interestEarned.toStringAsFixed(2)}',
+                  valueColor: PdfColors.green700,
+                ),
+                // Split out only when BOTH halves exist, so the reader can see
+                // what has reached their wallet and what is still riding.
+                if (lockFund.interestPaidOut > 0 &&
+                    lockFund.accruedInterest > 0) ...[
+                  _buildDetailRow(
+                    '  Paid out so far',
+                    '$currencySymbol${lockFund.interestPaidOut.toStringAsFixed(2)}',
+                  ),
+                  _buildDetailRow(
+                    '  Still accruing',
+                    '$currencySymbol${lockFund.accruedInterest.toStringAsFixed(2)}',
+                  ),
+                ],
+              ] else
+                _buildDetailRow(
+                  'Expected Interest',
+                  '+$currencySymbol${expectedInterest.toStringAsFixed(2)}',
+                  valueColor: PdfColors.green700,
+                ),
               pw.Divider(color: PdfColors.grey300),
               _buildDetailRow(
-                'Expected Total at Maturity',
-                '$currencySymbol${expectedTotal.toStringAsFixed(2)}',
+                lockFund.hasEarnedInterest
+                    ? 'Total Value'
+                    : 'Expected Total at Maturity',
+                '$currencySymbol${(lockFund.hasEarnedInterest ? lockFund.amount + lockFund.interestEarned : expectedTotal).toStringAsFixed(2)}',
                 isBold: true,
                 valueColor: PdfColors.blue800,
               ),

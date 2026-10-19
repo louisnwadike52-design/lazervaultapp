@@ -360,6 +360,36 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
             SizedBox(height: 8.h),
             _buildDetailRow('Goal', lockFund.goalName!),
           ],
+          // INTEREST THIS PLAN HAS ACTUALLY EARNED.
+          //
+          // The receipt showed the RATE and, post-create, a projection — but
+          // never what the plan made. A withdrawn lock therefore read as
+          // though it had earned nothing, when its interest had already been
+          // paid into the wallet.
+          if (lockFund.hasEarnedInterest) ...[
+            SizedBox(height: 8.h),
+            _buildDetailRow(
+              'Interest Earned',
+              '+$currencySymbol${lockFund.interestEarned.toStringAsFixed(2)}',
+              valueColor: const Color(0xFF10B981),
+            ),
+            // Only split it out when both halves exist, so the reader can see
+            // what has reached their wallet and what is still riding on the
+            // plan.
+            if (lockFund.interestPaidOut > 0 &&
+                lockFund.accruedInterest > 0) ...[
+              SizedBox(height: 8.h),
+              _buildDetailRow(
+                'Paid out so far',
+                '$currencySymbol${lockFund.interestPaidOut.toStringAsFixed(2)}',
+              ),
+              SizedBox(height: 8.h),
+              _buildDetailRow(
+                'Still accruing',
+                '$currencySymbol${lockFund.accruedInterest.toStringAsFixed(2)}',
+              ),
+            ],
+          ],
           SizedBox(height: 8.h),
           _buildDetailRow(
             'Auto-Renew',
@@ -454,7 +484,7 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String label, String value, {Color? valueColor}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,7 +503,8 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
             value,
             textAlign: TextAlign.right,
             style: GoogleFonts.inter(
-              color: Colors.white,
+              // Earned interest reads as a gain; everything else stays plain.
+              color: valueColor ?? Colors.white,
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,
             ),

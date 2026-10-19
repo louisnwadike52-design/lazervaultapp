@@ -52,6 +52,19 @@ class LockFund {
   /// all an unlock would actually pay today.
   final double interestPaidOut;
 
+  /// EVERYTHING THIS PLAN HAS EARNED, paid out or not.
+  ///
+  /// [accruedInterest] is the unpaid remainder riding on the plan and
+  /// [interestPaidOut] is what has already reached the wallet. They are
+  /// deliberately disjoint, so a receipt that shows only one of them
+  /// understates what the plan made — and a plan that has already paid its
+  /// interest out shows an accrued figure of zero, which is why a withdrawn
+  /// lock's receipt read as having earned nothing.
+  double get interestEarned => accruedInterest + interestPaidOut;
+
+  /// True when there is a real figure to show rather than a projection.
+  bool get hasEarnedInterest => interestEarned > 0;
+
   /// Instant through which interest has been paid out; null when none has.
   final DateTime? interestPaidThrough;
   final bool canUnlockEarly;
