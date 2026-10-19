@@ -186,30 +186,16 @@ class _DashboardTransactionHistoryScreenState
       context,
       onExport: (startDate, endDate, format) async {
         final cubit = context.read<TransactionHistoryCubit>();
-        // The search box narrows the visible list too, so it narrows the
-        // export; the cubit applies the filter sheet's own selections.
         final transactions = await cubit.fetchTransactionsForExport(
           startDate: startDate,
           endDate: endDate,
-          query: _searchController.text,
         );
 
         if (transactions.isEmpty) {
-          // VALIDATE BEFORE GENERATING, and say which of the two reasons it
-          // is. Now that the export honours the active filters, "nothing to
-          // export" is as often "your filters exclude everything in this
-          // range" as "this range is empty" — and a user told only the
-          // latter would keep widening dates that were never the problem.
-          final narrowed = (_activeFilters?.hasFilters ?? false) ||
-              _searchController.text.trim().isNotEmpty;
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(
-                    narrowed
-                        ? 'Nothing matches your current filters in that period. '
-                            'Clear a filter or widen the dates.'
-                        : 'No transactions found for the selected period',
+                content: Text('No transactions found for the selected period',
                     style: TextStyle(fontSize: 13.sp)),
                 backgroundColor: const Color(0xFFF59E0B),
                 behavior: SnackBarBehavior.floating,

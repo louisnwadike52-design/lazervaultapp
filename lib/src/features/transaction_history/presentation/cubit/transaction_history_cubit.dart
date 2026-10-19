@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:lazervault/src/features/transaction_history/utils/transaction_filter_matcher.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
@@ -328,31 +327,13 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
   }
 
   /// Fetch transactions for export (date range, no pagination)
-  /// Transactions for an export, NARROWED BY WHAT THE USER IS LOOKING AT.
-  ///
-  /// This used to pass dates and nothing else, so someone who filtered the
-  /// list to, say, failed bill payments and tapped download received a
-  /// statement of their whole month — a plausible-looking file that was
-  /// simply not what they asked for, with nothing on it to reveal the
-  /// mismatch.
-  ///
-  /// The repository call stays date-only (it is a bulk 500-row fetch); the
-  /// active filters, the service scope and the search term are applied over
-  /// the result, which is what makes the export equal the visible list.
   Future<List<UnifiedTransaction>> fetchTransactionsForExport({
     required DateTime startDate,
     required DateTime endDate,
-    String? query,
   }) async {
-    final rows = await repository.fetchTransactionsForExport(
+    return repository.fetchTransactionsForExport(
       startDate: startDate,
       endDate: endDate,
-    );
-    return applyTransactionFilters(
-      rows,
-      _activeFilters,
-      query: query,
-      serviceType: _serviceType,
     );
   }
 
