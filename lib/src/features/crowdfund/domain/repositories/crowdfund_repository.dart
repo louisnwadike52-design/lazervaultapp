@@ -1,4 +1,5 @@
 import '../entities/crowdfund_entities.dart';
+import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_withdrawal_record.dart';
 import '../entities/notification_channel_entities.dart';
 
 /// Abstract repository interface for crowdfund operations
@@ -180,4 +181,13 @@ abstract class CrowdfundRepository {
   });
 
   Future<bool> testNotificationChannel(String channelId);
+
+  /// Payout rows for the signed-in creator. Omit [crowdfundId] to get every
+  /// campaign in one call — that is what backs the "Withdrawn" badge on the
+  /// campaign list without a request per card.
+  Future<List<CrowdfundWithdrawalRecord>> listCrowdfundWithdrawals({
+    String? crowdfundId,
+    int page,
+    int pageSize,
+  });
 }

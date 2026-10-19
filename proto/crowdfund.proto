@@ -717,6 +717,17 @@ service CrowdfundService {
       get: "/v1/crowdfunds/{crowdfund_id}/notification-history"
     };
   }
+
+  // Payout rows for the signed-in creator. crowdfund_id is OPTIONAL: omitting
+  // it returns every campaign in one call, which is what lets the campaign
+  // list badge each card without a request per card. Non-admin callers are
+  // clamped server-side to their own rows.
+  rpc ListCrowdfundWithdrawals(ListCrowdfundWithdrawalsRequest) returns (ListCrowdfundWithdrawalsResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/withdrawals"
+    };
+  }
+
 }
 
 // ============================================================================
@@ -957,4 +968,45 @@ message GetCrowdfundLeaderboardResponse {
 message LeaderboardCrowdfundEntry {
   int32 rank = 1;
   CrowdfundMessage crowdfund = 2;
+}
+
+// ===== CAMPAIGN WITHDRAWAL AUDIT =====
+// Mirrors services/products-gateway/proto/crowdfund.proto exactly; amounts
+// cross the wire in KOBO here (the gateway converts from the backend's
+// major-unit doubles).
+message CrowdfundWithdrawalRecord {
+  string id = 1;
+  string crowdfund_id = 2;
+  string user_id = 3;
+  uint64 amount = 4;          // kobo on the wire
+  string currency = 5;
+  string destination_account_id = 6;
+  string destination_account_type = 7;
+  string idempotency_key = 8;
+  string status = 9;
+  uint64 balance_before = 10; // kobo
+  uint64 balance_after = 11;  // kobo
+  string notes = 12;
+  string created_at = 13;     // RFC3339
+  uint64 fee_amount = 14;     // kobo
+  uint64 net_amount = 15;     // kobo
+  string fee_type = 16;
+  int32 fee_basis_points = 17;
+  uint64 fee_fixed_kobo = 18;
+}
+
+message ListCrowdfundWithdrawalsRequest {
+  string crowdfund_id = 1;
+  string user_id = 2;
+  string status = 3;
+  int32 page = 4;
+  int32 page_size = 5;
+}
+
+message ListCrowdfundWithdrawalsResponse {
+  repeated CrowdfundWithdrawalRecord withdrawals = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  bool has_more = 5;
 }

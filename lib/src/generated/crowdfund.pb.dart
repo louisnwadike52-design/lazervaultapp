@@ -8400,6 +8400,501 @@ class LeaderboardCrowdfundEntry extends $pb.GeneratedMessage {
   CrowdfundMessage ensureCrowdfund() => $_ensure(1);
 }
 
+/// ===== CAMPAIGN WITHDRAWAL AUDIT =====
+/// Mirrors services/products-gateway/proto/crowdfund.proto exactly; amounts
+/// cross the wire in KOBO here (the gateway converts from the backend's
+/// major-unit doubles).
+class CrowdfundWithdrawalRecord extends $pb.GeneratedMessage {
+  factory CrowdfundWithdrawalRecord({
+    $core.String? id,
+    $core.String? crowdfundId,
+    $core.String? userId,
+    $fixnum.Int64? amount,
+    $core.String? currency,
+    $core.String? destinationAccountId,
+    $core.String? destinationAccountType,
+    $core.String? idempotencyKey,
+    $core.String? status,
+    $fixnum.Int64? balanceBefore,
+    $fixnum.Int64? balanceAfter,
+    $core.String? notes,
+    $core.String? createdAt,
+    $fixnum.Int64? feeAmount,
+    $fixnum.Int64? netAmount,
+    $core.String? feeType,
+    $core.int? feeBasisPoints,
+    $fixnum.Int64? feeFixedKobo,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (crowdfundId != null) result.crowdfundId = crowdfundId;
+    if (userId != null) result.userId = userId;
+    if (amount != null) result.amount = amount;
+    if (currency != null) result.currency = currency;
+    if (destinationAccountId != null)
+      result.destinationAccountId = destinationAccountId;
+    if (destinationAccountType != null)
+      result.destinationAccountType = destinationAccountType;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    if (status != null) result.status = status;
+    if (balanceBefore != null) result.balanceBefore = balanceBefore;
+    if (balanceAfter != null) result.balanceAfter = balanceAfter;
+    if (notes != null) result.notes = notes;
+    if (createdAt != null) result.createdAt = createdAt;
+    if (feeAmount != null) result.feeAmount = feeAmount;
+    if (netAmount != null) result.netAmount = netAmount;
+    if (feeType != null) result.feeType = feeType;
+    if (feeBasisPoints != null) result.feeBasisPoints = feeBasisPoints;
+    if (feeFixedKobo != null) result.feeFixedKobo = feeFixedKobo;
+    return result;
+  }
+
+  CrowdfundWithdrawalRecord._();
+
+  factory CrowdfundWithdrawalRecord.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CrowdfundWithdrawalRecord.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CrowdfundWithdrawalRecord',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'crowdfundId')
+    ..aOS(3, _omitFieldNames ? '' : 'userId')
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..aOS(6, _omitFieldNames ? '' : 'destinationAccountId')
+    ..aOS(7, _omitFieldNames ? '' : 'destinationAccountType')
+    ..aOS(8, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(9, _omitFieldNames ? '' : 'status')
+    ..a<$fixnum.Int64>(
+        10, _omitFieldNames ? '' : 'balanceBefore', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        11, _omitFieldNames ? '' : 'balanceAfter', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(12, _omitFieldNames ? '' : 'notes')
+    ..aOS(13, _omitFieldNames ? '' : 'createdAt')
+    ..a<$fixnum.Int64>(
+        14, _omitFieldNames ? '' : 'feeAmount', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        15, _omitFieldNames ? '' : 'netAmount', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(16, _omitFieldNames ? '' : 'feeType')
+    ..a<$core.int>(
+        17, _omitFieldNames ? '' : 'feeBasisPoints', $pb.PbFieldType.O3)
+    ..a<$fixnum.Int64>(
+        18, _omitFieldNames ? '' : 'feeFixedKobo', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CrowdfundWithdrawalRecord clone() =>
+      CrowdfundWithdrawalRecord()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CrowdfundWithdrawalRecord copyWith(
+          void Function(CrowdfundWithdrawalRecord) updates) =>
+      super.copyWith((message) => updates(message as CrowdfundWithdrawalRecord))
+          as CrowdfundWithdrawalRecord;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundWithdrawalRecord create() => CrowdfundWithdrawalRecord._();
+  @$core.override
+  CrowdfundWithdrawalRecord createEmptyInstance() => create();
+  static $pb.PbList<CrowdfundWithdrawalRecord> createRepeated() =>
+      $pb.PbList<CrowdfundWithdrawalRecord>();
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundWithdrawalRecord getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CrowdfundWithdrawalRecord>(create);
+  static CrowdfundWithdrawalRecord? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get crowdfundId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set crowdfundId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCrowdfundId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCrowdfundId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get userId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set userId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUserId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get amount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set amount($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get destinationAccountId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set destinationAccountId($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasDestinationAccountId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDestinationAccountId() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get destinationAccountType => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set destinationAccountType($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasDestinationAccountType() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearDestinationAccountType() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get idempotencyKey => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set idempotencyKey($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasIdempotencyKey() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearIdempotencyKey() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get status => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set status($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasStatus() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearStatus() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $fixnum.Int64 get balanceBefore => $_getI64(9);
+  @$pb.TagNumber(10)
+  set balanceBefore($fixnum.Int64 value) => $_setInt64(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasBalanceBefore() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearBalanceBefore() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $fixnum.Int64 get balanceAfter => $_getI64(10);
+  @$pb.TagNumber(11)
+  set balanceAfter($fixnum.Int64 value) => $_setInt64(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasBalanceAfter() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearBalanceAfter() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get notes => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set notes($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasNotes() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearNotes() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get createdAt => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set createdAt($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasCreatedAt() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearCreatedAt() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $fixnum.Int64 get feeAmount => $_getI64(13);
+  @$pb.TagNumber(14)
+  set feeAmount($fixnum.Int64 value) => $_setInt64(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasFeeAmount() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearFeeAmount() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $fixnum.Int64 get netAmount => $_getI64(14);
+  @$pb.TagNumber(15)
+  set netAmount($fixnum.Int64 value) => $_setInt64(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasNetAmount() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearNetAmount() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get feeType => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set feeType($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasFeeType() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearFeeType() => $_clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.int get feeBasisPoints => $_getIZ(16);
+  @$pb.TagNumber(17)
+  set feeBasisPoints($core.int value) => $_setSignedInt32(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasFeeBasisPoints() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearFeeBasisPoints() => $_clearField(17);
+
+  @$pb.TagNumber(18)
+  $fixnum.Int64 get feeFixedKobo => $_getI64(17);
+  @$pb.TagNumber(18)
+  set feeFixedKobo($fixnum.Int64 value) => $_setInt64(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasFeeFixedKobo() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearFeeFixedKobo() => $_clearField(18);
+}
+
+class ListCrowdfundWithdrawalsRequest extends $pb.GeneratedMessage {
+  factory ListCrowdfundWithdrawalsRequest({
+    $core.String? crowdfundId,
+    $core.String? userId,
+    $core.String? status,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final result = create();
+    if (crowdfundId != null) result.crowdfundId = crowdfundId;
+    if (userId != null) result.userId = userId;
+    if (status != null) result.status = status;
+    if (page != null) result.page = page;
+    if (pageSize != null) result.pageSize = pageSize;
+    return result;
+  }
+
+  ListCrowdfundWithdrawalsRequest._();
+
+  factory ListCrowdfundWithdrawalsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListCrowdfundWithdrawalsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListCrowdfundWithdrawalsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'status')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListCrowdfundWithdrawalsRequest clone() =>
+      ListCrowdfundWithdrawalsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListCrowdfundWithdrawalsRequest copyWith(
+          void Function(ListCrowdfundWithdrawalsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as ListCrowdfundWithdrawalsRequest))
+          as ListCrowdfundWithdrawalsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundWithdrawalsRequest create() =>
+      ListCrowdfundWithdrawalsRequest._();
+  @$core.override
+  ListCrowdfundWithdrawalsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListCrowdfundWithdrawalsRequest> createRepeated() =>
+      $pb.PbList<ListCrowdfundWithdrawalsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundWithdrawalsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListCrowdfundWithdrawalsRequest>(
+          create);
+  static ListCrowdfundWithdrawalsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get status => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set status($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStatus() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get page => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set page($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPage() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get pageSize => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set pageSize($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasPageSize() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPageSize() => $_clearField(5);
+}
+
+class ListCrowdfundWithdrawalsResponse extends $pb.GeneratedMessage {
+  factory ListCrowdfundWithdrawalsResponse({
+    $core.Iterable<CrowdfundWithdrawalRecord>? withdrawals,
+    $core.int? total,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.bool? hasMore,
+  }) {
+    final result = create();
+    if (withdrawals != null) result.withdrawals.addAll(withdrawals);
+    if (total != null) result.total = total;
+    if (page != null) result.page = page;
+    if (pageSize != null) result.pageSize = pageSize;
+    if (hasMore != null) result.hasMore = hasMore;
+    return result;
+  }
+
+  ListCrowdfundWithdrawalsResponse._();
+
+  factory ListCrowdfundWithdrawalsResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListCrowdfundWithdrawalsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListCrowdfundWithdrawalsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<CrowdfundWithdrawalRecord>(
+        1, _omitFieldNames ? '' : 'withdrawals', $pb.PbFieldType.PM,
+        subBuilder: CrowdfundWithdrawalRecord.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hasMore')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListCrowdfundWithdrawalsResponse clone() =>
+      ListCrowdfundWithdrawalsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListCrowdfundWithdrawalsResponse copyWith(
+          void Function(ListCrowdfundWithdrawalsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as ListCrowdfundWithdrawalsResponse))
+          as ListCrowdfundWithdrawalsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundWithdrawalsResponse create() =>
+      ListCrowdfundWithdrawalsResponse._();
+  @$core.override
+  ListCrowdfundWithdrawalsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListCrowdfundWithdrawalsResponse> createRepeated() =>
+      $pb.PbList<ListCrowdfundWithdrawalsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundWithdrawalsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListCrowdfundWithdrawalsResponse>(
+          create);
+  static ListCrowdfundWithdrawalsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<CrowdfundWithdrawalRecord> get withdrawals => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get hasMore => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasMore($core.bool value) => $_setBool(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasHasMore() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasMore() => $_clearField(5);
+}
+
 const $core.bool _omitFieldNames =
     $core.bool.fromEnvironment('protobuf.omit_field_names');
 const $core.bool _omitMessageNames =

@@ -1,4 +1,5 @@
 import 'package:lazervault/src/generated/crowdfund.pb.dart' as pb;
+import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_withdrawal_record.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../../domain/entities/notification_channel_entities.dart';
 import '../../domain/repositories/crowdfund_repository.dart';
@@ -497,6 +498,23 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
       return await remoteDataSource.testNotificationChannel(channelId);
     } catch (e) {
       throw Exception('Failed to test notification channel: $e');
+    }
+  }
+
+  @override
+  Future<List<CrowdfundWithdrawalRecord>> listCrowdfundWithdrawals({
+    String? crowdfundId,
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    try {
+      return await remoteDataSource.listCrowdfundWithdrawals(
+        crowdfundId: crowdfundId,
+        page: page,
+        pageSize: pageSize,
+      );
+    } catch (e) {
+      throw Exception('Failed to list crowdfund withdrawals: $e');
     }
   }
 }

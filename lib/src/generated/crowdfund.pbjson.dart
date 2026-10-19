@@ -2377,3 +2377,102 @@ final $typed_data.Uint8List leaderboardCrowdfundEntryDescriptor =
     $convert.base64Decode(
         'ChlMZWFkZXJib2FyZENyb3dkZnVuZEVudHJ5EhIKBHJhbmsYASABKAVSBHJhbmsSMgoJY3Jvd2'
         'RmdW5kGAIgASgLMhQucGIuQ3Jvd2RmdW5kTWVzc2FnZVIJY3Jvd2RmdW5k');
+
+@$core.Deprecated('Use crowdfundWithdrawalRecordDescriptor instead')
+const CrowdfundWithdrawalRecord$json = {
+  '1': 'CrowdfundWithdrawalRecord',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'crowdfund_id', '3': 2, '4': 1, '5': 9, '10': 'crowdfundId'},
+    {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'amount', '3': 4, '4': 1, '5': 4, '10': 'amount'},
+    {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+    {
+      '1': 'destination_account_id',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '10': 'destinationAccountId'
+    },
+    {
+      '1': 'destination_account_type',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'destinationAccountType'
+    },
+    {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'status', '3': 9, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'balance_before', '3': 10, '4': 1, '5': 4, '10': 'balanceBefore'},
+    {'1': 'balance_after', '3': 11, '4': 1, '5': 4, '10': 'balanceAfter'},
+    {'1': 'notes', '3': 12, '4': 1, '5': 9, '10': 'notes'},
+    {'1': 'created_at', '3': 13, '4': 1, '5': 9, '10': 'createdAt'},
+    {'1': 'fee_amount', '3': 14, '4': 1, '5': 4, '10': 'feeAmount'},
+    {'1': 'net_amount', '3': 15, '4': 1, '5': 4, '10': 'netAmount'},
+    {'1': 'fee_type', '3': 16, '4': 1, '5': 9, '10': 'feeType'},
+    {'1': 'fee_basis_points', '3': 17, '4': 1, '5': 5, '10': 'feeBasisPoints'},
+    {'1': 'fee_fixed_kobo', '3': 18, '4': 1, '5': 4, '10': 'feeFixedKobo'},
+  ],
+};
+
+/// Descriptor for `CrowdfundWithdrawalRecord`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List crowdfundWithdrawalRecordDescriptor = $convert.base64Decode(
+    'ChlDcm93ZGZ1bmRXaXRoZHJhd2FsUmVjb3JkEg4KAmlkGAEgASgJUgJpZBIhCgxjcm93ZGZ1bm'
+    'RfaWQYAiABKAlSC2Nyb3dkZnVuZElkEhcKB3VzZXJfaWQYAyABKAlSBnVzZXJJZBIWCgZhbW91'
+    'bnQYBCABKARSBmFtb3VudBIaCghjdXJyZW5jeRgFIAEoCVIIY3VycmVuY3kSNAoWZGVzdGluYX'
+    'Rpb25fYWNjb3VudF9pZBgGIAEoCVIUZGVzdGluYXRpb25BY2NvdW50SWQSOAoYZGVzdGluYXRp'
+    'b25fYWNjb3VudF90eXBlGAcgASgJUhZkZXN0aW5hdGlvbkFjY291bnRUeXBlEicKD2lkZW1wb3'
+    'RlbmN5X2tleRgIIAEoCVIOaWRlbXBvdGVuY3lLZXkSFgoGc3RhdHVzGAkgASgJUgZzdGF0dXMS'
+    'JQoOYmFsYW5jZV9iZWZvcmUYCiABKARSDWJhbGFuY2VCZWZvcmUSIwoNYmFsYW5jZV9hZnRlch'
+    'gLIAEoBFIMYmFsYW5jZUFmdGVyEhQKBW5vdGVzGAwgASgJUgVub3RlcxIdCgpjcmVhdGVkX2F0'
+    'GA0gASgJUgljcmVhdGVkQXQSHQoKZmVlX2Ftb3VudBgOIAEoBFIJZmVlQW1vdW50Eh0KCm5ldF'
+    '9hbW91bnQYDyABKARSCW5ldEFtb3VudBIZCghmZWVfdHlwZRgQIAEoCVIHZmVlVHlwZRIoChBm'
+    'ZWVfYmFzaXNfcG9pbnRzGBEgASgFUg5mZWVCYXNpc1BvaW50cxIkCg5mZWVfZml4ZWRfa29ibx'
+    'gSIAEoBFIMZmVlRml4ZWRLb2Jv');
+
+@$core.Deprecated('Use listCrowdfundWithdrawalsRequestDescriptor instead')
+const ListCrowdfundWithdrawalsRequest$json = {
+  '1': 'ListCrowdfundWithdrawalsRequest',
+  '2': [
+    {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'status', '3': 3, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'page', '3': 4, '4': 1, '5': 5, '10': 'page'},
+    {'1': 'page_size', '3': 5, '4': 1, '5': 5, '10': 'pageSize'},
+  ],
+};
+
+/// Descriptor for `ListCrowdfundWithdrawalsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listCrowdfundWithdrawalsRequestDescriptor =
+    $convert.base64Decode(
+        'Ch9MaXN0Q3Jvd2RmdW5kV2l0aGRyYXdhbHNSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCV'
+        'ILY3Jvd2RmdW5kSWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEhYKBnN0YXR1cxgDIAEoCVIG'
+        'c3RhdHVzEhIKBHBhZ2UYBCABKAVSBHBhZ2USGwoJcGFnZV9zaXplGAUgASgFUghwYWdlU2l6ZQ'
+        '==');
+
+@$core.Deprecated('Use listCrowdfundWithdrawalsResponseDescriptor instead')
+const ListCrowdfundWithdrawalsResponse$json = {
+  '1': 'ListCrowdfundWithdrawalsResponse',
+  '2': [
+    {
+      '1': 'withdrawals',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.CrowdfundWithdrawalRecord',
+      '10': 'withdrawals'
+    },
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+    {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
+    {'1': 'has_more', '3': 5, '4': 1, '5': 8, '10': 'hasMore'},
+  ],
+};
+
+/// Descriptor for `ListCrowdfundWithdrawalsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listCrowdfundWithdrawalsResponseDescriptor =
+    $convert.base64Decode(
+        'CiBMaXN0Q3Jvd2RmdW5kV2l0aGRyYXdhbHNSZXNwb25zZRI/Cgt3aXRoZHJhd2FscxgBIAMoCz'
+        'IdLnBiLkNyb3dkZnVuZFdpdGhkcmF3YWxSZWNvcmRSC3dpdGhkcmF3YWxzEhQKBXRvdGFsGAIg'
+        'ASgFUgV0b3RhbBISCgRwYWdlGAMgASgFUgRwYWdlEhsKCXBhZ2Vfc2l6ZRgEIAEoBVIIcGFnZV'
+        'NpemUSGQoIaGFzX21vcmUYBSABKAhSB2hhc01vcmU=');

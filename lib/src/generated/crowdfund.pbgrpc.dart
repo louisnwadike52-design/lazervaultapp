@@ -289,6 +289,19 @@ class CrowdfundServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// Payout rows for the signed-in creator. crowdfund_id is OPTIONAL: omitting
+  /// it returns every campaign in one call, which is what lets the campaign
+  /// list badge each card without a request per card. Non-admin callers are
+  /// clamped server-side to their own rows.
+  $grpc.ResponseFuture<$0.ListCrowdfundWithdrawalsResponse>
+      listCrowdfundWithdrawals(
+    $0.ListCrowdfundWithdrawalsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$listCrowdfundWithdrawals, request,
+        options: options);
+  }
+
   // method descriptors
 
   static final _$createCrowdfund =
@@ -454,6 +467,12 @@ class CrowdfundServiceClient extends $grpc.Client {
       '/pb.CrowdfundService/GetNotificationHistory',
       ($0.GetNotificationHistoryRequest value) => value.writeToBuffer(),
       $0.GetNotificationHistoryResponse.fromBuffer);
+  static final _$listCrowdfundWithdrawals = $grpc.ClientMethod<
+          $0.ListCrowdfundWithdrawalsRequest,
+          $0.ListCrowdfundWithdrawalsResponse>(
+      '/pb.CrowdfundService/ListCrowdfundWithdrawals',
+      ($0.ListCrowdfundWithdrawalsRequest value) => value.writeToBuffer(),
+      $0.ListCrowdfundWithdrawalsResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('pb.CrowdfundService')
@@ -737,6 +756,15 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetNotificationHistoryRequest.fromBuffer(value),
         ($0.GetNotificationHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListCrowdfundWithdrawalsRequest,
+            $0.ListCrowdfundWithdrawalsResponse>(
+        'ListCrowdfundWithdrawals',
+        listCrowdfundWithdrawals_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ListCrowdfundWithdrawalsRequest.fromBuffer(value),
+        ($0.ListCrowdfundWithdrawalsResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateCrowdfundResponse> createCrowdfund_Pre(
@@ -1022,4 +1050,13 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetNotificationHistoryResponse> getNotificationHistory(
       $grpc.ServiceCall call, $0.GetNotificationHistoryRequest request);
+
+  $async.Future<$0.ListCrowdfundWithdrawalsResponse>
+      listCrowdfundWithdrawals_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.ListCrowdfundWithdrawalsRequest> $request) async {
+    return listCrowdfundWithdrawals($call, await $request);
+  }
+
+  $async.Future<$0.ListCrowdfundWithdrawalsResponse> listCrowdfundWithdrawals(
+      $grpc.ServiceCall call, $0.ListCrowdfundWithdrawalsRequest request);
 }

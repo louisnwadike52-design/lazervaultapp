@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_withdrawal_record.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
@@ -361,6 +362,53 @@ class CrowdfundGrpcDataSource {
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to get donations'));
     }
+  }
+
+  /// Every settled (and unsettled) payout the SIGNED-IN creator has made.
+  ///
+  /// `crowdfundId` is optional on the wire: omitting it returns rows across
+  /// all of their campaigns in ONE call, which is what lets the campaign list
+  /// badge every card without a request per card. Non-admin callers are
+  /// clamped server-side to their own rows, so this cannot leak another
+  /// creator's payouts.
+  Future<List<CrowdfundWithdrawalRecord>> listCrowdfundWithdrawals({
+    String? crowdfundId,
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    try {
+      final request = pb.ListCrowdfundWithdrawalsRequest()
+        ..page = page
+        ..pageSize = pageSize;
+      if (crowdfundId != null && crowdfundId.trim().isNotEmpty) {
+        request.crowdfundId = crowdfundId.trim();
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.listCrowdfundWithdrawals(request, options: callOptions);
+
+      return response.withdrawals.map(_withdrawalFromProto).toList();
+    } on GrpcError catch (e) {
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to list crowdfund withdrawals'));
+    }
+  }
+
+  /// Amounts cross the wire in KOBO (minor units) — see the proto. Dividing
+  /// is not optional: rendering them raw multiplies every figure by 100.
+  CrowdfundWithdrawalRecord _withdrawalFromProto(
+      pb_msg.CrowdfundWithdrawalRecord w) {
+    return CrowdfundWithdrawalRecord(
+      id: w.id,
+      crowdfundId: w.crowdfundId,
+      amount: w.amount.toDouble() / 100,
+      feeAmount: w.feeAmount.toDouble() / 100,
+      netAmount: w.netAmount.toDouble() / 100,
+      currency: w.currency.trim().isEmpty ? 'NGN' : w.currency.trim().toUpperCase(),
+      status: w.status,
+      createdAt: DateTime.tryParse(w.createdAt)?.toLocal() ?? DateTime.now(),
+    );
   }
 
   Future<List<CrowdfundDonationModel>> getUserDonations({

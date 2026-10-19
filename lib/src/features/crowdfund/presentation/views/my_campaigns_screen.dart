@@ -11,6 +11,9 @@ import '../cubit/crowdfund_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 import '../utils/crowdfund_status_display.dart';
+import '../utils/crowdfund_withdrawal_index.dart';
+import '../../domain/repositories/crowdfund_repository.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 class MyCampaignsScreen extends StatefulWidget {
   const MyCampaignsScreen({super.key});
@@ -50,6 +53,28 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
       return c;
     });
     context.read<CrowdfundCubit>().loadMyCrowdfunds();
+    _loadWithdrawalIndex();
+  }
+
+  /// Which campaigns have actually been withdrawn from.
+  ///
+  /// ONE call for every campaign: ListCrowdfundWithdrawals takes an OPTIONAL
+  /// crowdfund_id and clamps non-admin callers to their own rows, so omitting
+  /// it returns the signed-in creator's whole payout history. A call per card
+  /// would have been the obvious shape and is the wrong one.
+  CrowdfundWithdrawalIndex _withdrawals = CrowdfundWithdrawalIndex.empty;
+
+  Future<void> _loadWithdrawalIndex() async {
+    try {
+      final rows = await serviceLocator<CrowdfundRepository>()
+          .listCrowdfundWithdrawals();
+      if (!mounted) return;
+      setState(() => _withdrawals = CrowdfundWithdrawalIndex.from(rows));
+    } catch (_) {
+      // A badge is decoration over money that is already displayed
+      // correctly elsewhere. If this read fails the list must still render,
+      // so the index simply stays empty and no campaign is badged.
+    }
   }
 
   @override
@@ -226,6 +251,40 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
     );
   }
 
+  /// "Withdrawn" — the creator has taken money out of this campaign.
+  ///
+  /// Driven by the withdrawal audit table, not inferred from a pot that reads
+  /// zero: that is equally true of a campaign nobody funded, and would brand
+  /// it Withdrawn. Only SETTLED payouts count (see CrowdfundWithdrawalIndex).
+  Widget _withdrawnBadge(Crowdfund campaign) {
+    const color = Color(0xFF38BDF8);
+    final total = _withdrawals.totalWithdrawn(campaign.id);
+    return Tooltip(
+      message:
+          '${CurrencySymbols.getSymbol(campaign.currency)}${total.toStringAsFixed(0)} withdrawn to your personal account',
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.north_east_rounded, size: 10.sp, color: color),
+            SizedBox(width: 3.w),
+            Text(
+              'WITHDRAWN',
+              style: GoogleFonts.inter(
+                  fontSize: 10.sp, fontWeight: FontWeight.w600, color: color),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCampaignTile(Crowdfund campaign) {
     final progress = campaign.progressPercentage;
     final statusColor = crowdfundStatusVisual(campaign).color;
@@ -273,6 +332,10 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
                         color: statusColor),
                   ),
                 ),
+                if (_withdrawals.hasWithdrawals(campaign.id)) ...[
+                  SizedBox(width: 6.w),
+                  _withdrawnBadge(campaign),
+                ],
               ],
             ),
             SizedBox(height: 8.h),
