@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/src/features/transaction_history/utils/self_transfer_title.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 
@@ -987,7 +988,23 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // Generate title, enriched with counterparty name for transfers
     String title = _generateTransactionTitle(protoTx.category, protoTx.type,
         protoTx.description, protoTx.reference, protoTx.serviceName);
-    if (counterpartyName != null && counterpartyName.isNotEmpty) {
+    // A LAZERBEAM IS NOT A TRANSFER TO A PERSON.
+    //
+    // On a move between the user's own accounts the counterparty IS the user,
+    // so the generic titling below rendered "Transfer from Praiz Onah" to
+    // Praiz Onah — their own name, in place of the one fact that matters:
+    // which of their accounts the money came from. The row's description
+    // already said it ("Transfer from Personal to Business"), and that
+    // two-sided form is the beam's own signature, so it is matched here
+    // BEFORE counterparty_name gets to overwrite it. A custom narration does
+    // not match and keeps the existing behaviour.
+    final beamTitle = selfTransferTitle(
+      description: protoTx.description,
+      isIncoming: isIncoming,
+    );
+    if (beamTitle != null) {
+      title = beamTitle;
+    } else if (counterpartyName != null && counterpartyName.isNotEmpty) {
       final categoryLower = protoTx.category.toLowerCase();
       final typeLower = protoTx.type.toLowerCase();
       final isInternational =
