@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:lazervault/core/utils/receipt_download.dart';
 import '../domain/entities/group_entities.dart';
+import '../domain/contribution_receipt_total.dart';
 import 'dart:ui' show Rect;
 import 'package:lazervault/core/config/receipt_footer.dart';
 
@@ -104,6 +105,7 @@ class GroupContributionPdfService {
     required Contribution contribution,
     required ContributionPayment payment,
     required String paymentMethod,
+    double? cycleTotal,
   }) async {
     await _loadFonts();
     final pdf = pw.Document();
@@ -163,6 +165,7 @@ class GroupContributionPdfService {
                 contribution: contribution,
                 payment: payment,
                 currencySymbol: currencySymbol,
+                cycleTotal: cycleTotal,
               ),
 
               pw.Spacer(),
@@ -378,11 +381,35 @@ class GroupContributionPdfService {
     required Contribution contribution,
     required ContributionPayment payment,
     required String currencySymbol,
+    double? cycleTotal,
   }) {
-    final newTotal = contribution.currentAmount + payment.amount;
-    final remaining = contribution.targetAmount - newTotal;
+    // ONE SOURCE FOR "NEW TOTAL", COMPUTED BY THE SCREEN THAT OFFERS THIS
+    // DOWNLOAD.
+    //
+    // The PDF printed `contribution.currentAmount + payment.amount` while
+    // the confirmation screen printed `currentAmount` alone, so the receipt
+    // on screen and the PDF generated FROM it disagreed about the same
+    // payment. Worse, currentAmount is the live pot: a payout sweeps it to
+    // its receiver, after which both printed "New total 0.00 / Progress 0%"
+    // on the receipt for a payment that had just landed (measured on prod
+    // 2026-10-19: a NGN 200 payment into a NGN 400 cycle).
+    //
+    // `cycleTotal` is passed in because only the caller knows whether its
+    // contribution predates this payment — on the live payment path it does
+    // (it was captured before the debit), on a historical "Generate
+    // receipt" it does not. The fallback reproduces the live case, which is
+    // every caller that does not pass it.
+    final newTotal = cycleTotal ??
+        contributionReceiptTotal(
+          contribution: contribution,
+          paymentAmount: payment.amount,
+          cameFromPayment: true,
+        );
+    final target = contribution.targetAmount;
+    final remaining =
+        contributionReceiptRemaining(target: target, total: newTotal);
     final progress =
-        ((newTotal / contribution.targetAmount) * 100).clamp(0.0, 100.0);
+        contributionReceiptProgress(target: target, total: newTotal);
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -404,13 +431,21 @@ class GroupContributionPdfService {
               _buildDetailRow('Contribution Name', contribution.title),
               if (contribution.description.isNotEmpty)
                 _buildDetailRow('Description', contribution.description),
-              _buildDetailRow('Target Amount',
-                  '$currencySymbol${contribution.targetAmount.toStringAsFixed(2)}'),
+              // A contribution with no target (an open-ended pot) has no
+              // remaining and no percentage to state; printing "Remaining
+              // 0.00 / Progress 0%" there reads as a failed payment.
+              if (target > 0)
+                _buildDetailRow('Target Amount',
+                    '$currencySymbol${target.toStringAsFixed(2)}'),
               _buildDetailRow(
                   'New Total', '$currencySymbol${newTotal.toStringAsFixed(2)}'),
-              _buildDetailRow('Remaining',
-                  '$currencySymbol${remaining.toStringAsFixed(2)}'),
-              _buildDetailRow('Progress', '${progress.toStringAsFixed(0)}%'),
+              if (target > 0) ...[
+                _buildDetailRow('Remaining',
+                    '$currencySymbol${remaining.toStringAsFixed(2)}'),
+                if (progress != null)
+                  _buildDetailRow(
+                      'Progress', '${progress.toStringAsFixed(0)}%'),
+              ],
               _buildDetailRow(
                   'Deadline', _displayDateFormat.format(contribution.deadline)),
             ],
@@ -508,12 +543,14 @@ class GroupContributionPdfService {
     required Contribution contribution,
     required ContributionPayment payment,
     required String paymentMethod,
+    double? cycleTotal,
   }) async {
     try {
       final file = await generateContributionReceipt(
         contribution: contribution,
         payment: payment,
         paymentMethod: paymentMethod,
+        cycleTotal: cycleTotal,
       );
 
       final sanitizedId = (payment.transactionId ?? payment.id)
@@ -532,12 +569,14 @@ class GroupContributionPdfService {
     required Contribution contribution,
     required ContributionPayment payment,
     required String paymentMethod,
+    double? cycleTotal,
   }) async {
     try {
       final file = await generateContributionReceipt(
         contribution: contribution,
         payment: payment,
         paymentMethod: paymentMethod,
+        cycleTotal: cycleTotal,
       );
 
       final currencySymbol = _currencySymbolFor(payment.currency);

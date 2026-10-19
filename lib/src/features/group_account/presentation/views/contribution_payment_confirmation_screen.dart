@@ -45,6 +45,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../services/group_contribution_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/group_account/domain/contribution_receipt_total.dart';
 
 class ContributionPaymentConfirmationScreen extends StatefulWidget {
   final Contribution contribution;
@@ -193,6 +194,33 @@ class _ContributionPaymentConfirmationScreenState
   // Download / Share
   // -------------------------------------------------------------
 
+  /// WHAT THE CYCLE HAS COLLECTED, INCLUDING THIS PAYMENT.
+  ///
+  /// The receipt read `contribution.currentAmount` and called it "the pot
+  /// AFTER this payment landed". Both halves of that were wrong:
+  ///
+  ///  * the contribution handed to this screen is captured BEFORE the debit
+  ///    on both live payment paths (`make_payment_screen` and
+  ///    `contribution_payment_processing_screen` each pass their own
+  ///    `widget.contribution`), so this payment was missing from it; and
+  ///  * `currentAmount` is the live pot, which a payout sweeps to its
+  ///    receiver — after which it is 0.
+  ///
+  /// Together those printed "New total NGN 0.00 · Remaining NGN 400.00 ·
+  /// Progress 0%" on the receipt for a NGN 200 payment into a NGN 400 cycle
+  /// (prod, 2026-10-19).
+  ///
+  /// `amountRaised` is what the CYCLE took, so a swept pot no longer reads as
+  /// nothing raised; this payment is added on the live path only. On the
+  /// historical path (`cameFromPayment == false`, the "Generate receipt"
+  /// action on a past payment row) the contribution on screen is current and
+  /// already counts it, so adding again would overstate it.
+  double get _cycleTotal => contributionReceiptTotal(
+        contribution: widget.contribution,
+        paymentAmount: widget.payment.amount,
+        cameFromPayment: widget.cameFromPayment,
+      );
+
   Future<void> _downloadReceipt() async {
     if (_isDownloading) return;
     setState(() => _isDownloading = true);
@@ -201,6 +229,7 @@ class _ContributionPaymentConfirmationScreenState
         contribution: widget.contribution,
         payment: widget.payment,
         paymentMethod: widget.paymentMethod,
+        cycleTotal: _cycleTotal,
       );
       Get.snackbar(
         'Receipt Saved',
@@ -232,6 +261,7 @@ class _ContributionPaymentConfirmationScreenState
         contribution: widget.contribution,
         payment: widget.payment,
         paymentMethod: widget.paymentMethod,
+        cycleTotal: _cycleTotal,
       );
     } catch (e) {
       Get.snackbar(
@@ -510,18 +540,22 @@ class _ContributionPaymentConfirmationScreenState
       rows.add(_buildDetailRow('Target', '$sym${target.toStringAsFixed(2)}'));
     }
 
-    // current_amount is the pot AFTER this payment landed — the screen is
-    // reached from the success path, and the contribution is re-read on the
-    // way in.
-    final total = c.currentAmount;
+    // See [_cycleTotal]: the same figure the shared PDF is given, so the
+    // receipt on screen and the one people forward cannot disagree.
+    final total = _cycleTotal;
     rows.add(_buildDetailRow('New total', '$sym${total.toStringAsFixed(2)}'));
 
     if (target > 0) {
-      final remaining = (target - total).clamp(0, double.infinity);
+      final remaining =
+          contributionReceiptRemaining(target: target, total: total);
       rows.add(_buildDetailRow(
           'Remaining', '$sym${remaining.toStringAsFixed(2)}'));
-      final pct = ((total / target) * 100).clamp(0, 100);
-      rows.add(_buildDetailRow('Progress', '${pct.toStringAsFixed(0)}%'));
+      // Follows `total`, NOT c.progressPercentage — the entity's getter is
+      // computed from the pre-payment figure the server sent.
+      final pct = contributionReceiptProgress(target: target, total: total);
+      if (pct != null) {
+        rows.add(_buildDetailRow('Progress', '${pct.toStringAsFixed(0)}%'));
+      }
     }
 
     final deadline = c.deadline;
