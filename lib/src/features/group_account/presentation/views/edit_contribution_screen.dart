@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../../domain/contribution_edit_rules.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/utils/social_link_helpers.dart';
@@ -48,6 +50,17 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
 
   bool _isLoading = false;
   bool _hasChanges = false;
+
+  /// The EXACT text the amount field was loaded with.
+  ///
+  /// Compared against, and inverted on save, so the round trip cannot drift:
+  /// load divides by 100, save multiplies by 100, whatever unit the entity
+  /// turns out to hold.
+  late String _initialTargetText;
+  late TextEditingController _totalCyclesController;
+  late String _initialCyclesText;
+  /// Active members hold a turn; invitees and decliners do not.
+  late int _activeMembers;
   bool _hasPayments = false;
 
   @override
@@ -59,6 +72,11 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     _descriptionController = TextEditingController(text: c.description);
     _targetAmountController =
         TextEditingController(text: (c.targetAmount / 100).toStringAsFixed(0));
+    _initialTargetText = _targetAmountController.text;
+    _activeMembers = ContributionEditRules.activeMemberCount(c.members);
+    _totalCyclesController =
+        TextEditingController(text: c.totalCycles?.toString() ?? '');
+    _initialCyclesText = _totalCyclesController.text;
     _regularAmountController = TextEditingController(
       text: c.regularAmount != null
           ? (c.regularAmount! / 100).toStringAsFixed(0)
@@ -109,6 +127,7 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     _titleController.addListener(_onFieldChanged);
     _descriptionController.addListener(_onFieldChanged);
     _targetAmountController.addListener(_onFieldChanged);
+    _totalCyclesController.addListener(_onFieldChanged);
     _regularAmountController.addListener(_onFieldChanged);
     _whatsappLinkController.addListener(_onFieldChanged);
     _telegramLinkController.addListener(_onFieldChanged);
@@ -121,6 +140,7 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _targetAmountController.dispose();
+    _totalCyclesController.dispose();
     _regularAmountController.dispose();
     _whatsappLinkController.dispose();
     _telegramLinkController.dispose();
@@ -128,6 +148,11 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     _penaltyAmountController.dispose();
     super.dispose();
   }
+
+  /// A rotation's target is computed from its own numbers, so it is shown
+  /// rather than typed. See ContributionEditRules.
+  bool get _targetIsDerived =>
+      ContributionEditRules.targetIsDerived(widget.contribution.type);
 
   void _onFieldChanged() {
     final c = widget.contribution;
@@ -139,6 +164,11 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
         _deadline.day != c.deadline.day;
     final hasChanges = _titleController.text != c.title ||
         _descriptionController.text != c.description ||
+        // TARGET AND CYCLES WERE MISSING HERE. Both fields had a listener
+        // attached and neither was compared, so editing them never set
+        // _hasChanges and Save stayed disabled for ever.
+        _targetAmountController.text != _initialTargetText ||
+        _totalCyclesController.text != _initialCyclesText ||
         deadlineDateChanged ||
         _selectedStatus != c.status ||
         _autoPayEnabled != c.autoPayEnabled ||
@@ -416,7 +446,11 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
         TextFormField(
           controller: _targetAmountController,
           style: GoogleFonts.inter(color: Colors.white),
-          enabled: !_hasPayments,
+          // A ROTATION'S TARGET IS NOT A FREE CHOICE. It is one pot per
+          // cycle: regular amount x active members x cycles. A typed figure
+          // that contradicts that stops describing the money, so the field is
+          // read-only here and the creator edits CYCLES instead, below.
+          enabled: !_hasPayments && !_targetIsDerived,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           decoration: _inputDecoration(
@@ -424,6 +458,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
             prefixText: '\u20A6 ',
           ),
           validator: (value) {
+            // Derived: nothing for the creator to get wrong.
+            if (_targetIsDerived) return null;
             if (value == null || value.trim().isEmpty) {
               return 'Please enter target amount';
             }
@@ -433,6 +469,55 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
             return null;
           },
         ),
+        if (_targetIsDerived)
+          Padding(
+            padding: EdgeInsets.only(top: 4.h),
+            child: Text(
+              'Worked out from the circle itself — each cycle pays one pot '
+              'of the regular amount x $_activeMembers members. Change the '
+              'number of cycles below to change the total.',
+              style: GoogleFonts.inter(
+                color: Colors.grey[500],
+                fontSize: 11.sp,
+              ),
+            ),
+          ),
+        if (_targetIsDerived) ...[
+          SizedBox(height: 20.h),
+          Text(
+            'Number of Cycles',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          TextFormField(
+            controller: _totalCyclesController,
+            style: GoogleFonts.inter(color: Colors.white),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: _inputDecoration('e.g. $_activeMembers'),
+            // EVERY MEMBER GETS THE SAME NUMBER OF TURNS, or somebody funds a
+            // turn they never receive — the shape of the fanthom incident,
+            // where one member took both turns of a two-cycle circle.
+            validator: (value) => ContributionEditRules.validateCycles(
+              cycles: int.tryParse((value ?? '').trim()),
+              activeMembers: _activeMembers,
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 4.h),
+            child: Text(
+              _cyclesHelperText(),
+              style: GoogleFonts.inter(
+                color: Colors.grey[500],
+                fontSize: 11.sp,
+              ),
+            ),
+          ),
+        ],
         if (_hasPayments)
           Padding(
             padding: EdgeInsets.only(top: 4.h),
@@ -1009,6 +1094,25 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     }
   }
 
+  /// Explains the cycle count in rounds, which is how a creator thinks about
+  /// it: "6 cycles" means nothing on its own, "2 full rounds" does.
+  String _cyclesHelperText() {
+    if (_activeMembers <= 0) {
+      return 'Add members to the circle to set how long it runs.';
+    }
+    final cycles = int.tryParse(_totalCyclesController.text.trim());
+    final rounds =
+        ContributionEditRules.roundsFor(cycles: cycles, activeMembers: _activeMembers);
+    if (rounds == null) {
+      return 'Must come in full rounds of $_activeMembers so everyone gets '
+          'the same number of turns.';
+    }
+    return rounds == 1
+        ? 'One full round — each of the $_activeMembers members collects once.'
+        : '$rounds full rounds — each of the $_activeMembers members '
+            'collects $rounds times.';
+  }
+
   bool _canDelete() {
     return !_hasPayments &&
         widget.contribution.status != ContributionStatus.completed;
@@ -1117,11 +1221,36 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
       // existing value through unchanged so the gateway-side mapper
       // still sees a non-empty string but our edits don't try to
       // mutate it. Removing it from copyWith keeps `title` stable.
+      // EVERY EDITED FIELD MUST REACH THE PAYLOAD.
+      //
+      // copyWith keeps the ORIGINAL value for anything not passed, so a field
+      // left out here is not merely ignored — the old value is resent and the
+      // edit disappears with a success message. target, cycles and auto-debit
+      // were all in that state: the form tracked them, the datasource already
+      // puts all three on the wire, and this call never handed them over.
+      //
+      // The amount inverts exactly the transform used to load it (/100 there,
+      // *100 here), so the round trip holds whichever unit the entity carries.
+      final parsedTarget = int.tryParse(_targetAmountController.text.trim());
+      final parsedCycles = int.tryParse(_totalCyclesController.text.trim());
+      final derivedTarget = ContributionEditRules.derivedTargetMinor(
+        regularAmountMinor: c.regularAmount?.round(),
+        activeMembers: _activeMembers,
+        cycles: parsedCycles,
+      );
       final updatedContribution = c.copyWith(
         description: _descriptionController.text.trim(),
         deadline: _deadline,
         status: _selectedStatus,
         autoPayoutEnabled: _autoPayoutEnabled,
+        autoPayEnabled: _autoPayEnabled,
+        // A rotation's target is DERIVED from its own numbers; a typed figure
+        // that contradicts regular x members x cycles stops describing the
+        // money. Other types keep the creator's own goal.
+        targetAmount: _targetIsDerived
+            ? (derivedTarget?.toDouble() ?? c.targetAmount)
+            : (parsedTarget != null ? parsedTarget * 100.0 : c.targetAmount),
+        totalCycles: parsedCycles ?? c.totalCycles,
         metadata: metadata,
       );
 

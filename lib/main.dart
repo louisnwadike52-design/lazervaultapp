@@ -7,7 +7,7 @@ import 'package:lazervault/src/features/impersonation/presentation/impersonation
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_session.dart';
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_banner.dart';
 import 'package:flutter/foundation.dart'
-    show kDebugMode, kReleaseMode, debugPrint;
+    show kDebugMode, kProfileMode, kReleaseMode, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -154,6 +154,56 @@ void main() {
         },
       );
     };
+
+    // A BUILD FAILURE MUST NOT PRINT ITS EXCEPTION ON THE USER'S SCREEN.
+    //
+    // Flutter's default ErrorWidget renders the exception's own text wherever
+    // the failed widget sat. On 2026-10-20 that put
+    //
+    //   Error: target_user_id is required for a service-to-service lookup
+    //
+    // across the dashboard header of every signed-in user — a gRPC
+    // InvalidArgument from an internal RPC contract, shown verbatim to people
+    // who can do nothing with it and should never see our internals.
+    //
+    // The real error is NOT lost: FlutterError.onError above already ships the
+    // message and stack to Loki and counts it in analytics. This only changes
+    // what the PERSON sees.
+    //
+    // Debug keeps the loud default, because that red screen is how this gets
+    // noticed while building.
+    if (kReleaseMode || kProfileMode) {
+      ErrorWidget.builder = (FlutterErrorDetails details) {
+        // Sized to its parent rather than fixed: this replaces whatever widget
+        // failed, which may be a small card or a whole page, and an
+        // intrinsically-sized box inside a constrained slot throws again —
+        // turning one broken widget into a broken screen.
+        return Builder(
+          builder: (context) {
+            final onSurface = DefaultTextStyle.of(context).style.color;
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  "Something went wrong here. Pull to refresh, or try again "
+                  "in a moment.",
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 3,
+                  style: TextStyle(
+                    fontSize: 13,
+                    // Inherits the surrounding colour so it stays legible on
+                    // the purple header as well as on a white card.
+                    color: (onSurface ?? const Color(0xFF6B7280))
+                        .withValues(alpha: 0.75),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      };
+    }
 
     // Uncaught PLATFORM-dispatched errors (outside the guarded zone / framework).
     // Log then keep running — consistent with the zone handler's "last-resort net"
