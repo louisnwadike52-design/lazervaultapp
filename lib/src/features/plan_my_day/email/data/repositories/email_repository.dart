@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -59,7 +60,7 @@ class EmailRepository {
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Authorization': 'Bearer $token',
+      ...authHeader(token),
     };
   }
 

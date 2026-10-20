@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -109,7 +110,7 @@ class ImpersonationService {
   Future<Map<String, String>> _headers() async {
     final token = await _storage.getAccessToken();
     return {
-      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+      if (token != null && token.isNotEmpty) ...authHeader(token),
       'Content-Type': 'application/json',
     };
   }
@@ -366,7 +367,7 @@ class ImpersonationService {
     final adminToken = await _storage.getStashedAdminAccessToken();
     return {
       if (adminToken != null && adminToken.isNotEmpty)
-        'Authorization': 'Bearer $adminToken',
+        ...authHeader(adminToken),
       'Content-Type': 'application/json',
     };
   }

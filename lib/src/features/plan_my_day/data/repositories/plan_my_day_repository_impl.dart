@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
@@ -90,7 +91,7 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     }
     return {
       ..._headers,
-      'Authorization': 'Bearer $token',
+      ...authHeader(token),
     };
   }
 

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -55,7 +56,7 @@ class SalesService {
           Uri.parse('${_endpoints.httpBusiness}/sales'),
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
+            ...authHeader(token),
           },
           body: jsonEncode({
             'amount': amount,
@@ -91,7 +92,7 @@ class SalesService {
       },
     );
     final resp = await _httpClient.get(uri, headers: {
-      'Authorization': 'Bearer $token',
+      ...authHeader(token),
       'Accept': 'application/json',
     }).timeout(_timeout);
     final body = _decode(resp);
@@ -115,7 +116,7 @@ class SalesService {
       },
     );
     final resp = await _httpClient.get(uri, headers: {
-      'Authorization': 'Bearer $token',
+      ...authHeader(token),
       'Accept': 'application/json',
     }).timeout(_timeout);
     final body = _decode(resp);
@@ -149,7 +150,7 @@ class SalesService {
           Uri.parse('${_endpoints.httpBusiness}/sales/$saleId/void'),
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
+            ...authHeader(token),
           },
           body: jsonEncode({'reason': reason}),
         )

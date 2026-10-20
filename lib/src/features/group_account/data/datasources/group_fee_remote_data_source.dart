@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -86,7 +87,7 @@ class GroupFeeRemoteDataSource {
       final res = await _client.post(
         Uri.parse('$_base/v1/group-funds/fee-quote'),
         headers: {
-          'Authorization': 'Bearer $token',
+          ...authHeader(token),
           'Content-Type': 'application/json',
         },
         body: jsonEncode({

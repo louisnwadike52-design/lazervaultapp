@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
@@ -50,7 +51,7 @@ class VoiceSettingsService {
         Uri.parse('$_languageApiUrl/api/v1/voice/languages?country=$country'),
         headers: {
           'Content-Type': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
+          if (token != null) ...authHeader(token),
         },
       ).timeout(const Duration(seconds: 8));
 
@@ -105,7 +106,7 @@ class VoiceSettingsService {
         Uri.parse('$_languageApiUrl/api/v1/voice/languages/$languageCode'),
         headers: {
           'Content-Type': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
+          if (token != null) ...authHeader(token),
         },
       ).timeout(const Duration(seconds: 8));
 
@@ -149,7 +150,7 @@ class VoiceSettingsService {
         Uri.parse('$_voiceGatewayUrl/voice/clone/status/$userId'),
         headers: {
           'Content-Type': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
+          if (token != null) ...authHeader(token),
         },
       ).timeout(const Duration(seconds: 8));
 
@@ -173,7 +174,7 @@ class VoiceSettingsService {
             '$_voiceGatewayUrl/voice/clone/enable/$userId?enabled=$enabled'),
         headers: {
           'Content-Type': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
+          if (token != null) ...authHeader(token),
         },
       ).timeout(const Duration(seconds: 8));
       final ok = response.statusCode == 200;
@@ -210,7 +211,7 @@ class VoiceSettingsService {
         Uri.parse('$_voiceGatewayUrl/voice/txpin/settings'),
         headers: {
           'Content-Type': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
+          if (token != null) ...authHeader(token),
         },
       ).timeout(const Duration(seconds: 8));
       if (response.statusCode == 200) {
@@ -254,7 +255,7 @@ class VoiceSettingsService {
             Uri.parse('$_voiceGatewayUrl/voice/txpin/settings'),
             headers: {
               'Content-Type': 'application/json',
-              if (token != null) 'Authorization': 'Bearer $token',
+              if (token != null) ...authHeader(token),
             },
             body: json.encode(body),
           )

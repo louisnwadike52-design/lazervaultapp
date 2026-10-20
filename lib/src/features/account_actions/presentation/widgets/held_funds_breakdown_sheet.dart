@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:grpc/grpc.dart' show CallOptions;
@@ -77,7 +78,7 @@ class _HeldFundsBreakdownSheetState extends State<HeldFundsBreakdownSheet> {
       final res = await widget.client.getMyAccountHolds(
         accounts_pb.GetMyAccountHoldsRequest(accountId: widget.accountId),
         options: (token != null && token.isNotEmpty)
-            ? CallOptions(metadata: {'authorization': 'Bearer $token'})
+            ? CallOptions(metadata: {...authHeader(token, key: 'authorization')})
             : null,
       );
       if (!mounted) return;

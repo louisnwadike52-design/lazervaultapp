@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:grpc/grpc.dart';
@@ -106,7 +107,7 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
     final headers = await ApiHeaders.build(secureStorage: secureStorage);
     // Override access token if provided (for bank details scan with specific token)
     if (overrideAccessToken != null && overrideAccessToken.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $overrideAccessToken';
+      headers.addAll(authHeader(overrideAccessToken));
     }
     return headers;
   }

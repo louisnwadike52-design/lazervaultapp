@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -102,7 +103,7 @@ class BalanceWebSocketService {
       accountManager: _accountManager,
     );
     // Override with explicit access token
-    headers['Authorization'] = 'Bearer $accessToken';
+    headers.addAll(authHeader(accessToken));
     return headers;
   }
 

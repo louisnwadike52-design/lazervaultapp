@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:flutter/widgets.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -81,7 +82,7 @@ class CrowdfundReportService {
         options: Options(
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $accessToken',
+            ...authHeader(accessToken),
           },
         ),
       );

@@ -1,4 +1,5 @@
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import '../../../core/auth/jwt_payload.dart';
@@ -134,7 +135,7 @@ class GrpcClient {
     }
 
     final metadata = <String, String>{
-      'authorization': 'Bearer $accessToken',
+      ...authHeader(accessToken, key: 'authorization'),
     };
 
     return CallOptions(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -37,7 +38,7 @@ class FCYAccountService {
 
   Map<String, String> _headers(String token) => {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
+        ...authHeader(token),
       };
 
   /// Provisioning state: none | creating | active | failed (+ details).

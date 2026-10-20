@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import '../../domain/entities/credit_score.dart';
 import '../../domain/entities/credit_score_ai_insights.dart';
 
@@ -62,7 +63,7 @@ class CreditScoreAIService {
         },
         options: Options(
           headers: {
-            'Authorization': 'Bearer $accessToken',
+            ...authHeader(accessToken),
             'Content-Type': 'application/json',
           },
           sendTimeout: const Duration(seconds: 30),

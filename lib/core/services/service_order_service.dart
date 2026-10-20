@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -143,7 +144,7 @@ class ServiceOrderService {
       await http
           .put(uri,
               headers: {
-                'Authorization': 'Bearer $token',
+                ...authHeader(token),
                 'Content-Type': 'application/json',
               },
               body: jsonEncode({'order': _order}))
@@ -168,7 +169,7 @@ class ServiceOrderService {
       final uri = Uri.parse(
           '${endpointRegistry.httpStatistics}/statistics/service-order');
       final resp = await http.get(uri, headers: {
-        'Authorization': 'Bearer $token',
+        ...authHeader(token),
       }).timeout(const Duration(seconds: 8));
       if (resp.statusCode != 200) return;
       final decoded = jsonDecode(resp.body);

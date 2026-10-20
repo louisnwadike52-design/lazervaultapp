@@ -13,6 +13,7 @@
 library;
 
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -121,7 +122,7 @@ class HttpPerServiceVoiceSettingsRemoteSync
       endpoint,
       headers: {
         'Content-Type': 'application/json',
-        if (token.isNotEmpty) 'Authorization': 'Bearer $token',
+        if (token.isNotEmpty) ...authHeader(token),
       },
       body: jsonEncode(settings.toJson()),
     );

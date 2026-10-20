@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -74,7 +75,7 @@ class SupportApi {
     final token = await _storage.getAccessToken();
     return {
       'Content-Type': 'application/json',
-      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+      if (token != null && token.isNotEmpty) ...authHeader(token),
     };
   }
 

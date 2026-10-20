@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:grpc/grpc.dart';
 
 import '../../../../../core/services/grpc_channel_factory.dart';
@@ -94,7 +95,7 @@ class MonoInstitutionsService {
     // fails first and we degrade to cached/empty/config banks quickly.
     final metadata = <String, String>{};
     if (accessToken != null && accessToken.isNotEmpty) {
-      metadata['authorization'] = 'Bearer $accessToken';
+      metadata.addAll(authHeader(accessToken, key: 'authorization'));
     }
     final options = CallOptions(
       metadata: metadata,

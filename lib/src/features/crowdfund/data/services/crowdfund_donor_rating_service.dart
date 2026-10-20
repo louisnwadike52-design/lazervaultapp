@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import '../../utils/donor_rating_calculator.dart';
 
@@ -44,7 +45,7 @@ class CrowdfundDonorRatingService {
         options: Options(
           headers: {
             'Content-Type': 'application/json',
-            if (accessToken.isNotEmpty) 'Authorization': 'Bearer $accessToken',
+            if (accessToken.isNotEmpty) ...authHeader(accessToken),
           },
         ),
       );

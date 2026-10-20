@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io';
@@ -270,7 +271,7 @@ class ContributionChatRemoteDataSource {
   }
 
   Map<String, String> _headers(String token) => {
-        'Authorization': 'Bearer $token',
+        ...authHeader(token),
         'Content-Type': 'application/json',
       };
 
@@ -334,7 +335,7 @@ class ContributionChatRemoteDataSource {
     final uri =
         Uri.parse('$_base/v1/contributions/$contributionId/messages/media');
     final req = http.MultipartRequest('POST', uri)
-      ..headers['Authorization'] = 'Bearer $token'
+      ..headers.addAll(authHeader(token))
       ..fields['kind'] = kind
       ..files.add(await http.MultipartFile.fromPath('file', file.path));
     if (durationMs > 0) {

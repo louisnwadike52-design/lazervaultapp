@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
@@ -44,7 +45,7 @@ class NoteRepository {
     final h = <String, String>{
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Authorization': 'Bearer $token',
+      ...authHeader(token),
       'X-Locale': _localeManager.currentLocale,
     };
     final acc = _accountManager.activeAccountId;

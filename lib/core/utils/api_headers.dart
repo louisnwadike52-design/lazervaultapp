@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -44,7 +45,7 @@ class ApiHeaders {
     // Add Authorization header
     final accessToken = await secureStorage.getAccessToken();
     if (accessToken != null && accessToken.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $accessToken';
+      headers.addAll(authHeader(accessToken));
     }
 
     // Add X-User-Id header
@@ -121,7 +122,7 @@ class ApiHeaders {
     // Add Authorization header for WebSocket
     final accessToken = await secureStorage.getAccessToken();
     if (accessToken != null && accessToken.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $accessToken';
+      headers.addAll(authHeader(accessToken));
     }
 
     // Add X-User-Id header

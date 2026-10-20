@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -166,7 +167,7 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
 
       final response = await http.get(
         Uri.parse('$_voiceGatewayUrl/voice/clone/status/$userId'),
-        headers: {'Authorization': 'Bearer $token'},
+        headers: {...authHeader(token)},
       ).timeout(const Duration(seconds: 10));
 
       if (!mounted || _disposed) return;
@@ -479,7 +480,7 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
             Uri.parse('$_voiceGatewayUrl/voice/clone/upload'),
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
+              ...authHeader(token),
             },
             body: jsonEncode({
               'user_id': userId,
@@ -610,7 +611,7 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
 
         final response = await http.get(
           Uri.parse('$_voiceGatewayUrl/voice/clone/status/$userId'),
-          headers: {'Authorization': 'Bearer $token'},
+          headers: {...authHeader(token)},
         ).timeout(const Duration(seconds: 10));
 
         if (!mounted || _disposed) return;

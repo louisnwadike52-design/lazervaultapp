@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 
 import 'package:dio/dio.dart';
@@ -112,7 +113,7 @@ class GroupAccountReportService {
         options: Options(
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $accessToken',
+            ...authHeader(accessToken),
           },
         ),
       );

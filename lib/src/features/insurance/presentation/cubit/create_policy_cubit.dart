@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:developer' as developer;
 import 'dart:math';
 
@@ -714,7 +715,7 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       final resp = await http.get(
         Uri.parse(
             '${ApiConfig.coreGatewayUrl}/api/v1/auth/me/insurance-prefill'),
-        headers: {'Authorization': 'Bearer $token'},
+        headers: {...authHeader(token)},
       ).timeout(const Duration(seconds: 10));
       if (resp.statusCode != 200) return null;
       final decoded = jsonDecode(resp.body);

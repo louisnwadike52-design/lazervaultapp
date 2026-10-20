@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -168,7 +169,7 @@ class ContactlessWebSocketService {
         _resolveContactlessWsUri(userId: userId, accessToken: accessToken);
     print('ContactlessWebSocketService: connecting to $uri');
     final headers = {
-      'Authorization': 'Bearer $accessToken',
+      ...authHeader(accessToken),
     };
     if (kIsWeb) {
       _channel =

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:math' as math;
 import 'dart:async';
 import 'dart:io' show File, Platform;
@@ -1083,7 +1084,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         final token =
             await serviceLocator<SecureStorageService>().getAccessToken();
         if (token != null && token.isNotEmpty) {
-          headers['Authorization'] = 'Bearer $token';
+          headers.addAll(authHeader(token));
         }
       } catch (_) {
         // No token (picker opened pre-login) — server returns the English-safe set.
@@ -1310,7 +1311,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             Uri.parse(url),
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer $accessToken',
+              ...authHeader(accessToken),
             },
             body: jsonEncode(requestBody),
           )
@@ -1938,7 +1939,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             Uri.parse('\$_voiceAgentGatewayUrl/voice/transcribe'),
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
+              ...authHeader(token),
             },
             body: jsonEncode({
               'session_id': _currentSessionId ?? '',
@@ -3952,7 +3953,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     try {
       final response = await http.get(
         Uri.parse('$_voiceAgentGatewayUrl/voice/billing/status'),
-        headers: {'Authorization': 'Bearer $token'},
+        headers: {...authHeader(token)},
       ).timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) {
         print('VoiceSessionCubit: billing status HTTP ${response.statusCode}');
@@ -4000,7 +4001,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           Uri.parse('$_voiceAgentGatewayUrl/voice/billing/payg'),
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
+            ...authHeader(token),
           },
           body: jsonEncode({
             'opted_in': optedIn,
@@ -4041,7 +4042,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          ...authHeader(token),
         },
         body: jsonEncode({
           'session_id': sessionId,

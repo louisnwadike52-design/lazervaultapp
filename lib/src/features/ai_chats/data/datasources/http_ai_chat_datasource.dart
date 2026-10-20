@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/chat_language_preference.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -53,7 +54,7 @@ class HttpAiChatDataSource implements IAiChatDataSource {
         // Get access token
         final token = await _secureStorageService.getAccessToken();
         if (token != null && token.isNotEmpty) {
-          options.headers['Authorization'] = 'Bearer $token';
+          options.headers.addAll(authHeader(token));
         }
 
         // Add X-User-Id

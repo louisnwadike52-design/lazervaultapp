@@ -1,4 +1,5 @@
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 
 /// Manages gRPC channels and provides authentication interceptors
@@ -22,7 +23,7 @@ class GrpcChannelManager {
     if (accessToken != null && accessToken.isNotEmpty) {
       return CallOptions(
         metadata: {
-          'authorization': 'Bearer $accessToken',
+          ...authHeader(accessToken, key: 'authorization'),
         },
         timeout: const Duration(seconds: 30),
       );

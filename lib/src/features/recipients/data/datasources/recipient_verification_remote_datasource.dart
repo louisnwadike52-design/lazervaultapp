@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -90,7 +91,7 @@ class RecipientVerificationRemoteDataSourceImpl
           },
         )) {
     if (authToken != null) {
-      dio.options.headers['Authorization'] = 'Bearer $authToken';
+      dio.options.headers.addAll(authHeader(authToken));
     }
 
     // Add interceptor for logging (optional, useful for debugging)
@@ -106,7 +107,7 @@ class RecipientVerificationRemoteDataSourceImpl
   Future<void> _updateHeaders() async {
     final token = await secureStorage.getAccessToken();
     if (token != null && token.isNotEmpty) {
-      dio.options.headers['Authorization'] = 'Bearer $token';
+      dio.options.headers.addAll(authHeader(token));
     }
 
     // Add service name and request ID

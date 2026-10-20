@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
@@ -215,7 +216,7 @@ class MostUsedBanks {
       final uri =
           Uri.parse('${endpointRegistry.httpTransfer}/payments/frequent-banks');
       final resp = await http.get(uri, headers: {
-        'Authorization': 'Bearer $token',
+        ...authHeader(token),
       }).timeout(const Duration(seconds: 8));
       if (resp.statusCode != 200) return;
       final decoded = jsonDecode(resp.body);

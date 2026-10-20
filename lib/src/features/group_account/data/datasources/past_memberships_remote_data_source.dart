@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -107,7 +108,7 @@ class PastMembershipsRemoteDataSource {
   }
 
   Map<String, String> _headers(String token) => {
-        'Authorization': 'Bearer $token',
+        ...authHeader(token),
         'Content-Type': 'application/json',
       };
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -72,7 +73,7 @@ class EmailWebSocketService {
       } else {
         _channel = IOWebSocketChannel.connect(
           wsUri,
-          headers: {'Authorization': 'Bearer $token'},
+          headers: {...authHeader(token)},
         );
       }
       _channel!.stream.listen(_onMessage,

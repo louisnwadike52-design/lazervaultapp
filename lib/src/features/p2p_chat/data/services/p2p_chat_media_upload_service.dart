@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -103,7 +104,7 @@ class P2PChatMediaUploadService {
           Uri.parse(uploadUrlEndpoint),
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $accessToken',
+            ...authHeader(accessToken),
           },
           body: jsonEncode({
             'filename': filename,

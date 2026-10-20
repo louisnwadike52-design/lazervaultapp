@@ -63,11 +63,16 @@ void main() {
     test('gRPC attaches the header only for a usable token', () {
       final src = _codeOnly(_grpc);
       expect(src, isNotEmpty, reason: 'the helper moved; re-point this guard');
+      // Routed through the shared builder like every other call site, and
+      // still guarded, so an unusable token produces no header at all.
+      expect(src.contains("if (isUsableJwt(accessToken)) {"), isTrue,
+          reason: 'gRPC attaches the authorization header without checking '
+              'the token is a JWT');
       expect(
-        src.contains("if (isUsableJwt(accessToken)) {\n      metadata['authorization']"),
+        src.contains("metadata.addAll(authHeader(accessToken, key: 'authorization'))"),
         isTrue,
-        reason: 'gRPC attaches the authorization header without checking the '
-            'token is a JWT',
+        reason: 'gRPC no longer builds its metadata through the shared '
+            'authHeader, so the rule can drift from the other transports',
       );
     });
 
@@ -96,6 +101,37 @@ void main() {
           reason: 'the 401 retry sets Authorization without a usable token '
               'again');
     });
+  });
+
+  test('no call site builds its own access-token header', () {
+    // THE SWEEP, PINNED. Every access-token header in the app goes through
+    // authHeader, so a new call site cannot quietly reintroduce
+    // `'Bearer $token'` with no check — which is how the literal text
+    // "Bearer null" reaches a server.
+    //
+    // Third-party credentials are NOT in scope: an `apiKey` is not a JWT and
+    // must not be shape-checked, and the 2FA/step-up flow sends an OPAQUE
+    // token on purpose. Those keep their own handling.
+    const accessTokenNames = {
+      'token', 'accessToken', 'authToken', 'overrideAccessToken', 'adminToken',
+    };
+    final bearer = RegExp(r'''['"]Bearer \$\{?(\w+)''');
+    final offenders = <String>[];
+    for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
+      if (!f.path.endsWith('.dart')) continue;
+      if (f.path.endsWith('access_token_shape.dart')) continue; // the builder
+      final lines = f.readAsLinesSync();
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].trimLeft().startsWith('//')) continue;
+        final m = bearer.firstMatch(lines[i]);
+        if (m == null) continue;
+        if (!accessTokenNames.contains(m.group(1))) continue;
+        offenders.add('${f.path}:${i + 1}');
+      }
+    }
+    expect(offenders, isEmpty,
+        reason: 'these build an access-token header directly instead of '
+            'using authHeader: $offenders');
   });
 
   test('the rule is defined exactly once', () {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -119,7 +120,7 @@ class P2PChatWebSocketService {
       } else {
         _channel = IOWebSocketChannel.connect(
           wsUrl,
-          headers: {'Authorization': 'Bearer $accessToken'},
+          headers: {...authHeader(accessToken)},
         );
       }
 

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -51,7 +52,7 @@ class BusinessOverviewService {
 
     final resp = await _httpClient.get(
       uri,
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      headers: {...authHeader(token), 'Accept': 'application/json'},
     ).timeout(_timeout);
 
     if (resp.statusCode == 401 || resp.statusCode == 403) {
@@ -101,7 +102,7 @@ class BusinessOverviewService {
         .replace(queryParameters: params.isEmpty ? null : params);
     final resp = await _httpClient.get(
       uri,
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      headers: {...authHeader(token), 'Accept': 'application/json'},
     ).timeout(_timeout);
     if (resp.statusCode < 200 || resp.statusCode >= 300) return null;
     final body = jsonDecode(resp.body);

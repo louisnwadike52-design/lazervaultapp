@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -129,7 +130,7 @@ class UpliftMediaUploadService {
 
     final uri = Uri.parse('$_baseUrl/api/v1/uplifts/upload-image');
     final request = http.MultipartRequest('POST', uri)
-      ..headers['Authorization'] = 'Bearer $token'
+      ..headers.addAll(authHeader(token))
       ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
 
     http.StreamedResponse res;
@@ -208,7 +209,7 @@ class UpliftMediaUploadService {
 
     final uri = Uri.parse('$_baseUrl/api/v1/uplifts/upload-image');
     final request = http.MultipartRequest('POST', uri)
-      ..headers['Authorization'] = 'Bearer $token'
+      ..headers.addAll(authHeader(token))
       // Field name stays `image`: it is what the gateway reads, and renaming it
       // here would 400 on a route that is otherwise working.
       ..files.add(await http.MultipartFile.fromPath('image', videoFile.path));

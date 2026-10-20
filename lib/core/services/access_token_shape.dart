@@ -33,3 +33,23 @@ bool isUsableJwt(String? token) {
   // "a..b" has three segments and is still not a token.
   return parts.every((p) => p.isNotEmpty);
 }
+
+/// The authorization entry for a headers or metadata map — or NOTHING.
+///
+/// Spread it into a map literal:
+///
+///   headers: {
+///     ...authHeader(token),
+///     'Content-Type': 'application/json',
+///   }
+///
+/// This exists because a map literal cannot conditionally omit a key, and the
+/// alternative people reach for is `'Bearer $token'` with no check at all —
+/// which sends the literal text "Bearer null" when the token has not been
+/// written yet. An ABSENT header is an ordinary unauthenticated call; a
+/// malformed one is rejected as a bad credential and surfaces to the user.
+///
+/// [key] defaults to the HTTP spelling. gRPC metadata keys must be lowercase,
+/// so those call sites pass `key: 'authorization'`.
+Map<String, String> authHeader(String? token, {String key = 'Authorization'}) =>
+    isUsableJwt(token) ? {key: 'Bearer ${token!.trim()}'} : const {};

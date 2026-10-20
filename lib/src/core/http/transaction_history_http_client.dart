@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
 
@@ -23,7 +24,7 @@ class TransactionHistoryHttpClient {
           },
         )) {
     if (authToken != null) {
-      dio.options.headers['Authorization'] = 'Bearer $authToken';
+      dio.options.headers.addAll(authHeader(authToken));
     }
   }
 
@@ -31,7 +32,7 @@ class TransactionHistoryHttpClient {
   Future<void> _updateAuthHeaders() async {
     final token = await storage.read(key: 'auth_token');
     if (token != null && token.isNotEmpty) {
-      dio.options.headers['Authorization'] = 'Bearer $token';
+      dio.options.headers.addAll(authHeader(token));
     }
   }
 

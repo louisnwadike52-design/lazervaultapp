@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart' show CallOptions;
 import 'package:lazervault/core/error/failure.dart';
@@ -497,7 +498,7 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
   CallOptions _getCallOptions(String? token) {
     if (token != null && token.isNotEmpty) {
       return CallOptions(metadata: {
-        'authorization': 'Bearer $token',
+        ...authHeader(token, key: 'authorization'),
       });
     }
     return CallOptions();

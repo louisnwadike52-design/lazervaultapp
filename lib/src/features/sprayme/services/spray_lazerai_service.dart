@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:dio/dio.dart';
 
@@ -61,7 +62,7 @@ class SprayLazerAiService {
       await _dio.post(
         '$base/voice/spray/summon',
         data: {'session_id': sessionId},
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        options: Options(headers: {...authHeader(token)}),
       );
       return null;
     } catch (e) {

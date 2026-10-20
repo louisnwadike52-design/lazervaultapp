@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -109,7 +110,7 @@ class GroupAvatarUploadService {
           ticketUri,
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
+            ...authHeader(token),
           },
           body: jsonEncode({'filename': name, 'content_type': type}),
         )

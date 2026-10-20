@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -85,7 +86,7 @@ class P2PChatRemoteDatasource {
 
   Map<String, String> _headers(String accessToken) => {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
+        ...authHeader(accessToken),
       };
 
   Future<P2PConversationModel> getOrCreateConversation(

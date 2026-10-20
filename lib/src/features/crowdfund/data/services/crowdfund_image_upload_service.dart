@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -126,7 +127,7 @@ class CrowdfundImageUploadService {
     final uri = Uri.parse('$_baseUrl/api/v1/crowdfunds/upload-image');
 
     final request = http.MultipartRequest('POST', uri)
-      ..headers['Authorization'] = 'Bearer $token'
+      ..headers.addAll(authHeader(token))
       ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
 
     http.StreamedResponse streamedResponse;

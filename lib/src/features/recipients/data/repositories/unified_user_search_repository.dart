@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -45,7 +46,7 @@ class UnifiedUserSearchRepository {
     });
 
     final resp = await _client.get(uri, headers: {
-      'Authorization': 'Bearer $token',
+      ...authHeader(token),
       'Accept': 'application/json',
     }).timeout(const Duration(seconds: 12));
 

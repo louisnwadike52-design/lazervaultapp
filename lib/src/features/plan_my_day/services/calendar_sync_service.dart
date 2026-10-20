@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:http/http.dart' as http;
@@ -51,7 +52,7 @@ class CalendarSyncService {
       'Accept': 'application/json',
       'X-Locale': _localeManager.currentLocale,
       if (accountId != null && accountId.isNotEmpty) 'X-Account-Id': accountId,
-      if (token != null) 'Authorization': 'Bearer $token',
+      if (token != null) ...authHeader(token),
     };
   }
 

@@ -54,7 +54,7 @@ class DioAuthInterceptor extends QueuedInterceptor {
       // briefly in storage during login, and sending one is worse than
       // sending nothing — see access_token_shape.dart.
       if (isUsableJwt(accessToken)) {
-        options.headers['Authorization'] = 'Bearer $accessToken';
+        options.headers.addAll(authHeader(accessToken));
       }
     } catch (_) {
       // Storage read failed — continue without token rather than crashing
@@ -128,7 +128,7 @@ class DioAuthInterceptor extends QueuedInterceptor {
             return handler.reject(err);
           }
           final opts = err.requestOptions;
-          opts.headers['Authorization'] = 'Bearer $accessToken';
+          opts.headers.addAll(authHeader(accessToken));
 
           final response = await _dio.fetch(opts);
           return handler.resolve(response);

@@ -85,7 +85,7 @@ class GrpcCallOptionsHelper {
     // the app already handles, while a malformed one surfaced a raw parse
     // error to the user.
     if (isUsableJwt(accessToken)) {
-      metadata['authorization'] = 'Bearer $accessToken';
+      metadata.addAll(authHeader(accessToken, key: 'authorization'));
     } else if (accessToken != null && accessToken.isNotEmpty) {
       print('WARNING: stored access token is not a JWT — sending no '
           'authorization header rather than a malformed one');

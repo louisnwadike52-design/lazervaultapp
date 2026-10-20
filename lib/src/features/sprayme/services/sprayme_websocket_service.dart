@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
@@ -137,7 +138,7 @@ class SprayMeWebSocketService {
       _channel = IOWebSocketChannel.connect(
         wsUrl,
         headers: {
-          'Authorization': 'Bearer $accessToken',
+          ...authHeader(accessToken),
         },
         // Fail fast instead of hanging forever if the gateway is unreachable, and
         // let the socket detect dead connections so onDone fires and we reconnect.

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -392,7 +393,7 @@ class PanicBalanceService extends ChangeNotifier {
     if (uri == null || token == null || token.isEmpty) return;
     try {
       final resp = await http.get(uri, headers: {
-        'Authorization': 'Bearer $token',
+        ...authHeader(token),
       }).timeout(const Duration(seconds: 8));
       if (resp.statusCode != 200) return;
       final body = jsonDecode(resp.body) as Map<String, dynamic>;
@@ -418,7 +419,7 @@ class PanicBalanceService extends ChangeNotifier {
       await http
           .put(uri,
               headers: {
-                'Authorization': 'Bearer $token',
+                ...authHeader(token),
                 'Content-Type': 'application/json',
               },
               body: jsonEncode(configToJson()))
