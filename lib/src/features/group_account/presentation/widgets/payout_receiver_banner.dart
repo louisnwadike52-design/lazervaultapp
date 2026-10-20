@@ -45,6 +45,15 @@ part 'payout_receiver_banner_widgets.dart';
 
 class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
   pb.GetPayoutReceiverResponse? _state;
+
+  /// A receiver WAS set from this screen, whatever the next read says.
+  ///
+  /// getReceiver can answer NOT_FOUND for a moment after a successful set —
+  /// the scheduled-payout row is created by the saga, not by the write we just
+  /// made. The null branch of build() renders the "no receiver is set" card,
+  /// so without this the screen answered the user's own action by asking them
+  /// to do it again, and kept asking until they left and came back.
+  bool _receiverSetHere = false;
   bool _loading = true;
   bool _triggering = false;
 
@@ -129,6 +138,9 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
       setState(() {
         _state = res;
         _loading = false;
+        // A real row is the authority again; drop the local override so the
+        // banner tracks the server from here on.
+        _receiverSetHere = false;
       });
       // Auto-poll while a payout is mid-flight so the UI converges
       // without the user pulling-to-refresh. Stops itself once the
@@ -302,6 +314,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
       // Server returned the freshly-transitioned scheduled-payout row;
       // we still re-fetch via getReceiver to pick up the receiver row
       // in the same shape this banner expects.
+      setState(() => _receiverSetHere = true);
       await _load();
       widget.onStateChanged?.call();
     }
@@ -475,6 +488,12 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
       // read-only "Waiting for receiver" so they know payout is gated
       // on someone setting one.
       if (widget.hidePendingReceiver) return const SizedBox.shrink();
+      // ...UNLESS a receiver was just set from this very screen. Asking again
+      // for something the user has already done — and that the server
+      // accepted — reads as the action having failed, and they do it twice.
+      // The saga creates the row a moment later; until it does, show nothing
+      // rather than a contradiction.
+      if (_receiverSetHere) return const SizedBox.shrink();
       return widget.isAdmin
           ? _pendingReceiverBanner(hasRow: false)
           : _readOnlyPendingBanner();

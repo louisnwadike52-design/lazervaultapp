@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../domain/contribution_edit_rules.dart';
 
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/group_account/presentation/widgets/select_payout_receiver_bottom_sheet.dart';
@@ -650,6 +651,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                         onStartNextRound: () =>
                             _confirmStartNextRound(contribution),
                         onEndCircle: () => _confirmEndCircle(contribution),
+                        onExtendCycles: () =>
+                            _showChangeCyclesDialog(contribution),
                       ),
                     // Payout receiver banner — surfaces the scheduled-payout state
                     // (pending_receiver / ready / scheduled / in_flight / settled
@@ -6136,13 +6139,33 @@ typedef _UserPaymentGroupBase = UserPaymentGroup;
 extension ChangeCyclesDialog on _ContributionDetailsScreenState {
   void _showChangeCyclesDialog(Contribution contribution) {
     final current = contribution.currentCycle ?? 1;
-    final memberCount = contribution.members.length;
+    // ACTIVE members only. Counting every row includes an invitee who never
+    // accepted and one who declined — neither holds a turn, and counting them
+    // makes the app demand a cycle count the server will refuse.
+    final memberCount =
+        ContributionEditRules.activeMemberCount(contribution.members);
     // The floor is whichever constraint binds harder.
     final minAllowed = current > memberCount ? current : memberCount;
     final controller = TextEditingController(
       text: (contribution.totalCycles ?? minAllowed).toString(),
     );
     String? error;
+
+    // VALIDATE AS THEY TYPE, NOT ON SAVE.
+    //
+    // The rule — cycles must be a whole number of rounds — was enforced only
+    // by the server, so the first feedback was a round trip later, with the
+    // keyboard still up and the real reason collapsed into a generic error.
+    // Same rule the server applies, so the two cannot disagree.
+    String? validate(String raw) {
+      final n = int.tryParse(raw.trim());
+      if (n == null || n < 1) return 'Enter a whole number';
+      if (n < current) return 'Already on cycle $current';
+      return ContributionEditRules.validateCycles(
+        cycles: n,
+        activeMembers: memberCount,
+      );
+    }
 
     showDialog<void>(
       context: context,
@@ -6153,7 +6176,13 @@ extension ChangeCyclesDialog on _ContributionDetailsScreenState {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           title: Text('Change cycles',
               style: GoogleFonts.inter(color: Colors.white, fontSize: 17.sp)),
-          content: Column(
+          // Tapping anywhere off the field puts the keyboard away. Without
+          // this the only way out was Cancel or Save, and a numeric pad has no
+          // return key to dismiss itself with.
+          content: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => FocusScope.of(dialogContext).unfocus(),
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -6170,8 +6199,10 @@ extension ChangeCyclesDialog on _ContributionDetailsScreenState {
                 controller: controller,
                 keyboardType: TextInputType.number,
                 style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
-                onChanged: (_) {
-                  if (error != null) setDialogState(() => error = null);
+                autofocus: true,
+                onChanged: (v) {
+                  final next = validate(v);
+                  if (next != error) setDialogState(() => error = next);
                 },
                 decoration: InputDecoration(
                   labelText: 'Cycles',
@@ -6192,10 +6223,14 @@ extension ChangeCyclesDialog on _ContributionDetailsScreenState {
                 ),
               ),
             ],
+            ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
+              onPressed: () {
+                FocusScope.of(dialogContext).unfocus();
+                Navigator.pop(dialogContext);
+              },
               child: Text('Cancel',
                   style: GoogleFonts.inter(
                       color: Colors.white.withValues(alpha: 0.7))),
@@ -6204,27 +6239,32 @@ extension ChangeCyclesDialog on _ContributionDetailsScreenState {
               style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E03D0),
                   foregroundColor: Colors.white),
-              onPressed: () {
-                final n = int.tryParse(controller.text.trim());
-                if (n == null || n < 1) {
-                  setDialogState(() => error = 'Enter a whole number');
-                  return;
-                }
-                if (n < minAllowed) {
-                  setDialogState(() => error = n < current
-                      ? 'Already on cycle $current'
-                      : 'At least $memberCount, one per member');
-                  return;
-                }
-                if (n == contribution.totalCycles) {
-                  Navigator.pop(dialogContext);
-                  return;
-                }
-                Navigator.pop(dialogContext);
-                context.read<GroupAccountCubit>().updateContributionDetails(
-                      contribution.copyWith(totalCycles: n),
-                    );
-              },
+              // Disabled while the value is invalid, so the only way to reach
+              // a server refusal is a rule the app does not know about.
+              onPressed: validate(controller.text) != null
+                  ? null
+                  : () {
+                      final n = int.tryParse(controller.text.trim());
+                      final problem = validate(controller.text);
+                      if (problem != null) {
+                        setDialogState(() => error = problem);
+                        return;
+                      }
+                      // Put the keyboard away before the dialog goes, or it
+                      // stays up over the screen underneath — which is how an
+                      // error landed behind a keyboard with no way to read it.
+                      FocusScope.of(dialogContext).unfocus();
+                      if (n == contribution.totalCycles) {
+                        Navigator.pop(dialogContext);
+                        return;
+                      }
+                      Navigator.pop(dialogContext);
+                      context
+                          .read<GroupAccountCubit>()
+                          .updateContributionDetails(
+                            contribution.copyWith(totalCycles: n),
+                          );
+                    },
               child: const Text('Save'),
             ),
           ],

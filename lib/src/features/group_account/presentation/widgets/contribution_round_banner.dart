@@ -38,6 +38,14 @@ class ContributionRoundBanner extends StatelessWidget {
   final VoidCallback onStartNextRound;
   final VoidCallback onEndCircle;
 
+  /// Extend the rotation by changing its cycle count.
+  ///
+  /// On the BODY, not only behind the overflow menu. When a round finishes,
+  /// "run it longer" is one of the three things a creator might want, and the
+  /// other two are already buttons here — burying the third in a three-dot
+  /// menu makes it the option nobody finds.
+  final VoidCallback onExtendCycles;
+
   const ContributionRoundBanner({
     super.key,
     required this.state,
@@ -45,6 +53,7 @@ class ContributionRoundBanner extends StatelessWidget {
     required this.busy,
     required this.onStartNextRound,
     required this.onEndCircle,
+    required this.onExtendCycles,
   });
 
   static const _amber = Color(0xFFF59E0B);
@@ -119,6 +128,26 @@ class ContributionRoundBanner extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          SizedBox(height: 8.h),
+          _button(
+            label: 'Extend cycles',
+            filled: false,
+            accent: _purple,
+            onTap: busy ? null : onExtendCycles,
+          ),
+        ],
+        // ALSO WHEN A NEW ROUND IS BLOCKED. Several of the refusals are about
+        // the circle being shorter than the creator now wants — extending is
+        // the fix, and sending them to the overflow menu to find it is how a
+        // blocked circle looks like a dead end.
+        if (isCreator && blocked) ...[
+          SizedBox(height: 12.h),
+          _button(
+            label: 'Extend cycles',
+            filled: false,
+            accent: _purple,
+            onTap: busy ? null : onExtendCycles,
           ),
         ],
         // Ending is still allowed when a NEW round is blocked for a reason
