@@ -394,6 +394,15 @@ class FeatureFlags {
   /// shown. Admin-tunable; hidden by DEFAULT — see [phoneBankingVisible].
   static const String phoneBankingVisibleKey = 'phone_banking_visible';
 
+  /// The accent the AI chat is painted in for a user who has never chosen one.
+  ///
+  /// A STRING, not a colour: it names one of the accents the app ships
+  /// (purple, indigo, teal, emerald, amber, rose), so a deployment can brand
+  /// the assistant without an app release and a value this build does not
+  /// know simply falls back instead of painting nothing. A user's own choice
+  /// always wins over it.
+  static const String chatDefaultAccentKey = 'chat_default_accent';
+
   /// Whether the RMB (China cross-border) transfer tile is shown.
   ///
   /// Hidden by DEFAULT. The rail is in maintenance while its provider sits in
@@ -1300,6 +1309,11 @@ class FeatureFlags {
   static bool get phoneBankingVisible {
     return _prefs?.getBool(phoneBankingVisibleKey) ?? false;
   }
+
+  /// Platform default accent for the AI chat. Empty means "the app decides",
+  /// which is how every deployment behaves until an admin sets one.
+  static String get chatDefaultAccent =>
+      _prefs?.getString(chatDefaultAccentKey) ?? '';
 
   /// RMB cross-border transfers. Hidden unless an admin turns it on — see
   /// [rmbTransferVisibleKey] for why the default is off.

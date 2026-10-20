@@ -40,6 +40,8 @@ import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
 import '../../domain/entities/ai_chat_message_entity.dart';
 import 'package:lazervault/core/services/voice_record_configs.dart';
+import 'package:lazervault/core/services/chat_theme_preference.dart';
+import 'package:lazervault/src/features/ai_chats/presentation/widgets/chat_theme_sheet.dart';
 part 'ai_chat_content_widgets.dart';
 
 class AiChatContent extends StatefulWidget {
@@ -770,6 +772,18 @@ class _AiChatContentState extends State<AiChatContent>
                 _showAiSettingsModal();
               },
             ),
+            // HOW IT LOOKS, not just what it says. The menu covered clearing,
+            // exporting and the assistant's behaviour, and nothing about the
+            // appearance of a screen people keep open for a long time.
+            _buildOptionTile(
+              'Chat theme',
+              Icons.palette_outlined,
+              ChatThemePreference.accent.primary,
+              () {
+                Get.back();
+                ChatThemeSheet.show(context);
+              },
+            ),
           ],
         ),
       ),
@@ -1445,10 +1459,8 @@ class _AiChatContentState extends State<AiChatContent>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                InvoiceThemeColors.primaryPurple
-                    .withValues(alpha: 0.15 + 0.25 * scrolled),
-                InvoiceThemeColors.gradientPurple
-                    .withValues(alpha: 0.08 + 0.18 * scrolled),
+                _accent.primary.withValues(alpha: 0.15 + 0.25 * scrolled),
+                _accent.secondary.withValues(alpha: 0.08 + 0.18 * scrolled),
                 InvoiceThemeColors.primaryBackground,
               ],
             ),
@@ -1632,10 +1644,17 @@ class _AiChatContentState extends State<AiChatContent>
     );
   }
 
-  // Bubble colors — matching sendfunds chatbot theme
-  static final _userBubbleColor =
-      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2);
+  // Bubble colours follow the accent the user picked in Chat theme.
+  //
+  // NOT static any more: a static final is computed once per process, so the
+  // bubbles would keep the accent that happened to be in force when this
+  // class was first touched and ignore every later change.
+  Color get _userBubbleColor =>
+      ChatThemePreference.accent.primary.withValues(alpha: 0.2);
   static const _aiBubbleColor = InvoiceThemeColors.secondaryBackground;
+
+  /// The accent in force, read fresh so a change lands on the open chat.
+  ChatAccent get _accent => ChatThemePreference.accent;
 
   /// Whether to render a message's text bubble. Voice notes carry a "Sent a
   /// voice note" placeholder as their text, which is redundant next to the
@@ -1987,11 +2006,19 @@ class _AiChatContentState extends State<AiChatContent>
                         EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                     decoration: BoxDecoration(
                       color: bubbleColor,
+                      // The tail corner stays tight whatever the shape, so a
+                      // bubble still points at whoever sent it.
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(18.r),
-                        topRight: Radius.circular(18.r),
-                        bottomLeft: Radius.circular(isUser ? 18.r : 4.r),
-                        bottomRight: Radius.circular(isUser ? 4.r : 18.r),
+                        topLeft:
+                            Radius.circular(ChatThemePreference.bubbleRadius.r),
+                        topRight:
+                            Radius.circular(ChatThemePreference.bubbleRadius.r),
+                        bottomLeft: Radius.circular(isUser
+                            ? ChatThemePreference.bubbleRadius.r
+                            : 4.r),
+                        bottomRight: Radius.circular(isUser
+                            ? 4.r
+                            : ChatThemePreference.bubbleRadius.r),
                       ),
                       border: isUser
                           ? null
@@ -2830,6 +2857,19 @@ class _AiChatContentState extends State<AiChatContent>
 
   @override
   Widget build(BuildContext context) {
+    // REPAINT WHEN THE THEME CHANGES, WITHOUT REOPENING THE CHAT.
+    //
+    // The theme sheet applies a choice immediately — there is no Save — so
+    // the screen behind it has to notice. The accent is read fresh inside
+    // build (see _accent and _userBubbleColor), and this is what re-runs
+    // build when the preference moves.
+    return ValueListenableBuilder<int>(
+      valueListenable: ChatThemePreference.revision,
+      builder: (context, _, __) => _buildChatScaffold(context),
+    );
+  }
+
+  Widget _buildChatScaffold(BuildContext context) {
     return BlocConsumer<AIChatCubit, AIChatState>(listener: (context, state) {
       // Listener now only handles side-effects not directly tied to build
       if (!mounted) return;

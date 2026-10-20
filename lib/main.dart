@@ -61,6 +61,7 @@ import 'package:lazervault/core/services/quick_actions_service.dart';
 import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/src/core/services/deep_link_service.dart';
 import 'dart:async';
+import 'package:lazervault/core/services/chat_theme_preference.dart';
 part 'main_widgets.dart';
 
 Future<void> _checkPermissions() async {
@@ -277,6 +278,11 @@ void main() {
     // brand-new install the keys aren't cached yet, so flags hold their safe
     // OFF default until the first background refresh + next launch.
     await FeatureFlags.applyRemoteSnapshot(endpointRegistry.nonUrlSnapshot());
+    // AFTER the snapshot, deliberately: the chat's default accent is an
+    // admin-set value that arrives with it, and initialising the preference
+    // before that would read an empty default and show the fallback until
+    // something else happened to repaint.
+    await ChatThemePreference.init();
     // NOTE: the Send Funds flow pin is loaded from storage inside FeatureFlags.init
     // above (instant, offline routing with the last-known value). It is re-resolved
     // + re-persisted on the next login/session-revalidation (authentication_cubit),
