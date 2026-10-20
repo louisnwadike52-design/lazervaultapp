@@ -187,10 +187,22 @@ void main() {
     test('the remote participant feeds it', () {
       // Before this, SpeakingChangedEvent handled ONLY the local participant;
       // the agent's own speaking events were discarded.
-      expect(cubit().contains('event.participant != _room?.localParticipant'),
-          isTrue,
+      expect(cubit().contains('event.participant != local'), isTrue,
           reason: 'remote speaking events are ignored again, so nothing '
               'observes when the agent actually stops making sound');
+    });
+
+    test('"remote" is established positively, never by null', () {
+      // `participant != localParticipant` is ALSO true when localParticipant
+      // is null -- during setup, or after a disconnect. Classifying the local
+      // participant as the agent there arms the echo guard the instant the
+      // USER speaks and suppresses them: the bug inverted.
+      final src = cubit();
+      expect(src.contains('final local = _room?.localParticipant'), isTrue);
+      expect(src.contains('if (local != null && event.participant != local)'),
+          isTrue,
+          reason: 'an unidentifiable participant must be treated as neither '
+              'side, not as the agent');
     });
 
     test('teardown clears it', () {

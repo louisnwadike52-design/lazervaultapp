@@ -161,11 +161,37 @@ void main() {
   // Nobody transcribes — the user switches out of hands-free and gets neither
   // their input nor a reply.
   group('mic ownership changes are serialised', () {
-    test('both callers go through the one lock', () {
-      // Two paths touching setMicrophoneEnabled outside the lock is the bug.
+    test('every caller goes through the one lock', () {
+      // Any path touching setMicrophoneEnabled outside the lock is the bug.
       expect(_cubit, contains('Future<void> _withMicLock('));
       expect(_cubit, contains('_applyCaptureOwnership() => _withMicLock('));
       expect(_cubit, contains('_setAecMicPublished(bool enabled) => _withMicLock('));
+    });
+
+    test('mute does not reach the track directly', () {
+      // toggleMute held a bare setMicrophoneEnabled(!_isMuted), racing the
+      // other two. The losing interleaving leaves the track PUBLISHED while
+      // the UI shows muted -- the user is still being heard after asking not
+      // to be, which is the one outcome here that is a privacy fault and not
+      // just a glitch.
+      //
+      // _applyCaptureOwnership already computes `!_onDeviceMode && !_isMuted`,
+      // so routing through it also removes the second place that decided
+      // whether the mic is live.
+      final body = _method(_cubit, 'Future<bool> toggleMute()');
+      expect(body, isNot(contains('setMicrophoneEnabled')),
+          reason: 'mute is back to driving the track itself');
+      expect(body, contains('_applyCaptureOwnership()'));
+    });
+
+    test('a failed mute reverts the TRACK, not just the flag', () {
+      // Reverting _isMuted alone leaves the mic in the state of a mute the
+      // cubit no longer believes in.
+      final body = _method(_cubit, 'Future<bool> toggleMute()');
+      final revert = body.indexOf('_isMuted = !_isMuted; // Revert on failure');
+      expect(revert, isNot(-1));
+      expect(body.indexOf('_applyCaptureOwnership()', revert), isNot(-1),
+          reason: 'the revert never reaches the track');
     });
 
     test('a superseded transition is dropped, not applied late', () {

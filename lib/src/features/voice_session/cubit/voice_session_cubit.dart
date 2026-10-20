@@ -857,12 +857,27 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           await startLocalListening();
         }
       } else {
-        await _room?.localParticipant?.setMicrophoneEnabled(!_isMuted);
+        // THROUGH THE LOCK, never directly.
+        //
+        // This was a bare setMicrophoneEnabled(!_isMuted) racing the two other
+        // callers that drive the same track. _applyCaptureOwnership already
+        // computes exactly this state (`!_onDeviceMode && !_isMuted`), so
+        // routing through it is both the serialisation and the removal of a
+        // second place that decides whether the mic is live.
+        //
+        // The losing interleaving here is not a glitch: it can leave the track
+        // PUBLISHED while the UI shows muted, so the user is still being heard
+        // after asking not to be.
+        await _applyCaptureOwnership();
       }
     } catch (e) {
       // Room may have disconnected between null check and call
       print('VoiceSessionCubit: Error toggling mute: $e');
       _isMuted = !_isMuted; // Revert on failure
+      // The flag is what _applyCaptureOwnership reads, so a revert has to be
+      // pushed to the track too — otherwise the mic keeps the state of a mute
+      // the cubit no longer believes in.
+      unawaited(_applyCaptureOwnership());
     }
     return _isMuted;
   }
@@ -1590,7 +1605,14 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         // before the audio does. This is what keeps the echo guard armed for
         // the whole utterance instead of the first few hundred milliseconds of
         // it. See [_agentAudioAudible].
-        if (event.participant != _room?.localParticipant) {
+        //
+        // "Remote" is established POSITIVELY. `participant != localParticipant`
+        // is also true when localParticipant is null — during setup, or after a
+        // disconnect — and classifying the LOCAL participant as the agent there
+        // would arm the echo guard the moment the USER spoke and suppress them.
+        // Unknown identity is treated as neither.
+        final local = _room?.localParticipant;
+        if (local != null && event.participant != local) {
           final audible = event.participant.isSpeaking;
           if (_agentAudioAudible && !audible) {
             // Sound actually stopped — NOW start the tail window for the
