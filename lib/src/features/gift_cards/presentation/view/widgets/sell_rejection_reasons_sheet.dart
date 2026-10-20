@@ -30,17 +30,17 @@ const List<GiftCardRejectionReason> giftCardRejectionReasons = [
   GiftCardRejectionReason(
     'Invalid code',
     'The code you sent is not valid for this transaction. Kindly check the code.',
-    'The claim code is invalid — likely a missing character or a wrong code. Double-check it with your source and resubmit the correct one.',
+    'The claim code is invalid, likely a missing character or a wrong code. Double-check it with your source and resubmit the correct one.',
   ),
   GiftCardRejectionReason(
     'No offer for this card',
     'Sorry, we do not have an offer for this card at the moment.',
-    'There is currently no rate/offer for this card — demand may have dropped or the brand is under maintenance. Try again later or pick another card.',
+    'There is currently no rate/offer for this card, demand may have dropped or the brand is under maintenance. Try again later or pick another card.',
   ),
   GiftCardRejectionReason(
     'Steam error',
     'The gift card showed an error. It may not be properly activated, invalid, or incorrect. Please return the card to the store of purchase.',
-    'The Steam card is not activated. Steam cards cannot be redeemed until activated — return it to the store of purchase and resubmit once confirmed.',
+    'The Steam card is not activated. Steam cards cannot be redeemed until activated, return it to the store of purchase and resubmit once confirmed.',
   ),
   GiftCardRejectionReason(
     'Google error',
@@ -75,7 +75,7 @@ const List<GiftCardRejectionReason> giftCardRejectionReasons = [
   GiftCardRejectionReason(
     'Locked gift card',
     'We could not process your asset because it is locked. Contact your card support team.',
-    'The card is locked — possibly reported lost or flagged invalid. Contact the gift-card brand support team to resolve it.',
+    'The card is locked, possibly reported lost or flagged invalid. Contact the gift-card brand support team to resolve it.',
   ),
   GiftCardRejectionReason(
     'Balance disparity',
@@ -90,7 +90,7 @@ const List<GiftCardRejectionReason> giftCardRejectionReasons = [
   GiftCardRejectionReason(
     'Balance on hold',
     'This asset is currently on hold, and the balance cannot be deducted.',
-    'The card balance is on hold. Contact the gift-card support team — only cards with active balances can be processed.',
+    'The card balance is on hold. Contact the gift-card support team, only cards with active balances can be processed.',
   ),
   GiftCardRejectionReason(
     'Repeated / previously sent card',
@@ -103,7 +103,7 @@ const List<GiftCardRejectionReason> giftCardRejectionReasons = [
     'This card requires a receipt to process. Attach the receipt and resubmit.',
   ),
   GiftCardRejectionReason(
-    'Store card — both sides required',
+    'Store card, both sides required',
     'Please send clear images of both the front and back of the gift card.',
     'Store cards need clear images of BOTH the front and back. Submissions with only one side are rejected. Make sure the images are clear.',
   ),

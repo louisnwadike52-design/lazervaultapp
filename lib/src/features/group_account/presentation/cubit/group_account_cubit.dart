@@ -350,7 +350,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       // Real user-switch detected. Wipe per-user state so the next op
       // uses the new user's account.
       debugPrint('[GroupAccountCubit] user mismatch '
-          'cached=$_currentUserId live=$liveId — clearing caches');
+          'cached=$_currentUserId live=$liveId, clearing caches');
       _sessionGeneration++;
       _clearUserScopedState();
       _currentUserName = null;
@@ -1828,7 +1828,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         case 'completed':
           return 'Member removed. Refunded $amt.';
         case 'pending':
-          return 'Member removed. Refund of $amt is pending — we\'ll retry the credit shortly.';
+          return 'Member removed. Refund of $amt is pending, we\'ll retry the credit shortly.';
         case 'failed':
           return 'Member removed. Refund of $amt failed; ops has been notified.';
       }
@@ -2794,7 +2794,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         );
       }
       emit(const GroupAccountSuccess(
-          'Esusu opened — the rotation has started and its members are now fixed'));
+          'Esusu opened, the rotation has started and its members are now fixed'));
       if (groupId != null) {
         // Re-read in the background: opening arms the schedulers, and the
         // next payout date the server computed is not something the client

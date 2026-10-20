@@ -87,7 +87,7 @@ class ScheduledEntrySheet {
               ),
               title: Text('Recurring payments',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-              subtitle: Text('Repeating transfers — daily, weekly or monthly',
+              subtitle: Text('Repeating transfers, daily, weekly or monthly',
                   style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 12.sp)),

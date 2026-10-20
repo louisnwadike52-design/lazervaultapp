@@ -217,7 +217,7 @@ class RemindersListBody extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 40.w),
             child: Text(
-              "Set a reminder for a birthday, bill or event — we'll nudge you 3 days, a day, and an hour before.",
+              "Set a reminder for a birthday, bill or event, we'll nudge you 3 days, a day, and an hour before.",
               textAlign: TextAlign.center,
               style:
                   GoogleFonts.inter(color: Colors.grey[600], fontSize: 13.sp),

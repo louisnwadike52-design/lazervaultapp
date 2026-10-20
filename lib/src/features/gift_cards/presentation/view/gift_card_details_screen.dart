@@ -378,7 +378,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           SizedBox(height: 8.h),
           Text(
             "We're confirming this purchase with the provider. Your code "
-            "and PIN will appear here as soon as they're ready — usually "
+            "and PIN will appear here as soon as they're ready, usually "
             "within a few seconds, sometimes a couple of minutes during "
             "high-traffic windows.",
             style: GoogleFonts.inter(

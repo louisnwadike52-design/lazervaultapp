@@ -115,7 +115,7 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
             if (_isSell) ...[
               SizedBox(height: 8.h),
               Text(
-                  'Leave this empty to share your listing by link — anyone on Lazervault who opens it can buy securely.',
+                  'Leave this empty to share your listing by link, anyone on Lazervault who opens it can buy securely.',
                   style: GoogleFonts.inter(
                       color: EscrowTheme.textSecondary, fontSize: 11.sp)),
             ],
@@ -183,7 +183,7 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
             alignment: Alignment.centerLeft,
             child: Text(
                 _condition.isEmpty
-                    ? 'Any condition is fine — tap a grade to require one.'
+                    ? 'Any condition is fine, tap a grade to require one.'
                     : 'Tap the selected grade again to accept any condition.',
                 style: GoogleFonts.inter(
                     color: EscrowTheme.textSecondary, fontSize: 11.sp)),
@@ -255,7 +255,7 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
                 keyboard: const TextInputType.numberWithOptions(decimal: true)),
             SizedBox(height: 6.h),
             Text(
-                'The escrow fee is split evenly by default — half from the buyer, '
+                'The escrow fee is split evenly by default, half from the buyer, '
                 'half from your proceeds. It is calculated when the buyer pays, '
                 'and they see the exact total before confirming.',
                 style: GoogleFonts.inter(
@@ -269,7 +269,7 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
             _deliveryPicker(),
             SizedBox(height: 8.h),
             Text(
-                'The clock starts when the buyer pays — if delivery doesn\'t happen in time, their money is automatically refunded.',
+                'The clock starts when the buyer pays, if delivery doesn\'t happen in time, their money is automatically refunded.',
                 style: GoogleFonts.inter(
                     color: EscrowTheme.textSecondary, fontSize: 11.sp)),
           ],

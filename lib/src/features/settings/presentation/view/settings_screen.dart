@@ -930,8 +930,8 @@ class _SettingsViewState extends State<_SettingsView> {
           title: 'Send Funds',
           keywords: SettingsSearchVocabulary.sendFunds,
           subtitle: _transferStyleClassic
-              ? 'Classic — fast, streamlined'
-              : 'Standard — full transfer form',
+              ? 'Classic, fast, streamlined'
+              : 'Standard, full transfer form',
           onTap: _openSendMoneySheet,
         );
         final loginMethodTile = _navTile(
@@ -947,8 +947,8 @@ class _SettingsViewState extends State<_SettingsView> {
           title: 'Dashboard Layout',
           keywords: SettingsSearchVocabulary.dashboardLayout,
           subtitle: _dashboardShowcase
-              ? 'Showcase — compact services + adverts'
-              : 'Classic — current view',
+              ? 'Showcase, compact services + adverts'
+              : 'Classic, current view',
           onTap: _openDashboardLayoutSheet,
         );
         final adaptiveServicesTile = _switchTile(
@@ -2199,7 +2199,7 @@ class _SettingsViewState extends State<_SettingsView> {
     // 0 means the platform has auto-logout switched off entirely. Say so
     // plainly instead of implying a duration the app will not act on.
     return platform <= 0
-        ? 'Off — using the default for everyone'
+        ? 'Off, using the default for everyone'
         : 'Default (${_autoLogoutLabel(platform)})';
   }
 
@@ -2423,8 +2423,8 @@ class _SettingsViewState extends State<_SettingsView> {
     showAppSnackbar(
       'Send money updated',
       _transferStyleClassic
-          ? 'Classic — fast, streamlined send.'
-          : 'Standard — the full transfer form.',
+          ? 'Classic, fast, streamlined send.'
+          : 'Standard, the full transfer form.',
       type: AppSnackbarType.success,
     );
   }
@@ -2445,8 +2445,8 @@ class _SettingsViewState extends State<_SettingsView> {
     showAppSnackbar(
       'Dashboard updated',
       _dashboardShowcase
-          ? 'Showcase — compact services with a rotating adverts carousel.'
-          : 'Classic — your familiar dashboard view.',
+          ? 'Showcase, compact services with a rotating adverts carousel.'
+          : 'Classic, your familiar dashboard view.',
       type: AppSnackbarType.success,
     );
   }

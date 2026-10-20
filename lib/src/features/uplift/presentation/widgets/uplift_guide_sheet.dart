@@ -236,7 +236,7 @@ class _JourneyBlock extends StatelessWidget {
     ],
     [
       'Money goes into the fund pool',
-      'On acceptance the funder commits the amount with their PIN. It leaves their wallet and is held — it is not yet the business’s to spend.'
+      'On acceptance the funder commits the amount with their PIN. It leaves their wallet and is held, it is not yet the business’s to spend.'
     ],
     [
       'Milestones release it',
@@ -384,7 +384,7 @@ class _MoneyBlock extends StatelessWidget {
             SizedBox(height: 8.h),
             Text(
               'Funds you commit move into that raise\'s pool. The business '
-              'cannot draw on them at will — each release is requested against '
+              'cannot draw on them at will, each release is requested against '
               'a milestone and reviewed before it pays out. Anything never '
               'released can come back to you as a refund, and both sides can '
               'see the running totals at any time.',

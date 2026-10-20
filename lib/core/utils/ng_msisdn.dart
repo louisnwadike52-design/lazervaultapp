@@ -88,5 +88,5 @@ String? ngMsisdnHint(String raw) {
   if (nsn.isNotEmpty && !RegExp(r'^[789]').hasMatch(nsn)) {
     return "That doesn't look like a Nigerian mobile number";
   }
-  return 'Check the number — it should be 11 digits, or 10 after +234';
+  return 'Check the number, it should be 11 digits, or 10 after +234';
 }

@@ -930,7 +930,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
     if (widget.invoice.isQuote) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text(
-            'This is a quote — it becomes payable once the sender converts it to an invoice.'),
+            'This is a quote, it becomes payable once the sender converts it to an invoice.'),
         backgroundColor: Colors.orange,
       ));
       return;

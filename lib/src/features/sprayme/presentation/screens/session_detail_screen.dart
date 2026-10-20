@@ -666,7 +666,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
       FocusScope.of(context).unfocus();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('This celebration has ended — comments are closed.'),
+          content: Text('This celebration has ended, comments are closed.'),
           backgroundColor: Color(0xFF6B7280),
           duration: Duration(seconds: 2),
         ),

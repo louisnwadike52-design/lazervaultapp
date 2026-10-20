@@ -91,7 +91,7 @@ class _QRPayersScreenState extends State<QRPayersScreen> {
                       Expanded(
                         child: _payments.isEmpty
                             ? _message(
-                                'No payments yet. Share the QR code — every payment lands here with its own receipt.')
+                                'No payments yet. Share the QR code, every payment lands here with its own receipt.')
                             : ListView.builder(
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 padding:

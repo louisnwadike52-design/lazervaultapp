@@ -508,7 +508,7 @@ class _InvestMarketLandingScrollState extends State<InvestMarketLandingScroll> {
           SizedBox(height: 10.h),
           if (list.isEmpty)
             Text(
-              'No instruments yet — open All.',
+              'No instruments yet, open All.',
               style: InvestTradingUi.labelMuted(),
             )
           else

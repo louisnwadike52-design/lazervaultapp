@@ -28,7 +28,7 @@ class TagPayCubit extends Cubit<TagPayState> {
   /// user must be able to see whether the first one landed before deciding.
   static const String _indeterminatePaymentMessage =
       'This is taking longer than expected. Your payment may still have gone '
-      'through — check your transaction history before trying again.';
+      'through, check your transaction history before trying again.';
 
   /// Check if an error is a network-related error that should trigger offline queuing
   bool _isNetworkError(dynamic error) {

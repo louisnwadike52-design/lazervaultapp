@@ -294,7 +294,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                 if (!_isCompleted)
                   Text(
                     _isProcessing
-                        ? 'Hang tight — we’re executing your order'
+                        ? 'Hang tight, we’re executing your order'
                         : 'Check amounts and fees before you confirm',
                     style: InvestTradingUi.labelMuted(),
                   ),

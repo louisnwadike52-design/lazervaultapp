@@ -384,7 +384,7 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
                 child: Text(
                   'Starting locks the members. '
                   '${widget.activeMembers} people are in this circle and '
-                  'nobody can be added after this — everyone pays a share of '
+                  'nobody can be added after this, everyone pays a share of '
                   'the same pot and holds a turn, so adding someone later '
                   'would change both for the people already paying in.',
                   style: GoogleFonts.inter(

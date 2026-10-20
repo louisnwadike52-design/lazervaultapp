@@ -258,7 +258,7 @@ List<FcyKycStep> buildFcyKycSteps({
         return 'Please upload a photo of your ID document.';
       }
       if ((uploads.addressProofUrl ?? '').isEmpty) {
-        return 'Please upload a proof of address — a utility bill or bank statement from the last 3 months.';
+        return 'Please upload a proof of address, a utility bill or bank statement from the last 3 months.';
       }
       return null;
     },

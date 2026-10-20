@@ -186,7 +186,7 @@ class _AiPlanInputModalState extends State<AiPlanInputModal> {
                         ),
                       ),
                       Text(
-                        'Describe your day — I\'ll build your board',
+                        'Describe your day, I\'ll build your board',
                         style: TextStyle(
                           color: Colors.grey[400],
                           fontSize: 12.sp,

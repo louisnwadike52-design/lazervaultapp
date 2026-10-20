@@ -419,7 +419,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         backgroundColor: Color(0xFF1F1F1F),
         duration: Duration(seconds: 6),
         content: Text(
-          'Update ready — fully close and reopen the app to apply it.',
+          'Update ready, fully close and reopen the app to apply it.',
           style: TextStyle(color: Colors.white),
         ),
       ),

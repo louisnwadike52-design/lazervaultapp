@@ -80,14 +80,14 @@ class EscrowActionGuide {
         }
         return EscrowActionGuide(
           title: '$seller has not marked this delivered',
-          body: 'You can still release if you already have the item — some '
+          body: 'You can still release if you already have the item, some '
               'deals are handed over in person and never get marked. But if '
               'you have not received it yet, message $seller first, or open a '
               'dispute and our team will step in.',
           warning: 'Releasing pays $seller immediately and cannot be undone. '
               'Your escrow protection ends the moment you release.',
           outOfSequence: true,
-          confirmLabel: 'I have it — release',
+          confirmLabel: 'I have it, release',
           confirmColor: EscrowTheme.warning,
         );
 
@@ -96,7 +96,7 @@ class EscrowActionGuide {
           title: 'Mark as delivered?',
           body: 'This tells $buyer the item is with them and asks them to '
               'confirm and release your payment. Add photos or a short video '
-              'as proof — it is the evidence a dispute would be decided on.',
+              'as proof, it is the evidence a dispute would be decided on.',
           warning: 'Once marked delivered the deal can no longer be cancelled. '
               '$buyer must either release the funds or open a dispute.',
           confirmLabel: 'Mark delivered',
@@ -117,7 +117,7 @@ class EscrowActionGuide {
           title: 'Cancel and refund?',
           body: 'The full ${_money(deal.buyerTotal, deal.currency)} held goes '
               'back to $buyer and the deal closes.$feeLine',
-          warning: 'This cannot be undone, and only you — the seller — can do '
+          warning: 'This cannot be undone, and only you, the seller, can do '
               'it, and only before delivery is marked. If the item has '
               'already been sent, open a dispute instead so our team can look '
               'at the evidence.',
@@ -129,7 +129,7 @@ class EscrowActionGuide {
         return EscrowActionGuide(
           title: 'Open a dispute?',
           body: 'Our team reviews both sides and decides. The money stays held '
-              'in escrow the whole time — nobody is paid and nobody is '
+              'in escrow the whole time, nobody is paid and nobody is '
               'refunded until it is settled.',
           warning: 'Try messaging the other party first. Most problems are a '
               'delay or a misunderstanding, and a dispute takes longer than a '

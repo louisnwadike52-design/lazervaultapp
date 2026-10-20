@@ -698,7 +698,7 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
             Icon(Icons.refresh, color: const Color(0xFFFB923C), size: 15.sp),
             SizedBox(width: 6.w),
             Flexible(
-              child: Text("Couldn't load networks — tap to pick one",
+              child: Text("Couldn't load networks, tap to pick one",
                   style: GoogleFonts.inter(
                       color: const Color(0xFFFB923C), fontSize: 12.sp)),
             ),
@@ -750,7 +750,7 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("We couldn't detect the network — pick one:",
+        Text("We couldn't detect the network, pick one:",
             style: GoogleFonts.inter(
                 color: const Color(0xFFFB923C), fontSize: 12.sp)),
         SizedBox(height: 8.h),

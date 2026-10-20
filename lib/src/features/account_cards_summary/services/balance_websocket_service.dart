@@ -551,7 +551,7 @@ class BalanceWebSocketService {
     RemoteLogSink.instance.log(
       level: 'warn',
       flow: 'balance_ws',
-      message: 'balance socket error — scheduling reconnect',
+      message: 'balance socket error, scheduling reconnect',
       fields: {'error': error.toString()},
     );
     _scheduleReconnect();
@@ -567,7 +567,7 @@ class BalanceWebSocketService {
     RemoteLogSink.instance.log(
       level: 'info',
       flow: 'balance_ws',
-      message: 'balance socket closed — scheduling reconnect',
+      message: 'balance socket closed, scheduling reconnect',
     );
     _scheduleReconnect();
   }

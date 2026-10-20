@@ -60,7 +60,7 @@ class _DialogBody extends StatelessWidget {
   String get _body => _isOs
       ? 'To sign in with $label, your phone needs a screen lock (PIN, pattern '
           'or password) and at least one $label enrolled. Open your phone '
-          "settings to add them, then come back — we'll pick up where you left off."
+          "settings to add them, then come back, we'll pick up where you left off."
       : "You've set up $label on this phone. Switch it on in Lazervault to sign "
           'in with it from now on.';
 

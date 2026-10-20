@@ -261,7 +261,7 @@ class _BatchTransferProcessingScreenState
     final total = r.totalTransfers;
     final ok = r.successfulTransfers;
     if (total > 0 && ok < total) {
-      return '$ok of $total transfers sent — ${total - ok} need attention';
+      return '$ok of $total transfers sent, ${total - ok} need attention';
     }
     if (total > 0) {
       return total == 1 ? 'Transfer sent' : 'All $total transfers sent';

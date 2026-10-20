@@ -32,7 +32,7 @@ class PlayServicesGate {
       return code == 0; // ConnectionResult.SUCCESS
     } catch (e) {
       debugPrint(
-          'PlayServicesGate: availability check failed ($e) — assuming available');
+          'PlayServicesGate: availability check failed ($e), assuming available');
       return true;
     }
   }

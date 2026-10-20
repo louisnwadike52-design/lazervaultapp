@@ -1215,7 +1215,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         SizedBox(width: 8.w),
         Expanded(
           child: Text(
-            "Live display rate is paused. Your binding rate will be locked from Quidax when you tap Buy — you'll see it on the confirm screen before paying.",
+            "Live display rate is paused. Your binding rate will be locked from Quidax when you tap Buy, you'll see it on the confirm screen before paying.",
             style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
           ),

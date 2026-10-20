@@ -1096,7 +1096,7 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
         const SizedBox(height: 6),
         Text(
           _atLimit
-              ? 'Maximum of ${widget.maxItems} reached — remove one to add another.'
+              ? 'Maximum of ${widget.maxItems} reached, remove one to add another.'
               // "0 of 3" reads like a checklist with three boxes to tick.
               // These attachments are OPTIONAL and the number is a ceiling,
               // so say so: nothing here is required to submit.
@@ -2080,7 +2080,7 @@ class _UpliftVideoPickerRowState extends State<UpliftVideoPickerRow> {
                     _uploading
                         ? 'Uploading your pitch…'
                         : has
-                            ? 'Pitch video attached — tap to change'
+                            ? 'Pitch video attached, tap to change'
                             : 'Add a short pitch video',
                     style: TextStyle(
                         color: has ? Colors.white : kUpTextSecondary,

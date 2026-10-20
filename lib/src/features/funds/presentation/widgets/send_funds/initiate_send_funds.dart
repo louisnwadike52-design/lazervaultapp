@@ -851,7 +851,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                       ? 'Schedule this transfer'
                       : 'Change schedule (${DateFormat('MMM d, HH:mm').format(scheduledDate!)})',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-              subtitle: Text('Pick a future date and time — it sends itself',
+              subtitle: Text('Pick a future date and time, it sends itself',
                   style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 12.sp)),
@@ -867,7 +867,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               subtitle: Text(
                   _recurringConfig != null
                       ? _recurringConfig!.summary
-                      : 'Repeat automatically — daily, weekly or monthly',
+                      : 'Repeat automatically, daily, weekly or monthly',
                   style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 12.sp)),
@@ -2438,7 +2438,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // but BlocListener is gone. Get.snackbar works without mounted context.
     if (_recurringSetupPending) {
       print(
-          "dispose: Recurring setup still pending — backend will complete independently.");
+          "dispose: Recurring setup still pending, backend will complete independently.");
     }
     _resetRecurringState();
     _predictionCubit.close();

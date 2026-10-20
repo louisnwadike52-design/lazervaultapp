@@ -195,7 +195,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
       feeAtMin = min * _feeDisplayRate();
     }
     if (min > 0 && available > 0 && available < min + feeAtMin) {
-      return 'Insufficient balance — the minimum ${widget.crypto.symbol.toUpperCase()} '
+      return 'Insufficient balance, the minimum ${widget.crypto.symbol.toUpperCase()} '
           'purchase is ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)}. '
           'Top up to continue.';
     }

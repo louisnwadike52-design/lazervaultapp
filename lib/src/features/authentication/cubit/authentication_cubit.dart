@@ -215,7 +215,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
               // copy, the fingerprint fast-path rotates them the moment the
               // network recovers. Stay logged in if we still hold the profile.
               print(
-                  'Auto login: transient refresh failure — session preserved');
+                  'Auto login: transient refresh failure, session preserved');
               if (_currentProfile != null) {
                 emit(AuthenticationAuthenticated(_currentProfile!));
               } else {

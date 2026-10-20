@@ -100,8 +100,8 @@ class EscrowReceiptFields {
       if (feePayer == 'split') {
         final buyerHalf = _round2(buyerTotal - amount);
         final sellerHalf = _round2(amount - sellerNet);
-        if (buyerHalf > 0) add("Fee — buyer's half", cash(buyerHalf));
-        if (sellerHalf > 0) add("Fee — seller's half", cash(sellerHalf));
+        if (buyerHalf > 0) add("Buyer's half of the fee", cash(buyerHalf));
+        if (sellerHalf > 0) add("Seller's half of the fee", cash(sellerHalf));
       }
     }
     if (buyerTotal > 0) add('Buyer paid', cash(buyerTotal));

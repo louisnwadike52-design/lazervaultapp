@@ -272,7 +272,7 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                     SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
-                        'Tap "Select an item" above to pick from inventory. Quantity is set with the stepper — no manual entry.',
+                        'Tap "Select an item" above to pick from inventory. Quantity is set with the stepper, no manual entry.',
                         style:
                             GoogleFonts.inter(color: _muted, fontSize: 12.sp),
                       ),

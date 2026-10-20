@@ -124,7 +124,7 @@ Future<bool?> showBudgetWarningSheet(
             SizedBox(height: 16.h),
             Text(
               isExceeded
-                  ? 'This is a flexible budget, so we won\'t stop you — but this transfer will put you over your limit.'
+                  ? 'This is a flexible budget, so we won\'t stop you, but this transfer will put you over your limit.'
                   : 'This is a flexible budget. You can still proceed.',
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),

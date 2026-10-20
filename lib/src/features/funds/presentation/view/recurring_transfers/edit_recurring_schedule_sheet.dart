@@ -134,7 +134,7 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
         ctaLabel: 'Use this schedule',
         footnote: tz.isEmpty
             ? 'Runs at the time shown.'
-            : 'Runs at the time shown in $tz — the zone this payment was set '
+            : 'Runs at the time shown in $tz, the zone this payment was set '
                 'up in, not your device\'s.',
         onConfigured: (c) => setState(() => _config = c),
       ),

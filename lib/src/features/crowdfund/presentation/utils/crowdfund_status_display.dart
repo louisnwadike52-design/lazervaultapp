@@ -73,7 +73,7 @@ CrowdfundStatusVisual crowdfundStatusVisualFor(
         color: _green,
         label: 'Completed',
         icon: Icons.verified,
-        blurb: 'Target reached — this campaign is closed.',
+        blurb: 'Target reached, this campaign is closed.',
       );
     case CrowdfundStatus.expired:
       return (
@@ -88,7 +88,7 @@ CrowdfundStatusVisual crowdfundStatusVisualFor(
         color: _amber,
         label: 'Refunding',
         icon: Icons.sync,
-        blurb: 'Cancelled — contributions are being refunded.',
+        blurb: 'Cancelled, contributions are being refunded.',
       );
     case CrowdfundStatus.cancelled:
       return (

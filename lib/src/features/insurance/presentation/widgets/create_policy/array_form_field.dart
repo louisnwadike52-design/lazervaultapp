@@ -566,7 +566,7 @@ class _ArrayFormFieldState extends State<ArrayFormField> {
       });
       _emit();
     } catch (e) {
-      _showItemImageError("Couldn't prepare upload — tap to retry");
+      _showItemImageError("Couldn't prepare upload, tap to retry");
     } finally {
       if (mounted) setState(() => _stagingItem.remove(idx));
     }

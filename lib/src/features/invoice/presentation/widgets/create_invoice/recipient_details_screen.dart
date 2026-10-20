@@ -238,7 +238,7 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
         ),
         SizedBox(height: 8.h),
         Text(
-          'Your business or personal information as the invoice issuer — shown as "Invoice From"',
+          'Your business or personal information as the invoice issuer, shown as "Invoice From"',
           style: GoogleFonts.inter(
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,

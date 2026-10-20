@@ -176,7 +176,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
           HapticFeedback.lightImpact();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Paid — receipt ready in your QR history.'),
+              content: Text('Paid, receipt ready in your QR history.'),
               backgroundColor: Color(0xFF10B981),
               duration: Duration(seconds: 4),
             ),
@@ -301,7 +301,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
           children: [
             Icon(Icons.all_inclusive, color: Color(0xFF10B981), size: 18),
             SizedBox(width: 8),
-            Text('No expiry — valid until you cancel it',
+            Text('No expiry, valid until you cancel it',
                 style: TextStyle(
                     color: Color(0xFF10B981),
                     fontSize: 14,

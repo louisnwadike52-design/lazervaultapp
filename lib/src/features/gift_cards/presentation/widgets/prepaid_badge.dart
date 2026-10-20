@@ -75,7 +75,7 @@ class PrepaidExplainer extends StatelessWidget {
   const PrepaidExplainer({super.key});
 
   static const String text =
-      'Prepaid cards work like a debit card — spend the balance anywhere the '
+      'Prepaid cards work like a debit card, spend the balance anywhere the '
       'network is accepted. Activate it before first use; the balance '
       "can't be topped up.";
 

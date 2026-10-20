@@ -183,7 +183,7 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
       if (!mounted) return;
       setState(() {
         _phase = _Phase.failed;
-        _message = 'Network problem — check your connection and try again.';
+        _message = 'Network problem, check your connection and try again.';
       });
     } on VoiceBiometricsException catch (e) {
       if (!mounted) return;

@@ -410,11 +410,11 @@ class _CardAcceptanceScreenState extends State<CardAcceptanceScreen> {
                 // "Approved" is not "paid out" — saying so here avoids the
                 // merchant asking later why the money has not landed.
                 ? (c.awaitingSettlement
-                    ? 'Approved — on its way to your wallet'
+                    ? 'Approved, on its way to your wallet'
                     : 'Approved and settled')
                 : c.isFailed
                     ? (c.failureReason.isEmpty
-                        ? 'Declined — ask for another card'
+                        ? 'Declined, ask for another card'
                         : c.failureReason)
                     : 'Waiting for the payment to complete',
             textAlign: TextAlign.center,

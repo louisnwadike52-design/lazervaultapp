@@ -208,7 +208,7 @@ Future<void> _showVerifyIdentityDialog(BuildContext context, String operation) {
           SizedBox(height: 8.h),
           Text(
             'To $operation, please complete a quick identity verification. It '
-            'keeps your money and account secure — it only takes a minute.',
+            'keeps your money and account secure, it only takes a minute.',
             textAlign: TextAlign.center,
             style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.72),

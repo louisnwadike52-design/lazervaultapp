@@ -204,7 +204,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                 title: "Couldn't send that invitation",
                 message: state.message,
                 hint: 'Check your connection and look at the members list '
-                    'before sending again — if the invitation did go out, it '
+                    'before sending again, if the invitation did go out, it '
                     'will already be there as pending.',
                 dismissLabel: 'Close',
               );

@@ -73,7 +73,7 @@ class NotesScreen extends StatelessWidget {
                             fontWeight: FontWeight.w600)),
                     SizedBox(height: 6.h),
                     Text(
-                        'Jot down anything — ideas, follow-ups, meeting notes.',
+                        'Jot down anything, ideas, follow-ups, meeting notes.',
                         textAlign: TextAlign.center,
                         style:
                             GoogleFonts.inter(color: _muted, fontSize: 13.sp)),

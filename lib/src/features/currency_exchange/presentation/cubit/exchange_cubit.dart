@@ -431,7 +431,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
   /// that lets the user pull-to-refresh.
   void subscribeToTransactionStatus(String transactionId) {
     if (transactionId.isEmpty) {
-      emit(const ExchangeError('Missing transaction id — cannot subscribe.'));
+      emit(const ExchangeError('Missing transaction id, cannot subscribe.'));
       return;
     }
     _cancelWsSub();

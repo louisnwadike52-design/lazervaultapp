@@ -210,7 +210,7 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
         // them why they're not on the stage.
         publish = false;
         emit(state.copyWith(
-            error: 'Camera/microphone denied — you joined as a viewer.'));
+            error: 'Camera/microphone denied, you joined as a viewer.'));
       }
       await _connectRoom(url, token, publish: publish);
       _cancelReconnect();
@@ -291,7 +291,7 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
     // token coming back anyway means the seat went away between the two calls.
     if (state.role != 'host' && state.role != 'cohost') {
       const msg =
-          'The stage is full or the invite is no longer valid — you joined as a viewer.';
+          'The stage is full or the invite is no longer valid, you joined as a viewer.';
       emit(state.copyWith(
           coHostBusy: false, coHostInvitePending: false, coHostError: msg));
       return msg;

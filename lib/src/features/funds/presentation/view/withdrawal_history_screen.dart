@@ -109,10 +109,10 @@ class _WithdrawalHistoryScreenState extends State<WithdrawalHistoryScreen> {
         if (_items.isEmpty) {
           _loadError = 'Something went wrong. Please try again.';
         } else {
-          Get.snackbar('', 'Couldn\'t load more withdrawals — pull to retry.',
+          Get.snackbar('', 'Couldn\'t load more withdrawals, pull to retry.',
               titleText: const SizedBox.shrink(),
               messageText: const Text(
-                  'Couldn\'t load more withdrawals — pull to retry.',
+                  'Couldn\'t load more withdrawals, pull to retry.',
                   style: TextStyle(color: Colors.white)),
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: _error.withValues(alpha: 0.92),
@@ -361,7 +361,7 @@ class _WithdrawalHistoryScreenState extends State<WithdrawalHistoryScreen> {
                     color: Colors.white)),
             SizedBox(height: 6.h),
             Text(
-              'When you withdraw to a linked bank, every payout — processing, completed or failed — shows up here.',
+              'When you withdraw to a linked bank, every payout, processing, completed or failed, shows up here.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                   fontSize: 12.5.sp, color: _label, height: 1.4),

@@ -80,8 +80,8 @@ void main() {
       // money comes back or rolls over — opposite outcomes.
       final s = code(
           'lib/src/features/lock_funds/presentation/screens/lock_fund_details_maturity.dart');
-      expect(s, contains("'Not set — will renew'"));
-      expect(s, contains("'Not set — will pay out'"));
+      expect(s, contains("'Not set, will renew'"));
+      expect(s, contains("'Not set, will pay out'"));
       expect(s, contains('lock.autoRenew'));
     });
   });

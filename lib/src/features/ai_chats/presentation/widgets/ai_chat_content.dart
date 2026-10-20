@@ -1567,7 +1567,7 @@ class _AiChatContentState extends State<AiChatContent>
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
-              'Ask me anything — transfers, bills, investments & more',
+              'Ask me anything, transfers, bills, investments & more',
               style: TextStyle(
                   color: InvoiceThemeColors.textGray400, fontSize: 12.sp),
             ),

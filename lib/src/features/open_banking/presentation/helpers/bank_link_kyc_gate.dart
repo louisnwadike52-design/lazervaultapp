@@ -341,7 +341,7 @@ Future<void> showAccountSetupPendingModal(BuildContext context) {
       ),
       content: Text(
         'Your deposit account is still being set up. Please give it a moment and '
-        'try again shortly — we\'ll take you through once it\'s ready.',
+        'try again shortly, we\'ll take you through once it\'s ready.',
         style: GoogleFonts.inter(
             color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.45),
       ),

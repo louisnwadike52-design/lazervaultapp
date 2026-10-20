@@ -587,7 +587,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                     fontWeight: FontWeight.w700)),
             SizedBox(height: 4.h),
             Text(
-              'Pick who this receipt is for — the fee only appears on your (sender) copy.',
+              'Pick who this receipt is for, the fee only appears on your (sender) copy.',
               style: TextStyle(
                   color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.3),
             ),
@@ -604,7 +604,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
               icon: Icons.person_outline_rounded,
               iconColor: const Color(0xFF10B981),
               label: "Recipient's copy",
-              description: 'Amount received only — no fee shown.',
+              description: 'Amount received only, no fee shown.',
               onTap: () => Get.back(result: ReceiptCopyType.recipient),
             ),
             SizedBox(height: 16.h),
@@ -847,19 +847,19 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                 ReceiptFileFormat.pdf,
                 Icons.picture_as_pdf_outlined,
                 const Color(0xFFEF4444),
-                'Vector document — best for printing.'),
+                'Vector document, best for printing.'),
             SizedBox(height: 10.h),
             tile(
                 ReceiptFileFormat.jpg,
                 Icons.image_outlined,
                 const Color(0xFF3B82F6),
-                'Compact image — easy to share in chats.'),
+                'Compact image, easy to share in chats.'),
             SizedBox(height: 10.h),
             tile(
                 ReceiptFileFormat.png,
                 Icons.photo_outlined,
                 const Color(0xFF10B981),
-                'Lossless image — sharp on any screen.'),
+                'Lossless image, sharp on any screen.'),
             SizedBox(height: 16.h),
             TextButton(
               onPressed: () => Get.back(),

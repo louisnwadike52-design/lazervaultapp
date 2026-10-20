@@ -1055,7 +1055,7 @@ class _CreateContributionBottomSheetState
                   Text(
                     _avatarError ??
                         (_avatarUrl == null
-                            ? 'Optional — helps members pick this goal out of a list'
+                            ? 'Optional, helps members pick this goal out of a list'
                             : 'Tap to change it'),
                     style: GoogleFonts.inter(
                       fontSize: 11.5.sp,
@@ -1655,7 +1655,7 @@ class _CreateContributionBottomSheetState
                   Expanded(
                     child: Text(
                       'You will set how often members pay and how many cycles '
-                      'the circle runs when you START it — so the countdown '
+                      'the circle runs when you START it, so the countdown '
                       'begins the day it actually begins, not today.',
                       style: GoogleFonts.inter(
                           color: Colors.grey[300],
@@ -2276,9 +2276,9 @@ class _CreateContributionBottomSheetState
               'Auto-debit',
               _autoPayEnabled
                   ? (_selectedType == ContributionType.rotatingSavings
-                      ? "On — we debit each member's share at cycle close"
+                      ? "On, we debit each member's share at cycle close"
                       : 'Enabled')
-                  : 'Off — members pay by hand',
+                  : 'Off, members pay by hand',
             ),
             _ReviewItem('Partial Payments',
                 _allowPartialPayments ? 'Allowed' : 'Not allowed'),

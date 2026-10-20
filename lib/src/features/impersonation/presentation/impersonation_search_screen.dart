@@ -118,7 +118,7 @@ class _ImpersonationSearchScreenState extends State<ImpersonationSearchScreen> {
             SizedBox(height: 6.h),
             Text(
               'You will see their account exactly as they do. '
-              'Everything is READ-ONLY — payments, transfers and any change '
+              'Everything is READ-ONLY, payments, transfers and any change '
               'are refused by the server. This is recorded against your '
               'account.',
               style: TextStyle(

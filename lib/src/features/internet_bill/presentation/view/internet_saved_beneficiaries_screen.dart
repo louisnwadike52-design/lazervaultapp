@@ -431,8 +431,8 @@ class _InternetSavedBeneficiariesScreenState
               subtitle: hasRollover
                   ? Text(
                       existingAutos.length == 1
-                          ? '1 active schedule — tap to manage'
-                          : '${existingAutos.length} schedules — tap to manage',
+                          ? '1 active schedule, tap to manage'
+                          : '${existingAutos.length} schedules, tap to manage',
                       style: TextStyle(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 11.sp,

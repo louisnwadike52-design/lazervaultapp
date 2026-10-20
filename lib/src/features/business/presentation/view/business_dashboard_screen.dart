@@ -254,7 +254,7 @@ class BusinessDashboardScreen extends StatelessWidget {
           if (account?.accountNumber == null ||
               account!.accountNumber!.isEmpty) ...[
             SizedBox(height: 8.h),
-            Text('Virtual account pending — complete business KYC to activate',
+            Text('Virtual account pending, complete business KYC to activate',
                 style: GoogleFonts.inter(
                     color: Colors.white70, fontSize: 11.5.sp)),
           ],

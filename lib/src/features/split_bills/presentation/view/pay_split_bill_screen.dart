@@ -505,7 +505,7 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
               _buildDetailRow(
                 'Transfer fee',
                 _feeFailed
-                    ? 'Couldn\'t check — charged at payment'
+                    ? 'Couldn\'t check, charged at payment'
                     : 'Charged at payment',
               ),
             if (_externalFeeMinor != null) ...[
@@ -655,7 +655,7 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
   String _friendlyPaymentError(String raw) {
     final low = raw.toLowerCase();
     if (low.contains('same account')) {
-      return "You can't pay this bill into your own account — you don't need to "
+      return "You can't pay this bill into your own account, you don't need to "
           "pay your own share of a bill you're collecting.";
     }
     if (low.contains('insufficient') || low.contains('not enough')) {

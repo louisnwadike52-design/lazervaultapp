@@ -64,7 +64,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 fontSize: 16.sp)),
         content: Text(
           'This starts a 30-day cancellable grace period. Sign in any time before it ends to cancel. '
-          'After that, your account is queued for permanent deletion and reviewed by our team — this cannot be undone.',
+          'After that, your account is queued for permanent deletion and reviewed by our team, this cannot be undone.',
           style: GoogleFonts.inter(
               color: _textSecondary, fontSize: 13.sp, height: 1.45),
         ),
@@ -233,11 +233,11 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
           SizedBox(height: 10.h),
           _bullet('You are signed out on all devices immediately.'),
           _bullet(
-              'Your account enters a 30-day grace period — sign back in any time before then to cancel and keep your account.'),
+              'Your account enters a 30-day grace period, sign back in any time before then to cancel and keep your account.'),
           _bullet(
               'After 30 days your account is queued for permanent deletion (reviewed by our team). Once finalized, your data cannot be recovered.'),
           _bullet(
-              'Make sure your balance is zero — withdraw or transfer any funds first.'),
+              'Make sure your balance is zero, withdraw or transfer any funds first.'),
           SizedBox(height: 22.h),
           Text('Type DELETE to confirm',
               style: GoogleFonts.inter(

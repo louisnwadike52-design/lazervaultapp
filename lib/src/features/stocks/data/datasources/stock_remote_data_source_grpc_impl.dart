@@ -857,8 +857,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
           value: stock.peRatio,
           unit: 'x',
           description: stock.peRatio < 20
-              ? 'Below average — potentially undervalued'
-              : 'Above average — higher growth expectations',
+              ? 'Below average, potentially undervalued'
+              : 'Above average, higher growth expectations',
         ));
       }
       if (stock.dividendYield > 0) {

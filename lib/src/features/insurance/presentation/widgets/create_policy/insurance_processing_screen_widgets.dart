@@ -171,7 +171,7 @@ class _InsurancePurchaseReceiptScreenState
     final String headerSubtitle = confirmed
         ? 'Your insurance policy is now active'
         : 'We’re confirming your policy with the provider. This page '
-            'updates automatically — pull down to refresh.';
+            'updates automatically, pull down to refresh.';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),

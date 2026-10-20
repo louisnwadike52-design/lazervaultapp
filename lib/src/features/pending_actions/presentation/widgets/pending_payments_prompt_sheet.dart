@@ -214,7 +214,7 @@ class PendingPaymentsPromptSheet extends StatelessWidget {
   Widget _moreLine(int hidden) => Padding(
         padding: EdgeInsets.only(top: 10.h, left: 2.w),
         child: Text(
-          '+$hidden more — open the service to see the rest',
+          '+$hidden more, open the service to see the rest',
           style: GoogleFonts.inter(fontSize: 11.5.sp, color: _kMuted),
         ),
       );

@@ -179,7 +179,7 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
             // rather than letting them tap into a failure.
             enabled: !noProfileNumber || active,
             disabledReason:
-                'Add a phone number to your profile first — phone banking '
+                'Add a phone number to your profile first, phone banking '
                 'always uses the number on your account.',
             onChanged: (on) => on ? _startActivation() : _confirmOff(),
           ),
@@ -195,7 +195,7 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
     return ChannelSection(
       title: 'Your phone number',
       caption:
-          'Phone banking always uses the number on your profile — on a call, '
+          'Phone banking always uses the number on your profile, on a call, '
           'the line you are calling from is the identity. To change it, update '
           'your profile.',
       child: Padding(
@@ -229,7 +229,7 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
       title: 'Voice recognition',
       caption:
           'How we confirm it is you on the call. These apply to phone banking '
-          'only — they have no meaning in a WhatsApp thread.',
+          'only, they have no meaning in a WhatsApp thread.',
       child: Column(
         children: [
           _infoRow(
@@ -268,7 +268,7 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
     return ChannelSection(
       title: 'Security',
       caption: hasPin || !pinStateKnown
-          ? 'Money moved on a call is authorised by your transaction PIN — the '
+          ? 'Money moved on a call is authorised by your transaction PIN, the '
               'same one you use in the app. There is no separate phone PIN.'
           : 'Money moved on a call is authorised by your transaction PIN. You '
               'need to set one before you can bank by phone.',

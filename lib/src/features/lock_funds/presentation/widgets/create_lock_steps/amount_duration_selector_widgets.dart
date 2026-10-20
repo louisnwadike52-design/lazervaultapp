@@ -126,7 +126,7 @@ class _DurationConfirmationDialog extends StatelessWidget {
                   _row(
                     'Rate',
                     maxRatePercent > baseRatePercent
-                        ? '${baseRatePercent.toStringAsFixed(0)}% – ${maxRatePercent.toStringAsFixed(0)}% p.a.'
+                        ? '${baseRatePercent.toStringAsFixed(0)}%, ${maxRatePercent.toStringAsFixed(0)}% p.a.'
                         : '${baseRatePercent.toStringAsFixed(0)}% p.a.',
                   ),
                   if (estimate > 0) ...[

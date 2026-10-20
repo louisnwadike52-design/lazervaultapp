@@ -906,7 +906,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
           child: Text(
               cn
                   ? 'Enter the name in Chinese characters (中文), e.g. 张 伟 — or switch to Pinyin. Type it exactly as it appears on the supplier’s invoice or wallet.'
-                  : 'Enter the name in Pinyin/English, e.g. Zhang Wei — exactly as it appears on the supplier’s invoice or wallet. Chinese characters also work.',
+                  : 'Enter the name in Pinyin/English, e.g. Zhang Wei, exactly as it appears on the supplier’s invoice or wallet. Chinese characters also work.',
               style: TextStyle(color: RmbUi.label, fontSize: 11.sp)),
         ),
       ],
@@ -1229,7 +1229,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   }
 
   List<Widget> _walletExtraFields() => [
-        _field('idNumber', 'ID number — passport / national ID (optional)',
+        _field('idNumber', 'ID number, passport / national ID (optional)',
             onEdited: true,
             validator: (v) => _idNumberError(v, 'PASSPORT', required: false)),
         _dropdown('Relationship to you', _relationship, _relOptions,
@@ -1264,7 +1264,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
         _bankPickerField(),
         _phoneField('mobile', label: 'Receiver mobile'),
         _dropdown(
-            'ID type — passport / national ID',
+            'ID type, passport / national ID',
             _idType,
             const ['ID_CARD', 'PASSPORT', 'HONGKONG_MACAO_TAIWAN_PERMIT'],
             (v) => setState(() => _idType = v)),
@@ -1422,11 +1422,11 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
           _saved = null;
           _manualEntry = true; // reveal the filled field
         });
-        _snack('Filled from the code — check the details before you continue.');
+        _snack('Filled from the code, check the details before you continue.');
       case RmbQrEmail(:final email):
         if (_rail == RmbRail.WECHAT) {
           _snack(
-              'That code holds an email — WeChat Pay needs the linked phone number.');
+              'That code holds an email, WeChat Pay needs the linked phone number.');
         } else {
           setState(() {
             _acctIdType = 'EMAIL';
@@ -1435,11 +1435,11 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
             _manualEntry = true; // reveal the filled field
           });
           _snack(
-              'Filled from the code — check the details before you continue.');
+              'Filled from the code, check the details before you continue.');
         }
       case RmbQrReceiveCode():
         _snack(
-            'That is a personal ${RmbUi.railLabel(_rail)} code — it doesn’t carry the login. Ask the recipient for the phone number or email they sign in with.');
+            'That is a personal ${RmbUi.railLabel(_rail)} code, it doesn’t carry the login. Ask the recipient for the phone number or email they sign in with.');
       case RmbQrUnrecognized():
         _snack('No phone number or email found in that code.');
     }
@@ -1720,7 +1720,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
       final changed = fresh.totalMinor != q.totalMinor;
       setState(() => _quote = fresh);
       if (changed) {
-        _snack('The rate changed — check the new total and tap pay again.');
+        _snack('The rate changed, check the new total and tap pay again.');
         return null;
       }
       return fresh;
@@ -2441,7 +2441,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                           'idNumber',
                           idNumber,
                           idRules[idType]?.hint.isNotEmpty == true
-                              ? '${idTypeLabels[idType] ?? 'ID'} — e.g. ${idRules[idType]!.hint}'
+                              ? '${idTypeLabels[idType]?? 'ID'} — e.g. ${idRules[idType]!.hint}'
                               : 'ID number',
                           // Hard cap WHILE TYPING, from the same rule table the
                           // server validates against: input stops at the

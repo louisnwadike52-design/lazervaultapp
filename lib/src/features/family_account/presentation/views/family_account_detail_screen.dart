@@ -512,7 +512,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 child: Text(
                   // Names the state, so a support conversation starts from the
                   // actual reason rather than "funding is broken".
-                  "This pool can't take money yet — its account is "
+                  "This pool can't take money yet, its account is "
                   '"$vaStatus". Contact support if it stays this way.',
                   style: GoogleFonts.inter(
                       fontSize: 12.sp,
@@ -1970,7 +1970,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
-                      'Setting up your account — your deposit account number will appear here once ready.',
+                      'Setting up your account, your deposit account number will appear here once ready.',
                       style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 12.sp),
@@ -2943,7 +2943,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               // to them — that the slot comes back.
               'Any remaining funds return to your account, and this frees up a '
               'Family & Friends slot.\n\n'
-              'The account and its history are kept — you can still open it '
+              'The account and its history are kept, you can still open it '
               'later under “Previous accounts”. Members lose access '
               'immediately.',
               style: TextStyle(

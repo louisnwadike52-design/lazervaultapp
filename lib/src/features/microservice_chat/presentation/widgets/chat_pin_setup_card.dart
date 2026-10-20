@@ -59,7 +59,7 @@ class ChatPinSetupCard extends StatelessWidget {
           ],
           const SizedBox(height: 6),
           const Text(
-            'You enter it on the secure screen — it is never typed into this '
+            'You enter it on the secure screen, it is never typed into this '
             'chat and never stored in the conversation.',
             style: TextStyle(color: Color(0xFF6B7280), fontSize: 11.5),
           ),

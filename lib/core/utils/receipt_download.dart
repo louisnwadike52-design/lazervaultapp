@@ -67,5 +67,5 @@ class ReceiptDownload {
   /// opening, not that it is "in Downloads".
   static const String successTitle = 'Receipt saved';
   static const String successBody =
-      'Opening your receipt — share or save it from there.';
+      'Opening your receipt, share or save it from there.';
 }

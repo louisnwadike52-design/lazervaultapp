@@ -43,7 +43,7 @@ const String unreachableErrorMessage =
 /// the problem.
 const String providerUnavailableMessage =
     'We couldn’t reach our payment partner right now. This is not your '
-    'connection — please try again shortly.';
+    'connection, please try again shortly.';
 
 /// The single, canonical message shown when a money-moving flow is refused
 /// because the source account is frozen/suspended. accounts-service is the

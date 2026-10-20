@@ -420,7 +420,7 @@ class _VoiceLanguageVoiceSheetState extends State<VoiceLanguageVoiceSheet> {
             SizedBox(width: 8.w),
             Expanded(
               child: Text(
-                'Tap any voice below to change how $langName sounds — you can '
+                'Tap any voice below to change how $langName sounds, you can '
                 'switch the voice anytime, even without changing your language.',
                 style: GoogleFonts.inter(
                   color: Colors.white.withValues(alpha: 0.75),

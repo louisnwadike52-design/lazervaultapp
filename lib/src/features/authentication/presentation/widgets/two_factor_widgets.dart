@@ -592,7 +592,7 @@ class _TotpSetupSheetState extends State<TotpSetupSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                              'Save these now — each works once if you lose your authenticator. You won\'t see them again.',
+                              'Save these now, each works once if you lose your authenticator. You won\'t see them again.',
                               style: TextStyle(
                                   fontSize: 11.5.sp,
                                   fontWeight: FontWeight.w600,

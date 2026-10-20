@@ -109,7 +109,7 @@ class VoiceEndReason {
       return const VoiceEndReason(
         severity: VoiceEndSeverity.notable,
         title: 'Call ended',
-        detail: 'The connection dropped. Your balance is unaffected — tap the '
+        detail: 'The connection dropped. Your balance is unaffected, tap the '
             'mic to start again.',
       );
     }

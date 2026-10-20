@@ -393,7 +393,7 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen>
             ),
             SizedBox(height: 12.h),
             Text(
-              'Tap "New Reminder" to schedule a top-up nudge. Reminders notify you across every channel — push, email, SMS — so you never miss one.',
+              'Tap "New Reminder" to schedule a top-up nudge. Reminders notify you across every channel, push, email, SMS, so you never miss one.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: Colors.white.withValues(alpha: 0.6),

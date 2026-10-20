@@ -15,7 +15,7 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 String linkedBalanceRefreshFailureMessage(Object error) {
   // Expired/invalid bank link — the only fix is to re-link the account.
   if (error is ReauthorizationRequiredException) {
-    return 'Couldn’t refresh — please re-link your bank account.';
+    return 'Couldn’t refresh, please re-link your bank account.';
   }
   // Fee reservation failed for lack of funds (hold-first, before the live read).
   if (error is InsufficientFundsException) {

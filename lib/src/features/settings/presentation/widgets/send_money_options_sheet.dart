@@ -127,7 +127,7 @@ Future<String?> showDashboardLayoutSheet(
               icon: Icons.grid_view_rounded,
               title: 'Classic',
               subtitle:
-                  'The current view — full quick-services grid with the refer-a-friend card below.',
+                  'The current view, full quick-services grid with the refer-a-friend card below.',
               selected: current == FeatureFlags.dashboardLayoutClassic,
               onTap: () => Navigator.of(sheetCtx)
                   .pop(FeatureFlags.dashboardLayoutClassic),

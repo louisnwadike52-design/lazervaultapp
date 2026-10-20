@@ -55,7 +55,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
       if (!mounted) return;
       Get.snackbar(
         'Checked',
-        'Your balance updates the moment your transfer lands — usually '
+        'Your balance updates the moment your transfer lands, usually '
             'within 1–5 minutes of your bank completing it.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFF1F1F1F),
@@ -159,7 +159,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
 
     final message = 'Send money to my Lazervault account 💜\n\n'
         '$block\n\n'
-        'Powered by Lazervault — your money, your control.';
+        'Powered by Lazervault, your money, your control.';
     final origin = _shareOrigin();
 
     try {
@@ -374,7 +374,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                 label: Text(
                   _checkingNow
                       ? 'Checking…'
-                      : "I've made the transfer — check now",
+                      : "I've made the transfer, check now",
                   style: TextStyle(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,

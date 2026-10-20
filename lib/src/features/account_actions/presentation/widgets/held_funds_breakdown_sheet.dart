@@ -383,7 +383,7 @@ class _HeldFundsBreakdownSheetState extends State<HeldFundsBreakdownSheet> {
       // No date is a real state for both, and each means something different —
       // inventing a date for either would be worse than saying so.
       return isLock
-          ? 'No fixed date — unlock it whenever you want'
+          ? 'No fixed date, unlock it whenever you want'
           : 'Held until the payment finishes';
     }
 

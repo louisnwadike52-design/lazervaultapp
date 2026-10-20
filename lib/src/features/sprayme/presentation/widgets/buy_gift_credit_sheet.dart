@@ -116,7 +116,7 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
     setState(() => _busy = false);
     if (ok) {
       Navigator.of(context).pop();
-      _toast('Gifts purchased — ready to spray', const Color(0xFF10B981));
+      _toast('Gifts purchased, ready to spray', const Color(0xFF10B981));
     }
   }
 

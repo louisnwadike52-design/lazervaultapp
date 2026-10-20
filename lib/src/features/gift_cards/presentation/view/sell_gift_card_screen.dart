@@ -439,7 +439,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       } else {
         Get.snackbar(
           'Card Scanned',
-          'Details extracted${state.confidence < 0.6 ? ' (low confidence — please verify)' : '. Please verify and complete the form.'}',
+          'Details extracted${state.confidence < 0.6? ' (low confidence — please verify)' : '. Please verify and complete the form.'}',
           backgroundColor: state.confidence < 0.6
               ? const Color(0xFFFB923C)
               : const Color(0xFF10B981),
@@ -1190,7 +1190,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           ],
         ),
         content: Text(
-          'AI will read your card images and fill in the details automatically.\n\nPlease double-check all auto-filled values before submitting — AI extraction may not always be 100% accurate.',
+          'AI will read your card images and fill in the details automatically.\n\nPlease double-check all auto-filled values before submitting, AI extraction may not always be 100% accurate.',
           style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.5),
         ),
@@ -2059,7 +2059,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         isRejected ? const Color(0xFFEF4444) : const Color(0xFF10B981);
     final headline = isRejected ? 'Sale rejected' : 'Submitted for review';
     final subline = isRejected
-        ? "Your card was not accepted. The reason from our reviewer is shown below — if you believe this is an error, contact support and reference the ID below."
+        ? "Your card was not accepted. The reason from our reviewer is shown below, if you believe this is an error, contact support and reference the ID below."
         : "Status: PENDING. Most gaming cards verify in 5 – 10 minutes; e-commerce cards can take up to 24 hours. We'll notify you the moment the status changes.";
     return Center(
       child: Padding(
@@ -3001,7 +3001,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         ]),
         SizedBox(height: 4.h),
         Text(
-          'Add each extra card below — same brand, one payout. We submit them together.',
+          'Add each extra card below, same brand, one payout. We submit them together.',
           style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.55), fontSize: 11.5.sp),
         ),

@@ -39,7 +39,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen>
       title: 'Welcome to Lazervault',
       subtitle: 'Your all-in-one financial super app',
       description:
-          'Bank, save, send and invest from one trusted home — designed for how money actually moves today.',
+          'Bank, save, send and invest from one trusted home, designed for how money actually moves today.',
       icon: Icons.account_balance_wallet_rounded,
       features: [
         'Multi-currency wallets out of the box',
@@ -57,7 +57,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen>
       title: 'Send money anywhere',
       subtitle: 'Local rails. Global reach.',
       description:
-          'Instant transfers within Nigeria and 50+ currencies abroad — at rates that respect your money.',
+          'Instant transfers within Nigeria and 50+ currencies abroad, at rates that respect your money.',
       icon: Icons.send_rounded,
       features: [
         'Domestic & international transfers',
@@ -75,7 +75,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen>
       title: 'Grow your wealth',
       subtitle: 'Stocks, crypto and smart vaults',
       description:
-          'Buy, sell and auto-invest from one dashboard — backed by analytics that show what your money is actually doing.',
+          'Buy, sell and auto-invest from one dashboard, backed by analytics that show what your money is actually doing.',
       icon: Icons.trending_up_rounded,
       features: [
         'Stocks & vetted crypto markets',
@@ -111,7 +111,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen>
       title: 'Yours, safely',
       subtitle: 'AI protection that has your back',
       description:
-          'Face, voice and PIN unlock — plus an AI layer watching for fraud the moment it appears.',
+          'Face, voice and PIN unlock, plus an AI layer watching for fraud the moment it appears.',
       icon: Icons.security_rounded,
       features: [
         'Face, voice & biometric login',

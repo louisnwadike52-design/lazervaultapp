@@ -175,7 +175,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
       final kobo = (major * 100).round();
       if (kobo > availableKobo) {
         return 'Only ${upNaira(availableKobo, fund.currency)} is free to '
-            'withdraw — the rest is promised to businesses you selected.';
+            'withdraw, the rest is promised to businesses you selected.';
       }
       return null;
     }
@@ -316,7 +316,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         content: const Text(
           'It disappears from your funds and stops taking any further '
           'activity. The record is kept for our records and for the '
-          'businesses that applied — this does not erase their applications.',
+          'businesses that applied, this does not erase their applications.',
           style: TextStyle(color: kUpTextSecondary, height: 1.4),
         ),
         actions: [
@@ -390,7 +390,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
                       fontSize: 16)),
               const SizedBox(height: 4),
               const Text(
-                  'Propose terms you\'d accept — the investor reviews and re-offers.',
+                  'Propose terms you\'d accept, the investor reviews and re-offers.',
                   style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
               const SizedBox(height: 12),
               _sheetField(amountCtrl, 'Amount you want (₦)',
@@ -983,7 +983,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         final why = f.cancelReason.trim();
         final head = why.isEmpty
             ? 'This fund was cancelled.'
-            : 'This fund was cancelled — $why.';
+            : 'This fund was cancelled, $why.';
         return '$head ${_moneyOutcome(f)}';
     }
   }
@@ -1014,8 +1014,8 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
           // Names the money step when there is one, so the PIN sheet that
           // follows is not a surprise.
           label: Text(f.committedPool.toInt() > 0
-              ? 'Publish — start accepting applications'
-              : 'Fund & publish — start accepting applications'),
+              ? 'Publish, start accepting applications'
+              : 'Fund & publish, start accepting applications'),
         ),
         const SizedBox(height: 12),
       ],
@@ -1411,7 +1411,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
             Icon(Icons.hourglass_top, color: kUpPrimarySoft),
             SizedBox(width: 10),
             Expanded(
-                child: Text('Counter sent — awaiting the investor\'s response.',
+                child: Text('Counter sent, awaiting the investor\'s response.',
                     style: TextStyle(color: Colors.white))),
           ]),
         ),
@@ -1434,7 +1434,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
             SizedBox(width: 10),
             Expanded(
               child: Text(
-                'This is your fund. Businesses apply to you — you review their '
+                'This is your fund. Businesses apply to you, you review their '
                 'applications rather than applying yourself.',
                 style: TextStyle(color: Colors.white),
               ),
@@ -1575,7 +1575,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
                 fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
         const Text(
-            'Endorse the businesses you believe in — the funder sees community support.',
+            'Endorse the businesses you believe in, the funder sees community support.',
             style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
         const SizedBox(height: 10),
         for (final a in _applications)

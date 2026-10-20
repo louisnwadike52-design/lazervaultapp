@@ -127,7 +127,7 @@ Powered by Lazervault''';
         // PlatformException and the share silently fails on iPhone/iPad.
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         text: text,
-        subject: 'Stock $action Receipt — $symbol',
+        subject: 'Stock $action Receipt, $symbol',
       ));
     } catch (e) {
       if (!mounted) return;

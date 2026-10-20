@@ -97,7 +97,7 @@ class DashboardWalkthrough {
     (
       slot: 2,
       title: 'AI Chat',
-      body: 'Ask me to move money, pay bills or check balances — just type.',
+      body: 'Ask me to move money, pay bills or check balances, just type.',
     ),
     (
       slot: 3,

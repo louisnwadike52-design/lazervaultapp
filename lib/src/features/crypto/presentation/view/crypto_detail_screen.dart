@@ -660,8 +660,8 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen>
                   padding: EdgeInsets.symmetric(horizontal: 32.w),
                   child: Text(
                     isError
-                        ? "We couldn't load the chart right now — view it on a reliable source instead."
-                        : 'No recent chart data for this asset yet — you can view it on a reliable source.',
+                        ? "We couldn't load the chart right now, view it on a reliable source instead."
+                        : 'No recent chart data for this asset yet, you can view it on a reliable source.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       color: Colors.grey[500],

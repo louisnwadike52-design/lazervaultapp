@@ -32,7 +32,7 @@ class _MaturitySection extends StatelessWidget {
     if (lock.maturityAction == MaturityAction.undecided) {
       // Name the outcome auto-renew would produce rather than leaving the
       // user to work out what "not decided" means for their money.
-      return lock.autoRenew ? 'Not set — will renew' : 'Not set — will pay out';
+      return lock.autoRenew ? 'Not set, will renew' : 'Not set, will pay out';
     }
     return lock.maturityAction.displayName;
   }

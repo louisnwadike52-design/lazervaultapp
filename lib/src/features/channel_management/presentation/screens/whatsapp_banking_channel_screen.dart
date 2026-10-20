@@ -170,7 +170,7 @@ class _WhatsAppBankingChannelScreenState
     return ChannelSection(
       title: 'WhatsApp number',
       caption:
-          'This can differ from your profile number — many people run WhatsApp '
+          'This can differ from your profile number, many people run WhatsApp '
           'on a second line. Only messages from this number are answered.',
       child: Column(
         children: [

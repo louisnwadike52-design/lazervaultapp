@@ -659,8 +659,8 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                 SizedBox(height: 6.h),
                 Text(
                   hiddenCount == 1
-                      ? '1 account hidden — frozen or balance below this amount'
-                      : '$hiddenCount accounts hidden — frozen or balance below this amount',
+                      ? '1 account hidden, frozen or balance below this amount'
+                      : '$hiddenCount accounts hidden, frozen or balance below this amount',
                   style: GoogleFonts.inter(
                     color: Colors.white.withValues(alpha: 0.45),
                     fontSize: 11.sp,

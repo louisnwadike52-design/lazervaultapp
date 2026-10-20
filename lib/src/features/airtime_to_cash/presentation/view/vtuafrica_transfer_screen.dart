@@ -555,14 +555,14 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
                 ),
                 SizedBox(height: 18.h),
                 _ussdMethodCard(
-                  title: 'Quickest — Direct USSD',
+                  title: 'Quickest, Direct USSD',
                   body:
                       'Dial this exact code on your $network line, replacing <PIN> with your SIM transfer PIN:',
                   code: filledDirect,
                 ),
                 SizedBox(height: 12.h),
                 _ussdMethodCard(
-                  title: 'Or — Menu USSD',
+                  title: 'Or, Menu USSD',
                   body:
                       'Dial the menu code below and follow the on-screen prompts. Choose "Transfer", enter $destinationPhone, amount $amountStr, then your PIN.',
                   code: guide.menu,

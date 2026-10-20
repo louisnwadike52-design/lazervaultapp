@@ -266,7 +266,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     }
     if (_messages.isEmpty) {
       return Center(
-        child: Text('Say hello — our team will reply here and by email.',
+        child: Text('Say hello, our team will reply here and by email.',
             style: TextStyle(color: _textSecondary, fontSize: 13.sp)),
       );
     }

@@ -161,7 +161,7 @@ class CategoryDeadlineStep extends StatelessWidget {
           SizedBox(height: 8.h),
           Text(
             'Pick a date, then a time. If you skip the time it is set to '
-            '12:00 AM on that day — so choosing today needs a time later today.',
+            '12:00 AM on that day, so choosing today needs a time later today.',
             style: GoogleFonts.inter(
               fontSize: 11.5.sp,
               fontWeight: FontWeight.w400,

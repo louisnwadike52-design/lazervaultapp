@@ -448,8 +448,8 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
                       Expanded(
                         child: Text(
                           'Only methods your device supports can be turned on. '
-                          'Options with no sensor — or none enrolled in your phone '
-                          'settings — appear greyed out and are not switchable.',
+                          'Options with no sensor, or none enrolled in your phone '
+                          'settings, appear greyed out and are not switchable.',
                           style: TextStyle(
                             color: const Color(0xFF9CA3AF),
                             fontSize: 12.sp,

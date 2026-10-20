@@ -92,7 +92,7 @@ class EscrowHomeOffersStrip extends StatelessWidget {
         Padding(
           padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 8.h),
           child: Text(
-              'Listings and requests waiting for payment — they move into the tabs below once the money is in escrow.',
+              'Listings and requests waiting for payment, they move into the tabs below once the money is in escrow.',
               style: GoogleFonts.inter(
                   color: EscrowTheme.textSecondary,
                   fontSize: 11.sp,

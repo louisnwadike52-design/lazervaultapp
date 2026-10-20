@@ -178,7 +178,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                 SizedBox(height: 5.h),
                 Text(
                   'Money you add to a goal is moved out of your wallet and held '
-                  'against it — you can withdraw it back at any time.',
+                  'against it, you can withdraw it back at any time.',
                   style: TextStyle(
                     color: Colors.grey[400],
                     fontSize: 12.sp,

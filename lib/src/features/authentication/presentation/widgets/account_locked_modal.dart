@@ -171,11 +171,11 @@ class _AccountLockedDialogState extends State<_AccountLockedDialog> {
           SizedBox(height: 10.h),
           Text(
             widget.fraudFreeze
-                ? 'We paused a transfer that looked unusually large for your account and locked it for your security. It unlocks automatically below — or contact support if you need it sooner.'
+                ? 'We paused a transfer that looked unusually large for your account and locked it for your security. It unlocks automatically below, or contact support if you need it sooner.'
                 : widget.emergency
-                    ? 'You emergency-locked this account. Sign-in and all transactions are blocked until the timer ends — there\'s no early unlock.'
+                    ? 'You emergency-locked this account. Sign-in and all transactions are blocked until the timer ends, there\'s no early unlock.'
                     : widget.selfLock
-                        ? 'You locked your account. Sign-in and all transactions are paused — there\'s no early unlock.'
+                        ? 'You locked your account. Sign-in and all transactions are paused, there\'s no early unlock.'
                         : 'Too many attempts. Your account is temporarily locked.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(

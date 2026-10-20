@@ -180,7 +180,7 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'Stocks, ETFs & funds — execution in your trading currency',
+                  'Stocks, ETFs & funds, execution in your trading currency',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF94A3B8),
                     fontSize: 13.sp,

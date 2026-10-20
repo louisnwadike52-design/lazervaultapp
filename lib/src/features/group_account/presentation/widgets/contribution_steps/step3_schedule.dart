@@ -73,7 +73,7 @@ class _Step3ScheduleState extends State<Step3Schedule> {
                   ),
                   child: Text(
                     'You will choose how often members pay, and how many '
-                    'cycles the circle runs, when you start it — so the '
+                    'cycles the circle runs, when you start it, so the '
                     'countdown begins the day it actually begins.',
                     style: TextStyle(
                         color: Colors.grey[300], fontSize: 12.sp, height: 1.45),

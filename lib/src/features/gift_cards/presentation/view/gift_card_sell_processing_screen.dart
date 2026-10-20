@@ -212,7 +212,7 @@ class _GiftCardSellProcessingScreenState
             ),
             SizedBox(height: 12.h),
             Text(
-              'Your gift card was submitted successfully and is now being verified by our provider. We will notify you when it is paid out — you can safely leave this screen.',
+              'Your gift card was submitted successfully and is now being verified by our provider. We will notify you when it is paid out, you can safely leave this screen.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),

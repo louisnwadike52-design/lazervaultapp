@@ -179,7 +179,7 @@ class LockFundsPdfService {
                       maturityDate: _dateFormat.format(lockFund.unlockAt),
                       withdrawalDate: withdrawalDate,
                       status: interestOnly
-                          ? 'ROI Payout — plan still active'
+                          ? 'ROI Payout, plan still active'
                           : (isEarlyWithdrawal
                               ? 'Early Withdrawal'
                               : 'Matured Withdrawal'),

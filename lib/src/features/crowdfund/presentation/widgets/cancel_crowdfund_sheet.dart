@@ -64,8 +64,8 @@ class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
     if (reason.length < 10) {
       setState(() {
         _reasonError = reason.isEmpty
-            ? 'Tell your contributors why — at least 10 characters.'
-            : 'A little more detail please — at least 10 characters '
+            ? 'Tell your contributors why, at least 10 characters.'
+            : 'A little more detail please, at least 10 characters '
                 '(${reason.length}/10).';
       });
       return;

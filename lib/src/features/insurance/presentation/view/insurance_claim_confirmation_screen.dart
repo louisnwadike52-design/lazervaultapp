@@ -204,7 +204,7 @@ class InsuranceClaimConfirmationScreen extends StatelessWidget {
                           _step(
                               Icons.notifications_active_outlined,
                               "We'll keep you posted",
-                              'Track the status any time under My Claims — you\'ll get an update as it progresses.'),
+                              'Track the status any time under My Claims, you\'ll get an update as it progresses.'),
                           const SizedBox(height: 14),
                           _step(
                               Icons.account_balance_wallet_outlined,

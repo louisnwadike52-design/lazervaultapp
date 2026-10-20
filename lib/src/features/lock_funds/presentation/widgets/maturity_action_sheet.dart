@@ -255,7 +255,7 @@ class _FootNote extends StatelessWidget {
             child: Text(
               'A new plan has to meet the plan limits. If the amount being '
               'reinvested falls outside them we pay it to your wallet instead '
-              'and tell you why — your money is never left waiting.',
+              'and tell you why, your money is never left waiting.',
               style: GoogleFonts.inter(
                 fontSize: 11.5.sp,
                 color: _kMuted,

@@ -29,7 +29,7 @@ class StatusPill extends StatelessWidget {
       case 'completed':
         return StatusPill(
           text: cycleIndex != null && cycleIndex > 0
-              ? 'Refunded — Cycle $cycleIndex'
+              ? 'Refunded, Cycle $cycleIndex'
               : 'Refunded',
           color: const Color(0xFF10B981),
           icon: Icons.undo,
@@ -37,7 +37,7 @@ class StatusPill extends StatelessWidget {
       case 'pending':
         return StatusPill(
           text: cycleIndex != null && cycleIndex > 0
-              ? 'Refund pending — Cycle $cycleIndex'
+              ? 'Refund pending, Cycle $cycleIndex'
               : 'Refund pending',
           color: const Color(0xFFF59E0B),
           icon: Icons.hourglass_top,
@@ -45,7 +45,7 @@ class StatusPill extends StatelessWidget {
       case 'failed':
         return StatusPill(
           text: cycleIndex != null && cycleIndex > 0
-              ? 'Refund failed — Cycle $cycleIndex'
+              ? 'Refund failed, Cycle $cycleIndex'
               : 'Refund failed',
           color: const Color(0xFFEF4444),
           icon: Icons.error_outline,

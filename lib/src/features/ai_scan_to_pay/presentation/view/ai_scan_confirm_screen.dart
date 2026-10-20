@@ -347,7 +347,7 @@ class _AiScanConfirmScreenState extends State<AiScanConfirmScreen>
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
-                  'Low confidence — please double-check these details',
+                  'Low confidence, please double-check these details',
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
                     color: const Color(0xFFFB923C),
@@ -396,7 +396,7 @@ class _AiScanConfirmScreenState extends State<AiScanConfirmScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'This looks like a phone number — which bank is it?',
+            'This looks like a phone number, which bank is it?',
             style: TextStyle(color: Colors.white70, fontSize: 11.5.sp),
           ),
           SizedBox(height: 8.h),

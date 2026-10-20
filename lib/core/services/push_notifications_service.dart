@@ -284,7 +284,7 @@ class PushNotificationsService {
     }
     if (token == null || token.isEmpty) {
       debugPrint(
-          '[push] no FCM token available — push will not work until one is obtained');
+          '[push] no FCM token available, push will not work until one is obtained');
       return;
     }
     debugPrint('[push] FCM token obtained (len=${token.length})');
@@ -357,7 +357,7 @@ class PushNotificationsService {
     final marker = '$userId:$token';
     if (await _readRegisteredMarker() == marker) {
       debugPrint(
-          '[push] token already registered for this user/device — skipping remote call');
+          '[push] token already registered for this user/device, skipping remote call');
       return;
     }
 

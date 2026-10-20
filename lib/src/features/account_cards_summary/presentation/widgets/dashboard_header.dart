@@ -110,7 +110,7 @@ class _DashboardHeaderState extends State<DashboardHeader>
               key: DashboardWalkthrough.avatarKey,
               title: 'Your profile',
               body:
-                  'Tap your photo to open your profile — update your picture, reach settings and support.',
+                  'Tap your photo to open your profile, update your picture, reach settings and support.',
               child: GestureDetector(
                 onTap: () {
                   Scaffold.of(context).openDrawer();

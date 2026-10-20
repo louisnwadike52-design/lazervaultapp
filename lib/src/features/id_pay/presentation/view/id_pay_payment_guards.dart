@@ -73,5 +73,5 @@ String idPayPaymentFailureMessage(Object error) {
 
 /// The sentence shown when the payer is the PayID's own creator.
 const String ownPayIdRefusalMessage =
-    "This is your own PayID — you can't pay it. Share it with someone else to "
+    "This is your own PayID, you can't pay it. Share it with someone else to "
     'receive money.';

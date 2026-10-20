@@ -1168,7 +1168,7 @@ class _AddMembersToContributionDialogState
                           SizedBox(width: 4.w),
                           Expanded(
                             child: Text(
-                              'Added — waiting for them to accept',
+                              'Added, waiting for them to accept',
                               style: GoogleFonts.inter(
                                 fontSize: 11.5.sp,
                                 color: const Color(0xFFFB923C),
@@ -1200,7 +1200,7 @@ class _AddMembersToContributionDialogState
                               // person has done something wrong — they may
                               // simply not have opened the app.
                               member.isPartial
-                                  ? 'Invite sent — not accepted yet'
+                                  ? 'Invite sent, not accepted yet'
                                   : 'Account not linked yet',
                               style: GoogleFonts.inter(
                                 fontSize: 11.5.sp,
@@ -1688,7 +1688,7 @@ class _AddMembersToContributionDialogState
                       // them is what made the roster and the Start gate
                       // contradict each other.
                       _pendingInviteUserIds.contains(user.userId)
-                          ? 'Added — waiting for them to accept'
+                          ? 'Added, waiting for them to accept'
                           : 'Already in this contribution',
                       style: GoogleFonts.inter(
                         fontSize: 11.sp,

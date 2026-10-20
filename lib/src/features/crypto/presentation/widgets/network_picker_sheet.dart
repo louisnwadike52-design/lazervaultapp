@@ -170,7 +170,7 @@ class _NetworkPickerSheet extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Your ${currency.toUpperCase()} balance is the same on '
-                    'every network — you hold one balance. The network only '
+                    'every network, you hold one balance. The network only '
                     'sets the address, the fee and the minimum.',
                     style: GoogleFonts.inter(
                       color: const Color(0xFFBFDBFE),

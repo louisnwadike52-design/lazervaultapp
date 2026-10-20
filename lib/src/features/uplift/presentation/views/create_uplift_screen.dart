@@ -308,7 +308,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
       if (asDraft) {
         Get.back(result: true);
         Get.snackbar('Draft saved',
-            '${fund.title} saved as a draft — publish it when ready',
+            '${fund.title} saved as a draft, publish it when ready',
             backgroundColor: kUpCard,
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM);
@@ -332,7 +332,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
         // where they can finish it.
         Get.back(result: true);
         Get.snackbar('Saved as a draft',
-            '${fund.title} is not open yet — commit the pool to start taking '
+            '${fund.title} is not open yet, commit the pool to start taking '
             'applications',
             backgroundColor: kUpCard,
             colorText: Colors.white,
@@ -353,7 +353,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
         // "could not open fund" after a successful debit reads as a lost
         // payment.
         Get.back(result: true);
-        Get.snackbar('Pool funded — not published yet',
+        Get.snackbar('Pool funded, not published yet',
             'Your commitment went through. Open ${fund.title} from My Funds '
             'to start taking applications.',
             backgroundColor: kUpWarning,
@@ -490,7 +490,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
             padding: const EdgeInsets.only(left: 4, bottom: 10),
             child: Text(
               'You have already chosen '
-              '${widget.existing!.selectedCount} of these — the number '
+              '${widget.existing!.selectedCount} of these, the number '
               'cannot go below that.',
               style: const TextStyle(color: kUpTextSecondary, fontSize: 11.5),
             ),
@@ -548,7 +548,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
     final cap = double.tryParse(_cap.text.trim());
     return [
       _stepHeader('Review',
-          'Confirm the details, then publish — or save it as a draft.'),
+          'Confirm the details, then publish, or save it as a draft.'),
       UpCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -698,7 +698,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w600)),
             subtitle: const Text(
-                'Optional — define what you take in return for funding',
+                'Optional, define what you take in return for funding',
                 style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
           ),
           if (_equityEnabled) ...[

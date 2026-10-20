@@ -140,7 +140,7 @@ class VoiceActivationManager {
         title: 'Voice is temporarily unavailable',
         message:
             'We couldn\'t reach the voice assistant just now. Your account and '
-            'money are safe — please try again in a moment.',
+            'money are safe, please try again in a moment.',
         retryLabel: 'Try again',
         onRetry: () async => Navigator.of(dialogContext).pop(true),
         onClose: () => Navigator.of(dialogContext).pop(false),
@@ -253,7 +253,7 @@ class VoiceActivationManager {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'Takes less than a minute — just 3 voice samples.',
+                      'Takes less than a minute, just 3 voice samples.',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: const Color(0xFF9CA3AF),

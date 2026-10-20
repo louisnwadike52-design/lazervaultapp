@@ -872,7 +872,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
               style: TextStyle(color: Colors.white)),
           content: const Text(
             'Your broadcast will end and viewers will stop seeing your video. '
-            'The session stays open — you can go live again anytime.',
+            'The session stays open, you can go live again anytime.',
             style: TextStyle(color: Color(0xFF9CA3AF)),
           ),
           actions: [
@@ -1463,7 +1463,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           SizedBox(width: 8.w),
           Flexible(
             child: Text(
-              'Host left — this live ends in ${seconds}s',
+              'Host left, this live ends in ${seconds}s',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
@@ -2079,7 +2079,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
       await Clipboard.setData(ClipboardData(text: message));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Invite copied — paste it anywhere to share.'),
+        content: Text('Invite copied, paste it anywhere to share.'),
         backgroundColor: Color(0xFF7C3AED),
       ));
     }
@@ -2390,7 +2390,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
             ..showSnackBar(SnackBar(
               content: Text(
                   '${host?.isNotEmpty == true ? host : 'The host'} turned the '
-                  'video off. The session is still on — you can keep '
+                  'video off. The session is still on, you can keep '
                   'commenting and spraying.'),
               backgroundColor: const Color(0xFF7C3AED),
               duration: const Duration(seconds: 4),
@@ -2472,7 +2472,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     // paid and must see the new deadline immediately.
     await context.read<SprayRoomCubit>().refreshSessionClock();
     if (!mounted) return;
-    _snack('Time added — the session keeps going', const Color(0xFF10B981));
+    _snack('Time added, the session keeps going', const Color(0xFF10B981));
   }
 
   Widget _buildCoHostInviteBanner(BuildContext context) {
@@ -2815,7 +2815,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                       )
                     else if (amRequested)
                       _guestPrimaryButton(
-                        label: 'Request sent — waiting for host',
+                        label: 'Request sent, waiting for host',
                         color: const Color(0xFF6B7280),
                         icon: Icons.hourglass_top_rounded,
                         // Status, not an action: the request is already with the
@@ -2880,7 +2880,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                                           ? const Color(0xFF4B5563)
                                           : const Color(0xFF10B981)),
                                   tooltip: freeBoxes == 0
-                                      ? 'Stage full — remove a guest first'
+                                      ? 'Stage full, remove a guest first'
                                       : 'Bring on stage',
                                 ),
                                 IconButton(
@@ -2902,7 +2902,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
                     // AWAITING ACCEPTANCE. The state that did not exist.
                     if (invited.isNotEmpty) ...[
-                      Text('Invited — awaiting acceptance (${invited.length})',
+                      Text('Invited, awaiting acceptance (${invited.length})',
                           style: TextStyle(
                               color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
                       SizedBox(height: 6.h),
@@ -3200,7 +3200,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                             SizedBox(height: 2.h),
                             Text(
                               freeBoxes == 0
-                                  ? 'Every box is taken — remove a guest to make room'
+                                  ? 'Every box is taken, remove a guest to make room'
                                   : '$freeBoxes of ${SprayRoomCubit.maxStageBoxes} boxes free · they choose whether to join',
                               style: TextStyle(
                                   color: freeBoxes == 0
@@ -3412,7 +3412,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                       fontWeight: FontWeight.w700)),
               SizedBox(height: 4.h),
               Text(
-                  'Guests you bring on stage are heard either way — only your '
+                  'Guests you bring on stage are heard either way, only your '
                   'camera changes.',
                   style: TextStyle(
                       color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
@@ -3516,7 +3516,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
             style: TextStyle(color: Colors.white)),
         content: const Text(
           'Your camera and microphone stop and the room goes back to your '
-          'cover image. The session keeps running — people can still comment, '
+          'cover image. The session keeps running, people can still comment, '
           'spray and send gifts, and you can go live again at any time.',
           style: TextStyle(color: Color(0xFF9CA3AF)),
         ),
@@ -3886,7 +3886,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(account.isProvisioning
-              ? 'This wallet is still being set up — try again shortly.'
+              ? 'This wallet is still being set up, try again shortly.'
               : 'This account is frozen, so it cannot be used to buy gifts.'),
           backgroundColor: const Color(0xFFFB923C),
         ),

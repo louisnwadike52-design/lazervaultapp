@@ -179,9 +179,9 @@ class _VoiceAllowanceSectionState extends State<VoiceAllowanceSection> {
                     SizedBox(height: 2.h),
                     Text(
                       optedIn
-                          ? 'On — conversations past your included minutes are '
+                          ? 'On, conversations past your included minutes are '
                               'charged on what you actually use.'
-                          : 'Off — conversations stop once your included '
+                          : 'Off, conversations stop once your included '
                               'minutes are used.',
                       style:
                           TextStyle(color: muted, fontSize: 11.sp, height: 1.4),

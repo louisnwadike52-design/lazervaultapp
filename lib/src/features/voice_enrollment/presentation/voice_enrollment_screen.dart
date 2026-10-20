@@ -1002,7 +1002,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                             color = const Color(0xFFFB923C);
                             icon = Icons.info_rounded;
                           } else {
-                            label = 'Poor Quality — Try on a real device';
+                            label = 'Poor Quality, Try on a real device';
                             color = const Color(0xFFEF4444);
                             icon = Icons.warning_rounded;
                           }

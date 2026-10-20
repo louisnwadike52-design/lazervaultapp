@@ -140,7 +140,7 @@ class _MandateOutcomeSheetState extends State<_MandateOutcomeSheet> {
           tint: const Color(0xFF8B7CF6),
           title: 'That link expired',
           body: 'Bank authorization links stay valid for about 30 minutes. '
-              'We have started a fresh one for you — nothing was charged.',
+              'We have started a fresh one for you, nothing was charged.',
         );
       case MandateOutcome.active:
         return (

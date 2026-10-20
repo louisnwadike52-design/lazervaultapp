@@ -690,7 +690,7 @@ class _AddRecipientState extends State<AddRecipient>
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
           child: Text(
-            'Enter the account number — we\'ll suggest the bank automatically',
+            'Enter the account number, we\'ll suggest the bank automatically',
             maxLines: 1,
             softWrap: false,
             style: TextStyle(
@@ -2604,7 +2604,7 @@ class _AddRecipientState extends State<AddRecipient>
     final message = (code != null && code.isNotEmpty)
         ? 'Hi $firstName, join me on Lazervault! Use my invite code $code when '
             'you sign up so we both get rewarded. Download: $link'
-        : 'Hi $firstName, join me on Lazervault — the smarter way to send and '
+        : 'Hi $firstName, join me on Lazervault, the smarter way to send and '
             'manage money. Download: $link';
 
     // Attach our logo to the share (copied from the bundled asset to a temp
@@ -3933,7 +3933,7 @@ class _AddRecipientState extends State<AddRecipient>
         'Choose the bank',
         _bankSuggestions.length > 1
             ? 'Tap the correct bank from the suggestions, or pick it below.'
-            : "We couldn't auto-detect the bank — please pick it below.",
+            : "We couldn't auto-detect the bank, please pick it below.",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,

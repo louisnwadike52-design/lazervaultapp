@@ -66,7 +66,7 @@ sealed class QrPayload {
             // identify a payment, they can't start one.
             return const InvalidQr(
                 reason:
-                    'This QR is a transaction receipt — it can\'t be used to make a payment.');
+                    'This QR is a transaction receipt, it can\'t be used to make a payment.');
           default:
             return const InvalidQr();
         }

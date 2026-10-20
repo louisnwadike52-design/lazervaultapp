@@ -500,7 +500,7 @@ Future<String> _determineInitialRoute() async {
       await storage.delete(key: 'signup_draft');
       await storage.delete(key: 'current_signup_step');
       print(
-          '🔄 Onboarding reset for development — routing to the fresh-user entry');
+          '🔄 Onboarding reset for development, routing to the fresh-user entry');
       // Intro onboarding carousel removed — fall through to the normal fresh-user
       // routing below (phone signup / email sign-in) rather than a slides screen.
     }
@@ -522,7 +522,7 @@ Future<String> _determineInitialRoute() async {
       final until = DateTime.tryParse(selfLockRaw);
       if (until != null && until.toUtc().isAfter(DateTime.now().toUtc())) {
         print(
-            '🔒 Account self-locked until $until — routing to login for the lock countdown');
+            '🔒 Account self-locked until $until, routing to login for the lock countdown');
         return AppRoutes.freshLoginEntry;
       }
       // Elapsed or unparseable — drop the stale mirror and continue normally.

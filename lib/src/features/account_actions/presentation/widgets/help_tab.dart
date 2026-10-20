@@ -79,7 +79,7 @@ class _HelpTabState extends State<HelpTab> {
 
           _buildFAQItem(
             'How do I freeze this account?',
-            'Open the "Controls" tab and turn on "Freeze account". While frozen, no money can leave the account — incoming money still arrives. Turn it off anytime to resume sending.',
+            'Open the "Controls" tab and turn on "Freeze account". While frozen, no money can leave the account, incoming money still arrives. Turn it off anytime to resume sending.',
           ),
           SizedBox(height: 12.h),
 

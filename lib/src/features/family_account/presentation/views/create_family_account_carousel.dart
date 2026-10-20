@@ -816,7 +816,7 @@ class _CreateFamilyAccountCarouselState
           if (over) ...[
             SizedBox(height: 8.h),
             Text(
-              'Allocated amount exceeds the pool — top up funding or lower allocations.',
+              'Allocated amount exceeds the pool, top up funding or lower allocations.',
               style: const TextStyle(
                       color: Color(0xFFEF4444), fontWeight: FontWeight.w500)
                   .copyWith(fontSize: 11.sp),
@@ -901,7 +901,7 @@ class _CreateFamilyAccountCarouselState
                     fontWeight: FontWeight.w700),
               ),
               SizedBox(height: 4.h),
-              Text('Optional — applied when they accept the invite',
+              Text('Optional, applied when they accept the invite',
                   style: TextStyle(color: _muted, fontSize: 12.sp)),
               SizedBox(height: 20.h),
               _fieldLabel('Allocation'),

@@ -722,7 +722,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
               ..._kycMatchPoint('A clear, well-lit live selfie of your face'),
               const SizedBox(height: 12),
               Text(
-                'If any of these don’t match, verification will fail — that’s the '
+                'If any of these don’t match, verification will fail, that’s the '
                 'verification partner, not the app.',
                 style: GoogleFonts.inter(
                     color: Colors.white.withValues(alpha: 0.60),
@@ -888,7 +888,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
           state: 'checking',
           message:
               'We\'re confirming your verification with our identity partner. '
-              'This can take a few minutes — you can keep using the app; '
+              'This can take a few minutes, you can keep using the app; '
               'we\'ll notify you the moment it completes.',
         );
         _reconcileAfterProcessing();
@@ -1039,7 +1039,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     _showKycStatusSheet(
       state: 'still_processing',
       message: 'Verification is taking longer than usual. We\'ll send you a '
-          'notification the moment it completes — you can safely leave '
+          'notification the moment it completes, you can safely leave '
           'this screen.',
     );
   }

@@ -686,7 +686,7 @@ class _AddMemberForContributionSheetState
                           SizedBox(width: 4.w),
                           Flexible(
                             child: Text(
-                              'Invite sent — not accepted yet',
+                              'Invite sent, not accepted yet',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(
@@ -912,7 +912,7 @@ class _AddMemberForContributionSheetState
           if (isAlreadyMember) ...[
             SizedBox(height: 8.h),
             Text(
-              'Already part of this contribution — pick someone else.',
+              'Already part of this contribution, pick someone else.',
               style: GoogleFonts.inter(
                   fontSize: 12.sp, color: const Color(0xFFF59E0B)),
             ),

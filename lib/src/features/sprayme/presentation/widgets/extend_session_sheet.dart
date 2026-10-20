@@ -123,7 +123,7 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
 
     if (!acct.isSpendable || acct.isProvisioning) {
       setState(() => _error = acct.isProvisioning
-          ? 'That wallet is still being set up — try again shortly.'
+          ? 'That wallet is still being set up, try again shortly.'
           : 'That account is frozen, so it cannot be charged.');
       return;
     }
@@ -370,7 +370,7 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
         ),
         child: Text(
           'There are no extensions available right now. The session will end '
-          'when the time runs out — you can start a new one straight away.',
+          'when the time runs out, you can start a new one straight away.',
           style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.5.sp),
         ),
       );

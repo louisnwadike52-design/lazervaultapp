@@ -1230,7 +1230,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
             style: GoogleFonts.inter(color: Colors.white)),
         content: Text(
           'Generate the contribution transcript for "${contribution.title}"? '
-          'This exports the payment history document — it does not move any money.',
+          'This exports the payment history document, it does not move any money.',
           style: GoogleFonts.inter(color: Colors.grey[300]),
         ),
         actions: [

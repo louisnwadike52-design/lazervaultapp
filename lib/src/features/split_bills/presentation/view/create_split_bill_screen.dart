@@ -277,7 +277,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     if (!user.isLazervaultUser) {
       showAppSnackbar(
         'Not on Lazervault',
-        "They're not on Lazervault yet — invite them or add their bank as the "
+        "They're not on Lazervault yet, invite them or add their bank as the "
             'receiver instead.',
         type: AppSnackbarType.error,
         duration: const Duration(seconds: 4),
@@ -297,7 +297,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         userId == _currentUserId) {
       showAppSnackbar(
         "That's you",
-        "You're already included as a payer — use the \"I'm also paying\" "
+        "You're already included as a payer, use the \"I'm also paying\" "
             'toggle to set your own share.',
         type: AppSnackbarType.error,
         duration: const Duration(seconds: 4),
@@ -310,7 +310,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     if (userId.isEmpty && username.isEmpty) {
       showAppSnackbar(
         'Couldn\'t add them',
-        "We couldn't load their account details — please try again.",
+        "We couldn't load their account details, please try again.",
         type: AppSnackbarType.error,
         duration: const Duration(seconds: 4),
       );
@@ -950,7 +950,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         ),
         const SizedBox(height: 4),
         const Text(
-          'Pick who collects the money — co-payers each pay their share to them.',
+          'Pick who collects the money, co-payers each pay their share to them.',
           style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
         ),
         const SizedBox(height: 12),
@@ -1281,7 +1281,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     if (looksInternal) {
       showAppSnackbar(
         'That is a Lazervault user',
-        'Pick "A Lazervault user" above to pay them directly — no bank '
+        'Pick "A Lazervault user" above to pay them directly, no bank '
             'transfer fee. This option is for external bank accounts.',
         type: AppSnackbarType.error,
       );
@@ -2109,7 +2109,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         // out from an off-by-one.
         note: _includeMyself
             ? '$others ${others == 1 ? 'co-payer' : 'co-payers'} and you'
-            : '$others ${others == 1 ? 'co-payer' : 'co-payers'} — you are not paying a share',
+            : '$others ${others == 1? 'co-payer' : 'co-payers'} — you are not paying a share',
       ),
       if (_splitMethod == _SplitMethod.equal && _totalParticipants > 0)
         buildSplitSummaryRow(
@@ -2242,7 +2242,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                       'to reach a bank account. Too small: '
                       '${_sharesBelowExternalFloor.join(', ')}. '
                       'Raise the total, split between fewer people, or receive '
-                      'into your Lazervault account instead — that has no minimum.',
+                      'into your Lazervault account instead, that has no minimum.',
                       style: const TextStyle(
                           color: Color(0xFFFB923C), fontSize: 12, height: 1.35),
                     ),

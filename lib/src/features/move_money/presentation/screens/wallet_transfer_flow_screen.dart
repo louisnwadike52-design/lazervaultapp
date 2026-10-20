@@ -410,7 +410,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                           color: const Color(0xFF10B981), size: 16.sp),
                       SizedBox(width: 6.w),
                       Text(
-                        'Instant & free — no fees',
+                        'Instant & free, no fees',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF10B981),
                           fontSize: 13.sp,
@@ -1018,7 +1018,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                           color: const Color(0xFF10B981), size: 16.sp),
                       SizedBox(width: 6.w),
                       Text(
-                        'Free transfer — no fees',
+                        'Free transfer, no fees',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF10B981),
                           fontSize: 13.sp,

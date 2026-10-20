@@ -118,7 +118,7 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
               SizedBox(height: 8.h),
               Text(
                   'Our insurance provider is slow to respond. Your '
-                  'payment is safe — we will refund automatically if '
+                  'payment is safe, we will refund automatically if '
                   'the policy does not issue. You can wait or go '
                   'back and check your purchases later.',
                   textAlign: TextAlign.center,

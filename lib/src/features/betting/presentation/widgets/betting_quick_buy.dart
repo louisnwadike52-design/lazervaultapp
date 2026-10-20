@@ -315,7 +315,7 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
       _accountController.text = selected.accountUserid;
       _verification = null;
       _verifyError = match == null
-          ? '${selected.platform} isn\'t available right now — pick a platform'
+          ? '${selected.platform} isn\'t available right now, pick a platform'
           : null;
     });
     if (match != null) _verify();

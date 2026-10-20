@@ -148,7 +148,7 @@ class AppCheckService {
     if (!_loggedThisCooldown) {
       _loggedThisCooldown = true;
       debugPrint('AppCheckService: token unavailable, backing off '
-          '${cooldown.inMinutes}m — $reason');
+          '${cooldown.inMinutes}m, $reason');
     }
   }
 

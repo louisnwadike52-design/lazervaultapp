@@ -504,7 +504,7 @@ class _CreateAirtimeReminderScreenState
                 border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Text(
-                'No saved beneficiaries — reminder will be unlinked.',
+                'No saved beneficiaries, reminder will be unlinked.',
                 style: GoogleFonts.inter(
                   fontSize: 13.sp,
                   color: Colors.white.withValues(alpha: 0.5),

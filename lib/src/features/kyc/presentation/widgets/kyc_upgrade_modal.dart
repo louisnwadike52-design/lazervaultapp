@@ -82,7 +82,7 @@ class KYCUpgradeModal extends StatelessWidget {
             inReview
                 ? "Your identity verification is being reviewed. We'll unlock the ability to $operationName as soon as it's approved."
                 : 'You need Tier $requiredTier verification to $operationName. '
-                    "You're currently Tier $currentTier — verify your identity to unlock it.",
+                    "You're currently Tier $currentTier, verify your identity to unlock it.",
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14.sp,

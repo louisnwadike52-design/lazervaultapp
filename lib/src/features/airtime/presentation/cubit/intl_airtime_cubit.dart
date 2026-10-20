@@ -86,7 +86,7 @@ class IntlAirtimeCubit extends Cubit<IntlAirtimeState> {
       } else {
         emit(const IntlAirtimeOperatorDetectionFailed(
             message:
-                'We couldn\'t detect this number\'s network — please pick it below.'));
+                'We couldn\'t detect this number\'s network, please pick it below.'));
       }
     } catch (e) {
       if (isClosed) return;
@@ -106,7 +106,7 @@ class IntlAirtimeCubit extends Cubit<IntlAirtimeState> {
     if (raw.contains('auto detect') ||
         raw.contains('not found') ||
         raw.contains('404')) {
-      return 'We couldn\'t detect this number\'s network — please pick it below.';
+      return 'We couldn\'t detect this number\'s network, please pick it below.';
     }
     return _friendlyErrorMessage(e);
   }

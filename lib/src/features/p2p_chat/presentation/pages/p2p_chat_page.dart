@@ -483,7 +483,7 @@ class _P2PChatPageState extends State<P2PChatPage>
           ? cid
           : (_otherUserId.isNotEmpty ? _otherUserId : null),
       agentDescription:
-          'Ask about this conversation — messages and money you\'ve sent or received with ${peerName.isNotEmpty ? peerName : 'this person'}.',
+          'Ask about this conversation, messages and money you\'ve sent or received with ${peerName.isNotEmpty? peerName: 'this person'}.',
       accentColor: const Color(0xFF7C3AED),
       extraMetadata: {
         if (cid != null && cid.isNotEmpty) 'conversation_id': cid,
@@ -744,7 +744,7 @@ class _P2PChatPageState extends State<P2PChatPage>
   void _openSendMoney() {
     if (_otherUserId.isEmpty) {
       Get.snackbar('Unavailable',
-          'This contact can\'t be paid right now — missing user id.',
+          'This contact can\'t be paid right now, missing user id.',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
@@ -915,7 +915,7 @@ class _P2PChatPageState extends State<P2PChatPage>
                     size: 14.w, color: const Color(0xFFEF4444)),
                 SizedBox(width: 6.w),
                 Text(
-                  'Offline — messages sent via fallback',
+                  'Offline, messages sent via fallback',
                   style: GoogleFonts.inter(
                     color: const Color(0xFFEF4444),
                     fontSize: 12.sp,
@@ -1845,7 +1845,7 @@ class _P2PChatPageState extends State<P2PChatPage>
                   Padding(
                     padding: EdgeInsets.only(top: 4.h, left: 2.w),
                     child: Text(
-                      'Failed — long-press to retry',
+                      'Failed, long-press to retry',
                       style: GoogleFonts.inter(
                         color: const Color(0xFFEF4444),
                         fontSize: 10.sp,

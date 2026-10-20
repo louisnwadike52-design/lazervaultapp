@@ -266,7 +266,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                         border: Border.all(color: const Color(0xFF2D2D2D)),
                       ),
                       child: Text(
-                        'No suppliers yet — add a supplier first (Inventory → Suppliers).',
+                        'No suppliers yet, add a supplier first (Inventory → Suppliers).',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF9CA3AF),
                           fontSize: 12.5.sp,

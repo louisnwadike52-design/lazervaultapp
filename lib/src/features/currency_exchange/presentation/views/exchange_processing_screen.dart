@@ -156,7 +156,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
         if (didPop) return;
         Get.snackbar(
           'Exchange in Progress',
-          'Please wait — we\'re confirming with the provider.',
+          'Please wait, we\'re confirming with the provider.',
           backgroundColor: const Color(0xFFFB923C),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,

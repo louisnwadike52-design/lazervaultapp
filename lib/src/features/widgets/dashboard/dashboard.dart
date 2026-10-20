@@ -432,7 +432,7 @@ class _DashboardState extends State<Dashboard> {
                   key: DashboardWalkthrough.accountsKey,
                   title: 'Your accounts',
                   body:
-                      'Personal, family, family & friends and business — swipe to switch. Pull down anytime to refresh.',
+                      'Personal, family, family & friends and business, swipe to switch. Pull down anytime to refresh.',
                   child: ValueListenableBuilder<int>(
                     valueListenable: FeatureFlags.dashboardLayoutRevision,
                     builder: (context, _, __) => DashboardCardSummary(
@@ -477,7 +477,7 @@ class _DashboardState extends State<Dashboard> {
                         key: DashboardWalkthrough.historyKey,
                         title: 'Recent activity',
                         body:
-                            'Your latest transactions at a glance — tap any to see its receipt.',
+                            'Your latest transactions at a glance, tap any to see its receipt.',
                         // Lower on the page → tooltip sits ABOVE, pointing down.
                         position: TooltipPosition.top,
                         child: RecentHistory(),

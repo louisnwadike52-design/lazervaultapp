@@ -102,7 +102,7 @@ class InvestAssetHubConfig {
       heroEyebrow: 'Lower risk',
       heroTitle: 'Treasury ETFs',
       heroSubtitle:
-          'Short-duration government bond funds — yields move with policy rates.',
+          'Short-duration government bond funds, yields move with policy rates.',
       heroIcon: Icons.shield_rounded,
       accentColor: Color(0xFF0EA5E9),
       popularSectionTitle: 'Treasury & cash ETFs',
@@ -119,7 +119,7 @@ class InvestAssetHubConfig {
       heroEyebrow: 'Fixed income',
       heroTitle: 'Bond ETFs',
       heroSubtitle:
-          'Credit and duration exposure via funds — not primary T-bill auctions.',
+          'Credit and duration exposure via funds, not primary T-bill auctions.',
       heroIcon: Icons.stacked_line_chart_rounded,
       accentColor: Color(0xFF607D8B),
       popularSectionTitle: 'Bond ETFs',
@@ -136,7 +136,7 @@ class InvestAssetHubConfig {
       heroEyebrow: 'Real estate',
       heroTitle: 'REITs',
       heroSubtitle:
-          'Listed property trusts — income and volatility differ from residential bricks.',
+          'Listed property trusts, income and volatility differ from residential bricks.',
       heroIcon: Icons.home_work_rounded,
       accentColor: Color(0xFF795548),
       popularSectionTitle: 'REIT & property ETFs',
@@ -153,7 +153,7 @@ class InvestAssetHubConfig {
       heroEyebrow: 'Nigeria',
       heroTitle: 'Treasury bills',
       heroSubtitle:
-          'Government-backed local bills — maturities and rates are set by the market.',
+          'Government-backed local bills, maturities and rates are set by the market.',
       heroIcon: Icons.account_balance_rounded,
       accentColor: Color(0xFF059669),
       popularSectionTitle: 'T-Bill programmes',
@@ -171,7 +171,7 @@ class InvestAssetHubConfig {
       heroEyebrow: 'Managed',
       heroTitle: 'Mutual funds',
       heroSubtitle:
-          'Professionally managed baskets — risk label depends on the fund mandate.',
+          'Professionally managed baskets, risk label depends on the fund mandate.',
       heroIcon: Icons.analytics_rounded,
       accentColor: Color(0xFF9C27B0),
       popularSectionTitle: 'Funds',

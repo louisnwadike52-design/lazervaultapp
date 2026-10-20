@@ -341,7 +341,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                 Expanded(
                   child: Text(
                     _isScheduled
-                        ? 'Scheduled — runs at the chosen time'
+                        ? 'Scheduled, runs at the chosen time'
                         : 'Send later',
                     style: GoogleFonts.inter(
                         color: btTextPrimary,

@@ -360,7 +360,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
       // button that gave no sign either way.
       Get.snackbar(
         'Could not share',
-        'Your details are copied instead — paste them anywhere.',
+        'Your details are copied instead, paste them anywhere.',
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,

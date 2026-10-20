@@ -583,7 +583,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         if (isInternal) ...[
           SizedBox(height: 8.h),
           Text(
-            'Prefilled from the selected Lazervault user — edit if needed.',
+            'Prefilled from the selected Lazervault user, edit if needed.',
             style: GoogleFonts.inter(
               color: InvoiceThemeColors.textGray400,
               fontSize: 12.sp,
@@ -610,7 +610,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         _buildTextField(
           controller: _emailController,
           label: 'Email Address (optional)',
-          hint: 'For payslips — leave blank if they have none',
+          hint: 'For payslips, leave blank if they have none',
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
           validator: (v) => (v == null || v.trim().isEmpty)

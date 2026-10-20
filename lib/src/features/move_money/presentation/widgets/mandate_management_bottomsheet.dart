@@ -246,8 +246,8 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                         Expanded(
                           child: Text(
                             widget.mandate!.isSwitchingToDirectDebit
-                                ? 'Switching to Direct Debit — confirming with your bank. This settles shortly.'
-                                : 'Switching to one-time — confirming with your bank. This settles shortly.',
+                                ? 'Switching to Direct Debit, confirming with your bank. This settles shortly.'
+                                : 'Switching to one-time, confirming with your bank. This settles shortly.',
                             style: GoogleFonts.inter(
                               color: const Color(0xFFC7D2FE),
                               fontSize: 12.sp,
@@ -277,7 +277,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                         SizedBox(width: 8.w),
                         Expanded(
                           child: Text(
-                            'Setting up Direct Debit — ${widget.bankName} is '
+                            'Setting up Direct Debit, ${widget.bankName} is '
                             'confirming your authorization. This can take up to '
                             '30 minutes and completes automatically. One-time '
                             'approval is used until it is live.',
@@ -296,7 +296,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                   _buildMethodExplainer(
                     current: 'One-time (DirectPay)',
                     detail:
-                        'Direct Debit isn\'t authorized yet — you approve each '
+                        'Direct Debit isn\'t authorized yet, you approve each '
                         'transfer at your bank until you finish the setup.',
                   ),
                   SizedBox(height: 12.h),
@@ -361,7 +361,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                   _buildMethodExplainer(
                     current: 'Direct Debit',
                     detail:
-                        'Transfers reuse your saved authorization — no bank login each time.',
+                        'Transfers reuse your saved authorization, no bank login each time.',
                   ),
                   SizedBox(height: 12.h),
                   _buildActionButton(

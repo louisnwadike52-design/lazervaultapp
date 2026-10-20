@@ -146,7 +146,7 @@ class _EscrowNoDealsEmptyState extends EscrowEmptyState {
           icon: Icons.handshake_outlined,
           title: 'No Escrow Deals Yet',
           description:
-              'Buy or sell safely — funds are held in escrow and only released when both sides are happy. Publish your first offer.',
+              'Buy or sell safely, funds are held in escrow and only released when both sides are happy. Publish your first offer.',
           actionText: 'Create an Offer',
         );
 }

@@ -131,13 +131,13 @@ class EscrowOfferEntity {
 
     if (canFund(viewerUserId)) {
       return mine
-          ? ('Waiting for you — pay to fund', true)
-          : ('Waiting for you — buy securely', true);
+          ? ('Waiting for you, pay to fund', true)
+          : ('Waiting for you, buy securely', true);
     }
     if (canDecline(viewerUserId)) {
       // Addressed to this viewer but not fundable by them right now.
       return (
-        'Waiting for you — review this ${isSellOffer ? 'listing' : 'request'}',
+        'Waiting for you, review this ${isSellOffer? 'listing' : 'request'}',
         true
       );
     }

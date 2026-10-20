@@ -58,13 +58,13 @@ String friendlyMoneyError(String? failureCode, String? rawReason) {
     case 'DIRECTPAY_CANCELLED':
     case 'DIRECTPAY_ABANDONED':
     case 'CHECKOUT_ABANDONED':
-      return 'The bank authorization wasn\'t completed — no money left your account. You can try again anytime.';
+      return 'The bank authorization wasn\'t completed, no money left your account. You can try again anytime.';
     case 'KYC_REQUIRED':
       return 'Identity verification is needed for this transaction.';
   }
   // Anything else — including raw provider plumbing in rawReason — is for the
   // admin dashboard only.
-  return 'Something went wrong. Your money is safe — please try again or contact support.';
+  return 'Something went wrong. Your money is safe, please try again or contact support.';
 }
 
 /// Capture the receipt widget tree as a PNG and open the system share sheet —
@@ -162,14 +162,14 @@ Future<ReceiptFileFormat?> pickReceiptFormat(BuildContext context,
                 ReceiptFileFormat.pdf,
                 Icons.picture_as_pdf_outlined,
                 const Color(0xFFEF4444),
-                'Vector document — best for printing.'),
+                'Vector document, best for printing.'),
             const SizedBox(height: 10),
             tile(
                 ctx,
                 ReceiptFileFormat.jpg,
                 Icons.image_outlined,
                 const Color(0xFF3B82F6),
-                'Compact image — easy to share in chats.'),
+                'Compact image, easy to share in chats.'),
             const SizedBox(height: 10),
             tile(ctx, ReceiptFileFormat.png, Icons.photo_outlined,
                 const Color(0xFF8B5CF6), 'Lossless image with full quality.'),

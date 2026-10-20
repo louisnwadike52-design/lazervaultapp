@@ -136,7 +136,7 @@ class _CyclesDueSheet extends StatelessWidget {
                 // of you paid in" is a reason.
                 ? 'In an esusu the pot is paid out on schedule whether or not '
                     'everyone has paid. Settling up keeps the member whose '
-                    'turn it is from being short — and keeps your own turn.'
+                    'turn it is from being short, and keeps your own turn.'
                 : 'These goals have passed their date and are still short.',
             style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF),

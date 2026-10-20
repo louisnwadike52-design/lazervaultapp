@@ -1135,10 +1135,10 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     }
     final link = InviteLink.forCode(code);
     final text = (code != null && code.isNotEmpty)
-        ? 'Hi $to, join me on Lazervault — fast, secure transfers. Use my '
+        ? 'Hi $to, join me on Lazervault, fast, secure transfers. Use my '
             'invite code $code when you sign up so we both get rewarded. '
             'Download the app: $link'
-        : 'Hi $to, join me on Lazervault — fast, secure transfers. '
+        : 'Hi $to, join me on Lazervault, fast, secure transfers. '
             'Download the app: $link';
     await SharePlus.instance.share(ShareParams(
       // iOS: a non-zero popover anchor is required — CGRectZero throws

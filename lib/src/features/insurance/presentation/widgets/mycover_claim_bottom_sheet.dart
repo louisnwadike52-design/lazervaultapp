@@ -189,7 +189,7 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
             'submit, your policy will reflect the new term and a receipt is sent to your email.';
       case MyCoverHostedFlowKind.buy:
         return 'Your new policy is processed by the insurance provider. Once '
-            'payment completes it appears here in your policies — automatically.';
+            'payment completes it appears here in your policies, automatically.';
       case MyCoverHostedFlowKind.manage:
         return 'Manage your existing policies with the insurance provider. Any '
             'changes sync back to your policies here automatically.';
@@ -326,9 +326,9 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
         _loadFailed = true;
         _errorMessage = _isRenewal
             ? 'Renewal isn\'t ready yet for this policy. The provider is '
-                'still finalising it — try again in a few moments.'
+                'still finalising it, try again in a few moments.'
             : 'Claim filing isn\'t ready yet for this policy. The provider '
-                'is still finalising your customer record — try again shortly.';
+                'is still finalising your customer record, try again shortly.';
       });
       return;
     }

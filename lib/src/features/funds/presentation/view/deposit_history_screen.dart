@@ -132,9 +132,9 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
         if (_items.isEmpty) {
           _loadFailed = true;
         } else {
-          Get.snackbar('', 'Something went wrong — pull to retry.',
+          Get.snackbar('', 'Something went wrong, pull to retry.',
               titleText: const SizedBox.shrink(),
-              messageText: const Text('Something went wrong — pull to retry.',
+              messageText: const Text('Something went wrong, pull to retry.',
                   style: TextStyle(color: Colors.white)),
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: _error.withValues(alpha: 0.92),

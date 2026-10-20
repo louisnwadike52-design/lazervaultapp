@@ -55,13 +55,13 @@ class _IosNoNfc implements _SessionIdReason {
   @override
   String get snackBody =>
       'iPhone can’t share payments by NFC tap. Tap “Copy Session ID”, then send '
-      'it to the payer — they enter it under “Enter Session ID” in Scan to Pay.';
+      'it to the payer, they enter it under “Enter Session ID” in Scan to Pay.';
   @override
   String get title => 'NFC tap isn’t available on iPhone';
   @override
   String get body =>
       'Apple doesn’t allow iPhone-to-iPhone NFC payments. Tap “Copy Session ID” '
-      'below and send it to the payer — they enter it under “Enter Session ID” '
+      'below and send it to the payer, they enter it under “Enter Session ID” '
       'in Scan to Pay to complete this payment.';
   @override
   bool get showOpenNfcSettings => false;
@@ -81,7 +81,7 @@ class _AndroidNfcOff implements _SessionIdReason {
   @override
   String get body =>
       'Turn on NFC so the payer can tap your phone, or tap “Copy Session ID” '
-      'below and send it — they enter it under “Enter Session ID” in Scan to Pay.';
+      'below and send it, they enter it under “Enter Session ID” in Scan to Pay.';
   @override
   bool get showOpenNfcSettings => true;
 }

@@ -487,7 +487,7 @@ class _CommentInputBarState extends State<CommentInputBar> {
             SizedBox(width: 4.w),
             Expanded(
               child: Text(
-                "That's the longest a live comment can be — send it, or "
+                "That's the longest a live comment can be, send it, or "
                 'shorten it to add more.',
                 style: TextStyle(color: color, fontSize: 10.sp),
               ),

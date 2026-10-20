@@ -1771,7 +1771,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                   Icons.call_made_rounded,
                   const Color(0xFF3B82F6),
                   "Sender's copy",
-                  'Amount + fee — your own record.',
+                  'Amount + fee, your own record.',
                   () => Navigator.of(ctx).pop(ReceiptCopyType.sender)),
               SizedBox(height: 10.h),
               _receiptOptionTile(
@@ -1779,7 +1779,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                   Icons.call_received_rounded,
                   const Color(0xFF10B981),
                   "Recipient's copy",
-                  'Amount received only — for the other party.',
+                  'Amount received only, for the other party.',
                   () => Navigator.of(ctx).pop(ReceiptCopyType.recipient)),
             ],
           ),
@@ -1813,7 +1813,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                   Icons.picture_as_pdf_outlined,
                   const Color(0xFFEF4444),
                   '$actionLabel as PDF',
-                  'Vector document — best for printing.',
+                  'Vector document, best for printing.',
                   () => Navigator.of(ctx).pop(ReceiptFileFormat.pdf)),
               SizedBox(height: 10.h),
               _receiptOptionTile(
@@ -1821,7 +1821,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                   Icons.image_outlined,
                   const Color(0xFF3B82F6),
                   '$actionLabel as JPG',
-                  'Compact image — easy to share in chats.',
+                  'Compact image, easy to share in chats.',
                   () => Navigator.of(ctx).pop(ReceiptFileFormat.jpg)),
               SizedBox(height: 10.h),
               _receiptOptionTile(

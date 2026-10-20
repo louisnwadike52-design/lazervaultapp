@@ -72,7 +72,7 @@ class HabitsScreen extends StatelessWidget {
                             fontSize: 18.sp,
                             fontWeight: FontWeight.w600)),
                     SizedBox(height: 6.h),
-                    Text('Build streaks — mark a habit done each day.',
+                    Text('Build streaks, mark a habit done each day.',
                         textAlign: TextAlign.center,
                         style:
                             GoogleFonts.inter(color: _muted, fontSize: 13.sp)),

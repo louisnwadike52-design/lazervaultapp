@@ -243,7 +243,7 @@ extension GroupFundsPaging on GroupAccountCubit {
       // contradict it.
       if (isNotAuthorizedError(e)) {
         debugPrint('[GroupFundsPaging] contributions page refused for $groupId '
-            '(not a member) — leaving the access state to loadGroupDetails');
+            '(not a member), leaving the access state to loadGroupDetails');
         return;
       }
       emitState(GroupAccountError(

@@ -243,7 +243,7 @@ class _UpliftOfferScreenState extends State<UpliftOfferScreen> {
             ),
           ],
           const SizedBox(height: 10),
-          _numField(_equityPct, 'Equity you take (%) — optional'),
+          _numField(_equityPct, 'Equity you take (%), optional'),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -322,7 +322,7 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
           SizedBox(height: 10.h),
           Text(
             'Some meters are not in the disco\'s directory even though they '
-            'pay normally. You can enter the details yourself instead — we '
+            'pay normally. You can enter the details yourself instead, we '
             'will not be able to confirm the account name.',
             style: GoogleFonts.inter(
               fontSize: 11.5.sp,

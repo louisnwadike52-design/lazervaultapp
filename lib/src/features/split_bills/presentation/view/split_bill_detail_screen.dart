@@ -818,7 +818,7 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
           // a bare "in progress" on a completed/cancelled bill.
           bill.status == SplitBillStatus.active
               ? 'Payment in progress'
-              : 'Payment settling — completes automatically',
+              : 'Payment settling, completes automatically',
         ),
       SplitBillParticipantStatus.pending => (
           Icons.schedule,
@@ -1392,7 +1392,7 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
       showAppSnackbar(
         hasInProgress ? 'Payments in progress' : 'Everyone is settled',
         hasInProgress
-            ? 'The remaining shares are already being paid — no reminders needed.'
+            ? 'The remaining shares are already being paid, no reminders needed.'
             : 'There is no one left to remind on this split bill.',
         type: AppSnackbarType.info,
       );

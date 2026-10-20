@@ -66,7 +66,7 @@ class OutageCopy {
               // No account, so no money and no data to reassure her about. What
               // she actually wants to know is whether she has to start again.
               ? 'Our servers are being updated right now. Nothing you have '
-                  'entered has been lost — please try again in a moment.'
+                  'entered has been lost, please try again in a moment.'
               : 'Our servers are being updated right now. Your money and data '
                   'are safe. Please try again in a moment.',
           dismissible: false,
@@ -80,8 +80,8 @@ class OutageCopy {
           // actually produce this state on a phone that looks connected.
           message:
               'Your device cannot reach the internet right now. Check your '
-              'mobile data or Wi-Fi — including whether your data bundle has run '
-              'out — then try again.',
+              'mobile data or Wi-Fi, including whether your data bundle has run '
+              'out, then try again.',
           dismissible: true,
         );
     }

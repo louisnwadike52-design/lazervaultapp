@@ -96,7 +96,7 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
       "Numbers like one, two, three, seven, twelve, and fifteen should sound clear and natural when I say them aloud. "
       "I like to travel, read interesting books, listen to good music, and take long walks beside the river. "
       "My voice rises and falls as I speak, so please learn its natural rhythm, pace, and tone. "
-      "Please remember my voice exactly as it sounds right now — naturally, clearly, and in my own way. "
+      "Please remember my voice exactly as it sounds right now, naturally, clearly, and in my own way. "
       "Thank you for taking the time to learn how I speak, so you can recognise me whenever I come back.";
 
   @override
@@ -1175,7 +1175,7 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
             _isPaused
                 ? 'Paused'
                 : targetReached
-                    ? 'Great — you can finish now, or keep reading.'
+                    ? 'Great, you can finish now, or keep reading.'
                     : isMinReached
                         ? 'Good. Keep reading to the end of the text.'
                         : 'Keep reading... ${_minDurationSeconds - _recordingSeconds}s until minimum',

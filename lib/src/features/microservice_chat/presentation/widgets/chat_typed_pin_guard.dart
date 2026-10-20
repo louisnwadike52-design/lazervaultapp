@@ -55,6 +55,6 @@ class ChatTypedPinGuard {
   /// What to tell the user in the transcript. Short, no blame: they followed
   /// an instruction the app gave them.
   static const String notice =
-      'For your security, your PIN goes on the secure pad — not in the chat. '
+      'For your security, your PIN goes on the secure pad, not in the chat. '
       'Opening it now.';
 }

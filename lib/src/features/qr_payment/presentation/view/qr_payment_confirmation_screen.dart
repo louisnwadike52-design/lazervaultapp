@@ -135,7 +135,7 @@ class _QRPaymentConfirmationScreenState
         'Invalid Amount',
         _payerEntersAmount
             ? 'Please enter a valid amount'
-            : 'This QR code carries an invalid amount — ask the payee to regenerate it',
+            : 'This QR code carries an invalid amount, ask the payee to regenerate it',
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -155,7 +155,7 @@ class _QRPaymentConfirmationScreenState
       if (matches.isEmpty) {
         Get.snackbar(
           'Account Unavailable',
-          'The selected account is no longer available — pick another',
+          'The selected account is no longer available, pick another',
           backgroundColor: const Color(0xFFEF4444),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
@@ -411,8 +411,8 @@ class _QRPaymentConfirmationScreenState
         _payerEntersAmount ? const Color(0xFF3B82F6) : const Color(0xFF10B981);
     final icon = _payerEntersAmount ? Icons.edit_outlined : Icons.lock_outline;
     final text = _payerEntersAmount
-        ? 'Dynamic QR — like an open check: no fixed price is set, you write in the amount you want to pay.'
-        : 'Fixed-amount QR — the payee set this price. The amount can\'t be changed here.';
+        ? 'Dynamic QR, like an open check: no fixed price is set, you write in the amount you want to pay.'
+        : 'Fixed-amount QR, the payee set this price. The amount can\'t be changed here.';
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

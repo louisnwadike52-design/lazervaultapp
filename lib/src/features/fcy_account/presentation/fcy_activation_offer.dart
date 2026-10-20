@@ -98,7 +98,7 @@ Future<void> maybeOfferFcyActivation(
     icon: Icons.public_rounded,
     title: 'Get a $cur account of your own',
     body: 'You can receive $cur straight into this wallet from a bank abroad. '
-        'It takes a one-time identity check — and we\'ve already filled in '
+        'It takes a one-time identity check, and we\'ve already filled in '
         'everything we hold from your verified profile, so there\'s less to do '
         'than it looks.',
     primaryLabel: 'Set it up',

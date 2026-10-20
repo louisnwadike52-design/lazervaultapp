@@ -703,7 +703,7 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
                   Text(
                     enrolled
                         ? 'Use a code from your authenticator'
-                        : 'Not set up — tap to enable',
+                        : 'Not set up, tap to enable',
                     style: GoogleFonts.inter(
                         fontSize: 13.sp, color: Colors.grey.shade600),
                   ),

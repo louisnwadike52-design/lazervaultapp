@@ -441,7 +441,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                             SizedBox(height: 12.h),
                             const CryptoFlowGuidance(
                               text:
-                                  'Swaps trade one crypto directly for another — no fiat leaves your account. The new asset lands in your crypto wallet as soon as the swap fills.',
+                                  'Swaps trade one crypto directly for another, no fiat leaves your account. The new asset lands in your crypto wallet as soon as the swap fills.',
                             ),
                             SizedBox(height: 24.h),
                             _buildLegalDisclaimer(),

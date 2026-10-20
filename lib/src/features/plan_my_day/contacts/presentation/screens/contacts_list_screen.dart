@@ -220,7 +220,7 @@ class _ContactsListScreenState extends State<ContactsListScreen> {
             ),
             SizedBox(height: 6.h),
             Text(
-              'Add the people you work with — then link tasks and log '
+              'Add the people you work with, then link tasks and log '
               'interactions to keep your CRM in one place.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(color: _muted, fontSize: 13.sp),

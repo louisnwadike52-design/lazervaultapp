@@ -237,7 +237,7 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Share an expense — chip in or chase it up.',
+                  'Share an expense, chip in or chase it up.',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.78),
                     fontSize: 12.5,

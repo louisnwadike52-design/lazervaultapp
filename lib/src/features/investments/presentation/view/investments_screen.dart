@@ -308,7 +308,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                     ),
                     SizedBox(height: 6.h),
                     Text(
-                      'Pick an asset class — each hub has its own tools and risk profile.',
+                      'Pick an asset class, each hub has its own tools and risk profile.',
                       style: InvestTradingUi.labelMuted().copyWith(height: 1.4),
                     ),
                   ],

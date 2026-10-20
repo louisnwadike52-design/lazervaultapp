@@ -502,7 +502,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       // Do NOT set _redirectHandled, so the follow-up can still be processed; if
       // nothing arrives within the window it was a genuine user cancel.
       debugPrint(
-          '[DirectPay] Close callback — debouncing for a follow-up: $url');
+          '[DirectPay] Close callback, debouncing for a follow-up: $url');
       _closeDebounce?.cancel();
       _closeDebounce = Timer(const Duration(milliseconds: 2000), () {
         if (!mounted || _redirectHandled) return;
@@ -522,7 +522,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
           return;
         }
         debugPrint(
-            '[DirectPay] No success/failure after close — treating as cancelled');
+            '[DirectPay] No success/failure after close, treating as cancelled');
         _popSelf(DirectPayAuthResult.cancelled());
       });
       return;
@@ -563,7 +563,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
     // success without a status param, and both have a server-side reconciler
     // that corrects an optimistic client.
     debugPrint(
-        '[DirectPay] Redirect (no explicit status) — default success: $url');
+        '[DirectPay] Redirect (no explicit status), default success: $url');
     _popSelf(DirectPayAuthResult.success(
       paymentId: widget.paymentId,
       reference: widget.reference,

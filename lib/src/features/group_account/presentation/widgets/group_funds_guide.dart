@@ -38,7 +38,7 @@ const List<GroupFundsGuideSlide> kGroupFundsGuideSlides = [
     tint: Color(0xFF8B5CF6),
     title: 'Start with the people',
     body: 'A group is the set of people who save together. Create one and '
-        'invite them — nothing moves until you add a goal.',
+        'invite them, nothing moves until you add a goal.',
     example: 'Your university class, or an alumni set. Everyone joins the '
         'one group and stays there.',
   ),
@@ -68,7 +68,7 @@ const List<GroupFundsGuideSlide> kGroupFundsGuideSlides = [
     title: 'We move the money, you choose the people',
     body: 'Lazervault holds the pot and pays it out on the agreed trigger. '
         'We cannot make a member pay. Save with people you trust.',
-    example: 'A member who stops paying does not stop the group — their '
+    example: 'A member who stops paying does not stop the group, their '
         'turn is held back until they are up to date.',
   ),
 ];

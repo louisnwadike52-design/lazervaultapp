@@ -593,7 +593,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
           // through to a fake success — throw so the PIN sheet surfaces a
           // real, actionable error and the user can retry.
           throw Exception(
-            "We couldn't confirm your transfer — check your Transactions "
+            "We couldn't confirm your transfer, check your Transactions "
             'to see if it went through before retrying.',
           );
         },

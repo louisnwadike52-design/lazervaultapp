@@ -208,7 +208,7 @@ class AutoDebitAttemptsSheet extends StatelessWidget {
         const Color(0xFF10B981),
         tries > 0
             ? 'Collected after $triesLabel${whenLabel != null ? ', $whenLabel' : ''}.'
-            : 'Paid for this cycle — nothing to collect.',
+            : 'Paid for this cycle, nothing to collect.',
       );
     }
     if (m.autoChargeExhausted) {

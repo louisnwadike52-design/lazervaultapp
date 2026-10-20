@@ -46,7 +46,7 @@ class UpliftGuideCopy {
       title: 'Funding you have asked for',
       body:
           'Raises you have created, and where each one stands. Once funded, you '
-          'receive money as you complete milestones — each release is reviewed '
+          'receive money as you complete milestones, each release is reviewed '
           'before it pays out.',
     ),
   };

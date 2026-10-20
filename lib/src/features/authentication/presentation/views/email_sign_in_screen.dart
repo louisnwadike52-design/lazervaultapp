@@ -245,7 +245,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
       } on VoiceBiometricsNetworkException {
         if (mounted) {
           _altSnack('Voice Login',
-              'Network problem — check your connection and try again.');
+              'Network problem, check your connection and try again.');
         }
         return;
       } catch (_) {
@@ -765,7 +765,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
     if (national.length > expected) {
       final name =
           CountryConfigs.getByCode(_selectedCountryIso)?.name ?? 'this country';
-      return 'Too long for $name — $expected digits';
+      return 'Too long for $name, $expected digits';
     }
     return null;
   }

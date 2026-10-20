@@ -273,7 +273,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
       currency: 'NGN',
       title: 'Refresh balance',
       message:
-          'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}. Do this once in a while — your last-known balance is shown otherwise.',
+          'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}. Do this once in a while, your last-known balance is shown otherwise.',
       successMessage: 'Balance refreshed',
       // Honest failure: a failed live read shows the sheet's unsuccessful state
       // with category copy, never a false "balance refreshed".

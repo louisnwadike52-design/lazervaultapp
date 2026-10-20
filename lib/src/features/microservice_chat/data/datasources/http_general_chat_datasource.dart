@@ -332,7 +332,7 @@ class HttpGeneralChatDataSource implements GeneralChatDataSource {
     } on DioException catch (e) {
       if (e.type == DioExceptionType.sendTimeout) {
         throw ChatGatewayException(
-          'Upload timed out. Your connection may be too slow — try a smaller file or better network.',
+          'Upload timed out. Your connection may be too slow, try a smaller file or better network.',
           statusCode: 408,
         );
       }

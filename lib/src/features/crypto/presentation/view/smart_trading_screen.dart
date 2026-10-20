@@ -245,7 +245,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
             SizedBox(width: 12.w),
             Expanded(
               child: Text(
-                'Fear & Greed index unavailable right now — pull to refresh.',
+                'Fear & Greed index unavailable right now, pull to refresh.',
                 style: GoogleFonts.inter(
                     fontSize: 13.sp,
                     color: Colors.white.withValues(alpha: 0.6)),
@@ -446,7 +446,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
-              'No market news available right now — pull to refresh.',
+              'No market news available right now, pull to refresh.',
               style: GoogleFonts.inter(
                   fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.6)),
             ),

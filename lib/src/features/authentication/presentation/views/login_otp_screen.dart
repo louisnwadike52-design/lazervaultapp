@@ -261,7 +261,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
       // NOT terminal: the same session can mint a fresh code. The primary
       // button has already flipped to "Send me a new code".
       setState(() {
-        _errorText = 'That code has expired — tap "Send me a new code" below.';
+        _errorText = 'That code has expired, tap "Send me a new code" below.';
       });
       return;
     }
@@ -395,7 +395,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
       setState(() {
         _submitting = false;
         _errorText =
-            "Connection problem — couldn't reach our servers. Try again.";
+            "Connection problem, couldn't reach our servers. Try again.";
       });
       return;
     }
@@ -411,7 +411,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
           _submitting = false;
           _remaining = 0;
           _errorText =
-              'That code has expired — tap "Send me a new code" below.';
+              'That code has expired, tap "Send me a new code" below.';
         });
         return;
       case 'OTP_ATTEMPTS_EXCEEDED':
@@ -423,7 +423,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
           _submitting = false;
           _remaining = 0;
           _errorText =
-              'Too many wrong tries for that code — tap "Send me a new code" below.';
+              'Too many wrong tries for that code, tap "Send me a new code" below.';
         });
         return;
       case 'RESEND_TOO_SOON':
@@ -610,7 +610,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         SizedBox(width: 8.w),
         Expanded(
           child: Text(
-            "Didn't request this? Don't share the code — close the app and "
+            "Didn't request this? Don't share the code, close the app and "
             'change your password.',
             style:
                 TextStyle(color: _textSecondary, fontSize: 12.sp, height: 1.4),

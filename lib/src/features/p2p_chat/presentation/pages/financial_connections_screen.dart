@@ -680,7 +680,7 @@ class _FinancialConnectionsScreenState
                 SizedBox(height: 2.h),
                 Text(
                   today
-                      ? '🎂 Birthday today — send your wishes!'
+                      ? '🎂 Birthday today, send your wishes!'
                       : '🎈 Birthday ${b.whenLabel.toLowerCase()}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

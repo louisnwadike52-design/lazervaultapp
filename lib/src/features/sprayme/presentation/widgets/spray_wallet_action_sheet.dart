@@ -325,7 +325,7 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
               Text(
                 _isFund
                     ? 'Top up your spray balance from your account, so you can buy gifts and spray during a session.'
-                    : 'Move money back to your account — both what you have left to spray and what you have earned.',
+                    : 'Move money back to your account, both what you have left to spray and what you have earned.',
                 style:
                     TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
               ),

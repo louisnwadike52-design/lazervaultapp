@@ -27,10 +27,10 @@ class LlmErrorBanner {
     final iconBg = borderColor.withValues(alpha: 0.15);
 
     final label = switch (code) {
-      'insufficient_credit' => 'AI assistant — billing top-up in progress',
-      'model_not_found' => 'AI assistant — being upgraded',
-      'auth_failed' => 'AI assistant — config refresh in progress',
-      'provider_rate_limit' => 'AI assistant — high traffic',
+      'insufficient_credit' => 'AI assistant, billing top-up in progress',
+      'model_not_found' => 'AI assistant, being upgraded',
+      'auth_failed' => 'AI assistant, config refresh in progress',
+      'provider_rate_limit' => 'AI assistant, high traffic',
       'context_length_exceeded' => 'Conversation is full',
       'timeout' => 'AI assistant timed out',
       'service_unavailable' => 'AI assistant provider outage',

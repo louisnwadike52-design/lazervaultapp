@@ -48,7 +48,7 @@ class FreshInstallGuard {
       if (kDebugMode) {
         // ignore: avoid_print
         print('[FreshInstallGuard] build changed '
-            '(${stored ?? "fresh install"} → $current) — cleared local storage');
+            '(${stored?? "fresh install"} → $current), cleared local storage');
       }
       return true;
     } catch (_) {

@@ -287,7 +287,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _modalOwnsScreenTimer = Timer(_modalOwnsScreenTimeout, () {
       if (_modalOwnsScreen) {
         AppLogger.warning(
-          'VoiceSessionCubit: modal-sheet safety timeout fired — releasing the '
+          'VoiceSessionCubit: modal-sheet safety timeout fired, releasing the '
           'mic gate (a sheet dismissal callback was likely dropped)',
         );
         onBlockingSheetDismissed();
@@ -882,7 +882,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         // enforcing a rule into a dead end.
         print('VoiceSessionCubit: language allowlist '
             '${VoiceLanguageAvailability.allowedCodes} matched none of the '
-            '${_availableLanguages.length} offered — leaving the list unfiltered');
+            '${_availableLanguages.length} offered, leaving the list unfiltered');
       }
 
       // If no persisted language, or it's not available for this country, auto-select default
@@ -1230,7 +1230,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // blocked. Cleared in the finally below.
     if (_isStartingSession) {
       print(
-          'VoiceSessionCubit: startVoiceSession ignored — a start is already in flight');
+          'VoiceSessionCubit: startVoiceSession ignored, a start is already in flight');
       return;
     }
     _isStartingSession = true;
@@ -1257,7 +1257,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // deterministically instead of leaking a second room.
     if (_room != null) {
       print(
-          'VoiceSessionCubit: restarting — disposing existing room before new session');
+          'VoiceSessionCubit: restarting, disposing existing room before new session');
       _disconnectWebSocket();
       await _disposeRoomResources();
       _setVisualFeedbackActive(false);
@@ -1594,7 +1594,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       // we just joined instead of going live on a session nobody is watching.
       if (isClosed || _teardownRequested) {
         print(
-            'VoiceSessionCubit: teardown requested during connect — disconnecting immediately');
+            'VoiceSessionCubit: teardown requested during connect, disconnecting immediately');
         await _disposeRoomResources();
         if (!isClosed) emit(VoiceSessionDisconnected());
         return;
@@ -1677,7 +1677,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           !isClosed &&
           !_teardownRequested) {
         print(
-            'VoiceSessionCubit: greeting-end not observed — starting on-device listening (fallback)');
+            'VoiceSessionCubit: greeting-end not observed, starting on-device listening (fallback)');
         _awaitingAgentReply = false;
         startLocalListening();
       }
@@ -2535,8 +2535,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       final status = await bio.checkEnrollmentStatus(uid);
       if (!status.isEnrolled) {
         print(_bioEnrollmentRequired
-            ? 'VoiceSessionCubit: enrollment required but user unenrolled (guard bypass?) — skipping verification (fail-open)'
-            : 'VoiceSessionCubit: user not voice-enrolled (optional) — skipping verification');
+            ? 'VoiceSessionCubit: enrollment required but user unenrolled (guard bypass?), skipping verification (fail-open)'
+            : 'VoiceSessionCubit: user not voice-enrolled (optional), skipping verification');
         return;
       }
       if (!await _bioRecorder.hasPermission()) return;
@@ -2556,7 +2556,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       final heardUser = await _waitForUserSpeech();
       if (_bioCancelled || isClosed || !heardUser) {
         print(
-            'VoiceSessionCubit: no user speech for verification — skipping (fail-open)');
+            'VoiceSessionCubit: no user speech for verification, skipping (fail-open)');
         return;
       }
       // Capture a short slice of their speech for the embedding, then hand the mic
@@ -2635,7 +2635,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         _room!,
         (message != null && message.isNotEmpty)
             ? message
-            : "Voice verified — it's really you.",
+            : "Voice verified, it's really you.",
       ));
       // Auto-dismiss back to the live session after ~3s.
       Future.delayed(const Duration(seconds: 3), () {
@@ -2661,7 +2661,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         _room!,
         (message != null && message.isNotEmpty)
             ? message
-            : "We couldn't fully confirm your voice — continuing, but please re-enroll if this keeps happening.",
+            : "We couldn't fully confirm your voice, continuing, but please re-enroll if this keeps happening.",
       ));
       Future.delayed(const Duration(seconds: 5), () {
         if (!isClosed &&
@@ -3052,7 +3052,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
                 _room!,
                 verificationMsg.isNotEmpty
                     ? verificationMsg
-                    : "Voice verified — it's really you.",
+                    : "Voice verified, it's really you.",
               ));
               Future.delayed(const Duration(seconds: 3), () {
                 if (!isClosed &&
@@ -3285,7 +3285,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // WHY the voice changed, then auto-revert to the connected state.
           if (_room != null) {
             final msg = eventData['message'] as String? ??
-                'Voice cloning is temporarily unavailable — using a standard voice.';
+                'Voice cloning is temporarily unavailable, using a standard voice.';
             emit(VoiceSessionCloneDegraded(_room!, msg));
             Future.delayed(const Duration(seconds: 4), () {
               if (!isClosed &&
@@ -3306,7 +3306,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // sheet. The mini-bubble also auto-hides on VoiceSessionEnded.
           final reason = eventData['reason'] as String? ?? 'ended';
           print(
-              'VoiceSessionCubit: agent ended session (reason=$reason) — ending like a manual end (show rating)');
+              'VoiceSessionCubit: agent ended session (reason=$reason), ending like a manual end (show rating)');
           _setVisualFeedbackActive(false);
           _clearCaptions();
           // Fire-and-forget to avoid reentrancy on the active WS-message stack;

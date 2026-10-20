@@ -456,7 +456,7 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
       amountLocked: true,
       amountLabel: 'Plan price',
       amountLockedNote:
-          'Set by the plan you selected — auto-renew always buys that plan.',
+          'Set by the plan you selected, auto-renew always buys that plan.',
       onSubmit: ({
         required double amount,
         required String frequency,

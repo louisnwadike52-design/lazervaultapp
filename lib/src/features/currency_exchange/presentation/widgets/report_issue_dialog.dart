@@ -281,7 +281,7 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
         const SizedBox(height: 10),
         const Text(
           'Our team will review your report and follow up via in-app support. '
-          'You can check back any time — the transaction reference is saved '
+          'You can check back any time, the transaction reference is saved '
           'with your report.',
           style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
         ),

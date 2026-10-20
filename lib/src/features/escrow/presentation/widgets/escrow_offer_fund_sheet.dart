@@ -383,7 +383,7 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
                             // The account cannot be switched, so "not enough"
                             // must name the way out instead of leaving the
                             // user at a dead end.
-                            Text('Not enough — top up this account to pay',
+                            Text('Not enough, top up this account to pay',
                                 style: GoogleFonts.inter(
                                     color: EscrowTheme.error,
                                     fontSize: 11.5.sp,

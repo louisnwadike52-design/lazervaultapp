@@ -34,7 +34,7 @@ class ChannelManagementScreen extends StatelessWidget {
           : 'Banking Channels';
 
   String get _blurb => _isWhatsApp
-      ? 'Bank from WhatsApp. Messages are only accepted from the number linked below — anything sent from another number is ignored.'
+      ? 'Bank from WhatsApp. Messages are only accepted from the number linked below, anything sent from another number is ignored.'
       : _isTelephony
           ? 'Bank by phone call and SMS. This always uses the number on your profile, so a swapped or stolen SIM cannot be pointed at your money.'
           : 'Manage your banking channels to access Lazervault from WhatsApp, phone calls, and SMS.';
@@ -217,7 +217,7 @@ class ChannelManagementScreen extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       isPending
-                          ? 'Verification pending — turn on to finish'
+                          ? 'Verification pending, turn on to finish'
                           : subtitle,
                       style: TextStyle(
                           color: isPending

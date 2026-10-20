@@ -42,7 +42,7 @@ String? splitMethodHint(SplitShareInput input, {required int coPayerCount}) {
   };
   if (what == null) return null;
   return coPayerCount == 0
-      ? 'Add your co-payers on the next step — you type each $what there.'
+      ? 'Add your co-payers on the next step, you type each $what there.'
       : 'Type each $what on the next step.';
 }
 
@@ -75,6 +75,6 @@ String? myShareSubtitle({
         : null;
   }
   return myShare > 0
-      ? 'My share: $money — the rest of the bill'
-      : 'My share: nothing left — the co-payers cover all of it';
+      ? 'My share: $money, the rest of the bill'
+      : 'My share: nothing left, the co-payers cover all of it';
 }

@@ -107,7 +107,7 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
     if (!mounted) return;
     if (dp == null) {
       showAppSnackbar('No number found',
-          "We couldn't read a number from this device — enter it manually.",
+          "We couldn't read a number from this device, enter it manually.",
           type: AppSnackbarType.info);
       return;
     }

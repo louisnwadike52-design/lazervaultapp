@@ -693,7 +693,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                   size: 12.sp, color: const Color(0xFF6B7280)),
               SizedBox(width: 4.w),
               Text(
-                'Repeat purchase — amount locked to your previous order',
+                'Repeat purchase, amount locked to your previous order',
                 style: GoogleFonts.inter(
                   fontSize: 11.sp,
                   color: const Color(0xFF9CA3AF),
@@ -955,7 +955,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           Text(
             _hasCustomAmount
                 ? _allowedRangeText()
-                : 'Listed amounts only — custom entry disabled by Reloadly',
+                : 'Listed amounts only, custom entry disabled by Reloadly',
             style: GoogleFonts.inter(
               fontSize: 11.sp,
               color: const Color(0xFF6B7280),

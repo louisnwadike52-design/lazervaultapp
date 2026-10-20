@@ -13,7 +13,7 @@ class _AIChatSheetState extends State<_AIChatSheet> {
   String get _conversationId => 'sprayme_${widget.sessionId}';
 
   static const _welcome = _ChatMessage(
-    text: "Hey — I'm watching this live with you. Ask me anything about it.",
+    text: "Hey, I'm watching this live with you. Ask me anything about it.",
     isBot: true,
   );
 
@@ -604,7 +604,7 @@ class _AIChatSheetState extends State<_AIChatSheet> {
                         SizedBox(width: 4.w),
                         Flexible(
                           child: Text(
-                            "Answered from this device — Nova couldn't be reached",
+                            "Answered from this device, Nova couldn't be reached",
                             style: TextStyle(
                               color: const Color(0xFF9CA3AF),
                               fontSize: 10.sp,

@@ -101,7 +101,7 @@ Future<void> showRecurringOutcomeNotice(
     title: 'Recurring payment not set up',
     message: 'Your transfer went through. The repeat schedule did not.'
         '${err == null || err.isEmpty ? '' : '\n\n$err'}',
-    hint: 'The money has already been sent — only the schedule is missing.',
+    hint: 'The money has already been sent, only the schedule is missing.',
     actionLabel: 'Set it up',
     dismissLabel: 'Not now',
   );

@@ -185,7 +185,7 @@ class _VoiceQuotaSheetState extends State<_VoiceQuotaSheet> {
               // Honest about the basis. It is NOT a flat per-minute rate, and
               // promising one would be wrong in both directions: a quiet
               // minute costs almost nothing and a busy one costs much more.
-              'You’ll only be charged for what you actually use — measured '
+              'You’ll only be charged for what you actually use, measured '
               'on the AI model usage of each conversation, converted to naira. '
               'Short or quiet calls cost very little. There is no subscription, '
               'and you can turn this off any time in Voice settings.',

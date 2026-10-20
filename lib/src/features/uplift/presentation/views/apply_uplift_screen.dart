@@ -82,7 +82,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
     // than as a gRPC FailedPrecondition surfacing after the form is filled in.
     if (widget.fund.isFunder) {
       Get.snackbar('This is your fund',
-          'You review the applications that come in — you cannot apply to your own raise.',
+          'You review the applications that come in, you cannot apply to your own raise.',
           backgroundColor: kUpError,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
@@ -227,7 +227,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
             _field(_businessName, 'Business name', maxLength: 80),
             // 600: long enough for a real case, short enough that a funder
             // reading twenty of them still reads this one.
-            _field(_pitch, 'Your pitch — what will you do with the funds?',
+            _field(_pitch, 'Your pitch, what will you do with the funds?',
                 maxLines: 5, maxLength: 600),
             _field(_amount, 'Amount requested (₦)',
                 keyboard: TextInputType.number, validator: (v) {
@@ -390,7 +390,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w600)),
             subtitle: const Text(
-                'Optional — what you\'re willing to give in return',
+                'Optional, what you\'re willing to give in return',
                 style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
           ),
           if (_offerEquity) ...[

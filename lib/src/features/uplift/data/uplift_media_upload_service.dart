@@ -187,7 +187,7 @@ class UpliftMediaUploadService {
     if (fileSize > _maxVideoSize) {
       final sizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(0);
       throw UpliftUploadException(
-          'Video is too large ($sizeMB MB). Maximum is $_maxVideoMb MB — try a shorter clip.');
+          'Video is too large ($sizeMB MB). Maximum is $_maxVideoMb MB, try a shorter clip.');
     }
     if (fileSize < 8) {
       throw const UpliftUploadException('That video file is empty.');
@@ -243,7 +243,7 @@ class UpliftMediaUploadService {
             'Session expired. Please log in again.');
       case 413:
         throw UpliftUploadException(
-            'Video is too large. Maximum is $_maxVideoMb MB — try a shorter clip.');
+            'Video is too large. Maximum is $_maxVideoMb MB, try a shorter clip.');
       case 503:
         throw const UpliftUploadException(
             'Video upload is temporarily unavailable. Please try again later.');

@@ -558,7 +558,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // the BlocConsumer below renders the ongoing call's live state as-is.
     if (cubit.hasActiveVoiceSession || cubit.isConnected) {
       print(
-          'VoiceCommandSheet: session already active — re-attaching (no restart)');
+          'VoiceCommandSheet: session already active, re-attaching (no restart)');
       return;
     }
 
@@ -1146,7 +1146,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                  'Reconnecting the visuals — your voice commands still work.'),
+                  'Reconnecting the visuals, your voice commands still work.'),
               backgroundColor: Color(0xFFFB923C),
               duration: Duration(seconds: 4),
             ),
@@ -1823,7 +1823,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             ),
             SizedBox(height: 6.h),
             Text(
-              'Speak naturally — I\'m listening',
+              'Speak naturally, I\'m listening',
               style: GoogleFonts.inter(
                 color: Colors.white.withValues(alpha: 0.45),
                 fontSize: 13.sp,
@@ -3934,7 +3934,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           content: Text(
             message.isNotEmpty
                 ? message
-                : "Voice verified — it's really you. You're all set.",
+                : "Voice verified, it's really you. You're all set.",
             style: const TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
           ),
           actions: [
@@ -4134,7 +4134,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                           padding: EdgeInsets.symmetric(
                               vertical: 28.h, horizontal: 20.w),
                           child: Text(
-                            'No matches — try saying the name again clearly.',
+                            'No matches, try saying the name again clearly.',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontSize: 13.sp,
@@ -4626,7 +4626,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           error: reason == 'locked'
               ? 'account locked'
               : reason == 'exhausted'
-                  ? 'incorrect pin — no attempts remaining'
+                  ? 'incorrect pin, no attempts remaining'
                   // Human copy, not a raw enum — this string is rendered
                   // verbatim on the failure card, which showed the user
                   // "pin_entry_cancelled".

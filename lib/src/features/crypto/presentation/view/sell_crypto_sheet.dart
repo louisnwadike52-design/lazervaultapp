@@ -454,7 +454,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
                   SizedBox(height: 12.h),
                   const CryptoFlowGuidance(
                     text:
-                        'Your sale settles on the exchange, then the amount shown above is credited to this account — usually within seconds.',
+                        'Your sale settles on the exchange, then the amount shown above is credited to this account, usually within seconds.',
                   ),
                   SizedBox(height: 20.h),
                   _buildSellButton(h),

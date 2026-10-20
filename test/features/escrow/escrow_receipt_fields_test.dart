@@ -81,8 +81,8 @@ void main() {
         fiatSymbol: '₦',
       );
       expect(valueFor(rows, 'Fee paid by'), 'Split evenly');
-      expect(valueFor(rows, "Fee — buyer's half"), '₦10.00');
-      expect(valueFor(rows, "Fee — seller's half"), '₦10.00');
+      expect(valueFor(rows, "Buyer's half of the fee"), '₦10.00');
+      expect(valueFor(rows, "Seller's half of the fee"), '₦10.00');
     });
 
     test('an unset fee payer reads as the configured default, not "buyer"', () {

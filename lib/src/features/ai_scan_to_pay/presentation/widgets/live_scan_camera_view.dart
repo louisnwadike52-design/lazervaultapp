@@ -44,7 +44,7 @@ class LiveScanCameraView extends StatefulWidget {
     this.onResolved,
     this.title = 'Scan to Pay',
     this.hintText =
-        'Point at the account details inside the box — we read them automatically',
+        'Point at the account details inside the box, we read them automatically',
     this.pollInterval = const Duration(milliseconds: 400),
     this.stabilityThreshold = 2,
     // OCR reads a large central region matching the viewfinder box (was a thin
@@ -139,7 +139,7 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
   int _mlErrors = 0; // consecutive ML Kit failures → degrade to tap mode
   int _badFrames = 0; // consecutive frames we couldn't convert for ML Kit
   static const String _tapHint =
-      'Tap the shutter to capture the details — we\'ll read them for you';
+      'Tap the shutter to capture the details, we\'ll read them for you';
 
   /// Atomically claim the single capture. Returns true for the winner (auto
   /// detect / manual / gallery), false if someone already handed a still off —
@@ -742,15 +742,15 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
   String _detectingHint(ScanCandidate c) {
     switch (c.type) {
       case ScanCandidateType.account:
-        return 'Account number detected — hold steady…';
+        return 'Account number detected, hold steady…';
       case ScanCandidateType.phone:
-        return 'Phone number detected — hold steady…';
+        return 'Phone number detected, hold steady…';
       case ScanCandidateType.username:
-        return 'Lazervault user detected — hold steady…';
+        return 'Lazervault user detected, hold steady…';
       case ScanCandidateType.email:
-        return 'Email detected — hold steady…';
+        return 'Email detected, hold steady…';
       case ScanCandidateType.amount:
-        return 'Payment details detected — hold steady…';
+        return 'Payment details detected, hold steady…';
     }
   }
 

@@ -369,7 +369,7 @@ class ChatPinAutoOpener {
     // single worst thing this component could do.
     if (!issuedAt.isAfter(_attachedAt)) {
       _decline('prompt $txId was minted at $issuedAt, before this conversation '
-          'was attached at $_attachedAt — history, not a live turn');
+          'was attached at $_attachedAt, history, not a live turn');
       return;
     }
 
@@ -391,13 +391,13 @@ class ChatPinAutoOpener {
     // which is a worse failure than the one being fixed.
     if (seq <= _handledSeq && _handledTxIds.contains(txId)) {
       _decline('seq $seq already handled (at $_handledSeq) for the same '
-          'transaction $txId — a rebuild, not a new ask');
+          'transaction $txId, a rebuild, not a new ask');
       return;
     }
     // A dismissal is remembered the same way: another transaction re-arms,
     // this one stays dismissed.
     if (seq <= _cancelledSeq && _cancelledTxIds.contains(txId)) {
-      _decline('seq $seq was dismissed by the user — their "Enter PIN" tap '
+      _decline('seq $seq was dismissed by the user, their "Enter PIN" tap '
           'still works');
       return;
     }

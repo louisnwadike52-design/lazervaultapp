@@ -183,7 +183,7 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
                       decoration: InputDecoration(
                         helperText: _numberIsFixed
                             ? 'Taken from your profile. To change it, update your profile number.'
-                            : 'Defaults to your profile number — change it if your WhatsApp uses another.',
+                            : 'Defaults to your profile number, change it if your WhatsApp uses another.',
                         helperStyle: const TextStyle(
                             color: Color(0xFF6B7280), fontSize: 12),
                         helperMaxLines: 2,

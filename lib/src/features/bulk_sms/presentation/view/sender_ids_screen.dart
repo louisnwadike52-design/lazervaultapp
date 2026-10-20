@@ -216,7 +216,7 @@ class _SenderIdsScreenState extends State<SenderIdsScreen> {
             title: 'Sending as "Lazervault"',
             subtitle:
                 'Your messages already go out under our registered "Lazervault" '
-                'sender — no setup needed. Optionally request your own branded '
+                'sender, no setup needed. Optionally request your own branded '
                 'sender name below (subject to network approval).',
           ),
         ],

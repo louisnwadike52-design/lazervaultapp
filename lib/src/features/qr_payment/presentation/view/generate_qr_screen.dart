@@ -300,7 +300,7 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
             Expanded(
               child: _buildUsageOption(
                 'Reusable',
-                'Anyone can scan and pay, again and again — like a menu item',
+                'Anyone can scan and pay, again and again, like a menu item',
                 'reusable',
               ),
             ),
@@ -357,7 +357,7 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Expiry (optional — you can change it later)',
+          'Expiry (optional, you can change it later)',
           style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
         ),
         const SizedBox(height: 8),

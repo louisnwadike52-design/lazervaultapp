@@ -179,7 +179,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
                       Expanded(
                         child: Text(
                           _createdCount >= _maxFamilyAccounts
-                              ? 'You\'ve created $_createdCount of $_maxFamilyAccounts accounts — limit reached'
+                              ? 'You\'ve created $_createdCount of $_maxFamilyAccounts accounts, limit reached'
                               : 'You\'ve created $_createdCount of $_maxFamilyAccounts accounts you can set up',
                           style: TextStyle(
                               color: const Color(0xFF9CA3AF), fontSize: 12.sp),

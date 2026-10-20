@@ -280,7 +280,7 @@ class _PastGroupDetailsSheetState extends State<PastGroupDetailsSheet> {
           ),
           SizedBox(height: 4.h),
           Text(
-            'Tap a row for the full breakdown — payments, members, cycles, refund status.',
+            'Tap a row for the full breakdown, payments, members, cycles, refund status.',
             style: GoogleFonts.inter(
               color: Colors.grey[500],
               fontSize: 11.sp,

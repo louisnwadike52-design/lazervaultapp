@@ -1561,7 +1561,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       secondary.add(_ruleNote(
           'Only the seller can cancel and refund this deal, because they are '
           'still holding the goods. If something is wrong, open a dispute and '
-          'our team will review it — your money stays held until it is '
+          'our team will review it, your money stays held until it is '
           'settled.'));
     }
     // A closed deal states its finality here too, not only in the header, so
@@ -1569,7 +1569,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     if (deal.isReleased) {
       secondary.add(_ruleNote(
           'This deal is complete and closed. Released funds cannot be '
-          'cancelled, refunded or disputed through Lazervault — anything '
+          'cancelled, refunded or disputed through Lazervault, anything '
           'further is between you and the other party directly.'));
     }
 

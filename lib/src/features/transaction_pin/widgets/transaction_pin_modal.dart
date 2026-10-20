@@ -342,7 +342,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
     final over = totalMinor > remainingMinor;
     final exact = totalMinor == remainingMinor;
     final label = over
-        ? 'Over your allocation — $_displaySymbol${remaining.toStringAsFixed(2)} left'
+        ? 'Over your allocation, $_displaySymbol${remaining.toStringAsFixed(2)} left'
         : exact
             ? 'Uses your full allocation of $_displaySymbol${remaining.toStringAsFixed(2)}'
             : 'Your allocation · $_displaySymbol${remaining.toStringAsFixed(2)} left';

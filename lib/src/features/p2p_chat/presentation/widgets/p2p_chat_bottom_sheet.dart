@@ -392,7 +392,7 @@ class _P2PChatBottomSheetState extends State<P2PChatBottomSheet>
               Text(
                 isReconnecting
                     ? 'Reconnecting...'
-                    : 'Offline — messages sent via fallback',
+                    : 'Offline, messages sent via fallback',
                 style: GoogleFonts.inter(
                   color: isReconnecting
                       ? const Color(0xFFFB923C)

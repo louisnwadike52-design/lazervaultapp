@@ -310,7 +310,7 @@ class _ContactlessPaymentHomeViewState
                 Expanded(
                   child: Text(
                     Platform.isIOS
-                        ? 'NFC is unavailable on this device — you can still receive payments; payers can use another phone.'
+                        ? 'NFC is unavailable on this device, you can still receive payments; payers can use another phone.'
                         : 'NFC is off or unavailable. Enable it in device settings to tap-to-pay; receiving still works.',
                     style: TextStyle(
                         color: const Color(0xFFFB923C), fontSize: 12.sp),

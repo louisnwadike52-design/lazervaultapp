@@ -151,7 +151,7 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
                         Icon(Icons.shield_outlined, color: _success, size: 48),
                         SizedBox(height: 12),
                         Center(
-                            child: Text('All clear — no ops alerts.',
+                            child: Text('All clear, no ops alerts.',
                                 style: TextStyle(color: _textSecondary))),
                       ])
                     : ListView.separated(

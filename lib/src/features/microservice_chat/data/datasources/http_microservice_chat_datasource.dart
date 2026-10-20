@@ -243,7 +243,7 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
     } on DioException catch (e) {
       if (e.type == DioExceptionType.sendTimeout) {
         throw Exception(
-            'Upload timed out. Your connection may be too slow — try a smaller file or better network.');
+            'Upload timed out. Your connection may be too slow, try a smaller file or better network.');
       }
       if (e.type == DioExceptionType.receiveTimeout) {
         throw Exception(

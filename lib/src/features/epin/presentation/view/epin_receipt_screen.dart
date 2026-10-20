@@ -532,7 +532,7 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
         ),
         SizedBox(height: 4.h),
         Text(
-          'Keep these safe — treat them like cash.',
+          'Keep these safe, treat them like cash.',
           style: TextStyle(color: _textSecondary, fontSize: 11.5.sp),
         ),
         SizedBox(height: 12.h),
@@ -549,8 +549,8 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
               order.isPending
                   ? 'Your PINs are being generated. Tap Refresh in a moment to reveal them.'
                   : order.isFailed
-                      ? 'This purchase did not go through and has been refunded — no PINs were issued.'
-                      : "No PINs have surfaced yet. Tap Refresh to check again — if they still don't appear, our team will resolve it.",
+                      ? 'This purchase did not go through and has been refunded, no PINs were issued.'
+                      : "No PINs have surfaced yet. Tap Refresh to check again, if they still don't appear, our team will resolve it.",
               style: TextStyle(color: _textSecondary, fontSize: 13.sp),
             ),
           )

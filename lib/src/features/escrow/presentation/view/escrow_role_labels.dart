@@ -136,7 +136,7 @@ class EscrowRoles {
     switch (o.feePayerMode) {
       case 'seller':
         return viewerIsBuyer(o, viewerUserId) == true
-            ? 'The seller is covering the entire escrow fee — you pay only the '
+            ? 'The seller is covering the entire escrow fee, you pay only the '
                 'price above.'
             : "You've offered to cover the entire escrow fee, so the buyer "
                 'pays only the price above.';
@@ -146,7 +146,7 @@ class EscrowRoles {
             : 'The buyer is covering the entire escrow fee, so your proceeds '
                 'are not reduced.';
       default:
-        return 'The escrow fee is split evenly — half from the buyer, half '
+        return 'The escrow fee is split evenly, half from the buyer, half '
             'from the seller.';
     }
   }
@@ -218,13 +218,13 @@ class EscrowRoles {
     if (o.isAwaitingFunding) {
       // buy_request only: the seller has agreed, nothing is held yet.
       return buying == true
-          ? '$seller accepted your request. Nothing is held yet — pay to move '
+          ? '$seller accepted your request. Nothing is held yet, pay to move '
               'the money into escrow, and it is released to them once you '
               'confirm delivery.'
           // "fund the escrow" is our internal mechanic, not what the buyer
           // experiences — from their side they are simply paying for the item.
           // Say what happens next, and what it means for the seller.
-          : 'You accepted this request. Nothing is held yet — $buyer still has '
+          : 'You accepted this request. Nothing is held yet, $buyer still has '
               'to pay. Once they do, Lazervault holds the money and releases '
               'it to you after they confirm delivery.';
     }
@@ -246,13 +246,13 @@ class EscrowRoles {
       // waiting for a second step that never comes, and buyers surprised that
       // accepting moved their money.
       return 'Nothing moves until $buyer accepts. Accepting takes the payment '
-          'from them there and then — Lazervault holds it and releases it to '
+          'from them there and then, Lazervault holds it and releases it to '
           'you once they confirm delivery.';
     }
     // Buyer looking at an OPEN sell offer: nothing has been paid yet, so the
     // present tense ("is held") described money that does not exist. Say what
     // buying will do, since the Buy CTA takes the payment immediately.
-    return 'When you buy, your payment goes to Lazervault — not to $seller — '
+    return 'When you buy, your payment goes to Lazervault, not to $seller — '
         'and is released to them only once you confirm delivery.';
   }
 
@@ -301,12 +301,12 @@ class EscrowRoles {
                 'were not reduced.';
       case 'seller':
         return isBuyer
-            ? 'The seller covered the whole $total escrow fee — you paid only '
+            ? 'The seller covered the whole $total escrow fee, you paid only '
                 'the deal amount.'
             : 'You covered the whole $total escrow fee, so the buyer paid only '
                 'the deal amount.';
       default:
-        return 'The $total escrow fee was split evenly — half added to the '
+        return 'The $total escrow fee was split evenly, half added to the '
             'buyer\'s payment, half taken from the seller\'s proceeds.';
     }
   }
@@ -347,7 +347,7 @@ class EscrowRoles {
           final buyerHalf = money(_round2(d.buyerTotal - d.amount));
           final sellerHalf = money(_round2(d.amount - d.sellerNet));
           body = 'Release the $held held for this deal. $seller receives $net. '
-              'The $fee escrow fee is split — $buyerHalf from you, '
+              'The $fee escrow fee is split, $buyerHalf from you, '
               '$sellerHalf from the seller.';
       }
     }
@@ -387,8 +387,8 @@ class EscrowRoles {
           ? 'Waiting for the buyer to pay'
           : 'Open to anyone with the link';
     }
-    if (o.isAwaitingFunding) return 'Accepted — waiting for the buyer to pay';
-    if (o.isConverted) return 'Funded — now an active escrow deal';
+    if (o.isAwaitingFunding) return 'Accepted, waiting for the buyer to pay';
+    if (o.isConverted) return 'Funded, now an active escrow deal';
     if (o.isDeclined) return 'Declined';
     if (o.isCancelled) return 'Withdrawn by the creator';
     if (o.isExpired) return 'Expired without being funded';

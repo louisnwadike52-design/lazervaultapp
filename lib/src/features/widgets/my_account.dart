@@ -619,7 +619,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
           title: 'Address',
           subtitle: (user?.address.isSet ?? false)
               ? user!.address.singleLine
-              : 'Not set — needed on statements',
+              : 'Not set, needed on statements',
           trailing: Icon(
             Icons.arrow_forward_ios,
             size: 16.sp,

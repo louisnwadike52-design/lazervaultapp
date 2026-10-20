@@ -714,7 +714,7 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
         if (offer.isSellOffer) {
           if (isCreator) {
             out.add(_banner(
-                'Sold to $who — the money is held in escrow. Deliver to get paid.',
+                'Sold to $who, the money is held in escrow. Deliver to get paid.',
                 EscrowTheme.success));
           } else if (isCounterparty) {
             out.add(_banner(
@@ -728,7 +728,7 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
         } else {
           if (isCreator) {
             out.add(_banner(
-                'You funded this request — the money is held in escrow until delivery.',
+                'You funded this request, the money is held in escrow until delivery.',
                 EscrowTheme.success));
           } else if (isCounterparty) {
             out.add(_banner(

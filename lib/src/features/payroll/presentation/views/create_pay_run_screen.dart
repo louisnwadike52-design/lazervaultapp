@@ -150,7 +150,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-            '$name can\'t be paid yet — $issue. Set up their payout in Employees first.'),
+            '$name can\'t be paid yet, $issue. Set up their payout in Employees first.'),
         backgroundColor: InvoiceThemeColors.warningOrange,
         behavior: SnackBarBehavior.floating,
       ),
@@ -706,7 +706,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                                 ),
                                 if (issue != null)
                                   Text(
-                                    '$issue — set up payout to pay',
+                                    '$issue, set up payout to pay',
                                     style: GoogleFonts.inter(
                                       color: InvoiceThemeColors.warningOrange,
                                       fontSize: 11.5.sp,

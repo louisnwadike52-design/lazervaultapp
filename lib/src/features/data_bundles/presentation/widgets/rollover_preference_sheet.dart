@@ -153,7 +153,7 @@ class _RolloverPreferenceSheetState extends State<RolloverPreferenceSheet> {
               icon: Icons.autorenew,
               title: 'Renew before expiry',
               subtitle:
-                  'Auto-renew ~6 hours before this plan runs out. Simplest — we handle the timing.',
+                  'Auto-renew ~6 hours before this plan runs out. Simplest, we handle the timing.',
             ),
             SizedBox(height: 10.h),
             _modeCard(

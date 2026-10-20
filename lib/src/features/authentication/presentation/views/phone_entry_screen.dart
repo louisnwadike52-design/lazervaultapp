@@ -37,7 +37,7 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
     if (!mounted) return;
     if (dp == null) {
       showAppSnackbar('No number found',
-          "We couldn't read a number from this device — enter it manually.",
+          "We couldn't read a number from this device, enter it manually.",
           type: AppSnackbarType.info);
       return;
     }

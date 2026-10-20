@@ -372,7 +372,7 @@ class _FamilySlotsSheetState extends State<FamilySlotsSheet>
                   Expanded(
                     child: Text(
                       '${cap.suspendedSlots} slot${cap.suspendedSlots == 1 ? '' : 's'} '
-                      'paused — we couldn\'t collect the fee. Top up your wallet '
+                      'paused, we couldn\'t collect the fee. Top up your wallet '
                       'and it\'ll retry.',
                       style: TextStyle(color: _danger, fontSize: 11.sp),
                     ),
@@ -419,7 +419,7 @@ class _FamilySlotsSheetState extends State<FamilySlotsSheet>
                 child: const CircularProgressIndicator(
                     strokeWidth: 2, color: Colors.white),
               )
-            : Text('Add a slot — $price/month',
+            : Text('Add a slot, $price/month',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 14.sp,
@@ -486,8 +486,8 @@ class _FamilySlotsSheetState extends State<FamilySlotsSheet>
         return 'Cancelled';
       case 'suspended':
         return slot.lastFailureReason.isEmpty
-            ? 'Paused — payment failed'
-            : 'Paused — ${slot.lastFailureReason}';
+            ? 'Paused, payment failed'
+            : 'Paused, ${slot.lastFailureReason}';
       default:
         final next = _shortDate(slot.nextChargeAt);
         return next == null ? 'Active' : 'Renews $next';

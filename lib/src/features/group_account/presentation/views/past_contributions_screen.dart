@@ -304,7 +304,7 @@ class _PastContributionCard extends StatelessWidget {
     messenger.showSnackBar(SnackBar(
       content: Text(entry.hidden
           ? 'Restored to your past contributions'
-          : 'Removed from your lists — find it under Deleted'),
+          : 'Removed from your lists, find it under Deleted'),
       backgroundColor: const Color(0xFF10B981),
       behavior: SnackBarBehavior.floating,
     ));

@@ -582,14 +582,14 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
           SizedBox(height: 12.h),
           _modeOption(
             value: 'full',
-            title: 'Everything — savings + ROI',
+            title: 'Everything, savings + ROI',
             subtitle: 'Your ${widget.lockFund.formattedAmount} plus '
                 '${widget.lockFund.formattedInterest} ROI. This closes the plan.',
           ),
           SizedBox(height: 10.h),
           _modeOption(
             value: 'interest_only',
-            title: 'ROI only — keep saving',
+            title: 'ROI only, keep saving',
             subtitle:
                 '${widget.lockFund.formattedInterest} is paid out now. Your '
                 '${widget.lockFund.formattedAmount} stays in the plan and keeps earning.',

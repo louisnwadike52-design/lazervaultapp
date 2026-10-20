@@ -180,7 +180,7 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
       default:
         // Empty means the deal deferred to configuration, whose default is a
         // split — the same rule the app and the backend apply.
-        return 'Split evenly — half the buyer, half the seller';
+        return 'Split evenly, half the buyer, half the seller';
     }
   }
 

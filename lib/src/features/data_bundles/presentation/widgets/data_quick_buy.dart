@@ -367,7 +367,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
         currency: _currency,
         title: 'Confirm data',
         message:
-            'Buy ${plan.name} for $phone ($_netName) — $_currency ${plan.price.toStringAsFixed(0)}',
+            'Buy ${plan.name} for $phone ($_netName), $_currency ${plan.price.toStringAsFixed(0)}',
         showProcessingPhase: true,
         successMessage: 'Data request sent',
         onPinValidated: (token) async {
@@ -469,7 +469,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
       amountLocked: true,
       amountLabel: 'Plan price',
       amountLockedNote:
-          'Set by the plan you selected — auto-renew always buys that bundle.',
+          'Set by the plan you selected, auto-renew always buys that bundle.',
       onSubmit: ({
         required double amount,
         required String frequency,
@@ -739,7 +739,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("We couldn't detect the network — pick one:",
+        Text("We couldn't detect the network, pick one:",
             style: GoogleFonts.inter(
                 color: const Color(0xFFFB923C), fontSize: 12.sp)),
         SizedBox(height: 8.h),

@@ -147,7 +147,7 @@ class SprayMeCubit extends Cubit<SprayMeState> {
       );
       emit(GiftCreditPurchased(
         wallet: wallet,
-        message: 'Gifts purchased — ready to spray',
+        message: 'Gifts purchased, ready to spray',
       ));
     } catch (e) {
       emit(SprayMeError(e.toString().replaceAll('Exception: ', '')));

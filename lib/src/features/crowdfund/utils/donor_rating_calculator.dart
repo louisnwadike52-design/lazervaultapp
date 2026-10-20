@@ -38,7 +38,7 @@ class DonorRating {
     engagementScore: 0,
     earlySupportScore: 0,
     label: 'Anonymous patron',
-    summary: 'Quietly backed this campaign — every contribution counts.',
+    summary: 'Quietly backed this campaign, every contribution counts.',
     traits: <String>['Anonymous patron'],
   );
 

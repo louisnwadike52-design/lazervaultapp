@@ -387,7 +387,7 @@ class MemberDetailDialog extends StatelessWidget {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'Invite Sent — waiting for the user to accept',
+                      'Invite Sent, waiting for the user to accept',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: const Color(0xFFFB923C),

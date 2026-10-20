@@ -127,7 +127,7 @@ class _CancelProgressScreenState extends State<CancelProgressScreen> {
         : const Color(0xFFF59E0B);
     final label = isDone
         ? (hasFailures
-            ? 'Refunds complete — some need help'
+            ? 'Refunds complete, some need help'
             : 'All contributors refunded')
         : 'Refunding contributors…';
     final icon = isDone
@@ -260,7 +260,7 @@ class _CancelProgressScreenState extends State<CancelProgressScreen> {
           ),
           SizedBox(height: 4.h),
           Text(
-            'Common cause: a contributor closed their primary account. Support can route these manually — share the campaign code ${_crowdfund.crowdfundCode}.',
+            'Common cause: a contributor closed their primary account. Support can route these manually, share the campaign code ${_crowdfund.crowdfundCode}.',
             style: GoogleFonts.inter(
               color: const Color(0xFFFB923C),
               fontSize: 11.sp,

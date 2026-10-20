@@ -111,7 +111,7 @@ class InvoiceCrossCurrencyNotice extends StatelessWidget {
             Text(
               'It is for $fromSymbol${invoiceAmount.toStringAsFixed(2)}, but you '
               'are operating in $to. We will convert it at the live rate and '
-              'take the payment from your $to account — the next screen shows '
+              'take the payment from your $to account, the next screen shows '
               'you the exact rate and amount before anything is charged.',
               style: GoogleFonts.inter(
                 fontSize: 13.sp,

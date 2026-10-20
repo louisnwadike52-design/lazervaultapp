@@ -767,7 +767,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           _showNetworkIssueSheet(
               'Wallet still being set up',
               'The recipient\'s ${net.toUpperCase()} address is still being '
-                  'created. Try again in a moment — or use the default '
+                  'created. Try again in a moment, or use the default '
                   'Lazervault transfer (no network), which is instant and free.');
           return;
         }
@@ -787,7 +787,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                     'is always instant and free.'
                 : 'The recipient\'s wallet doesn\'t accept ${_selected!.cryptoSymbol.toUpperCase()} '
                     'on ${_networkValue().toUpperCase()}. Choose a network their '
-                    'wallet supports — the default Lazervault transfer (no network) '
+                    'wallet supports, the default Lazervault transfer (no network) '
                     'is always instant and free.');
         return;
       }
@@ -1172,7 +1172,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                     icon: Icons.warning_amber_rounded,
                     text: _isInternal
                         ? 'Lazervault-to-Lazervault transfers are instant and free.'
-                        : 'On-chain sends can\'t be reversed — double-check the address and network before you confirm.',
+                        : 'On-chain sends can\'t be reversed, double-check the address and network before you confirm.',
                   ),
                   SizedBox(height: 12.h),
                   _buildRecipientToggle(),
@@ -2048,7 +2048,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     // without one (an internal transfer is keyed entirely on the recipient's
     // userId).
     if (result.userId.isEmpty) {
-      _toast("That recipient can't receive crypto — pick a Lazervault user");
+      _toast("That recipient can't receive crypto, pick a Lazervault user");
       return;
     }
     setState(() {
@@ -2182,7 +2182,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                 if (hasSelection && _networkAutoDetected) ...[
                   SizedBox(height: 2.h),
                   Text(
-                    'Auto-detected from the address — change if needed',
+                    'Auto-detected from the address, change if needed',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF10B981),
                       fontSize: 10.5.sp,

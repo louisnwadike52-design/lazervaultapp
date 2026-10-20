@@ -578,7 +578,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                         final spendId = a.spendingAccountId;
                         if (spendId.isEmpty) {
                           Get.snackbar('Account not ready',
-                              'This account can\'t send money yet — finish its setup first.',
+                              'This account can\'t send money yet, finish its setup first.',
                               backgroundColor: btOrange,
                               colorText: Colors.white,
                               snackPosition: SnackPosition.TOP);
@@ -1178,7 +1178,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           if (_feeQuotesIncomplete) ...[
             SizedBox(height: 4.h),
             _buildBreakdownRowText(
-                '', 'Some fees unavailable — final amount at receipt',
+                '', 'Some fees unavailable, final amount at receipt',
                 valueColor: btOrange),
           ],
           if (_isScheduled && _scheduledDateTime != null) ...[

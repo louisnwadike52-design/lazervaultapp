@@ -184,7 +184,7 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
             _confirmStep
                 ? 'You\'ll be signed out now and can\'t sign in or make any transactions until the timer ends. There is no early unlock.'
                 : _emergency
-                    ? 'Immediately lock this account — sign-in and all transactions are blocked until the timer ends. Use this if your device or account may be compromised.'
+                    ? 'Immediately lock this account, sign-in and all transactions are blocked until the timer ends. Use this if your device or account may be compromised.'
                     : 'Temporarily lock yourself out of signing in and all transactions. Pick how long.',
             style: GoogleFonts.inter(
                 color: _textSecondary, fontSize: 13.sp, height: 1.4),
@@ -247,7 +247,7 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
                 SizedBox(width: 10.w),
                 Expanded(
                     child: Text(
-                        'Lock for ${_labelFor(_selectedSeconds!)}. No one — including you — can sign in or transact until it ends.',
+                        'Lock for ${_labelFor(_selectedSeconds!)}. No one, including you, can sign in or transact until it ends.',
                         style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 12.5.sp,

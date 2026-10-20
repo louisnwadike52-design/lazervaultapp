@@ -1703,7 +1703,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(
           content: Text(deferred
-              ? 'Not yet — everyone still due a turn is behind on their own '
+              ? 'Not yet, everyone still due a turn is behind on their own '
                   'payments. The circle moves on once one of them pays.'
               : sanitizeUserFacingError(raw)),
           backgroundColor:
@@ -1967,7 +1967,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           'ACCEPTED their invite before it can start. '
           '${active == 0 ? 'Nobody has' : active == 1 ? 'Only 1 person has' : '$active people have'} '
           'accepted so far.\n\nPeople you have invited who have not accepted '
-          'yet do not count — they can still be added, and the circle will '
+          'yet do not count, they can still be added, and the circle will '
           'start once they are in.',
       cta: 'Add members',
     );
@@ -2018,7 +2018,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           : '${names.length} invites are still unanswered',
       body: 'These people were added but have not accepted their group invite '
           'yet:\n\n• $shown$more\n\n'
-          'Starting now would LOCK them out of the rotation — the roster '
+          'Starting now would LOCK them out of the rotation, the roster '
           'freezes and they could not join afterwards. Wait for them to '
           'accept, or remove them first and start without them.',
       cta: 'Review members',
@@ -4768,7 +4768,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     final stateLabel = group.isComplete
         ? 'Fully paid'
         : group.isPartial
-            ? 'Partial — ${group.progressPercent.toStringAsFixed(0)}%'
+            ? 'Partial, ${group.progressPercent.toStringAsFixed(0)}%'
             : group.isInFlightOnly
                 ? 'Payment pending'
                 : group.expectedAmount > 0
@@ -5942,7 +5942,7 @@ extension ChangeCyclesDialog on _ContributionDetailsScreenState {
                 if (n < minAllowed) {
                   setDialogState(() => error = n < current
                       ? 'Already on cycle $current'
-                      : 'At least $memberCount — one per member');
+                      : 'At least $memberCount, one per member');
                   return;
                 }
                 if (n == contribution.totalCycles) {

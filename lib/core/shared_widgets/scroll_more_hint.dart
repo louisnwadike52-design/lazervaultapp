@@ -118,7 +118,7 @@ class _ScrollMoreHintState extends State<ScrollMoreHint> {
                       Icons.keyboard_arrow_down_rounded,
                       size: 18.sp,
                       color: widget.foreground,
-                      semanticLabel: 'More below — scroll for the rest',
+                      semanticLabel: 'More below, scroll for the rest',
                     ),
                   ),
                 ),

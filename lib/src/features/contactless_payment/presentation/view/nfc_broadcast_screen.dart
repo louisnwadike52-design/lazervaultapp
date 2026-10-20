@@ -123,7 +123,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
       // NFC off or device without HCE → Session ID is the only way to receive.
       setState(() {
         _sessionIdMode = true;
-        _statusText = 'NFC is off — share your Session ID with the payer';
+        _statusText = 'NFC is off, share your Session ID with the payer';
       });
       _notifySessionIdMode(_AndroidNfcOff());
     }

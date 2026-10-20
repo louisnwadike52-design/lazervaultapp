@@ -195,7 +195,7 @@ class EscrowDealEntity {
         return buyer
             ? (
                 text: 'Completed and closed. You released the funds to '
-                    '$_sellerLabel — this deal can no longer be cancelled, '
+                    '$_sellerLabel, this deal can no longer be cancelled, '
                     'refunded or disputed.',
                 yourTurn: false
               )

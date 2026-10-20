@@ -341,7 +341,7 @@ class GroupAccountReportService {
                     final title = (m['title'] ?? m['name'] ?? '').toString();
                     final desc = (m['description'] ?? '').toString();
                     if (desc.isEmpty) return title;
-                    return '$title — $desc';
+                    return '$title, $desc';
                   })
                   .where((s) => s.isNotEmpty)
                   .toList(),

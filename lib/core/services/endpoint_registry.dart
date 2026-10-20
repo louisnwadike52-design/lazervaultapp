@@ -433,7 +433,7 @@ class EndpointRegistry {
       }
       if (resetReason.isNotEmpty) {
         debugPrint(
-            '[EndpointRegistry] $resetReason — resetting endpoint cache');
+            '[EndpointRegistry] $resetReason, resetting endpoint cache');
         _cache.clear();
         final stale = prefs
             .getKeys()

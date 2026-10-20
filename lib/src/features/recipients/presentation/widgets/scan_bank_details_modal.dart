@@ -314,7 +314,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
       'resolved_user' => (
           Icons.verified_user_outlined,
           'Lazervault User',
-          'Send instantly — free internal transfer',
+          'Send instantly, free internal transfer',
         ),
       'internal_user' => (
           Icons.person_outline,
@@ -622,7 +622,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
             !_accountLengthOk(_accountNumberController.text)) ...[
           SizedBox(height: 8.h),
           Text(
-            'Account number should be 10 digits (or 11 for OPay/PalmPay) — you have ${_accountNumberController.text.length}',
+            'Account number should be 10 digits (or 11 for OPay/PalmPay), you have ${_accountNumberController.text.length}',
             style: TextStyle(color: Colors.orange[700], fontSize: 12.sp),
           ),
         ],
@@ -1424,7 +1424,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
     if (!_accountLengthOk(acct)) {
       setState(() => _validationHint = acct.isEmpty
           ? "Enter the recipient's account number"
-          : 'Account number should be 10 digits (or 11 for OPay/PalmPay) — you have ${acct.length}');
+          : 'Account number should be 10 digits (or 11 for OPay/PalmPay), you have ${acct.length}');
       _accountFocus.requestFocus();
       return;
     }

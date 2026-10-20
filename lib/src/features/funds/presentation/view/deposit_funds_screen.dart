@@ -1183,7 +1183,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                     // Dimming alone is not a message — it reads as a styling
                     // choice, and on a bright screen outdoors it is invisible.
                     isClosed
-                        ? 'Not available right now — tap to see why'
+                        ? 'Not available right now, tap to see why'
                         : method.subtitle,
                     style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.6),
@@ -2741,7 +2741,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (ok) {
       Get.snackbar(
         'Switched to one-time',
-        'Deposits from ${account.bankName} will use one-time approval — you '
+        'Deposits from ${account.bankName} will use one-time approval, you '
             'can switch back anytime.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFF1F1F1F),
@@ -2815,7 +2815,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (ok) {
       Get.snackbar(
         'Setting up Direct Debit',
-        'Authorization received — ${account.bankName} is activating your '
+        'Authorization received, ${account.bankName} is activating your '
             'Direct Debit. Deposits use one-time approval until it is live.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.92),
@@ -2898,7 +2898,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                   ? 'We could not reach your bank to check. Nothing was lost — '
                       'we keep checking in the background.'
                   : '${account.bankName} has not confirmed it yet. This can take '
-                      'a few minutes. Do not send it again — we will finish '
+                      'a few minutes. Do not send it again, we will finish '
                       'automatically once it lands.',
               snackPosition: SnackPosition.BOTTOM,
               duration: const Duration(seconds: 6),
@@ -2966,7 +2966,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     final newLabel = toDirectDebit ? 'Direct Debit' : 'One-time';
     final body = toDirectDebit
         ? 'Future deposits from ${account.bankName} will reuse your saved '
-            'authorization — no bank login each time. We’ll reactivate '
+            'authorization, no bank login each time. We’ll reactivate '
             'your Direct Debit with ${account.bankName} instantly.'
         : 'You’ll approve each deposit from ${account.bankName} at your '
             'bank. We’ll pause your Direct Debit with ${account.bankName} '
@@ -3396,7 +3396,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                   subtitle: Text(
                       isActivating
                           ? 'Authorized. Activating with your bank. Deposits use one-time approval until it is live.'
-                          : 'Confirming your authorization with your bank — this can take up to 30 minutes and completes automatically.',
+                          : 'Confirming your authorization with your bank, this can take up to 30 minutes and completes automatically.',
                       style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.5),
                           fontSize: 12.sp)),
@@ -3872,7 +3872,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           Text(
             'Your deposit account number is created after a quick BVN identity '
             'check. Verify once and your bank account details appear here '
-            'automatically — no need to sign in again.',
+            'automatically, no need to sign in again.',
             style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.75), fontSize: 13.sp),
           ),
@@ -4193,14 +4193,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       final proceed = await showDepositFeeAgreementSheet(context, quote);
       if (!proceed || !mounted) {
         debugPrint(
-            '[MonoConnect] User declined the fee agreement — aborting link');
+            '[MonoConnect] User declined the fee agreement, aborting link');
         return;
       }
     } else if (quote == null) {
       final proceed = await showBankConnectionFeeNotice(context);
       if (!proceed || !mounted) {
         debugPrint(
-            '[MonoConnect] User declined the connection-fee notice — aborting link');
+            '[MonoConnect] User declined the connection-fee notice, aborting link');
         return;
       }
     }
@@ -4448,7 +4448,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     ])) {
       return const _DepositFailureInfo(
         'Re-link Your Bank',
-        "We couldn't confirm your linked bank's details for this deposit, so we didn't charge any account. Re-link your bank to continue — it takes a few seconds.",
+        "We couldn't confirm your linked bank's details for this deposit, so we didn't charge any account. Re-link your bank to continue, it takes a few seconds.",
         retryable: true,
         retryLabel: 'Re-link bank',
       );

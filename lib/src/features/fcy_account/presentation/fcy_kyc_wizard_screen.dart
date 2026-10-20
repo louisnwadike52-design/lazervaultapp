@@ -659,7 +659,7 @@ class _AccountStateView extends StatelessWidget {
                   ? 'Share these details to receive $currency.'
                   : 'We have everything we need. This usually takes a few '
                       'business days, and we will let you know the moment it is '
-                      'ready — there is nothing for you to do.'),
+                      'ready, there is nothing for you to do.'),
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.65),

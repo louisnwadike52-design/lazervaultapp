@@ -279,7 +279,7 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
         ),
         content: Text(
           '${active.displayName} is currently active. Only one method can be on at '
-          'a time — disable ${active.displayName} first, then set up ${target.displayName}.',
+          'a time, disable ${active.displayName} first, then set up ${target.displayName}.',
           style: TextStyle(fontSize: 14.sp, height: 1.4),
         ),
         actions: [

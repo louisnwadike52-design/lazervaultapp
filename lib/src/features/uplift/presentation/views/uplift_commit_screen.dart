@@ -229,7 +229,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
                     const SizedBox(height: 8),
                     Text(
                       'Needs ${upNaira(widget.requiredPoolKobo, widget.fund.currency)}'
-                      ' in total — ${upNaira(widget.fund.perBusinessCap.toInt(), widget.fund.currency)}'
+                      ' in total, ${upNaira(widget.fund.perBusinessCap.toInt(), widget.fund.currency)}'
                       ' × ${widget.fund.targetCount} businesses',
                       style: const TextStyle(
                           color: Colors.white70, fontSize: 12),
@@ -325,7 +325,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
                 widget.isFundingNewFund
                     ? 'Your fund opens to applications once the pool is '
                         'funded. Money is held in the pool and released per '
-                        'approved milestone — you can withdraw anything not '
+                        'approved milestone, you can withdraw anything not '
                         'yet promised to a business.'
                     : 'Funds are held in the fund pool and released to '
                         'businesses per approved milestone.',

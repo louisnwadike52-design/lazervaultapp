@@ -174,7 +174,7 @@ class _BirthdayCelebrationCardState extends State<BirthdayCelebrationCard>
                       ),
                       SizedBox(height: 8.h),
                       Text(
-                        'From all of us at Lazervault — wishing you a wonderful '
+                        'From all of us at Lazervault, wishing you a wonderful '
                         'year ahead, filled with joy, good health, and big wins. '
                         'Thank you for being part of the family. 💜',
                         style: TextStyle(

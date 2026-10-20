@@ -298,7 +298,7 @@ class AccountNumberChangeWatcher {
                 SizedBox(height: 10.h),
                 Text(
                   'We upgraded the banking partner behind your wallet. Your '
-                  'balance and history are untouched — only the details you '
+                  'balance and history are untouched, only the details you '
                   'share to receive money have changed. Update them anywhere '
                   'you have them saved.',
                   textAlign: TextAlign.center,

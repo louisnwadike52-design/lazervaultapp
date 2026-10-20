@@ -74,7 +74,7 @@ class P2PChatMediaUploadService {
     // otherwise produce a broken 0-byte "voice note".
     if (bytes.isEmpty) {
       throw const P2PChatMediaUploadException(
-        'Nothing to upload — the file is empty.',
+        'Nothing to upload, the file is empty.',
       );
     }
 

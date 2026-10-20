@@ -121,7 +121,7 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
               Get.snackbar(
                 'Confirming with your bank',
                 'Your authorization was received and is being confirmed by '
-                    'your bank — this can take up to 30 minutes and completes '
+                    'your bank, this can take up to 30 minutes and completes '
                     'automatically. No need to authorize again.',
                 snackPosition: SnackPosition.BOTTOM,
                 backgroundColor:
@@ -341,7 +341,7 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
 
               // Benefits
               _buildBenefitRow(Icons.flash_on_rounded,
-                  'Instant transfers — no bank approval each time'),
+                  'Instant transfers, no bank approval each time'),
               _buildBenefitRow(Icons.lock_outline_rounded,
                   'You control limits & can cancel'),
               _buildBenefitRow(

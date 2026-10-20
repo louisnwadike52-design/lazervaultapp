@@ -692,7 +692,7 @@ class SprayMeRemoteDataSource {
     'recording_not_entitled': "Recording isn't available on your plan.",
     'session is full': 'This session is full. Try again later.',
     'session is not live': "The stream isn't live right now.",
-    'the stage is full': 'The stage is full — no free guest boxes.',
+    'the stage is full': 'The stage is full, no free guest boxes.',
     'go live before adding guests to the stage':
         'Go live first, then you can add guests to the stage.',
   };

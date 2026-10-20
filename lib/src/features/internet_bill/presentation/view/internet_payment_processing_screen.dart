@@ -651,7 +651,7 @@ class _InternetPaymentProcessingScreenState
       if (providerCode == null) return null;
       if (providerCode.contains('smile')) {
         return 'Smile uses your registered email address (or Smile-issued '
-            'account ID) — not a phone number. Check your Smile dashboard '
+            'account ID), not a phone number. Check your Smile dashboard '
             'or contact Smile support if you\'re unsure.';
       }
       if (providerCode.contains('spectranet')) {
@@ -707,7 +707,7 @@ class _InternetPaymentProcessingScreenState
         title: 'Provider rejected the transaction',
         detail: '${providerDisplay()} couldn\'t complete this top-up '
             '(VTpass returned a generic failure). Your wallet has been '
-            'refunded — you can try again or pick a different package.',
+            'refunded, you can try again or pick a different package.',
       );
     }
     // Code 011 = INVALID ARGUMENTS — VTpass rejected the request
@@ -725,7 +725,7 @@ class _InternetPaymentProcessingScreenState
       return (
         title: 'Provider timed out',
         detail: 'We couldn\'t reach ${providerDisplay()} in time. Your '
-            'wallet wasn\'t charged — please try again.',
+            'wallet wasn\'t charged, please try again.',
       );
     }
     if (m.contains('network') || m.contains('connection')) {

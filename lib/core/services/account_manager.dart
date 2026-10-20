@@ -45,7 +45,7 @@ class AccountManager {
   /// the card-settings screens genuinely use; it is not a source of truth for
   /// anything.
   @Deprecated(
-      'Always null — nothing writes it. Use activeAccountSnapshot() from '
+      'Always null, nothing writes it. Use activeAccountSnapshot() from '
       'core/services/active_account_snapshot.dart.')
   AccountDetailsEntity? get activeAccountDetails =>
       _accountDetailsController.value;

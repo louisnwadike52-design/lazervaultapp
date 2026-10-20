@@ -476,7 +476,7 @@ class EscrowCubit extends Cubit<EscrowState> {
       final offer = await repository.respondOffer(
           offerId: offerId, accept: accept, note: note);
       emit(EscrowOfferActionSuccess(
-        accept ? 'Accepted — waiting for the buyer to fund' : 'Offer declined',
+        accept ? 'Accepted, waiting for the buyer to fund' : 'Offer declined',
         offer,
       ));
     } catch (e) {

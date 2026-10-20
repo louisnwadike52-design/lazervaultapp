@@ -885,7 +885,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         }
         // No definite outcome — never fall through to a fake success.
         throw Exception(
-          "We couldn't confirm your exchange — check your Transactions "
+          "We couldn't confirm your exchange, check your Transactions "
           'to see if it went through before retrying.',
         );
       },

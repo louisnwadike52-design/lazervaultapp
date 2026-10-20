@@ -357,7 +357,7 @@ class _AdvertCard extends StatelessWidget {
                   // rather than reverting to generic marketing copy.
                   subtitle.isNotEmpty
                       ? subtitle
-                      : 'Bills, savings, transfers and more — all in one place',
+                      : 'Bills, savings, transfers and more, all in one place',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

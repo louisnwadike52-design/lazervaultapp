@@ -686,8 +686,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 36.w),
           child: Text(
-            'No messages yet. Ask a question about this deal — delivery, '
-            'condition, timing — and it stays attached to it.',
+            'No messages yet. Ask a question about this deal, delivery, '
+            'condition, timing, and it stays attached to it.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(color: _muted, fontSize: 12.5.sp, height: 1.4),
           ),

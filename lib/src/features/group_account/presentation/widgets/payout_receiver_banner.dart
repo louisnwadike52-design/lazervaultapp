@@ -71,7 +71,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
     final min = widget.contribution.minimumBalance ?? 0;
     final ccy = widget.contribution.currency;
     if (pot <= 0) {
-      return 'Nothing to pay out yet — no one has contributed to this goal.';
+      return 'Nothing to pay out yet, no one has contributed to this goal.';
     }
     return 'Needs at least ${_formatAmount(min)} $ccy before a payout can run '
         '(currently ${_formatAmount(pot)} $ccy).';
@@ -184,7 +184,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
-              "You're in control of this payout now — run it when you're ready."),
+              "You're in control of this payout now, run it when you're ready."),
           backgroundColor: const Color(0xFF10B981),
           behavior: SnackBarBehavior.floating,
         ),
@@ -235,7 +235,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
       // registered in the locator, and asking for it there throws at runtime.
       final api = SupportApi(serviceLocator<SecureStorageService>());
       final subject =
-          'Group funds payout stuck — ${widget.contribution.title} (payout ${_shortId(p.id)})';
+          'Group funds payout stuck, ${widget.contribution.title} (payout ${_shortId(p.id)})';
       final body = StringBuffer()
         ..writeln('A group-funds payout could not complete automatically.')
         ..writeln()

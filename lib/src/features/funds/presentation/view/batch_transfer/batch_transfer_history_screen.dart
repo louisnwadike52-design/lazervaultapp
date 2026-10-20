@@ -109,7 +109,7 @@ class _BatchTransferHistoryScreenState
       );
       if (!mounted) return;
       Get.snackbar(
-          'Cancelled', 'Scheduled batch cancelled — nothing will be sent.',
+          'Cancelled', 'Scheduled batch cancelled, nothing will be sent.',
           backgroundColor: const Color(0xFF10B981),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP);

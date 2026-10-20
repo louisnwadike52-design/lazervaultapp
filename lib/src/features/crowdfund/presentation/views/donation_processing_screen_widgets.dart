@@ -168,7 +168,7 @@ extension _DonationProcessingWidgets on _DonationProcessingScreenState {
           failed
               ? _errorMessage
               : "This is taking longer than usual. Your donation may still go "
-                  "through — check My Donations before trying again so you "
+                  "through, check My Donations before trying again so you "
                   "don't give twice.",
           style: TextStyle(color: Colors.grey[400], fontSize: 13.sp),
           textAlign: TextAlign.center,

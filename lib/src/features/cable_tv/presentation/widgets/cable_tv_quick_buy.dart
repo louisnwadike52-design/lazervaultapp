@@ -440,7 +440,7 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
       amountLocked: true,
       amountLabel: 'Package price',
       amountLockedNote:
-          'Set by the package you selected — auto-renew always buys that bouquet.',
+          'Set by the package you selected, auto-renew always buys that bouquet.',
       onSubmit: ({
         required double amount,
         required String frequency,

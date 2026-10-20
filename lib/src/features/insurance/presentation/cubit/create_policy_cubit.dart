@@ -1789,7 +1789,7 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
         emit(InsuranceProductSelected(
           product: _selectedProduct!,
           formData: Map<String, String>.from(_formData),
-          formErrors: {fieldName: "Couldn't prepare upload — tap to retry"},
+          formErrors: {fieldName: "Couldn't prepare upload, tap to retry"},
         ));
       }
     }

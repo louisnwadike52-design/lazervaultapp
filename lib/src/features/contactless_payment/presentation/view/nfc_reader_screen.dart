@@ -426,7 +426,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
     if (!mounted) return;
     setState(() {
       _statusMessage =
-          'No problem — try again, scan their QR code, or type the session ID.';
+          'No problem, try again, scan their QR code, or type the session ID.';
       _wasCancelled = true;
       _hasError = false;
       _isScanning = false;

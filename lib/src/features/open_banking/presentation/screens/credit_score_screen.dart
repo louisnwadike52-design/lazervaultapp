@@ -1421,7 +1421,7 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                 SizedBox(height: 8.h),
                 Text(
                   "There isn't enough transaction history yet to calculate a "
-                  'reliable score. Keep transacting${score.bankName.isNotEmpty ? ' on ${score.bankName}' : ''} — '
+                  'reliable score. Keep transacting${score.bankName.isNotEmpty? ' on ${score.bankName}' : ''} — '
                   'your score and its breakdown appear once there’s enough activity.',
                   textAlign: TextAlign.center,
                   style: TextStyle(

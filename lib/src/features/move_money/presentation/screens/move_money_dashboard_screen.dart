@@ -570,7 +570,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                     Get.snackbar(
                       'Account Linked',
                       state.mandateFailed
-                          ? '${state.account.bankName} linked. Direct Debit setup pending — tap account to retry.'
+                          ? '${state.account.bankName} linked. Direct Debit setup pending, tap account to retry.'
                           : '${state.account.bankName} linked with Direct Debit enabled.',
                       backgroundColor: state.mandateFailed
                           ? const Color(0xFFFB923C)

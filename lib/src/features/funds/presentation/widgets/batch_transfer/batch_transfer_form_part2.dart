@@ -605,7 +605,7 @@ class _MultiSelectRecipientBottomSheetState
               size: 44.sp, color: btTextTertiary.withValues(alpha: 0.6)),
           SizedBox(height: 12.h),
           Text(
-            'Find recipients by name, @username, phone or email — including '
+            'Find recipients by name, @username, phone or email, including '
             'members of your organizations. Each person you pick is added to '
             'this batch.',
             textAlign: TextAlign.center,
@@ -1040,7 +1040,7 @@ class _MultiSelectRecipientBottomSheetState
               icon: Icons.account_balance_outlined,
               title: 'Add Bank Account',
               subtitle:
-                  'Enter a 10-digit account number — we\'ll detect the bank\nand verify the account holder automatically',
+                  'Enter a 10-digit account number, we\'ll detect the bank\nand verify the account holder automatically',
             ),
         ],
       ),

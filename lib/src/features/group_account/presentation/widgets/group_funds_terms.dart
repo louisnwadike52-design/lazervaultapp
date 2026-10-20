@@ -28,7 +28,7 @@ class GroupFundsTerms {
     (
       title: 'The amount is fixed in an Esusu',
       body: 'Every member pays the same share each cycle. A one-time goal '
-          'is open — pay what you want, or a percentage of the target.',
+          'is open, pay what you want, or a percentage of the target.',
     ),
     (
       title: 'We cannot make a member pay',
@@ -46,7 +46,7 @@ class GroupFundsTerms {
     (
       title: 'Leaving, and what comes back',
       body: 'You can leave a contribution. What you get back depends on '
-          'where the money already is — the app shows you the exact refund '
+          'where the money already is, the app shows you the exact refund '
           'and forfeit before you confirm, and nothing moves until you do.',
     ),
   ];

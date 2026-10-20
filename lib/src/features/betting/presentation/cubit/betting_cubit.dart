@@ -111,7 +111,7 @@ class BettingCubit extends Cubit<BettingState> {
       if (result.payment.isFailed || result.payment.isRefunded) {
         emit(BettingFundingFailed(
           message: result.payment.isRefunded
-              ? 'Funding did not go through — your money has been returned to '
+              ? 'Funding did not go through, your money has been returned to '
                   'your wallet.'
               : (result.message.isNotEmpty
                   ? sanitizeUserFacingError(result.message)

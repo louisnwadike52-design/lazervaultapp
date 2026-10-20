@@ -147,7 +147,7 @@ class AccountDetailsShareSheet extends StatelessWidget {
     } catch (_) {
       // Never leave the user tapping a button that gives no sign either way.
       Get.snackbar('Could not share',
-          'Your details are copied instead — paste them anywhere.',
+          'Your details are copied instead, paste them anywhere.',
           backgroundColor: const Color(0xFFEF4444),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
