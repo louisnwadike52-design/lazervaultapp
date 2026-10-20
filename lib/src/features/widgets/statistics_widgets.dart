@@ -94,8 +94,22 @@ class _FeatureCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(feature.route, arguments: feature.arguments),
-      child: Container(
+      onTap: () {
+        if (!feature.enabled) {
+          showAppSnackbar(
+            '${feature.title} is not available',
+            feature.disabledReason ??
+                'This is not available for your account yet.',
+            type: AppSnackbarType.info,
+          );
+          return;
+        }
+        Get.toNamed(feature.route, arguments: feature.arguments);
+      },
+      child: Opacity(
+        // Dimmed, not hidden. See _FeatureItem.enabled.
+        opacity: feature.enabled ? 1 : 0.45,
+        child: Container(
         padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 10.h),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
@@ -174,6 +188,7 @@ class _FeatureCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
@@ -349,6 +364,22 @@ class _FeatureItem {
   final String route;
   final Map<String, dynamic>? arguments;
 
+  /// False when this action cannot work for the active account, e.g. budgets
+  /// and goals outside Nigeria, where the categorised spending they measure
+  /// against comes from a rail that does not exist.
+  ///
+  /// The tile is DIMMED AND KEPT rather than removed: the grid is a fixed
+  /// 2x2, so dropping a tile reflows the other three into a shape the user has
+  /// to re-read, and silently removing an action people know about reads as a
+  /// bug rather than a restriction. The route is guarded too, so this is the
+  /// honest label on a door that is genuinely shut.
+  final bool enabled;
+
+  /// Shown when a disabled tile is tapped. Required in practice whenever
+  /// [enabled] is false — a dimmed tile that explains nothing is worse than a
+  /// live one.
+  final String? disabledReason;
+
   _FeatureItem({
     required this.title,
     required this.description,
@@ -356,5 +387,7 @@ class _FeatureItem {
     required this.color,
     required this.route,
     this.arguments,
+    this.enabled = true,
+    this.disabledReason,
   });
 }

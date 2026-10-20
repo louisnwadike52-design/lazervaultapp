@@ -33,6 +33,7 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/statistics/presentation/widgets/linked_banks_widget.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/bank_scope_pills.dart';
 import 'package:lazervault/core/config/locale_gating.dart';
+import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/financial_health_score_card.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/cash_flow_insights_card.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/failed_transactions_card.dart';
@@ -202,6 +203,18 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   @override
   void initState() {
     super.initState();
+
+    // THE DEFAULT SCOPE MUST BE ONE THE ACCOUNT IS ALLOWED TO USE.
+    //
+    // _statsSource defaults to `both`, which is the union of wallet and bank
+    // data. Outside NGN the bank half cannot exist, so the page opened on a
+    // scope that is disabled in its own selector: every figure read zero, and
+    // the only way out was a segment the user had just been told they could
+    // not tap. Narrow to the wallet instead, which is the one scope that
+    // always has data.
+    if (!LocaleGating.aiScopeAllowed('banks')) {
+      _statsSource = StatisticsSource.lazervault;
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _ensureActiveAccount();
@@ -614,21 +627,47 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         children: [
           _sourceSegment(StatisticsSource.lazervault, 'Lazervault',
               Icons.account_balance_wallet_rounded),
+          // BANK AND BOTH NEED A LINKED BANK, WHICH ONLY NIGERIA HAS.
+          //
+          // Open banking is a Nigeria-only rail, so outside NGN these two
+          // scopes can only ever report zero — and "Both" is not a safe
+          // middle ground, because it is the union and half of it is the half
+          // that cannot exist. Disabled rather than removed, matching the
+          // bottom nav: the segments are addressed by position in a fixed
+          // row, and a user who knows the control should see why it is shut.
           _sourceSegment(
-              StatisticsSource.bank, 'Bank', Icons.account_balance_rounded),
+              StatisticsSource.bank, 'Bank', Icons.account_balance_rounded,
+              enabled: _bankScopesOffered),
           _sourceSegment(
-              StatisticsSource.both, 'Both', Icons.dashboard_rounded),
+              StatisticsSource.both, 'Both', Icons.dashboard_rounded,
+              enabled: _bankScopesOffered),
         ],
       ),
     );
   }
 
-  Widget _sourceSegment(StatisticsSource value, String label, IconData icon) {
+  /// Whether bank-backed statistics scopes are offered at all. Resolves
+  /// through the same LocaleGating decision the bank pills and linked-banks
+  /// section already use, so the three cannot drift.
+  bool get _bankScopesOffered => LocaleGating.aiScopeAllowed('banks');
+
+  Widget _sourceSegment(StatisticsSource value, String label, IconData icon,
+      {bool enabled = true}) {
     final selected = _statsSource == value;
     return Expanded(
-      child: GestureDetector(
+      child: Opacity(
+        opacity: enabled ? 1 : 0.4,
+        child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
+          if (!enabled) {
+            showAppSnackbar(
+              '$label statistics are not available',
+              LocaleGating.reasonFor('$label statistics'),
+              type: AppSnackbarType.info,
+            );
+            return;
+          }
           if (_statsSource == value) return;
           // Mirror StatisticsCubit.changeSource(), which WIPES the per-bank
           // filter on every source switch. Without clearing the local set too,
@@ -682,6 +721,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -1310,7 +1350,21 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     }
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.budgetAIInsights),
+      // Same Naira-only rule as the Budget AI tile below. This card is the
+      // OTHER way into that screen from this page, so leaving it live would
+      // walk a restricted account straight into the guard's explanation
+      // instead of telling them here.
+      onTap: () {
+        if (LocaleGating.restricted) {
+          showAppSnackbar(
+            'Budget AI insights is not available',
+            LocaleGating.reasonFor('Budget AI insights'),
+            type: AppSnackbarType.info,
+          );
+          return;
+        }
+        Get.toNamed(AppRoutes.budgetAIInsights);
+      },
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 16.w),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -1456,6 +1510,21 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   }
 
   Widget _buildFeatureGrid() {
+    // BUDGETS, BUDGET AI AND GOALS ARE NAIRA-ONLY.
+    //
+    // All three are measured against CATEGORISED spending, and categorisation
+    // is fed by open banking — a Nigeria-only rail. On a foreign-currency
+    // account there are no linked banks, so a budget has nothing to track and
+    // an AI insight has nothing to read: the screens open and every figure on
+    // them is zero. Spending analysis is kept, because it reads the wallet's
+    // own transactions, which exist in every region.
+    //
+    // The tiles are dimmed and kept rather than removed: this is a fixed 2x2,
+    // so dropping tiles reflows the rest into a shape the user has to re-read.
+    // The routes are guarded as well (LocaleGateGuard in AppRouter), because
+    // the notification resolvers and the budget screens' own AI buttons reach
+    // them without passing this grid.
+    final restricted = LocaleGating.restricted;
     // Bills + Categories removed — not needed on this surface. The four kept
     // actions each have a verified end-to-end flow.
     final features = [
@@ -1465,6 +1534,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         icon: Icons.account_balance_wallet,
         color: InvoiceThemeColors.primaryPurple,
         route: AppRoutes.budgetList,
+        enabled: !restricted,
+        disabledReason: LocaleGating.reasonFor('Budgets'),
       ),
       _FeatureItem(
         title: 'AI Insights',
@@ -1472,6 +1543,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         icon: Icons.auto_awesome,
         color: const Color.fromARGB(255, 78, 3, 208),
         route: AppRoutes.budgetAIInsights,
+        enabled: !restricted,
+        disabledReason: LocaleGating.reasonFor('Budget AI insights'),
       ),
       _FeatureItem(
         title: 'Goals',
@@ -1479,6 +1552,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         icon: Icons.flag,
         color: const Color(0xFFFB923C),
         route: AppRoutes.financialGoals,
+        enabled: !restricted,
+        disabledReason: LocaleGating.reasonFor('Goals'),
       ),
       _FeatureItem(
         title: 'Spending',

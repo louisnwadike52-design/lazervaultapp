@@ -654,6 +654,7 @@ import 'package:lazervault/src/features/presentation/views/notification_screen.d
 import '../fcy_account/presentation/fcy_kyc_wizard_screen.dart';
 import '../fcy_account/presentation/cubit/fcy_kyc_cubit.dart';
 import 'package:lazervault/core/shared_widgets/feature_gate_guard.dart';
+import 'package:lazervault/core/shared_widgets/locale_gate_guard.dart';
 
 class AppRouter {
   // Phone+passcode SIGNUP is a multi-screen journey whose working state
@@ -2978,9 +2979,16 @@ class AppRouter {
     // Budget routes
     GetPage(
       name: AppRoutes.budgetList,
-      page: () => BlocProvider.value(
-        value: serviceLocator<BudgetCubit>(),
-        child: const BudgetListScreen(),
+      // Naira-only: a budget is measured against categorised spending, which
+      // comes from open banking (Nigeria-only). Guarded at the ROUTE because
+      // the account notification resolver lands here directly, so gating the
+      // analytics grid alone would leave a push notification open.
+      page: () => LocaleGateGuard(
+        title: 'Budgets',
+        builder: (_) => BlocProvider.value(
+          value: serviceLocator<BudgetCubit>(),
+          child: const BudgetListScreen(),
+        ),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -3002,12 +3010,18 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.budgetAIInsights,
-      page: () => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: serviceLocator<BudgetCubit>()),
-          BlocProvider.value(value: serviceLocator<StatisticsCubit>()),
-        ],
-        child: const BudgetAIInsightsScreen(),
+      // Naira-only, and reached from three places besides the analytics grid:
+      // the budget list screen's own AI button, the budget detail screen's,
+      // and the grid card above the feature tiles.
+      page: () => LocaleGateGuard(
+        title: 'Budget AI insights',
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: serviceLocator<BudgetCubit>()),
+            BlocProvider.value(value: serviceLocator<StatisticsCubit>()),
+          ],
+          child: const BudgetAIInsightsScreen(),
+        ),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -3023,9 +3037,13 @@ class AppRouter {
     // Financial Goals routes
     GetPage(
       name: AppRoutes.financialGoals,
-      page: () => BlocProvider.value(
-        value: serviceLocator<BudgetCubit>(),
-        child: const FinancialGoalsScreen(),
+      // Naira-only, and the commerce notification resolver lands here.
+      page: () => LocaleGateGuard(
+        title: 'Goals',
+        builder: (_) => BlocProvider.value(
+          value: serviceLocator<BudgetCubit>(),
+          child: const FinancialGoalsScreen(),
+        ),
       ),
       transition: Transition.rightToLeft,
     ),
