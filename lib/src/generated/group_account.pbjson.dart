@@ -777,6 +777,20 @@ const ContributionMemberMessage$json = {
       '5': 9,
       '10': 'autoChargeLastError'
     },
+    {
+      '1': 'has_collected_this_round',
+      '3': 25,
+      '4': 1,
+      '5': 8,
+      '10': 'hasCollectedThisRound'
+    },
+    {
+      '1': 'collected_cycle_index',
+      '3': 26,
+      '4': 1,
+      '5': 5,
+      '10': 'collectedCycleIndex'
+    },
   ],
 };
 
@@ -801,7 +815,9 @@ final $typed_data.Uint8List contributionMemberMessageDescriptor = $convert.base6
     'dHMYFiABKAVSEmF1dG9DaGFyZ2VBdHRlbXB0cxJYChthdXRvX2NoYXJnZV9sYXN0X2F0dGVtcH'
     'RfYXQYFyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUhdhdXRvQ2hhcmdlTGFzdEF0'
     'dGVtcHRBdBIzChZhdXRvX2NoYXJnZV9sYXN0X2Vycm9yGBggASgJUhNhdXRvQ2hhcmdlTGFzdE'
-    'Vycm9y');
+    'Vycm9yEjcKGGhhc19jb2xsZWN0ZWRfdGhpc19yb3VuZBgZIAEoCFIVaGFzQ29sbGVjdGVkVGhp'
+    'c1JvdW5kEjIKFWNvbGxlY3RlZF9jeWNsZV9pbmRleBgaIAEoBVITY29sbGVjdGVkQ3ljbGVJbm'
+    'RleA==');
 
 @$core.Deprecated('Use contributionPaymentMessageDescriptor instead')
 const ContributionPaymentMessage$json = {

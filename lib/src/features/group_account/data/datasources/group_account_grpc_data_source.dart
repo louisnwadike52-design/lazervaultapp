@@ -1527,6 +1527,11 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       hasPaidCurrentCycle: member.hasPaidCurrentCycle,
       cyclePaidAmount: _int64ToAmount(member.cyclePaidAmount),
       missedCycles: member.missedCycles,
+      // One turn per member per round. An older server sends neither field
+      // and the member is simply not badged, which is the pre-rounds
+      // behaviour.
+      hasCollectedThisRound: member.hasCollectedThisRound,
+      collectedCycleIndex: member.collectedCycleIndex,
       membershipStatus:
           ContributionMembershipStatus.fromString(member.membershipStatus),
       linkedInvitationId: member.linkedInvitationId.isNotEmpty

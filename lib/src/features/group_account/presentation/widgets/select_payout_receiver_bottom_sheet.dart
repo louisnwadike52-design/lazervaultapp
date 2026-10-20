@@ -456,7 +456,19 @@ class _SelectPayoutReceiverBottomSheetState
         // accepted the group invite, so there is no account to pay into and
         // the server refuses them as receiver.
         final notJoined = m.isPendingInvite;
-        final blocked = behind || notJoined;
+        // ONE TURN PER MEMBER PER ROUND.
+        //
+        // They have already collected the pot in the round now running.
+        // Picking them would mean a second pot funded by members still
+        // waiting for their first, so the server refuses it — this says so
+        // before the round trip instead of after it.
+        //
+        // The CURRENT receiver is never treated as blocked by this: that is
+        // the turn in progress, not a second one.
+        final alreadyCollected = widget.contribution.isRotatingSavings &&
+            m.hasCollectedThisRound &&
+            !isCurrent;
+        final blocked = behind || notJoined || alreadyCollected;
         return InkWell(
           borderRadius: BorderRadius.circular(10.r),
           onTap:
@@ -564,6 +576,30 @@ class _SelectPayoutReceiverBottomSheetState
                                   'Invite not accepted yet',
                                   style: GoogleFonts.inter(
                                       color: Colors.grey[500], fontSize: 11.sp),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        if (alreadyCollected) ...[
+                          SizedBox(height: 4.h),
+                          Row(
+                            children: [
+                              Icon(Icons.emoji_events_outlined,
+                                  size: 12.sp, color: const Color(0xFFA78BFA)),
+                              SizedBox(width: 4.w),
+                              Expanded(
+                                child: Text(
+                                  m.collectedCycleIndex > 0
+                                      ? 'Already collected in cycle '
+                                          '${m.collectedCycleIndex} — everyone '
+                                          'else takes a turn first'
+                                      : 'Already collected this round — '
+                                          'everyone else takes a turn first',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10.5.sp,
+                                    color: const Color(0xFFA78BFA),
+                                  ),
                                 ),
                               ),
                             ],

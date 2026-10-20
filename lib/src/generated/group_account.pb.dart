@@ -1240,6 +1240,8 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     $core.int? autoChargeAttempts,
     $1.Timestamp? autoChargeLastAttemptAt,
     $core.String? autoChargeLastError,
+    $core.bool? hasCollectedThisRound,
+    $core.int? collectedCycleIndex,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -1272,6 +1274,10 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
       result.autoChargeLastAttemptAt = autoChargeLastAttemptAt;
     if (autoChargeLastError != null)
       result.autoChargeLastError = autoChargeLastError;
+    if (hasCollectedThisRound != null)
+      result.hasCollectedThisRound = hasCollectedThisRound;
+    if (collectedCycleIndex != null)
+      result.collectedCycleIndex = collectedCycleIndex;
     return result;
   }
 
@@ -1323,6 +1329,9 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     ..aOM<$1.Timestamp>(23, _omitFieldNames ? '' : 'autoChargeLastAttemptAt',
         subBuilder: $1.Timestamp.create)
     ..aOS(24, _omitFieldNames ? '' : 'autoChargeLastError')
+    ..aOB(25, _omitFieldNames ? '' : 'hasCollectedThisRound')
+    ..a<$core.int>(
+        26, _omitFieldNames ? '' : 'collectedCycleIndex', $pb.PbFieldType.O3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1597,6 +1606,33 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
   $core.bool hasAutoChargeLastError() => $_has(23);
   @$pb.TagNumber(24)
   void clearAutoChargeLastError() => $_clearField(24);
+
+  /// ONE TURN PER MEMBER PER ROUND.
+  ///
+  /// True when this member has already collected the pot during the round
+  /// currently running. The app disables them as a payout receiver and badges
+  /// them, and the server refuses the assignment anyway — collecting twice
+  /// before everyone has collected once means the second pot is funded by
+  /// people still waiting for a first.
+  @$pb.TagNumber(25)
+  $core.bool get hasCollectedThisRound => $_getBF(24);
+  @$pb.TagNumber(25)
+  set hasCollectedThisRound($core.bool value) => $_setBool(24, value);
+  @$pb.TagNumber(25)
+  $core.bool hasHasCollectedThisRound() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearHasCollectedThisRound() => $_clearField(25);
+
+  /// Which cycle they collected in, for the badge's tooltip. 0 when they
+  /// have not collected this round.
+  @$pb.TagNumber(26)
+  $core.int get collectedCycleIndex => $_getIZ(25);
+  @$pb.TagNumber(26)
+  set collectedCycleIndex($core.int value) => $_setSignedInt32(25, value);
+  @$pb.TagNumber(26)
+  $core.bool hasCollectedCycleIndex() => $_has(25);
+  @$pb.TagNumber(26)
+  void clearCollectedCycleIndex() => $_clearField(26);
 }
 
 class ContributionPaymentMessage extends $pb.GeneratedMessage {

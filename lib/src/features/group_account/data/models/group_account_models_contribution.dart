@@ -335,6 +335,8 @@ class ContributionMemberModel extends ContributionMember {
     super.hasPaidCurrentCycle = false,
     super.cyclePaidAmount = 0,
     super.missedCycles = 0,
+    super.hasCollectedThisRound = false,
+    super.collectedCycleIndex = 0,
     super.membershipStatus = ContributionMembershipStatus.active,
     super.linkedInvitationId,
     super.autoChargeStatus = '',
@@ -357,6 +359,9 @@ class ContributionMemberModel extends ContributionMember {
       hasPaidCurrentCycle: json['hasPaidCurrentCycle'] as bool? ?? false,
       cyclePaidAmount: (json['cyclePaidAmount'] as num?)?.toDouble() ?? 0,
       missedCycles: (json['missedCycles'] as num?)?.toInt() ?? 0,
+      hasCollectedThisRound: json['hasCollectedThisRound'] as bool? ?? false,
+      collectedCycleIndex:
+          (json['collectedCycleIndex'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -374,6 +379,8 @@ class ContributionMemberModel extends ContributionMember {
       'hasPaidCurrentCycle': hasPaidCurrentCycle,
       'cyclePaidAmount': cyclePaidAmount,
       'missedCycles': missedCycles,
+      'hasCollectedThisRound': hasCollectedThisRound,
+      'collectedCycleIndex': collectedCycleIndex,
     };
   }
 }

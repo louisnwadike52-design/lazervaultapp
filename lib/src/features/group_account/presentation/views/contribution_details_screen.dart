@@ -3903,6 +3903,50 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                             ],
                           ),
                         ),
+                      ] else if (member?.hasCollectedThisRound ?? false) ...[
+                        // ALREADY HAD THEIR TURN THIS ROUND.
+                        //
+                        // A round is one full pass through the members, so
+                        // this member cannot be the receiver again until
+                        // everyone else has collected. The server refuses the
+                        // assignment and the receiver picker disables them;
+                        // the roster says WHY, so a creator looking for the
+                        // next receiver can see at a glance who is still
+                        // waiting rather than discovering it one tap at a
+                        // time.
+                        //
+                        // Ranked above "cycles behind" deliberately: someone
+                        // who has collected is not a candidate at all, which
+                        // is the more useful fact about this row.
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFA78BFA).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.emoji_events_outlined,
+                                  size: 10.sp, color: const Color(0xFFA78BFA)),
+                              SizedBox(width: 3.w),
+                              Text(
+                                (member?.collectedCycleIndex ?? 0) > 0
+                                    ? 'Collected cycle '
+                                        '${member!.collectedCycleIndex}'
+                                    : 'Already collected',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFA78BFA),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ] else if ((member?.missedCycles ?? 0) > 0) ...[
                         // CYCLES BEHIND. This number existed and was shown
                         // NOWHERE.

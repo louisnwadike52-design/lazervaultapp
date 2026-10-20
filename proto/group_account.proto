@@ -359,6 +359,18 @@ message ContributionMemberMessage {
   int32  auto_charge_attempts          = 22;
   google.protobuf.Timestamp auto_charge_last_attempt_at = 23;
   string auto_charge_last_error        = 24;
+  // ONE TURN PER MEMBER PER ROUND.
+  //
+  // True when this member has already collected the pot during the round
+  // currently running. The app disables them as a payout receiver and badges
+  // them, and the server refuses the assignment anyway — collecting twice
+  // before everyone has collected once means the second pot is funded by
+  // people still waiting for a first.
+  bool has_collected_this_round = 25;
+
+  // Which cycle they collected in, for the badge's tooltip. 0 when they
+  // have not collected this round.
+  int32 collected_cycle_index = 26;
 }
 
 message ContributionPaymentMessage {

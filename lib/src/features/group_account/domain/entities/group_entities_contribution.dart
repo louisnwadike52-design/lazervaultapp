@@ -515,6 +515,21 @@ class ContributionMember extends Equatable {
   /// indicators on the contribution screen.
   final int missedCycles;
 
+  /// Whether this member has already collected the pot in the round that is
+  /// currently running.
+  ///
+  /// A round is one full pass through the members, so collecting twice before
+  /// everyone has collected once means the second pot is funded by people
+  /// still waiting for a first. The server refuses such an assignment; this
+  /// lets the picker say so BEFORE the round trip, instead of greying a row
+  /// with no explanation.
+  ///
+  /// Resets each round — that is the whole point of a round.
+  final bool hasCollectedThisRound;
+
+  /// Which cycle they collected in, for the badge. 0 when they have not.
+  final int collectedCycleIndex;
+
   /// Invite-first membership state. ACTIVE rows are full participants;
   /// PENDING_INVITE rows are shadow placeholders waiting on group
   /// invite acceptance and MUST be excluded from financial logic
@@ -549,6 +564,8 @@ class ContributionMember extends Equatable {
     this.hasPaidCurrentCycle = false,
     this.cyclePaidAmount = 0,
     this.missedCycles = 0,
+    this.hasCollectedThisRound = false,
+    this.collectedCycleIndex = 0,
     this.membershipStatus = ContributionMembershipStatus.active,
     this.linkedInvitationId,
     this.autoChargeStatus = '',
@@ -590,6 +607,8 @@ class ContributionMember extends Equatable {
         hasPaidCurrentCycle,
         cyclePaidAmount,
         missedCycles,
+        hasCollectedThisRound,
+        collectedCycleIndex,
         membershipStatus,
         linkedInvitationId,
         autoChargeStatus,
