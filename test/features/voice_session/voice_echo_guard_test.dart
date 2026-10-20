@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/src/features/voice_session/voice_echo_guard.dart';
 
@@ -100,6 +102,113 @@ void main() {
       // "no thanks" shares no real token with "go ahead"; a naive one-edit
       // rule on short words would match no/go and suppress the user.
       expect(g.isEcho('no thanks', t0, agentIsSpeaking: true), isFalse);
+    });
+  });
+
+  // ── WHAT THE GUARD IS ANCHORED TO ──
+  //
+  // The guard was correct and still failed in production, because of what it
+  // was WIRED to. It was armed by the caption flag (_agentSpeaking) plus a
+  // 1.5s tail, and captions are TEXT: a sentence streams as text in a few
+  // hundred milliseconds and then takes seconds to actually speak. So the
+  // guard disarmed mid-sentence and the rest of Nova's own words were
+  // transcribed as the user's, inside a transfer waiting on a PIN.
+  group('the guard must be anchored to AUDIO, not caption text', () {
+    test('a caption-anchored tail disarms while the speaker is still talking',
+        () {
+      final g = VoiceEchoGuard()..noteAgentUtterance(agentSaid);
+      // Caption stream ended at t0. The audio has four more seconds to run.
+      g.noteAgentStoppedSpeaking(t0);
+      final midSentence = t0.add(const Duration(seconds: 4));
+      // THIS is the production bug, reproduced: the real tail outlasts the
+      // window, so the echo is handed through as the user.
+      expect(g.isEcho(micHeard, midSentence, agentIsSpeaking: false), isFalse,
+          reason: 'documents WHY the anchor had to move; if this ever starts '
+              'returning true the tail window grew and this test is no longer '
+              'describing the hazard');
+    });
+
+    test('anchored to audio, the same moment is still suppressed', () {
+      final g = VoiceEchoGuard()..noteAgentUtterance(agentSaid);
+      // Audio-anchored: the agent counts as speaking until the SOUND stops, so
+      // the flag is still true four seconds in.
+      final midSentence = t0.add(const Duration(seconds: 4));
+      expect(g.isEcho(micHeard, midSentence, agentIsSpeaking: true), isTrue);
+    });
+
+    test('the tail window runs from the end of the AUDIO', () {
+      final g = VoiceEchoGuard()..noteAgentUtterance(agentSaid);
+      // Sound stopped four seconds after the captions did.
+      final audioEnded = t0.add(const Duration(seconds: 4));
+      g.noteAgentStoppedSpeaking(audioEnded);
+      expect(
+        g.isEcho(micHeard, audioEnded.add(const Duration(milliseconds: 300)),
+            agentIsSpeaking: false),
+        isTrue,
+        reason: 'reverb right after the speaker goes quiet is still the agent',
+      );
+    });
+
+    test('and a real user turn after that window still gets through', () {
+      // The guard must not become a mute button. This is the cost side of the
+      // trade and it has to keep working.
+      final g = VoiceEchoGuard()..noteAgentUtterance(agentSaid);
+      final audioEnded = t0.add(const Duration(seconds: 4));
+      g.noteAgentStoppedSpeaking(audioEnded);
+      expect(
+        g.isEcho('yes send five thousand naira to my brother',
+            audioEnded.add(const Duration(seconds: 2)),
+            agentIsSpeaking: false),
+        isFalse,
+      );
+    });
+  });
+
+  // The guard above was already correct when production failed. What was wrong
+  // was what it was CONNECTED to, and that is not reachable from a unit test —
+  // so it is pinned at the source instead.
+  group('the cubit wiring the guard depends on', () {
+    String cubit() => File(
+          'lib/src/features/voice_session/cubit/voice_session_cubit.dart',
+        ).readAsStringSync();
+
+    test('the echo gate asks whether the agent is AUDIBLE', () {
+      expect(cubit().contains('agentIsSpeaking: _agentAudible'), isTrue,
+          reason: 'the echo gate is back on the caption flag, so it disarms '
+              'seconds before the speaker goes quiet');
+    });
+
+    test('audibility includes the live audio track, not just captions', () {
+      expect(
+          cubit().contains('_agentSpeaking || _agentAudioAudible'), isTrue,
+          reason: 'the only signal that tracks real playback has been dropped');
+    });
+
+    test('the remote participant feeds it', () {
+      // Before this, SpeakingChangedEvent handled ONLY the local participant;
+      // the agent's own speaking events were discarded.
+      expect(cubit().contains('event.participant != _room?.localParticipant'),
+          isTrue,
+          reason: 'remote speaking events are ignored again, so nothing '
+              'observes when the agent actually stops making sound');
+    });
+
+    test('teardown clears it', () {
+      // A stuck-true flag means the guard suppresses EVERY utterance of the
+      // next session: a deaf agent, which is worse than the echo.
+      expect(cubit().contains('_agentAudioAudible = false'), isTrue);
+    });
+
+    test('the loudspeaker is re-asserted, not set once at connect', () {
+      // Each of these points reconfigures the audio session and silently
+      // reverts the route to the earpiece.
+      final src = cubit();
+      expect(
+        RegExp(r'_assertLoudspeaker\(\)').allMatches(src).length,
+        greaterThanOrEqualTo(4),
+        reason: 'asserting the speaker only at connect is what made the agent '
+            'inaudible after a mic publish or the transaction-PIN sheet',
+      );
     });
   });
 }

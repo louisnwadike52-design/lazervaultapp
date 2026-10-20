@@ -389,7 +389,37 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// True between agent_caption_start and agent_caption_end — the agent is
   /// actively producing speech. While true, the recognizer may stay open in a
   /// BARGE-IN window (echo-filtered) so the user can interrupt and be reasoned on.
+  ///
+  /// NOT a reliable answer to "is sound coming out of the speaker right now".
+  /// These are CAPTION events: the text finishes streaming seconds before the
+  /// audio has played out. Use [_agentAudible] for anything echo-related.
   bool _agentSpeaking = false;
+
+  /// True while the agent participant's AUDIO is actually reaching the speaker,
+  /// from LiveKit's own active-speaker detection on the remote track.
+  ///
+  /// WHY THIS EXISTS. The echo guard used to be armed by [_agentSpeaking] plus a
+  /// 1.5s tail, both anchored to `agent_caption_end` — the end of the TEXT
+  /// stream. A sentence streams as text in a few hundred milliseconds and then
+  /// takes several SECONDS to speak. So the guard disarmed while the loudspeaker
+  /// was still mid-sentence, the recogniser re-armed into it, and the remainder
+  /// of Nova's own sentence was transcribed and rendered as the user's turn —
+  /// "No problem would you like to try entering your pin again" appearing under
+  /// "You ● speaking…" while a transfer was waiting for a PIN.
+  ///
+  /// Anchoring to the audio track closes that gap at the source, and the tail
+  /// window now starts when the sound genuinely stops rather than when the
+  /// subtitles do.
+  bool _agentAudioAudible = false;
+
+  /// The agent is audible if EITHER signal says so.
+  ///
+  /// Belt and braces on purpose: captions can start fractionally before the
+  /// first audio frame, and LiveKit's speaker detection has its own threshold
+  /// that a quiet passage can fall under. Either one alone leaves a gap, and the
+  /// cost of a false "audible" is a brief suppression, while the cost of a false
+  /// "silent" is the agent's voice entering a money flow as the user.
+  bool get _agentAudible => _agentSpeaking || _agentAudioAudible;
 
   /// Keeps the agent's own voice out of the user's turn — including AFTER the
   /// agent stops, while the loudspeaker is still emitting the tail. See
@@ -524,13 +554,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // Client-side silence timer (reset on every partial). Longer on iOS to tolerate
   // natural pauses before we finalise a turn ourselves.
   //
-  // Raised from 3200/2500: people asked for room to pause mid-sentence without
-  // the turn being sent. This only delays the END of a turn — a short complete
-  // command still dispatches as soon as the recognizer finalises it — so the cost
-  // of being generous here is small and the cost of being mean is a sentence cut
-  // in half.
-  static int get _turnSilenceDefaultMs => _isIOS ? 4000 : 3200;
-  static int get _graceDefaultMs => _isIOS ? 2800 : 2000;
+  // Raised from 3200/2500 to 4000/3200 when turns were being cut in half, then
+  // TRIMMED BACK to these once device-side transcription got accurate enough not
+  // to need the padding. The total a user waits after they stop talking is
+  // `pauseFor + grace` (the recogniser's own silence detection, then ours):
+  // iOS was 3200+2800 = 6.0s and Android 2500+2000 = 4.5s, which reads as the
+  // agent being slow to take its turn. Now 2000+1900 = 3.9s and 1600+1400 = 3.0s.
+  //
+  // The anti-splitting protection is NOT what was cut: the grace still absorbs a
+  // continuation after a native final, and adaptive endpointing still extends
+  // both windows by [_incompleteExtraWait] when the text ends mid-thought. What
+  // went is the flat padding that fired while the user had already finished.
+  static int get _turnSilenceDefaultMs => _isIOS ? 2700 : 2100;
+  static int get _graceDefaultMs => _isIOS ? 1900 : 1400;
 
   /// Server overrides for the two endpointing windows, from
   /// `/voice/session/start`. Null until the session reports them, and null
@@ -1549,6 +1585,21 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         _emitSessionDeath(VoiceSessionDisconnected());
       })
       ..on<SpeakingChangedEvent>((event) {
+        // ── REMOTE (the agent): the only honest "is sound playing" signal ──
+        // Everything else we have is caption text, which finishes seconds
+        // before the audio does. This is what keeps the echo guard armed for
+        // the whole utterance instead of the first few hundred milliseconds of
+        // it. See [_agentAudioAudible].
+        if (event.participant != _room?.localParticipant) {
+          final audible = event.participant.isSpeaking;
+          if (_agentAudioAudible && !audible) {
+            // Sound actually stopped — NOW start the tail window for the
+            // loudspeaker buffer and room reverb.
+            _echoGuard.noteAgentStoppedSpeaking(DateTime.now());
+          }
+          _agentAudioAudible = audible;
+          return;
+        }
         if (event.participant == _room?.localParticipant) {
           // Recorded BEFORE the visual-feedback guard below. That guard exists to
           // stop a dialog's state being overwritten, but the mic indicator should
@@ -1613,11 +1664,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       // Best-effort: an unsupported platform (desktop/web) logs a warning
       // inside the SDK and changes nothing, so a failure here must never take
       // down a working session.
-      try {
-        await Hardware.instance.setSpeakerphoneOn(true);
-      } catch (e) {
-        print('VoiceSessionCubit: could not force speakerphone: $e');
-      }
+      await _assertLoudspeaker();
 
       await _applyCaptureOwnership();
 
@@ -2030,9 +2077,15 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // a long pause left the mic dead with no further partials, and whatever
           // had been said up to that point was all the turn ever contained.
           // In a gesture mode nothing but the gesture may end capture.
+          //
+          // Trimmed from 3200/2500 alongside the client windows above: this is
+          // the FIRST half of what the user experiences as "the agent is slow to
+          // answer", and the client grace timer behind it still absorbs a
+          // continuation, so shortening here costs a split sentence only if the
+          // grace is also too short.
           pauseFor: isPushToTalk
               ? const Duration(seconds: 60)
-              : Duration(milliseconds: _isIOS ? 3200 : 2500),
+              : Duration(milliseconds: _isIOS ? 2000 : 1600),
           localeId: await _resolveSttLocaleId(),
         ),
       );
@@ -2112,6 +2165,31 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     stopAudioCaptureOnMute: false,
   );
 
+  /// Put the agent's voice back on the LOUDSPEAKER.
+  ///
+  /// Asserting this once at connect is not enough, and that is why the agent
+  /// was reported as inaudible on Android and faint on iOS. Both platforms put
+  /// a voice session in a communication mode that routes to the EARPIECE and
+  /// bills playback to the voice-call volume stream — the "held to your ear"
+  /// route — and anything that reconfigures the audio session silently reverts
+  /// to it. Publishing or unpublishing the mic does exactly that, and so does
+  /// coming back from the transaction-PIN sheet, which is precisely where the
+  /// agent was reported to go quiet.
+  ///
+  /// So this is re-asserted at every point the session can be reconfigured
+  /// rather than once at the start.
+  ///
+  /// Best-effort by design: an unsupported platform logs inside the SDK and
+  /// changes nothing, and losing the loudspeaker must never take down a working
+  /// call.
+  Future<void> _assertLoudspeaker() async {
+    try {
+      await Hardware.instance.setSpeakerphoneOn(true);
+    } catch (e) {
+      print('VoiceSessionCubit: could not force speakerphone: $e');
+    }
+  }
+
   Future<void> _setAecMicPublished(bool enabled) async {
     if (!_onDeviceMode || !_hybridAecBargeIn) return;
     final lp = _room?.localParticipant;
@@ -2121,6 +2199,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         enabled,
         audioCaptureOptions: _aecMicOptions,
       );
+      // Publishing/unpublishing reconfigures the audio session, which drops the
+      // speaker override back to the earpiece. Re-assert it.
+      await _assertLoudspeaker();
     } catch (e) {
       print('VoiceSessionCubit: _setAecMicPublished($enabled) failed: $e');
     }
@@ -2174,9 +2255,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // used to be handed through as the user. That is how Nova's own "would you
     // like to try entering your pin again" ended up in the user's bubble
     // during a transfer.
+    // _agentAudible, NOT _agentSpeaking: the caption flag clears when the text
+    // stream ends, which is seconds before the speaker goes quiet. That gap is
+    // exactly how the agent's own sentence reached the user's bubble.
     if (words.isNotEmpty &&
         _echoGuard.isEcho(words, DateTime.now(),
-            agentIsSpeaking: _agentSpeaking)) {
+            agentIsSpeaking: _agentAudible)) {
       return;
     }
 
@@ -3173,6 +3257,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // (committing the partial start text would store a truncated turn).
           if (_room != null) {
             _currentUserCaption = null;
+            // The agent is about to be heard — make sure it actually can be.
+            // Anything since the last assert may have put the route back on the
+            // earpiece: a mic publish, or returning from the transaction-PIN
+            // sheet. Asserting on every agent turn means the worst case is one
+            // quiet reply, not a session the user cannot hear.
+            unawaited(_assertLoudspeaker());
             // On-device mode: the agent is now speaking.
             if (_onDeviceMode) {
               _agentSpeaking = true;
@@ -4098,6 +4188,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // turn-taking flags so a restart re-arms correctly.
     _awaitingAgentReply = false;
     _agentSpeaking = false;
+    // MUST be cleared here. It is driven by LiveKit SpeakingChangedEvents on the
+    // remote participant, and the room is being torn down — so if it were left
+    // true, no event would ever arrive to clear it and the echo guard would
+    // suppress every utterance of the NEXT session. A stuck-open guard is a
+    // deaf agent, which is worse than the echo it prevents.
+    _agentAudioAudible = false;
     // New session must never begin inside a stale tail window.
     _echoGuard.reset();
     _bargedInThisTurn = false;
