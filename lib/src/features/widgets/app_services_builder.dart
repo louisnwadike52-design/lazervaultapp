@@ -393,6 +393,13 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     if (!FeatureFlags.phoneBankingVisible) {
       hidden.add(AppServiceName.phoneBanking);
     }
+    // RMB cross-border transfers. Hidden by DEFAULT, same chokepoint as the
+    // tiles above so the grid, the All-Services search and the reorderable
+    // personal grid all agree — a tile hidden in one place and reachable in
+    // another is worse than one that is simply not there.
+    if (!FeatureFlags.rmbTransferVisible) {
+      hidden.add(AppServiceName.rmb);
+    }
     // Group Funds. Admin-gated but visible by DEFAULT — unlike the three
     // above, this is a live feature and the switch exists to WITHDRAW it, not
     // to stage a rollout.

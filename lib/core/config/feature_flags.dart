@@ -394,6 +394,15 @@ class FeatureFlags {
   /// shown. Admin-tunable; hidden by DEFAULT — see [phoneBankingVisible].
   static const String phoneBankingVisibleKey = 'phone_banking_visible';
 
+  /// Whether the RMB (China cross-border) transfer tile is shown.
+  ///
+  /// Hidden by DEFAULT. The rail is in maintenance while its provider sits in
+  /// sandbox, so the entry point was in front of people who could not
+  /// complete a transfer behind it. Routes and deep links stay registered, so
+  /// turning it on in the admin dashboard is the only change needed to bring
+  /// it back — nothing has to be rebuilt or redeployed.
+  static const String rmbTransferVisibleKey = 'rmb_transfer_visible';
+
   // ── Airtime landing tabs (admin-toggled) ─────────────────────────────────
   // Show/hide each of the three Airtime tabs (Buy / International / Sell) from
   // the admin dashboard. Buy + International default ON; Sell (airtime-to-cash)
@@ -497,6 +506,7 @@ class FeatureFlags {
       bulkSmsVisibleKey,
       cardAcceptanceVisibleKey,
       phoneBankingVisibleKey,
+      rmbTransferVisibleKey,
       airtimeTabBuyEnabled,
       airtimeTabInternationalEnabled,
       airtimeTabSellEnabled,
@@ -1289,6 +1299,12 @@ class FeatureFlags {
   /// switch restores it without a release.
   static bool get phoneBankingVisible {
     return _prefs?.getBool(phoneBankingVisibleKey) ?? false;
+  }
+
+  /// RMB cross-border transfers. Hidden unless an admin turns it on — see
+  /// [rmbTransferVisibleKey] for why the default is off.
+  static bool get rmbTransferVisible {
+    return _prefs?.getBool(rmbTransferVisibleKey) ?? false;
   }
 
   // ── Voice & Chat Assistant section visibility ────────────────────────────
