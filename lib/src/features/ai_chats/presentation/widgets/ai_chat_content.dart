@@ -11,6 +11,10 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/shared_widgets/service_unavailable_modal.dart';
+import 'package:lazervault/core/types/route_service_map.dart';
+import 'package:lazervault/core/types/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
@@ -2380,6 +2384,34 @@ class _AiChatContentState extends State<AiChatContent>
                       if (btn.actionType == 'quick_reply') {
                         _handleSubmitted(btn.payload);
                       } else if (btn.actionType == 'navigate') {
+                        // A WITHDRAWN SERVICE MUST NOT BE REACHABLE FROM HERE.
+                        //
+                        // This payload is a route chosen by the SERVER, so the
+                        // agent can offer "Open Crypto" for a service an admin
+                        // has taken off the app. The tile tap and the
+                        // notification deep link both refuse that; this was
+                        // the third entry point and it was open, which is
+                        // exactly the "hidden in one place, reachable in
+                        // another" state that makes a gate decorative.
+                        //
+                        // Explained rather than silently swallowed: a chip
+                        // that does nothing reads as the app ignoring the
+                        // user. They get the same modal the tile would show,
+                        // with the admin's own message. The whitelist
+                        // override is folded into the check, so a tester
+                        // still gets through.
+                        final gated = serviceForRoute(btn.payload);
+                        if (gated != null &&
+                            FeatureFlags.quickServiceEntryBlocked(
+                                gated.name)) {
+                          showServiceUnavailableModal(
+                            context,
+                            serviceName: gated.displayName,
+                            message: FeatureFlags.quickServiceMessage(
+                                gated.name),
+                          );
+                          return;
+                        }
                         Get.toNamed(btn.payload);
                       } else {
                         _handleSubmitted(btn.label);

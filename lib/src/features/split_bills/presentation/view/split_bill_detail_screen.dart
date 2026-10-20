@@ -1392,11 +1392,33 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => _showCancelConfirmation(context),
-                        icon: const Icon(Icons.cancel_outlined, size: 18),
-                        label: const Text(
-                          'Cancel',
-                          style: TextStyle(
+                        // Cancelling is a round trip to the server, and the
+                        // confirm dialog POPS before it starts — so without a
+                        // state here the user was returned to an unchanged
+                        // screen with no sign anything was happening, and the
+                        // obvious response is to tap Cancel again.
+                        //
+                        // `_cancelInFlight` already existed and was already
+                        // set here and cleared on the result; it was simply
+                        // never read. Same treatment as "Remove from my list"
+                        // below, so the two CTAs behave alike.
+                        onPressed: _cancelInFlight
+                            ? null
+                            : () => _showCancelConfirmation(context),
+                        icon: _cancelInFlight
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFFEF4444)),
+                                ),
+                              )
+                            : const Icon(Icons.cancel_outlined, size: 18),
+                        label: Text(
+                          _cancelInFlight ? 'Cancelling…' : 'Cancel',
+                          style: const TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                         style: OutlinedButton.styleFrom(
