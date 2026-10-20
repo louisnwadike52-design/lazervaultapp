@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'access_token_shape.dart';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -49,7 +50,10 @@ class DioAuthInterceptor extends QueuedInterceptor {
     // Inject authorization header
     try {
       final accessToken = await _storage.read(key: _accessTokenKey);
-      if (accessToken != null && accessToken.isNotEmpty) {
+      // Shape-checked, not merely non-empty: an opaque step-up token is
+      // briefly in storage during login, and sending one is worse than
+      // sending nothing — see access_token_shape.dart.
+      if (isUsableJwt(accessToken)) {
         options.headers['Authorization'] = 'Bearer $accessToken';
       }
     } catch (_) {
@@ -113,6 +117,16 @@ class DioAuthInterceptor extends QueuedInterceptor {
         _isRetrying = true;
         try {
           final accessToken = await _storage.read(key: _accessTokenKey);
+          // A REFRESH THAT REPORTS SUCCESS IS NOT A TOKEN IN HAND.
+          //
+          // This set the header unconditionally, so when the write had not
+          // landed yet it retried with the literal string "Bearer null" — a
+          // race that turns a recoverable 401 into a malformed-credential
+          // rejection. If there is nothing usable to retry WITH, surface the
+          // original error instead of inventing a credential.
+          if (!isUsableJwt(accessToken)) {
+            return handler.reject(err);
+          }
           final opts = err.requestOptions;
           opts.headers['Authorization'] = 'Bearer $accessToken';
 

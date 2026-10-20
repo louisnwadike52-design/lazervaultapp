@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'access_token_shape.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/app_check_service.dart';
@@ -47,11 +48,21 @@ class GrpcCallOptionsHelper {
     // not provided". Briefly retry the read so a token that's moments away from
     // being written is picked up. Zero delay in the common case (token already
     // present); bounded to ~0.6s only when it's initially empty.
-    if (accessToken == null || accessToken.isEmpty) {
+    //
+    // "Present" is not the same as "usable". During login and step-up an
+    // OPAQUE token is briefly in play (see auth_repository's twoFactorToken),
+    // and a non-empty value that is not a JWT is worse than none: the server
+    // parses it, fails with "token contains an invalid number of segments",
+    // and the call is rejected as malformed rather than simply unauthenticated.
+    // On 2026-10-20 that surfaced a raw error on the dashboard during login.
+    //
+    // So the wait is for a token that is actually SHAPED like a JWT, and a
+    // value that is not one keeps the loop going instead of being sent.
+    if (!isUsableJwt(accessToken)) {
       for (var attempt = 0; attempt < 5; attempt++) {
         await Future.delayed(const Duration(milliseconds: 120));
         accessToken = await storage.read(key: _accessTokenKey);
-        if (accessToken != null && accessToken.isNotEmpty) break;
+        if (isUsableJwt(accessToken)) break;
       }
     }
 
@@ -66,9 +77,18 @@ class GrpcCallOptionsHelper {
 
     final metadata = <String, String>{};
 
-    // Add authorization header
-    if (accessToken != null && accessToken.isNotEmpty) {
+    // Add authorization header.
+    //
+    // ONLY a JWT-shaped value. Sending anything else makes the server reject
+    // the call as MALFORMED, which is a different and worse failure than
+    // sending nothing: a missing header is an ordinary unauthenticated call
+    // the app already handles, while a malformed one surfaced a raw parse
+    // error to the user.
+    if (isUsableJwt(accessToken)) {
       metadata['authorization'] = 'Bearer $accessToken';
+    } else if (accessToken != null && accessToken.isNotEmpty) {
+      print('WARNING: stored access token is not a JWT — sending no '
+          'authorization header rather than a malformed one');
     } else {
       print('WARNING: No access token found in secure storage');
     }
