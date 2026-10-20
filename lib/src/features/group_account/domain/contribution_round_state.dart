@@ -38,6 +38,18 @@ enum ContributionRoundCode {
   /// A new round would have no cycles, because nobody is active.
   noActiveMembers('round_no_active_members'),
 
+  /// SOMEBODY IS STILL OWED THEIR TURN in this round.
+  ///
+  /// The case that made the fanthom daily savings incident permanent: one
+  /// member took both turns of a two-cycle circle, so the agreed cycle count
+  /// was satisfied while the other member — who had paid in for both cycles —
+  /// had received nothing. Starting a new round there would have buried that
+  /// debt under fresh cycles.
+  ///
+  /// The server's reason NAMES who is owed, so it is shown verbatim rather
+  /// than replaced with a generic line.
+  turnOutstanding('round_turn_outstanding'),
+
   /// A code this build does not know.
   ///
   /// Deliberately not folded into one of the real values: a code added by a
