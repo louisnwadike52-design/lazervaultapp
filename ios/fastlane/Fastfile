@@ -243,6 +243,26 @@ platform :ios do
     )
   end
 
+  desc "READ-ONLY: what build does TestFlight actually hold for a version?"
+  # Answers "did the upload land?" without shipping anything.
+  #
+  # `fastlane run latest_testflight_build_number` on its own fails with
+  # "No value found for 'username'": the bare runner has no api_key object, so
+  # it falls back to Apple-ID auth and asks for a login we cannot complete
+  # under an App Store Connect API key. A lane can pass asc_api_key, so this
+  # exists purely to make that read possible.
+  #
+  #   bundle exec fastlane tf_status version:1.0.1
+  lane :tf_status do |options|
+    version = options[:version]
+    build = latest_testflight_build_number(
+      api_key:        asc_api_key,
+      app_identifier: APP_IDENTIFIER,
+      version:        version,
+    )
+    UI.success("TestFlight latest build for #{version || 'the newest version'}: #{build}")
+  end
+
   desc "Upload an existing IPA to TestFlight (skips rebuild). Useful when manually built in Xcode."
   lane :testflight_upload_existing do |options|
     ipa = options[:ipa] || UI.user_error!("Pass ipa:'<path>' to this lane")
