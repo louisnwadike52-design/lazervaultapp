@@ -61,6 +61,21 @@ enum ContributionRoundCode {
 
   final String wire;
 
+  /// Whether the circle may be CLOSED FOR GOOD from this state.
+  ///
+  /// Mirrors endableRoundCode on the server, which is an ALLOW-list for a
+  /// reason: ending is the one action that makes a debt permanent — it closes
+  /// the circle, so a member who paid in and never received their turn has
+  /// nothing left to collect against.
+  ///
+  /// An unrecognised code is NOT endable, same as the server. The cost of that
+  /// direction is a creator who cannot close until someone teaches the app a
+  /// new state; the cost of the other direction is a member's money.
+  bool get allowsEnding =>
+      this == ContributionRoundCode.ready ||
+      this == ContributionRoundCode.noActiveMembers ||
+      this == ContributionRoundCode.noAgreedCycles;
+
   static ContributionRoundCode fromWire(String? value) {
     final v = (value ?? '').trim();
     for (final c in ContributionRoundCode.values) {

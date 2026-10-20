@@ -31,6 +31,14 @@ FIRST-TIME SETUP — verifies App Store Connect access, auto-creates the app lis
 
 Sync iOS code-signing via fastlane match. Run once on this machine.
 
+### ios tf_status
+
+```sh
+[bundle exec] fastlane ios tf_status
+```
+
+READ-ONLY: what build does TestFlight actually hold for a version?
+
 ### ios testflight_upload_existing
 
 ```sh

@@ -66,7 +66,18 @@ class ContributionRoundBanner extends StatelessWidget {
     // progress bar already describe that, and a banner repeating it would
     // push the tab bar down for no information.
     if (state.roundsEnded) return _endedCard();
-    if (!state.roundFinished) return const SizedBox.shrink();
+    // A RUNNING ROUND STILL NEEDS ITS CONTROLS.
+    //
+    // This returned nothing at all until a round finished, so for most of a
+    // circle's life there was no way to extend it or close it from the
+    // contribution page — extend lived in the three-dot menu and end lived
+    // nowhere. A creator looking at an overdue circle saw no action at all.
+    //
+    // Mid-round it renders the two standing actions and NOT the "Round N is
+    // complete" framing, which would be a lie.
+    if (!state.roundFinished) {
+      return isCreator ? _runningControls() : const SizedBox.shrink();
+    }
     return _decisionCard();
   }
 
@@ -106,16 +117,33 @@ class ContributionRoundBanner extends StatelessWidget {
               : 'Every member has collected. The circle is waiting for its '
                   'creator to start another round or close it.'),
       children: [
-        if (isCreator && !blocked) ...[
-          SizedBox(height: 12.h),
+        // BOTH STANDING ACTIONS ARE ON THE BODY, EVERY ROUND.
+        //
+        // "Run it longer" and "close it" are the two things a creator does
+        // with a finished circle, and they were reachable only from the
+        // three-dot menu (extend) or only in one narrow state (end). A
+        // control a creator cannot find is a control that does not exist, and
+        // they recur every time a round completes — so they live here, not in
+        // a menu, for as long as the circle runs.
+        if (isCreator) ...[
+          if (!blocked) ...[
+            SizedBox(height: 12.h),
+            _button(
+              label: busy ? 'Starting...' : 'Go to next round',
+              filled: true,
+              accent: _purple,
+              onTap: busy ? null : onStartNextRound,
+            ),
+          ],
+          SizedBox(height: 8.h),
           Row(
             children: [
               Expanded(
                 child: _button(
-                  label: busy ? 'Starting...' : 'Go to next round',
-                  filled: true,
+                  label: 'Extend cycles',
+                  filled: false,
                   accent: _purple,
-                  onTap: busy ? null : onStartNextRound,
+                  onTap: busy ? null : onExtendCycles,
                 ),
               ),
               SizedBox(width: 10.w),
@@ -124,48 +152,109 @@ class ContributionRoundBanner extends StatelessWidget {
                   label: 'End circle',
                   filled: false,
                   accent: _amber,
-                  onTap: busy ? null : onEndCircle,
+                  // SHOWN ALWAYS, ENABLED ONLY WHEN THE SERVER WILL ACCEPT.
+                  //
+                  // Hiding it left creators unable to find how to close a
+                  // circle at all; offering it unconditionally would hand
+                  // them a guaranteed refusal. Disabled-with-a-reason is the
+                  // honest middle, and the reason is the server's own
+                  // sentence, printed below.
+                  onTap: (busy || !state.code.allowsEnding)
+                      ? null
+                      : onEndCircle,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 8.h),
-          _button(
-            label: 'Extend cycles',
-            filled: false,
-            accent: _purple,
-            onTap: busy ? null : onExtendCycles,
-          ),
-        ],
-        // ALSO WHEN A NEW ROUND IS BLOCKED. Several of the refusals are about
-        // the circle being shorter than the creator now wants — extending is
-        // the fix, and sending them to the overflow menu to find it is how a
-        // blocked circle looks like a dead end.
-        if (isCreator && blocked) ...[
-          SizedBox(height: 12.h),
-          _button(
-            label: 'Extend cycles',
-            filled: false,
-            accent: _purple,
-            onTap: busy ? null : onExtendCycles,
-          ),
-        ],
-        // Ending is still allowed when a NEW round is blocked for a reason
-        // that is not about money in flight — a circle everyone has left, for
-        // instance, is precisely one worth closing. The server decides; this
-        // only avoids offering it where it would certainly be refused.
-        if (isCreator &&
-            blocked &&
-            state.code == ContributionRoundCode.noActiveMembers) ...[
-          SizedBox(height: 12.h),
-          _button(
-            label: 'End circle',
-            filled: false,
-            accent: _amber,
-            onTap: busy ? null : onEndCircle,
-          ),
+          if (!state.code.allowsEnding) ...[
+            SizedBox(height: 6.h),
+            Text(
+              _endBlockedNote(),
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.55),
+                fontSize: 11.sp,
+              ),
+            ),
+          ],
         ],
       ],
+    );
+  }
+
+  /// Why "End circle" is unavailable, in one line.
+  ///
+  /// Derived from the state rather than written per-call-site, so it can never
+  /// contradict the sentence already shown above it.
+  String _endBlockedNote() {
+    switch (state.code) {
+      case ContributionRoundCode.turnOutstanding:
+        return 'The circle cannot be closed while a member is still owed '
+            'their turn — paying them out is what unblocks it.';
+      case ContributionRoundCode.potNotEmpty:
+        return 'The circle cannot be closed while this round\'s money is '
+            'still in the pot.';
+      case ContributionRoundCode.payoutInFlight:
+        return 'The circle cannot be closed while a payout is still moving.';
+      case ContributionRoundCode.stillRunning:
+        return 'The circle can be closed once this round finishes.';
+      case ContributionRoundCode.alreadyEnded:
+        return 'This circle has already been closed.';
+      default:
+        return 'Closing is unavailable in this state.';
+    }
+  }
+
+  /// The two standing creator actions, while a round is still running.
+  ///
+  /// Deliberately plain: no icon, no status headline. The cards above already
+  /// say where the circle is; this is only the pair of controls.
+  Widget _runningControls() {
+    return Container(
+      margin: EdgeInsets.only(top: 12.h),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _button(
+                  label: 'Extend cycles',
+                  filled: false,
+                  accent: _purple,
+                  onTap: busy ? null : onExtendCycles,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: _button(
+                  label: 'End circle',
+                  filled: false,
+                  accent: _amber,
+                  onTap: (busy || !state.code.allowsEnding)
+                      ? null
+                      : onEndCircle,
+                ),
+              ),
+            ],
+          ),
+          if (!state.code.allowsEnding) ...[
+            SizedBox(height: 6.h),
+            Text(
+              _endBlockedNote(),
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.55),
+                fontSize: 11.sp,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
