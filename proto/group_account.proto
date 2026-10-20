@@ -286,6 +286,21 @@ message ContributionMessage {
   // "cycle 3 of 6" against the agreed total — the column has existed on the
   // model since migration 020 but was never exposed here.
   int32 cycles_completed = 38;
+
+  // WHICH PASS THROUGH THE MEMBERS THIS CIRCLE IS ON.
+  //
+  // A round is one full pass: three members, three cycles. current_cycle
+  // keeps counting up across rounds (round 2 of a pair is cycles 3 and 4), so
+  // without the round number nothing can say whether "cycle 4" is this
+  // circle's second pass or its fourth member. 1 for every circle that has
+  // not been round twice.
+  int32 current_round = 39;
+
+  // Set when the creator ended the circle for good. DIFFERENT from
+  // status == completed, which a circle reaches at the end of EVERY round and
+  // from which another round can still start. The app reads this to stop
+  // offering the choice.
+  google.protobuf.Timestamp rounds_closed_at = 40;
 }
 
 // Member assigned to a contribution
@@ -1272,6 +1287,76 @@ message RestartContributionRequest {
   string reason = 4;
 }
 
+// ===== SAVINGS CIRCLE ROUNDS =====
+//
+// A round is one full pass through the members. When the agreed cycles have
+// all run the circle is `completed`, and its creator chooses: go round again,
+// or end it. Starting a round moves NO money — it appends one payout slot per
+// active member, raises total_cycles, extends the deadline and reopens the
+// circle; collection and payout then run through the existing paths unchanged.
+
+// Stable codes for why another round cannot start. The app switches on these,
+// so they are part of the contract and must not be reworded.
+//   round_ready                 - another round can start now
+//   round_not_rotating          - only a savings circle runs in rounds
+//   round_no_agreed_cycles      - indefinite circle; it keeps rotating
+//   round_still_running         - this round has cycles left
+//   round_contribution_stopped  - cancelled or paused by a person
+//   round_already_ended         - the creator ended it
+//   round_payout_in_flight      - a payout from this round has not finished
+//   round_pot_not_empty         - this round's money is still in the pot
+//   round_no_active_members     - a round would have no cycles
+message ContributionRoundState {
+  string code = 1;
+  // Shown to the creator. Names the specific thing to fix.
+  string reason = 2;
+  bool can_start_next_round = 3;
+  int32 current_round = 4;
+  int32 cycles_completed = 5;
+  int32 total_cycles = 6;
+  // How many cycles the NEXT round would have, i.e. the active member count.
+  int32 active_members = 7;
+  // Money still in the pot, in minor units. Non-zero is a refusal reason.
+  uint64 residual_pot_minor = 8;
+  int32 payouts_in_flight = 9;
+  // True once the creator has ended the circle; no round can follow.
+  bool rounds_ended = 10;
+}
+
+message GetContributionRoundStateRequest {
+  string contribution_id = 1;
+}
+
+message GetContributionRoundStateResponse {
+  ContributionMessage contribution = 1;
+  ContributionRoundState state = 2;
+}
+
+message StartNextContributionRoundRequest {
+  string contribution_id = 1;
+  string reason = 2;
+}
+
+message StartNextContributionRoundResponse {
+  ContributionMessage contribution = 1;
+  ContributionRoundState state = 2;
+  int32 round = 3;
+  int32 cycles_added = 4;
+  int32 first_cycle = 5;
+  int32 last_cycle = 6;
+  google.protobuf.Timestamp new_deadline = 7;
+}
+
+message EndContributionRoundsRequest {
+  string contribution_id = 1;
+  string reason = 2;
+}
+
+message EndContributionRoundsResponse {
+  ContributionMessage contribution = 1;
+  ContributionRoundState state = 2;
+}
+
 message RestartContributionResponse {
   ContributionMessage contribution = 1;
   int32 cycles_completed = 2;
@@ -2212,6 +2297,28 @@ service GroupAccountService {
   rpc RestartContribution(RestartContributionRequest) returns (RestartContributionResponse) {
     option (google.api.http) = {
       post: "/v1/contributions/{contribution_id}/restart"
+      body: "*"
+    };
+  }
+
+  // Savings-circle rounds. GetContributionRoundState is a READ any member may
+  // make (it is what drives the CTAs); the two mutations are admin-only and
+  // refuse every state in which the previous round's money could be
+  // mis-attributed to the next. See ContributionRoundState for the codes.
+  rpc GetContributionRoundState(GetContributionRoundStateRequest) returns (GetContributionRoundStateResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/{contribution_id}/round"
+    };
+  }
+  rpc StartNextContributionRound(StartNextContributionRoundRequest) returns (StartNextContributionRoundResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/{contribution_id}/round/next"
+      body: "*"
+    };
+  }
+  rpc EndContributionRounds(EndContributionRoundsRequest) returns (EndContributionRoundsResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/{contribution_id}/round/end"
       body: "*"
     };
   }

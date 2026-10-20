@@ -449,3 +449,59 @@ class RestartContribution
     );
   }
 }
+
+/// WHICH ROUND ACTION IS BEING ASKED FOR.
+///
+/// One use case for all three rather than three classes with three
+/// registrations: they are one feature, they share a return shape, and the
+/// screen chooses between them by what the creator tapped. Splitting them
+/// would triple the dependency-injection surface for no separation that
+/// matters.
+enum ContributionRoundAction { read, startNext, endAll }
+
+class ContributionRoundParams {
+  final String contributionId;
+  final ContributionRoundAction action;
+  final String reason;
+
+  const ContributionRoundParams({
+    required this.contributionId,
+    this.action = ContributionRoundAction.read,
+    this.reason = '',
+  });
+}
+
+/// The result always carries BOTH halves: the contribution as the server now
+/// holds it, and the round state. A refusal is state, not an exception — the
+/// server answers OK with the sentence to show — so the caller must always
+/// have somewhere to read it from.
+typedef ContributionRoundResult = ({
+  Contribution contribution,
+  ContributionRoundState state,
+});
+
+class ManageContributionRound
+    extends UseCase<ContributionRoundResult, ContributionRoundParams> {
+  final GroupAccountRepository repository;
+  ManageContributionRound(this.repository);
+
+  @override
+  Future<ContributionRoundResult> call(ContributionRoundParams p) {
+    switch (p.action) {
+      case ContributionRoundAction.read:
+        return repository.getContributionRoundState(
+          contributionId: p.contributionId,
+        );
+      case ContributionRoundAction.startNext:
+        return repository.startNextContributionRound(
+          contributionId: p.contributionId,
+          reason: p.reason,
+        );
+      case ContributionRoundAction.endAll:
+        return repository.endContributionRounds(
+          contributionId: p.contributionId,
+          reason: p.reason,
+        );
+    }
+  }
+}

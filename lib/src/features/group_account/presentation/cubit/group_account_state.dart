@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/group_entities.dart';
+import 'package:lazervault/src/features/group_account/domain/contribution_round_state.dart';
 
 // Export for convenience
 export '../../domain/entities/group_entities.dart';

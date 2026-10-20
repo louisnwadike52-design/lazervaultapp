@@ -2,6 +2,7 @@ import '../../domain/entities/group_entities.dart';
 import '../../domain/repositories/group_account_repository.dart';
 import '../datasources/group_account_remote_data_source.dart';
 import '../models/group_account_models.dart';
+import 'package:lazervault/src/features/group_account/domain/contribution_round_state.dart';
 
 class GroupAccountRepositoryImpl implements GroupAccountRepository {
   final GroupAccountRemoteDataSource remoteDataSource;
@@ -463,6 +464,45 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     } catch (e) {
       throw Exception('Failed to restart contribution: $e');
     }
+  }
+
+  // ===== Savings-circle rounds =====
+  //
+  // Pass-through, and deliberately WITHOUT the "Failed to ..." re-wrap the
+  // methods around this one use. The data source already turns a GrpcError
+  // into a user-safe sentence, and the server's own refusal reasons travel in
+  // the state rather than as exceptions — wrapping would prefix the creator's
+  // explanation with a second, vaguer one.
+  @override
+  Future<({Contribution contribution, ContributionRoundState state})>
+      getContributionRoundState({required String contributionId}) {
+    return remoteDataSource.getContributionRoundState(
+      contributionId: contributionId,
+    );
+  }
+
+  @override
+  Future<({Contribution contribution, ContributionRoundState state})>
+      startNextContributionRound({
+    required String contributionId,
+    String reason = '',
+  }) {
+    return remoteDataSource.startNextContributionRound(
+      contributionId: contributionId,
+      reason: reason,
+    );
+  }
+
+  @override
+  Future<({Contribution contribution, ContributionRoundState state})>
+      endContributionRounds({
+    required String contributionId,
+    String reason = '',
+  }) {
+    return remoteDataSource.endContributionRounds(
+      contributionId: contributionId,
+      reason: reason,
+    );
   }
 
   @override

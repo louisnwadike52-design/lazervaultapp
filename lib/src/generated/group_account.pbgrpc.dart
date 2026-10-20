@@ -419,6 +419,35 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$restartContribution, request, options: options);
   }
 
+  /// Savings-circle rounds. GetContributionRoundState is a READ any member may
+  /// make (it is what drives the CTAs); the two mutations are admin-only and
+  /// refuse every state in which the previous round's money could be
+  /// mis-attributed to the next. See ContributionRoundState for the codes.
+  $grpc.ResponseFuture<$0.GetContributionRoundStateResponse>
+      getContributionRoundState(
+    $0.GetContributionRoundStateRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getContributionRoundState, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.StartNextContributionRoundResponse>
+      startNextContributionRound(
+    $0.StartNextContributionRoundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$startNextContributionRound, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.EndContributionRoundsResponse> endContributionRounds(
+    $0.EndContributionRoundsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$endContributionRounds, request, options: options);
+  }
+
   /// Per-contribution chat: send a message + list recent messages.
   /// Persistent storage in `contribution_messages`. Polling-based
   /// delivery for now (Flutter polls on a 5s tick while the chat
@@ -939,6 +968,23 @@ class GroupAccountServiceClient extends $grpc.Client {
       '/group_accounts.GroupAccountService/RestartContribution',
       ($0.RestartContributionRequest value) => value.writeToBuffer(),
       $0.RestartContributionResponse.fromBuffer);
+  static final _$getContributionRoundState = $grpc.ClientMethod<
+          $0.GetContributionRoundStateRequest,
+          $0.GetContributionRoundStateResponse>(
+      '/group_accounts.GroupAccountService/GetContributionRoundState',
+      ($0.GetContributionRoundStateRequest value) => value.writeToBuffer(),
+      $0.GetContributionRoundStateResponse.fromBuffer);
+  static final _$startNextContributionRound = $grpc.ClientMethod<
+          $0.StartNextContributionRoundRequest,
+          $0.StartNextContributionRoundResponse>(
+      '/group_accounts.GroupAccountService/StartNextContributionRound',
+      ($0.StartNextContributionRoundRequest value) => value.writeToBuffer(),
+      $0.StartNextContributionRoundResponse.fromBuffer);
+  static final _$endContributionRounds = $grpc.ClientMethod<
+          $0.EndContributionRoundsRequest, $0.EndContributionRoundsResponse>(
+      '/group_accounts.GroupAccountService/EndContributionRounds',
+      ($0.EndContributionRoundsRequest value) => value.writeToBuffer(),
+      $0.EndContributionRoundsResponse.fromBuffer);
   static final _$sendContributionMessage = $grpc.ClientMethod<
           $0.SendContributionMessageRequest,
           $0.SendContributionMessageResponse>(
@@ -1543,6 +1589,34 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.RestartContributionRequest.fromBuffer(value),
         ($0.RestartContributionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetContributionRoundStateRequest,
+            $0.GetContributionRoundStateResponse>(
+        'GetContributionRoundState',
+        getContributionRoundState_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetContributionRoundStateRequest.fromBuffer(value),
+        ($0.GetContributionRoundStateResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.StartNextContributionRoundRequest,
+            $0.StartNextContributionRoundResponse>(
+        'StartNextContributionRound',
+        startNextContributionRound_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.StartNextContributionRoundRequest.fromBuffer(value),
+        ($0.StartNextContributionRoundResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.EndContributionRoundsRequest,
+            $0.EndContributionRoundsResponse>(
+        'EndContributionRounds',
+        endContributionRounds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.EndContributionRoundsRequest.fromBuffer(value),
+        ($0.EndContributionRoundsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.SendContributionMessageRequest,
             $0.SendContributionMessageResponse>(
         'SendContributionMessage',
@@ -2247,6 +2321,34 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
 
   $async.Future<$0.RestartContributionResponse> restartContribution(
       $grpc.ServiceCall call, $0.RestartContributionRequest request);
+
+  $async.Future<$0.GetContributionRoundStateResponse>
+      getContributionRoundState_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetContributionRoundStateRequest> $request) async {
+    return getContributionRoundState($call, await $request);
+  }
+
+  $async.Future<$0.GetContributionRoundStateResponse> getContributionRoundState(
+      $grpc.ServiceCall call, $0.GetContributionRoundStateRequest request);
+
+  $async.Future<$0.StartNextContributionRoundResponse>
+      startNextContributionRound_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.StartNextContributionRoundRequest> $request) async {
+    return startNextContributionRound($call, await $request);
+  }
+
+  $async.Future<$0.StartNextContributionRoundResponse>
+      startNextContributionRound(
+          $grpc.ServiceCall call, $0.StartNextContributionRoundRequest request);
+
+  $async.Future<$0.EndContributionRoundsResponse> endContributionRounds_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.EndContributionRoundsRequest> $request) async {
+    return endContributionRounds($call, await $request);
+  }
+
+  $async.Future<$0.EndContributionRoundsResponse> endContributionRounds(
+      $grpc.ServiceCall call, $0.EndContributionRoundsRequest request);
 
   $async.Future<$0.SendContributionMessageResponse> sendContributionMessage_Pre(
       $grpc.ServiceCall $call,

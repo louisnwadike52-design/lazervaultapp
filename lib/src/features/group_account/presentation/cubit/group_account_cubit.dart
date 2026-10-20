@@ -16,6 +16,7 @@ import '../../domain/entities/group_entities.dart';
 import '../../services/group_account_report_service.dart';
 import 'group_account_state.dart';
 import 'package:lazervault/core/utils/logger.dart';
+import 'package:lazervault/src/features/group_account/domain/contribution_round_state.dart';
 
 part 'group_funds_paging.dart';
 
@@ -74,6 +75,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final ListContributionCycles? listContributionCycles;
   final GetContributionCycleDetails? getContributionCycleDetails;
   final RestartContribution? restartContribution;
+  final ManageContributionRound? manageContributionRound;
   // Invite-first membership use cases (slice 5).
   final InviteToGroup? inviteToGroup;
   final RespondToGroupInvite? respondToGroupInvite;
@@ -284,6 +286,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.listContributionCycles,
     this.getContributionCycleDetails,
     this.restartContribution,
+    this.manageContributionRound,
     this.inviteToGroup,
     this.respondToGroupInvite,
     this.cancelGroupInvite,
@@ -2616,6 +2619,124 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
   /// Restarts a one-time contribution: closes the current cycle into
   /// history + opens a fresh one with the same members. Admin only.
+  // ===== Savings-circle rounds =====
+  //
+  // A REFUSAL IS NOT AN ERROR STATE. The server answers OK with the reason
+  // ("this round is still running: 2 of 3 cycles have finished"), so all
+  // three paths emit ContributionRoundLoaded and let the screen render it.
+  // Emitting GroupAccountError would swap the one sentence that explains what
+  // to do for a generic failure, and would also tear down whatever else the
+  // screen was showing.
+
+  /// Read where the circle is in its rounds. Safe to call on every open.
+  Future<ContributionRoundState?> loadContributionRoundState(
+      String contributionId) async {
+    if (isClosed || manageContributionRound == null) return null;
+    try {
+      final r = await manageContributionRound!(
+        ContributionRoundParams(contributionId: contributionId),
+      );
+      if (isClosed) return r.state;
+      emit(ContributionRoundLoaded(
+        contribution: r.contribution,
+        roundState: r.state,
+      ));
+      return r.state;
+    } catch (e) {
+      // A READ failing is not worth taking the screen over: the round banner
+      // simply does not appear, and everything else on the contribution still
+      // works. Logged by the data source already.
+      return null;
+    }
+  }
+
+  /// Open another pass through the members.
+  ///
+  /// [groupId] is reloaded afterwards so the contribution list reflects the
+  /// raised cycle count, the new deadline and the zeroed per-cycle counters —
+  /// the same reason restartContributionAccount does it.
+  Future<ContributionRoundState?> startNextContributionRound({
+    required String contributionId,
+    required String groupId,
+    String reason = '',
+  }) async {
+    if (isClosed) return null;
+    if (manageContributionRound == null) {
+      emit(const GroupAccountError('Rounds are not available'));
+      return null;
+    }
+    emit(ContributionRoundBusy(
+      contributionId: contributionId,
+      message: 'Starting the next round...',
+    ));
+    try {
+      final r = await manageContributionRound!(
+        ContributionRoundParams(
+          contributionId: contributionId,
+          action: ContributionRoundAction.startNext,
+          reason: reason,
+        ),
+      );
+      if (isClosed) return r.state;
+      // `justChanged` only when the server actually opened one. On a refusal
+      // canStartNextRound is still true-or-false about the NEXT one, so the
+      // round number is what says whether this call changed anything.
+      final started = r.state.currentRound > 1 &&
+          r.state.code != ContributionRoundCode.stillRunning
+          ? 'Round ${r.state.currentRound} has started'
+          : '';
+      emit(ContributionRoundLoaded(
+        contribution: r.contribution,
+        roundState: r.state,
+        justChanged: started,
+      ));
+      await loadGroupDetails(groupId);
+      return r.state;
+    } catch (e) {
+      if (isClosed) return null;
+      emit(GroupAccountError(friendlyError(e)));
+      return null;
+    }
+  }
+
+  /// End the circle for good. No further round can start.
+  Future<ContributionRoundState?> endContributionRounds({
+    required String contributionId,
+    required String groupId,
+    String reason = '',
+  }) async {
+    if (isClosed) return null;
+    if (manageContributionRound == null) {
+      emit(const GroupAccountError('Rounds are not available'));
+      return null;
+    }
+    emit(ContributionRoundBusy(
+      contributionId: contributionId,
+      message: 'Ending this circle...',
+    ));
+    try {
+      final r = await manageContributionRound!(
+        ContributionRoundParams(
+          contributionId: contributionId,
+          action: ContributionRoundAction.endAll,
+          reason: reason,
+        ),
+      );
+      if (isClosed) return r.state;
+      emit(ContributionRoundLoaded(
+        contribution: r.contribution,
+        roundState: r.state,
+        justChanged: r.state.roundsEnded ? 'This circle has been ended' : '',
+      ));
+      await loadGroupDetails(groupId);
+      return r.state;
+    } catch (e) {
+      if (isClosed) return null;
+      emit(GroupAccountError(friendlyError(e)));
+      return null;
+    }
+  }
+
   Future<Contribution?> restartContributionAccount({
     required String contributionId,
     required String groupId,

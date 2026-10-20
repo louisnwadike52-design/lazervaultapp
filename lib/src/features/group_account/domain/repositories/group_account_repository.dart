@@ -1,4 +1,5 @@
 import '../entities/group_entities.dart';
+import 'package:lazervault/src/features/group_account/domain/contribution_round_state.dart';
 
 abstract class GroupAccountRepository {
   // Group Account methods
@@ -162,6 +163,27 @@ abstract class GroupAccountRepository {
     double? newTargetAmount,
     DateTime? newDeadline,
     String reason = '',
+  });
+
+  // ===== Savings-circle rounds =====
+  //
+  // All three answer with BOTH the contribution and the round state, because
+  // a refusal is state rather than an exception: the server returns OK with
+  // the sentence to show, and throwing would replace the one explanation the
+  // creator needs with a generic error.
+  Future<({Contribution contribution, ContributionRoundState state})>
+      getContributionRoundState({required String contributionId});
+
+  Future<({Contribution contribution, ContributionRoundState state})>
+      startNextContributionRound({
+    required String contributionId,
+    String reason,
+  });
+
+  Future<({Contribution contribution, ContributionRoundState state})>
+      endContributionRounds({
+    required String contributionId,
+    String reason,
   });
 
   /// Non-side-effecting preview of what [removeMemberFromContribution]

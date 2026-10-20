@@ -639,6 +639,8 @@ class ContributionMessage extends $pb.GeneratedMessage {
     $fixnum.Int64? paidOutAmountMinor,
     $1.Timestamp? openedAt,
     $core.int? cyclesCompleted,
+    $core.int? currentRound,
+    $1.Timestamp? roundsClosedAt,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -683,6 +685,8 @@ class ContributionMessage extends $pb.GeneratedMessage {
       result.paidOutAmountMinor = paidOutAmountMinor;
     if (openedAt != null) result.openedAt = openedAt;
     if (cyclesCompleted != null) result.cyclesCompleted = cyclesCompleted;
+    if (currentRound != null) result.currentRound = currentRound;
+    if (roundsClosedAt != null) result.roundsClosedAt = roundsClosedAt;
     return result;
   }
 
@@ -781,6 +785,10 @@ class ContributionMessage extends $pb.GeneratedMessage {
         subBuilder: $1.Timestamp.create)
     ..a<$core.int>(
         38, _omitFieldNames ? '' : 'cyclesCompleted', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        39, _omitFieldNames ? '' : 'currentRound', $pb.PbFieldType.O3)
+    ..aOM<$1.Timestamp>(40, _omitFieldNames ? '' : 'roundsClosedAt',
+        subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1172,6 +1180,37 @@ class ContributionMessage extends $pb.GeneratedMessage {
   $core.bool hasCyclesCompleted() => $_has(37);
   @$pb.TagNumber(38)
   void clearCyclesCompleted() => $_clearField(38);
+
+  /// WHICH PASS THROUGH THE MEMBERS THIS CIRCLE IS ON.
+  ///
+  /// A round is one full pass: three members, three cycles. current_cycle
+  /// keeps counting up across rounds (round 2 of a pair is cycles 3 and 4), so
+  /// without the round number nothing can say whether "cycle 4" is this
+  /// circle's second pass or its fourth member. 1 for every circle that has
+  /// not been round twice.
+  @$pb.TagNumber(39)
+  $core.int get currentRound => $_getIZ(38);
+  @$pb.TagNumber(39)
+  set currentRound($core.int value) => $_setSignedInt32(38, value);
+  @$pb.TagNumber(39)
+  $core.bool hasCurrentRound() => $_has(38);
+  @$pb.TagNumber(39)
+  void clearCurrentRound() => $_clearField(39);
+
+  /// Set when the creator ended the circle for good. DIFFERENT from
+  /// status == completed, which a circle reaches at the end of EVERY round and
+  /// from which another round can still start. The app reads this to stop
+  /// offering the choice.
+  @$pb.TagNumber(40)
+  $1.Timestamp get roundsClosedAt => $_getN(39);
+  @$pb.TagNumber(40)
+  set roundsClosedAt($1.Timestamp value) => $_setField(40, value);
+  @$pb.TagNumber(40)
+  $core.bool hasRoundsClosedAt() => $_has(39);
+  @$pb.TagNumber(40)
+  void clearRoundsClosedAt() => $_clearField(40);
+  @$pb.TagNumber(40)
+  $1.Timestamp ensureRoundsClosedAt() => $_ensure(39);
 }
 
 /// Member assigned to a contribution
@@ -12076,6 +12115,701 @@ class RestartContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasReason() => $_has(3);
   @$pb.TagNumber(4)
   void clearReason() => $_clearField(4);
+}
+
+/// Stable codes for why another round cannot start. The app switches on these,
+/// so they are part of the contract and must not be reworded.
+///   round_ready                 - another round can start now
+///   round_not_rotating          - only a savings circle runs in rounds
+///   round_no_agreed_cycles      - indefinite circle; it keeps rotating
+///   round_still_running         - this round has cycles left
+///   round_contribution_stopped  - cancelled or paused by a person
+///   round_already_ended         - the creator ended it
+///   round_payout_in_flight      - a payout from this round has not finished
+///   round_pot_not_empty         - this round's money is still in the pot
+///   round_no_active_members     - a round would have no cycles
+class ContributionRoundState extends $pb.GeneratedMessage {
+  factory ContributionRoundState({
+    $core.String? code,
+    $core.String? reason,
+    $core.bool? canStartNextRound,
+    $core.int? currentRound,
+    $core.int? cyclesCompleted,
+    $core.int? totalCycles,
+    $core.int? activeMembers,
+    $fixnum.Int64? residualPotMinor,
+    $core.int? payoutsInFlight,
+    $core.bool? roundsEnded,
+  }) {
+    final result = create();
+    if (code != null) result.code = code;
+    if (reason != null) result.reason = reason;
+    if (canStartNextRound != null) result.canStartNextRound = canStartNextRound;
+    if (currentRound != null) result.currentRound = currentRound;
+    if (cyclesCompleted != null) result.cyclesCompleted = cyclesCompleted;
+    if (totalCycles != null) result.totalCycles = totalCycles;
+    if (activeMembers != null) result.activeMembers = activeMembers;
+    if (residualPotMinor != null) result.residualPotMinor = residualPotMinor;
+    if (payoutsInFlight != null) result.payoutsInFlight = payoutsInFlight;
+    if (roundsEnded != null) result.roundsEnded = roundsEnded;
+    return result;
+  }
+
+  ContributionRoundState._();
+
+  factory ContributionRoundState.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ContributionRoundState.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ContributionRoundState',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'code')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..aOB(3, _omitFieldNames ? '' : 'canStartNextRound')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'currentRound', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        5, _omitFieldNames ? '' : 'cyclesCompleted', $pb.PbFieldType.O3)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'totalCycles', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        7, _omitFieldNames ? '' : 'activeMembers', $pb.PbFieldType.O3)
+    ..a<$fixnum.Int64>(
+        8, _omitFieldNames ? '' : 'residualPotMinor', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(
+        9, _omitFieldNames ? '' : 'payoutsInFlight', $pb.PbFieldType.O3)
+    ..aOB(10, _omitFieldNames ? '' : 'roundsEnded')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ContributionRoundState clone() =>
+      ContributionRoundState()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ContributionRoundState copyWith(
+          void Function(ContributionRoundState) updates) =>
+      super.copyWith((message) => updates(message as ContributionRoundState))
+          as ContributionRoundState;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ContributionRoundState create() => ContributionRoundState._();
+  @$core.override
+  ContributionRoundState createEmptyInstance() => create();
+  static $pb.PbList<ContributionRoundState> createRepeated() =>
+      $pb.PbList<ContributionRoundState>();
+  @$core.pragma('dart2js:noInline')
+  static ContributionRoundState getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ContributionRoundState>(create);
+  static ContributionRoundState? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get code => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set code($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCode() => $_clearField(1);
+
+  /// Shown to the creator. Names the specific thing to fix.
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get canStartNextRound => $_getBF(2);
+  @$pb.TagNumber(3)
+  set canStartNextRound($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCanStartNextRound() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCanStartNextRound() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get currentRound => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set currentRound($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCurrentRound() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrentRound() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get cyclesCompleted => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set cyclesCompleted($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasCyclesCompleted() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCyclesCompleted() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get totalCycles => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set totalCycles($core.int value) => $_setSignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasTotalCycles() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTotalCycles() => $_clearField(6);
+
+  /// How many cycles the NEXT round would have, i.e. the active member count.
+  @$pb.TagNumber(7)
+  $core.int get activeMembers => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set activeMembers($core.int value) => $_setSignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasActiveMembers() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearActiveMembers() => $_clearField(7);
+
+  /// Money still in the pot, in minor units. Non-zero is a refusal reason.
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get residualPotMinor => $_getI64(7);
+  @$pb.TagNumber(8)
+  set residualPotMinor($fixnum.Int64 value) => $_setInt64(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasResidualPotMinor() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearResidualPotMinor() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get payoutsInFlight => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set payoutsInFlight($core.int value) => $_setSignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasPayoutsInFlight() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPayoutsInFlight() => $_clearField(9);
+
+  /// True once the creator has ended the circle; no round can follow.
+  @$pb.TagNumber(10)
+  $core.bool get roundsEnded => $_getBF(9);
+  @$pb.TagNumber(10)
+  set roundsEnded($core.bool value) => $_setBool(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasRoundsEnded() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearRoundsEnded() => $_clearField(10);
+}
+
+class GetContributionRoundStateRequest extends $pb.GeneratedMessage {
+  factory GetContributionRoundStateRequest({
+    $core.String? contributionId,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    return result;
+  }
+
+  GetContributionRoundStateRequest._();
+
+  factory GetContributionRoundStateRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetContributionRoundStateRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetContributionRoundStateRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetContributionRoundStateRequest clone() =>
+      GetContributionRoundStateRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetContributionRoundStateRequest copyWith(
+          void Function(GetContributionRoundStateRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetContributionRoundStateRequest))
+          as GetContributionRoundStateRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetContributionRoundStateRequest create() =>
+      GetContributionRoundStateRequest._();
+  @$core.override
+  GetContributionRoundStateRequest createEmptyInstance() => create();
+  static $pb.PbList<GetContributionRoundStateRequest> createRepeated() =>
+      $pb.PbList<GetContributionRoundStateRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetContributionRoundStateRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetContributionRoundStateRequest>(
+          create);
+  static GetContributionRoundStateRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+}
+
+class GetContributionRoundStateResponse extends $pb.GeneratedMessage {
+  factory GetContributionRoundStateResponse({
+    ContributionMessage? contribution,
+    ContributionRoundState? state,
+  }) {
+    final result = create();
+    if (contribution != null) result.contribution = contribution;
+    if (state != null) result.state = state;
+    return result;
+  }
+
+  GetContributionRoundStateResponse._();
+
+  factory GetContributionRoundStateResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetContributionRoundStateResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetContributionRoundStateResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<ContributionMessage>(1, _omitFieldNames ? '' : 'contribution',
+        subBuilder: ContributionMessage.create)
+    ..aOM<ContributionRoundState>(2, _omitFieldNames ? '' : 'state',
+        subBuilder: ContributionRoundState.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetContributionRoundStateResponse clone() =>
+      GetContributionRoundStateResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetContributionRoundStateResponse copyWith(
+          void Function(GetContributionRoundStateResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as GetContributionRoundStateResponse))
+          as GetContributionRoundStateResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetContributionRoundStateResponse create() =>
+      GetContributionRoundStateResponse._();
+  @$core.override
+  GetContributionRoundStateResponse createEmptyInstance() => create();
+  static $pb.PbList<GetContributionRoundStateResponse> createRepeated() =>
+      $pb.PbList<GetContributionRoundStateResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetContributionRoundStateResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetContributionRoundStateResponse>(
+          create);
+  static GetContributionRoundStateResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ContributionMessage get contribution => $_getN(0);
+  @$pb.TagNumber(1)
+  set contribution(ContributionMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContribution() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContribution() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ContributionMessage ensureContribution() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  ContributionRoundState get state => $_getN(1);
+  @$pb.TagNumber(2)
+  set state(ContributionRoundState value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasState() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearState() => $_clearField(2);
+  @$pb.TagNumber(2)
+  ContributionRoundState ensureState() => $_ensure(1);
+}
+
+class StartNextContributionRoundRequest extends $pb.GeneratedMessage {
+  factory StartNextContributionRoundRequest({
+    $core.String? contributionId,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  StartNextContributionRoundRequest._();
+
+  factory StartNextContributionRoundRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory StartNextContributionRoundRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'StartNextContributionRoundRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StartNextContributionRoundRequest clone() =>
+      StartNextContributionRoundRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StartNextContributionRoundRequest copyWith(
+          void Function(StartNextContributionRoundRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as StartNextContributionRoundRequest))
+          as StartNextContributionRoundRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static StartNextContributionRoundRequest create() =>
+      StartNextContributionRoundRequest._();
+  @$core.override
+  StartNextContributionRoundRequest createEmptyInstance() => create();
+  static $pb.PbList<StartNextContributionRoundRequest> createRepeated() =>
+      $pb.PbList<StartNextContributionRoundRequest>();
+  @$core.pragma('dart2js:noInline')
+  static StartNextContributionRoundRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<StartNextContributionRoundRequest>(
+          create);
+  static StartNextContributionRoundRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => $_clearField(2);
+}
+
+class StartNextContributionRoundResponse extends $pb.GeneratedMessage {
+  factory StartNextContributionRoundResponse({
+    ContributionMessage? contribution,
+    ContributionRoundState? state,
+    $core.int? round,
+    $core.int? cyclesAdded,
+    $core.int? firstCycle,
+    $core.int? lastCycle,
+    $1.Timestamp? newDeadline,
+  }) {
+    final result = create();
+    if (contribution != null) result.contribution = contribution;
+    if (state != null) result.state = state;
+    if (round != null) result.round = round;
+    if (cyclesAdded != null) result.cyclesAdded = cyclesAdded;
+    if (firstCycle != null) result.firstCycle = firstCycle;
+    if (lastCycle != null) result.lastCycle = lastCycle;
+    if (newDeadline != null) result.newDeadline = newDeadline;
+    return result;
+  }
+
+  StartNextContributionRoundResponse._();
+
+  factory StartNextContributionRoundResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory StartNextContributionRoundResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'StartNextContributionRoundResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<ContributionMessage>(1, _omitFieldNames ? '' : 'contribution',
+        subBuilder: ContributionMessage.create)
+    ..aOM<ContributionRoundState>(2, _omitFieldNames ? '' : 'state',
+        subBuilder: ContributionRoundState.create)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'round', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'cyclesAdded', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'firstCycle', $pb.PbFieldType.O3)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'lastCycle', $pb.PbFieldType.O3)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'newDeadline',
+        subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StartNextContributionRoundResponse clone() =>
+      StartNextContributionRoundResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StartNextContributionRoundResponse copyWith(
+          void Function(StartNextContributionRoundResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as StartNextContributionRoundResponse))
+          as StartNextContributionRoundResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static StartNextContributionRoundResponse create() =>
+      StartNextContributionRoundResponse._();
+  @$core.override
+  StartNextContributionRoundResponse createEmptyInstance() => create();
+  static $pb.PbList<StartNextContributionRoundResponse> createRepeated() =>
+      $pb.PbList<StartNextContributionRoundResponse>();
+  @$core.pragma('dart2js:noInline')
+  static StartNextContributionRoundResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<StartNextContributionRoundResponse>(
+          create);
+  static StartNextContributionRoundResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ContributionMessage get contribution => $_getN(0);
+  @$pb.TagNumber(1)
+  set contribution(ContributionMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContribution() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContribution() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ContributionMessage ensureContribution() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  ContributionRoundState get state => $_getN(1);
+  @$pb.TagNumber(2)
+  set state(ContributionRoundState value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasState() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearState() => $_clearField(2);
+  @$pb.TagNumber(2)
+  ContributionRoundState ensureState() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.int get round => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set round($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasRound() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRound() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get cyclesAdded => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set cyclesAdded($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCyclesAdded() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCyclesAdded() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get firstCycle => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set firstCycle($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasFirstCycle() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFirstCycle() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get lastCycle => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set lastCycle($core.int value) => $_setSignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasLastCycle() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearLastCycle() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $1.Timestamp get newDeadline => $_getN(6);
+  @$pb.TagNumber(7)
+  set newDeadline($1.Timestamp value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasNewDeadline() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearNewDeadline() => $_clearField(7);
+  @$pb.TagNumber(7)
+  $1.Timestamp ensureNewDeadline() => $_ensure(6);
+}
+
+class EndContributionRoundsRequest extends $pb.GeneratedMessage {
+  factory EndContributionRoundsRequest({
+    $core.String? contributionId,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  EndContributionRoundsRequest._();
+
+  factory EndContributionRoundsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory EndContributionRoundsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'EndContributionRoundsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  EndContributionRoundsRequest clone() =>
+      EndContributionRoundsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  EndContributionRoundsRequest copyWith(
+          void Function(EndContributionRoundsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as EndContributionRoundsRequest))
+          as EndContributionRoundsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static EndContributionRoundsRequest create() =>
+      EndContributionRoundsRequest._();
+  @$core.override
+  EndContributionRoundsRequest createEmptyInstance() => create();
+  static $pb.PbList<EndContributionRoundsRequest> createRepeated() =>
+      $pb.PbList<EndContributionRoundsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static EndContributionRoundsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<EndContributionRoundsRequest>(create);
+  static EndContributionRoundsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => $_clearField(2);
+}
+
+class EndContributionRoundsResponse extends $pb.GeneratedMessage {
+  factory EndContributionRoundsResponse({
+    ContributionMessage? contribution,
+    ContributionRoundState? state,
+  }) {
+    final result = create();
+    if (contribution != null) result.contribution = contribution;
+    if (state != null) result.state = state;
+    return result;
+  }
+
+  EndContributionRoundsResponse._();
+
+  factory EndContributionRoundsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory EndContributionRoundsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'EndContributionRoundsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<ContributionMessage>(1, _omitFieldNames ? '' : 'contribution',
+        subBuilder: ContributionMessage.create)
+    ..aOM<ContributionRoundState>(2, _omitFieldNames ? '' : 'state',
+        subBuilder: ContributionRoundState.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  EndContributionRoundsResponse clone() =>
+      EndContributionRoundsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  EndContributionRoundsResponse copyWith(
+          void Function(EndContributionRoundsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as EndContributionRoundsResponse))
+          as EndContributionRoundsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static EndContributionRoundsResponse create() =>
+      EndContributionRoundsResponse._();
+  @$core.override
+  EndContributionRoundsResponse createEmptyInstance() => create();
+  static $pb.PbList<EndContributionRoundsResponse> createRepeated() =>
+      $pb.PbList<EndContributionRoundsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static EndContributionRoundsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<EndContributionRoundsResponse>(create);
+  static EndContributionRoundsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ContributionMessage get contribution => $_getN(0);
+  @$pb.TagNumber(1)
+  set contribution(ContributionMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContribution() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContribution() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ContributionMessage ensureContribution() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  ContributionRoundState get state => $_getN(1);
+  @$pb.TagNumber(2)
+  set state(ContributionRoundState value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasState() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearState() => $_clearField(2);
+  @$pb.TagNumber(2)
+  ContributionRoundState ensureState() => $_ensure(1);
 }
 
 class RestartContributionResponse extends $pb.GeneratedMessage {

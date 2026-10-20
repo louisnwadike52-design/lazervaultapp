@@ -41,6 +41,8 @@ import 'package:lazervault/src/features/group_account/domain/contribution_cycle_
 import 'package:lazervault/src/features/group_account/presentation/widgets/extend_rotation_sheet.dart';
 import 'package:lazervault/src/features/group_account/domain/rotation_extension.dart';
 import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
+import 'package:lazervault/src/features/group_account/domain/contribution_round_state.dart';
+import 'package:lazervault/src/features/group_account/presentation/widgets/contribution_round_banner.dart';
 part 'contribution_details_sheets.dart';
 part 'contribution_details_banners.dart';
 part 'contribution_details_payment_widgets.dart';
@@ -375,6 +377,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 // loader no-ops when the cycle is unchanged and already
                 // loaded, so this is cheap on an ordinary refresh.
                 _loadCurrentCycleView(state.contribution);
+                // Where the circle is in its rounds. Read here rather than in
+                // initState because this is the first point a deep-linked
+                // open actually has the contribution.
+                _loadRoundState(state.contribution);
                 // The group is what tells this screen the viewer's ROLE, and
                 // the deep link had no group id until now. Fetching it here —
                 // after the contribution is already on screen — fills in the
@@ -402,6 +408,12 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 });
                 // Also refresh local payments to ensure UI is up to date
                 _loadLocalPayments();
+                // A ROUND CAN FINISH WHILE THIS SCREEN IS OPEN. The last
+                // payout of a round settles, the rotation advance marks the
+                // circle completed, and a group refresh brings that in — so
+                // the round state is re-read alongside it rather than only on
+                // first open, or the banner would appear a screen too late.
+                _loadRoundState(updatedContribution);
               } else if (myMember != _currentGroupMember && mounted) {
                 setState(() => _currentGroupMember = myMember);
               }
@@ -622,6 +634,23 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     if (contribution.displayState ==
                         ContributionDisplayState.stalled)
                       _buildStalledRotationBanner(contribution, isCreator),
+                    // THE END OF A ROUND IS A DECISION, NOT AN ENDING.
+                    //
+                    // When a round's agreed cycles have all run the circle
+                    // has nothing scheduled and stays that way until its
+                    // creator says what happens next. The banner carries both
+                    // choices for the creator and the explanation for
+                    // everyone else, and renders nothing at all while a round
+                    // is still running.
+                    if (_roundState != null && _showCyclesTab(contribution))
+                      ContributionRoundBanner(
+                        state: _roundState!,
+                        isCreator: isCreator,
+                        busy: _roundActionBusy,
+                        onStartNextRound: () =>
+                            _confirmStartNextRound(contribution),
+                        onEndCircle: () => _confirmEndCircle(contribution),
+                      ),
                     // Payout receiver banner — surfaces the scheduled-payout state
                     // (pending_receiver / ready / scheduled / in_flight / settled
                     // / failed / exhausted) with the right CTA for the role. Only
@@ -1661,6 +1690,173 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// supervisor uses automatically. The server closes the finished cycle,
   /// bumps the lifetime counter, moves the pointer to the next member and
   /// re-anchors the cycle calendar — so this is a resume, not a repair.
+  // ===== Savings-circle rounds =====
+
+  /// Read where the circle is in its rounds.
+  ///
+  /// Failure is deliberately silent: the banner just does not appear, and
+  /// every other part of the contribution still works. A circle that is not a
+  /// rotation is not asked at all.
+  void _loadRoundState(Contribution? contribution) {
+    if (contribution == null || !contribution.isRotatingSavings) return;
+    context
+        .read<GroupAccountCubit>()
+        .loadContributionRoundState(contribution.id)
+        .then((state) {
+      if (!mounted || state == null) return;
+      setState(() => _roundState = state);
+    });
+  }
+
+  /// GOING ROUND AGAIN COMMITS EVERY MEMBER TO ANOTHER TURN.
+  ///
+  /// It is not money moving, but it is a commitment on other people's behalf:
+  /// each active member owes another cycle's contribution and is promised
+  /// another turn at the pot. So it is confirmed, with the actual numbers in
+  /// front of the button rather than in a tooltip.
+  Future<void> _confirmStartNextRound(Contribution contribution) async {
+    final state = _roundState;
+    if (state == null || _roundActionBusy) return;
+    final cycles = state.activeMembers;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        title: Text('Start round ${state.currentRound + 1}?',
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w700)),
+        content: Text(
+          'This adds ${cycles == 1 ? '1 cycle' : '$cycles cycles'} — one '
+          'turn for each active member — and moves the circle\u2019s end '
+          'date out to cover them. Everyone owes another contribution per '
+          'cycle.\n\nNo money moves now.',
+          style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.80),
+              fontSize: 12.5.sp,
+              height: 1.45),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Not now',
+                style: GoogleFonts.inter(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('Start round',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFA78BFA),
+                    fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    setState(() => _roundActionBusy = true);
+    final next = await context.read<GroupAccountCubit>().startNextContributionRound(
+          contributionId: contribution.id,
+          groupId: contribution.groupId,
+        );
+    if (!mounted) return;
+    setState(() {
+      _roundActionBusy = false;
+      if (next != null) _roundState = next;
+    });
+    if (next == null) return;
+    // The server may have refused with a reason. Show its sentence rather
+    // than a success line it did not earn — the banner keeps the reason too.
+    final started = next.currentRound > state.currentRound;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(started
+            ? 'Round ${next.currentRound} has started'
+            : (next.reason.isNotEmpty
+                ? next.reason
+                : 'The next round could not start yet')),
+        backgroundColor:
+            started ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ));
+    _loadContributionDetails(force: true);
+  }
+
+  /// ENDING IS FINAL, AND SAYS SO.
+  ///
+  /// There is no undo: the server stamps rounds_closed_at and cancels any
+  /// slot still pending. The dialog names that rather than asking a bare
+  /// "are you sure".
+  Future<void> _confirmEndCircle(Contribution contribution) async {
+    final state = _roundState;
+    if (state == null || _roundActionBusy) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        title: Text('End this circle?',
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w700)),
+        content: Text(
+          'The circle closes for good after '
+          '${state.currentRound == 1 ? 'this round' : '${state.currentRound} rounds'}. '
+          'No further round can be started and nobody owes another '
+          'contribution.\n\nThis cannot be undone. No money moves.',
+          style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.80),
+              fontSize: 12.5.sp,
+              height: 1.45),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Keep it open',
+                style: GoogleFonts.inter(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('End circle',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFF59E0B),
+                    fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    setState(() => _roundActionBusy = true);
+    final next = await context.read<GroupAccountCubit>().endContributionRounds(
+          contributionId: contribution.id,
+          groupId: contribution.groupId,
+        );
+    if (!mounted) return;
+    setState(() {
+      _roundActionBusy = false;
+      if (next != null) _roundState = next;
+    });
+    if (next == null) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(next.roundsEnded
+            ? 'This circle has been ended'
+            : (next.reason.isNotEmpty
+                ? next.reason
+                : 'The circle could not be ended yet')),
+        backgroundColor:
+            next.roundsEnded ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ));
+    _loadContributionDetails(force: true);
+  }
+
   Future<void> _startNextCycle(Contribution contribution) async {
     if (_advancingRotation) return;
     setState(() => _advancingRotation = true);
@@ -2114,10 +2310,28 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// OPENED has no roster to size the rotation against (open() sets it from
   /// the member count — see rotationCycleCount server-side). With no total we
   /// show the round alone rather than inventing a denominator.
+  /// The round state as the server last reported it. Null until the read
+  /// lands; the banner simply does not appear until then.
+  ContributionRoundState? _roundState;
+
+  /// True while a round action is in flight, so neither CTA can be pressed
+  /// twice. The server is idempotent under its own lock, but a second tap
+  /// would still show a second outcome.
+  bool _roundActionBusy = false;
+
   String _cycleLabelFor(Contribution c) {
     final current = c.currentCycle ?? 0;
     final total = c.totalCycles ?? 0;
-    return total > 0 ? 'Cycle $current of $total' : 'Cycle $current';
+    final cycle = total > 0 ? 'Cycle $current of $total' : 'Cycle $current';
+    // ONCE A CIRCLE HAS BEEN ROUND TWICE, THE CYCLE NUMBER IS AMBIGUOUS.
+    //
+    // Cycle indices keep counting up across rounds, so a two-member circle's
+    // second round is cycles 3 and 4. "Cycle 3 of 4" alone reads as a
+    // four-member circle. The round is only named once there has been more
+    // than one, so a first-round circle is not given a number it does not
+    // need.
+    final round = c.currentRound;
+    return round > 1 ? 'Round $round \u00b7 $cycle' : cycle;
   }
 
   /// Index of the Cycles tab, or -1 when it is not showing.

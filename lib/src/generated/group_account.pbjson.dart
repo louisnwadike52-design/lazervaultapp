@@ -629,6 +629,15 @@ const ContributionMessage$json = {
       '10': 'openedAt'
     },
     {'1': 'cycles_completed', '3': 38, '4': 1, '5': 5, '10': 'cyclesCompleted'},
+    {'1': 'current_round', '3': 39, '4': 1, '5': 5, '10': 'currentRound'},
+    {
+      '1': 'rounds_closed_at',
+      '3': 40,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'roundsClosedAt'
+    },
   ],
 };
 
@@ -667,7 +676,9 @@ final $typed_data.Uint8List contributionMessageDescriptor = $convert.base64Decod
     'GQoIcGFpZF9vdXQYIyABKAhSB3BhaWRPdXQSMQoVcGFpZF9vdXRfYW1vdW50X21pbm9yGCQgAS'
     'gEUhJwYWlkT3V0QW1vdW50TWlub3ISNwoJb3BlbmVkX2F0GCUgASgLMhouZ29vZ2xlLnByb3Rv'
     'YnVmLlRpbWVzdGFtcFIIb3BlbmVkQXQSKQoQY3ljbGVzX2NvbXBsZXRlZBgmIAEoBVIPY3ljbG'
-    'VzQ29tcGxldGVk');
+    'VzQ29tcGxldGVkEiMKDWN1cnJlbnRfcm91bmQYJyABKAVSDGN1cnJlbnRSb3VuZBJEChByb3Vu'
+    'ZHNfY2xvc2VkX2F0GCggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIOcm91bmRzQ2'
+    'xvc2VkQXQ=');
 
 @$core.Deprecated('Use contributionMemberMessageDescriptor instead')
 const ContributionMemberMessage$json = {
@@ -3788,6 +3799,196 @@ final $typed_data.Uint8List restartContributionRequestDescriptor = $convert.base
     'NvbnRyaWJ1dGlvbklkEioKEW5ld190YXJnZXRfYW1vdW50GAIgASgEUg9uZXdUYXJnZXRBbW91'
     'bnQSPQoMbmV3X2RlYWRsaW5lGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFILbm'
     'V3RGVhZGxpbmUSFgoGcmVhc29uGAQgASgJUgZyZWFzb24=');
+
+@$core.Deprecated('Use contributionRoundStateDescriptor instead')
+const ContributionRoundState$json = {
+  '1': 'ContributionRoundState',
+  '2': [
+    {'1': 'code', '3': 1, '4': 1, '5': 9, '10': 'code'},
+    {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+    {
+      '1': 'can_start_next_round',
+      '3': 3,
+      '4': 1,
+      '5': 8,
+      '10': 'canStartNextRound'
+    },
+    {'1': 'current_round', '3': 4, '4': 1, '5': 5, '10': 'currentRound'},
+    {'1': 'cycles_completed', '3': 5, '4': 1, '5': 5, '10': 'cyclesCompleted'},
+    {'1': 'total_cycles', '3': 6, '4': 1, '5': 5, '10': 'totalCycles'},
+    {'1': 'active_members', '3': 7, '4': 1, '5': 5, '10': 'activeMembers'},
+    {
+      '1': 'residual_pot_minor',
+      '3': 8,
+      '4': 1,
+      '5': 4,
+      '10': 'residualPotMinor'
+    },
+    {'1': 'payouts_in_flight', '3': 9, '4': 1, '5': 5, '10': 'payoutsInFlight'},
+    {'1': 'rounds_ended', '3': 10, '4': 1, '5': 8, '10': 'roundsEnded'},
+  ],
+};
+
+/// Descriptor for `ContributionRoundState`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List contributionRoundStateDescriptor = $convert.base64Decode(
+    'ChZDb250cmlidXRpb25Sb3VuZFN0YXRlEhIKBGNvZGUYASABKAlSBGNvZGUSFgoGcmVhc29uGA'
+    'IgASgJUgZyZWFzb24SLwoUY2FuX3N0YXJ0X25leHRfcm91bmQYAyABKAhSEWNhblN0YXJ0TmV4'
+    'dFJvdW5kEiMKDWN1cnJlbnRfcm91bmQYBCABKAVSDGN1cnJlbnRSb3VuZBIpChBjeWNsZXNfY2'
+    '9tcGxldGVkGAUgASgFUg9jeWNsZXNDb21wbGV0ZWQSIQoMdG90YWxfY3ljbGVzGAYgASgFUgt0'
+    'b3RhbEN5Y2xlcxIlCg5hY3RpdmVfbWVtYmVycxgHIAEoBVINYWN0aXZlTWVtYmVycxIsChJyZX'
+    'NpZHVhbF9wb3RfbWlub3IYCCABKARSEHJlc2lkdWFsUG90TWlub3ISKgoRcGF5b3V0c19pbl9m'
+    'bGlnaHQYCSABKAVSD3BheW91dHNJbkZsaWdodBIhCgxyb3VuZHNfZW5kZWQYCiABKAhSC3JvdW'
+    '5kc0VuZGVk');
+
+@$core.Deprecated('Use getContributionRoundStateRequestDescriptor instead')
+const GetContributionRoundStateRequest$json = {
+  '1': 'GetContributionRoundStateRequest',
+  '2': [
+    {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+  ],
+};
+
+/// Descriptor for `GetContributionRoundStateRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getContributionRoundStateRequestDescriptor =
+    $convert.base64Decode(
+        'CiBHZXRDb250cmlidXRpb25Sb3VuZFN0YXRlUmVxdWVzdBInCg9jb250cmlidXRpb25faWQYAS'
+        'ABKAlSDmNvbnRyaWJ1dGlvbklk');
+
+@$core.Deprecated('Use getContributionRoundStateResponseDescriptor instead')
+const GetContributionRoundStateResponse$json = {
+  '1': 'GetContributionRoundStateResponse',
+  '2': [
+    {
+      '1': 'contribution',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.group_accounts.ContributionMessage',
+      '10': 'contribution'
+    },
+    {
+      '1': 'state',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.group_accounts.ContributionRoundState',
+      '10': 'state'
+    },
+  ],
+};
+
+/// Descriptor for `GetContributionRoundStateResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getContributionRoundStateResponseDescriptor =
+    $convert.base64Decode(
+        'CiFHZXRDb250cmlidXRpb25Sb3VuZFN0YXRlUmVzcG9uc2USRwoMY29udHJpYnV0aW9uGAEgAS'
+        'gLMiMuZ3JvdXBfYWNjb3VudHMuQ29udHJpYnV0aW9uTWVzc2FnZVIMY29udHJpYnV0aW9uEjwK'
+        'BXN0YXRlGAIgASgLMiYuZ3JvdXBfYWNjb3VudHMuQ29udHJpYnV0aW9uUm91bmRTdGF0ZVIFc3'
+        'RhdGU=');
+
+@$core.Deprecated('Use startNextContributionRoundRequestDescriptor instead')
+const StartNextContributionRoundRequest$json = {
+  '1': 'StartNextContributionRoundRequest',
+  '2': [
+    {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+    {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `StartNextContributionRoundRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List startNextContributionRoundRequestDescriptor =
+    $convert.base64Decode(
+        'CiFTdGFydE5leHRDb250cmlidXRpb25Sb3VuZFJlcXVlc3QSJwoPY29udHJpYnV0aW9uX2lkGA'
+        'EgASgJUg5jb250cmlidXRpb25JZBIWCgZyZWFzb24YAiABKAlSBnJlYXNvbg==');
+
+@$core.Deprecated('Use startNextContributionRoundResponseDescriptor instead')
+const StartNextContributionRoundResponse$json = {
+  '1': 'StartNextContributionRoundResponse',
+  '2': [
+    {
+      '1': 'contribution',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.group_accounts.ContributionMessage',
+      '10': 'contribution'
+    },
+    {
+      '1': 'state',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.group_accounts.ContributionRoundState',
+      '10': 'state'
+    },
+    {'1': 'round', '3': 3, '4': 1, '5': 5, '10': 'round'},
+    {'1': 'cycles_added', '3': 4, '4': 1, '5': 5, '10': 'cyclesAdded'},
+    {'1': 'first_cycle', '3': 5, '4': 1, '5': 5, '10': 'firstCycle'},
+    {'1': 'last_cycle', '3': 6, '4': 1, '5': 5, '10': 'lastCycle'},
+    {
+      '1': 'new_deadline',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'newDeadline'
+    },
+  ],
+};
+
+/// Descriptor for `StartNextContributionRoundResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List startNextContributionRoundResponseDescriptor = $convert.base64Decode(
+    'CiJTdGFydE5leHRDb250cmlidXRpb25Sb3VuZFJlc3BvbnNlEkcKDGNvbnRyaWJ1dGlvbhgBIA'
+    'EoCzIjLmdyb3VwX2FjY291bnRzLkNvbnRyaWJ1dGlvbk1lc3NhZ2VSDGNvbnRyaWJ1dGlvbhI8'
+    'CgVzdGF0ZRgCIAEoCzImLmdyb3VwX2FjY291bnRzLkNvbnRyaWJ1dGlvblJvdW5kU3RhdGVSBX'
+    'N0YXRlEhQKBXJvdW5kGAMgASgFUgVyb3VuZBIhCgxjeWNsZXNfYWRkZWQYBCABKAVSC2N5Y2xl'
+    'c0FkZGVkEh8KC2ZpcnN0X2N5Y2xlGAUgASgFUgpmaXJzdEN5Y2xlEh0KCmxhc3RfY3ljbGUYBi'
+    'ABKAVSCWxhc3RDeWNsZRI9CgxuZXdfZGVhZGxpbmUYByABKAsyGi5nb29nbGUucHJvdG9idWYu'
+    'VGltZXN0YW1wUgtuZXdEZWFkbGluZQ==');
+
+@$core.Deprecated('Use endContributionRoundsRequestDescriptor instead')
+const EndContributionRoundsRequest$json = {
+  '1': 'EndContributionRoundsRequest',
+  '2': [
+    {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+    {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `EndContributionRoundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List endContributionRoundsRequestDescriptor =
+    $convert.base64Decode(
+        'ChxFbmRDb250cmlidXRpb25Sb3VuZHNSZXF1ZXN0EicKD2NvbnRyaWJ1dGlvbl9pZBgBIAEoCV'
+        'IOY29udHJpYnV0aW9uSWQSFgoGcmVhc29uGAIgASgJUgZyZWFzb24=');
+
+@$core.Deprecated('Use endContributionRoundsResponseDescriptor instead')
+const EndContributionRoundsResponse$json = {
+  '1': 'EndContributionRoundsResponse',
+  '2': [
+    {
+      '1': 'contribution',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.group_accounts.ContributionMessage',
+      '10': 'contribution'
+    },
+    {
+      '1': 'state',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.group_accounts.ContributionRoundState',
+      '10': 'state'
+    },
+  ],
+};
+
+/// Descriptor for `EndContributionRoundsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List endContributionRoundsResponseDescriptor = $convert.base64Decode(
+    'Ch1FbmRDb250cmlidXRpb25Sb3VuZHNSZXNwb25zZRJHCgxjb250cmlidXRpb24YASABKAsyIy'
+    '5ncm91cF9hY2NvdW50cy5Db250cmlidXRpb25NZXNzYWdlUgxjb250cmlidXRpb24SPAoFc3Rh'
+    'dGUYAiABKAsyJi5ncm91cF9hY2NvdW50cy5Db250cmlidXRpb25Sb3VuZFN0YXRlUgVzdGF0ZQ'
+    '==');
 
 @$core.Deprecated('Use restartContributionResponseDescriptor instead')
 const RestartContributionResponse$json = {

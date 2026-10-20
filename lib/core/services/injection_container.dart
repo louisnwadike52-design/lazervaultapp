@@ -3443,6 +3443,10 @@ Future<void> init() async {
       GetContributionCycleDetails(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(
       () => RestartContribution(serviceLocator<GroupAccountRepository>()));
+  // Savings-circle rounds: one use case covers the read, "go round again" and
+  // "end the circle" — see ManageContributionRound for why it is not three.
+  serviceLocator.registerLazySingleton(() =>
+      ManageContributionRound(serviceLocator<GroupAccountRepository>()));
   // Invite-first membership use cases (slice 5).
   serviceLocator.registerLazySingleton(
       () => InviteToGroup(serviceLocator<GroupAccountRepository>()));
@@ -3508,6 +3512,8 @@ Future<void> init() async {
         getContributionCycleDetails:
             serviceLocator<GetContributionCycleDetails>(),
         restartContribution: serviceLocator<RestartContribution>(),
+        manageContributionRound:
+            serviceLocator<ManageContributionRound>(),
         inviteToGroup: serviceLocator<InviteToGroup>(),
         respondToGroupInvite: serviceLocator<RespondToGroupInvite>(),
         cancelGroupInvite: serviceLocator<CancelGroupInvite>(),

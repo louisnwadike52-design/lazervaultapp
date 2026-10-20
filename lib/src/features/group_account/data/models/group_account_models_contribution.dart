@@ -25,6 +25,8 @@ class ContributionModel extends Contribution {
     super.startDate,
     super.totalCycles,
     super.currentCycle,
+    super.currentRound,
+    super.roundsClosedAt,
     super.payoutSchedule,
     super.currentPayoutRecipient,
     super.nextPayoutDate,
@@ -88,6 +90,10 @@ class ContributionModel extends Contribution {
           : null,
       totalCycles: json['totalCycles'] as int?,
       currentCycle: json['currentCycle'] as int?,
+      currentRound: (json['currentRound'] as int?) ?? 1,
+      roundsClosedAt: json['roundsClosedAt'] != null
+          ? DateTime.parse(json['roundsClosedAt'] as String)
+          : null,
       payoutSchedule: (json['payoutSchedule'] as List<dynamic>?)
               ?.map((x) =>
                   PayoutScheduleModel.fromJson(x as Map<String, dynamic>))
@@ -156,6 +162,8 @@ class ContributionModel extends Contribution {
       'startDate': startDate?.toIso8601String(),
       'totalCycles': totalCycles,
       'currentCycle': currentCycle,
+      'currentRound': currentRound,
+      'roundsClosedAt': roundsClosedAt?.toIso8601String(),
       'payoutSchedule': payoutSchedule
           .map((x) => (x as PayoutScheduleModel).toJson())
           .toList(),
@@ -206,6 +214,8 @@ class ContributionModel extends Contribution {
       startDate: entity.startDate,
       totalCycles: entity.totalCycles,
       currentCycle: entity.currentCycle,
+      currentRound: entity.currentRound,
+      roundsClosedAt: entity.roundsClosedAt,
       payoutSchedule: entity.payoutSchedule,
       currentPayoutRecipient: entity.currentPayoutRecipient,
       nextPayoutDate: entity.nextPayoutDate,
@@ -248,6 +258,8 @@ class ContributionModel extends Contribution {
     DateTime? startDate,
     int? totalCycles,
     int? currentCycle,
+    int? currentRound,
+    DateTime? roundsClosedAt,
     List<PayoutSchedule>? payoutSchedule,
     String? currentPayoutRecipient,
     DateTime? nextPayoutDate,
@@ -287,6 +299,8 @@ class ContributionModel extends Contribution {
       startDate: startDate ?? this.startDate,
       totalCycles: totalCycles ?? this.totalCycles,
       currentCycle: currentCycle ?? this.currentCycle,
+      currentRound: currentRound ?? this.currentRound,
+      roundsClosedAt: roundsClosedAt ?? this.roundsClosedAt,
       payoutSchedule: payoutSchedule ?? this.payoutSchedule,
       currentPayoutRecipient:
           currentPayoutRecipient ?? this.currentPayoutRecipient,

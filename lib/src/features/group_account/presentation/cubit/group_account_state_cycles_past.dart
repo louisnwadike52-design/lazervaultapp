@@ -54,6 +54,48 @@ class ContributionRestarted extends GroupAccountState {
 }
 
 // =============================================================
+// Savings-circle rounds
+// =============================================================
+//
+// One state for all three outcomes, carrying BOTH the contribution and the
+// round state. A refusal is state rather than an error here: the server
+// answers OK with the sentence to show ("this round is still running: 2 of 3
+// cycles have finished"), so emitting GroupAccountError for it would replace
+// the one explanation the creator needs with a generic failure.
+//
+// [justChanged] distinguishes a read from a mutation that landed, so the
+// screen can show a confirmation for the second without announcing one every
+// time it polls.
+
+class ContributionRoundLoaded extends GroupAccountState {
+  final Contribution contribution;
+  final ContributionRoundState roundState;
+
+  /// Non-empty when a round was just started or the circle just ended.
+  final String justChanged;
+
+  const ContributionRoundLoaded({
+    required this.contribution,
+    required this.roundState,
+    this.justChanged = '',
+  });
+
+  @override
+  List<Object?> get props => [contribution, roundState, justChanged];
+}
+
+class ContributionRoundBusy extends GroupAccountState {
+  final String contributionId;
+  final String message;
+  const ContributionRoundBusy({
+    required this.contributionId,
+    this.message = 'Working on it...',
+  });
+  @override
+  List<Object?> get props => [contributionId, message];
+}
+
+// =============================================================
 // Past Contributions / Past Groups
 // =============================================================
 //

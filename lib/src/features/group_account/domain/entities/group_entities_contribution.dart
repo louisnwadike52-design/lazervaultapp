@@ -35,6 +35,23 @@ class Contribution extends Equatable {
   final int? totalCycles; // Total number of payment cycles
   final int? currentCycle; // Current cycle number
 
+  /// Which pass through the members this circle is on.
+  ///
+  /// A round is one full pass: three members, three cycles. [currentCycle]
+  /// keeps counting up across rounds (round 2 of a pair is cycles 3 and 4),
+  /// so without this nothing can say whether "cycle 4" is this circle's
+  /// second pass or its fourth member. 1 for a circle that has not been round
+  /// twice, which is every circle created before rounds existed.
+  final int currentRound;
+
+  /// Set when the creator ended the circle for good.
+  ///
+  /// NOT the same as `status == completed`, which a circle reaches at the end
+  /// of EVERY round and from which another round can still start. This is the
+  /// creator saying there will be no more, and it is what stops the screen
+  /// offering the choice.
+  final DateTime? roundsClosedAt;
+
   // Payout rotation fields
   final List<PayoutSchedule> payoutSchedule; // Who gets paid when
   final String? currentPayoutRecipient; // Current person to receive payout
@@ -105,6 +122,8 @@ class Contribution extends Equatable {
     this.startDate,
     this.totalCycles,
     this.currentCycle,
+    this.currentRound = 1,
+    this.roundsClosedAt,
     this.payoutSchedule = const [],
     this.currentPayoutRecipient,
     this.nextPayoutDate,
@@ -146,6 +165,8 @@ class Contribution extends Equatable {
         startDate,
         totalCycles,
         currentCycle,
+        currentRound,
+        roundsClosedAt,
         payoutSchedule,
         currentPayoutRecipient,
         nextPayoutDate,
@@ -302,6 +323,8 @@ class Contribution extends Equatable {
     DateTime? startDate,
     int? totalCycles,
     int? currentCycle,
+    int? currentRound,
+    DateTime? roundsClosedAt,
     List<PayoutSchedule>? payoutSchedule,
     String? currentPayoutRecipient,
     DateTime? nextPayoutDate,
@@ -341,6 +364,8 @@ class Contribution extends Equatable {
       startDate: startDate ?? this.startDate,
       totalCycles: totalCycles ?? this.totalCycles,
       currentCycle: currentCycle ?? this.currentCycle,
+      currentRound: currentRound ?? this.currentRound,
+      roundsClosedAt: roundsClosedAt ?? this.roundsClosedAt,
       payoutSchedule: payoutSchedule ?? this.payoutSchedule,
       currentPayoutRecipient:
           currentPayoutRecipient ?? this.currentPayoutRecipient,

@@ -12,6 +12,7 @@ import 'group_account_remote_data_source.dart'
 import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
     as $pb_timestamp;
+import 'package:lazervault/src/features/group_account/domain/contribution_round_state.dart';
 
 class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   final pb.GroupAccountServiceClient _client;
@@ -777,6 +778,88 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     }
   }
 
+  // ===== Savings-circle rounds =====
+  //
+  // A REFUSAL IS NOT AN EXCEPTION on this path. The server answers OK with a
+  // state whose `reason` is the sentence to show ("this round is still
+  // running: 2 of 3 cycles have finished"), so these return the state and let
+  // the caller decide. Throwing would turn the one explanation the creator
+  // needs into a generic error snackbar.
+
+  ContributionRoundState _mapRoundStateFromProto(pb.ContributionRoundState s) {
+    return ContributionRoundState(
+      code: ContributionRoundCode.fromWire(s.code),
+      reason: s.reason,
+      canStartNextRound: s.canStartNextRound,
+      currentRound: s.currentRound > 0 ? s.currentRound : 1,
+      cyclesCompleted: s.cyclesCompleted,
+      totalCycles: s.totalCycles,
+      activeMembers: s.activeMembers,
+      residualPotMinor: s.residualPotMinor.toInt(),
+      payoutsInFlight: s.payoutsInFlight,
+      roundsEnded: s.roundsEnded,
+    );
+  }
+
+  Future<({Contribution contribution, ContributionRoundState state})>
+      getContributionRoundState({required String contributionId}) async {
+    try {
+      final request = pb.GetContributionRoundStateRequest()
+        ..contributionId = contributionId;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final resp = await _client.getContributionRoundState(request,
+          options: callOptions);
+      return (
+        contribution: _mapContributionFromProto(resp.contribution),
+        state: _mapRoundStateFromProto(resp.state),
+      );
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to load round details'));
+    }
+  }
+
+  Future<({Contribution contribution, ContributionRoundState state})>
+      startNextContributionRound({
+    required String contributionId,
+    String reason = '',
+  }) async {
+    try {
+      final request = pb.StartNextContributionRoundRequest()
+        ..contributionId = contributionId
+        ..reason = reason;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final resp = await _client.startNextContributionRound(request,
+          options: callOptions);
+      return (
+        contribution: _mapContributionFromProto(resp.contribution),
+        state: _mapRoundStateFromProto(resp.state),
+      );
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to start the next round'));
+    }
+  }
+
+  Future<({Contribution contribution, ContributionRoundState state})>
+      endContributionRounds({
+    required String contributionId,
+    String reason = '',
+  }) async {
+    try {
+      final request = pb.EndContributionRoundsRequest()
+        ..contributionId = contributionId
+        ..reason = reason;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final resp =
+          await _client.endContributionRounds(request, options: callOptions);
+      return (
+        contribution: _mapContributionFromProto(resp.contribution),
+        state: _mapRoundStateFromProto(resp.state),
+      );
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to end this circle'));
+    }
+  }
+
   ContributionCycle _mapCycleSummaryFromProto(pb.ContributionCycleSummary s) {
     return ContributionCycle(
       id: s.id,
@@ -1394,6 +1477,15 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
           contribution.hasTotalCycles() ? contribution.totalCycles : null,
       currentCycle:
           contribution.hasCurrentCycle() ? contribution.currentCycle : null,
+      // Which pass through the members. An older server sends nothing, and a
+      // circle that has not been round twice is on round 1 either way.
+      currentRound:
+          contribution.hasCurrentRound() && contribution.currentRound > 0
+              ? contribution.currentRound
+              : 1,
+      roundsClosedAt: contribution.hasRoundsClosedAt()
+          ? _timestampToDateTime(contribution.roundsClosedAt)
+          : null,
       payoutSchedule: [],
       currentPayoutRecipient: contribution.currentPayoutRecipient.isNotEmpty
           ? contribution.currentPayoutRecipient
