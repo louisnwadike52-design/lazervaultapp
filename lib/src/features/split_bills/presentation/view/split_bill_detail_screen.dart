@@ -72,6 +72,12 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
   /// instead of replacing the screen.
   bool _cancelInFlight = false;
 
+  /// True while "Remove from my list" is in flight, so the button shows
+  /// progress and cannot be pressed twice. Cleared by ANY terminal state in
+  /// the listener, including an error — a failed removal that left the
+  /// button disabled would strand the user with no way to retry.
+  bool _removeInFlight = false;
+
   String get splitBillId => widget.splitBillId;
 
   String? _getCurrentUserId(BuildContext context) =>
@@ -126,6 +132,11 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
             if (_cancelInFlight) {
               setState(() => _cancelInFlight = false);
             }
+            // Same for remove: an error must clear its spinner too, or a
+            // failed removal leaves the button disabled with no way to retry.
+            if (_removeInFlight) {
+              setState(() => _removeInFlight = false);
+            }
           }
           if (state is SplitBillCancelled) {
             showAppSnackbar(
@@ -133,7 +144,20 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
               state.message,
               type: AppSnackbarType.success,
             );
-            _leaveAfterTerminalAction(context);
+            // STAY AND RE-RENDER, rather than leaving.
+            //
+            // Cancelling does not end the organiser's relationship with the
+            // bill — it changes what they can do with it: the status becomes
+            // Cancelled, Pay/Remind disappear, the cancelled banner appears
+            // and "Remove from my list" becomes available. Popping the page
+            // hid all of that and sent them back to a list where the row had
+            // simply changed colour, so the one action they most likely want
+            // next was two navigations away.
+            //
+            // Reloading is what produces the correct CTAs: they are computed
+            // from the bill's status, so the screen only tells the truth once
+            // it has the cancelled record.
+            context.read<SplitBillCubit>().loadBillDetail(splitBillId);
           } else if (state is SplitBillHidden) {
             showAppSnackbar(
               'Removed',
@@ -366,9 +390,21 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
         width: double.infinity,
         child: OutlinedButton.icon(
           key: const Key('split_bill_remove_from_list'),
-          onPressed: () => _confirmRemoveFromList(context, splitBillId),
-          icon: const Icon(Icons.visibility_off_outlined, size: 18),
-          label: const Text('Remove from my list'),
+          onPressed: _removeInFlight
+              ? null
+              : () => _confirmRemoveFromList(context, splitBillId),
+          icon: _removeInFlight
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF9CA3AF)),
+                  ),
+                )
+              : const Icon(Icons.visibility_off_outlined, size: 18),
+          label: Text(_removeInFlight ? 'Removing…' : 'Remove from my list'),
           style: OutlinedButton.styleFrom(
             foregroundColor: const Color(0xFF9CA3AF),
             side: const BorderSide(color: Color(0xFF2D2D2D)),
@@ -410,7 +446,11 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
         ],
       ),
     );
-    if (ok == true) cubit.hideBill(splitBillId);
+    if (ok != true) return;
+    // Set only after the confirmation is accepted: showing progress while a
+    // dialog is open would claim work that has not started.
+    if (mounted) setState(() => _removeInFlight = true);
+    cubit.hideBill(splitBillId);
   }
 
   Widget _buildTerminalBanner(SplitBillStatus status) {

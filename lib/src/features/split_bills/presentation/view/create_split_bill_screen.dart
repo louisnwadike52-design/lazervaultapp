@@ -43,6 +43,20 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
 
   final _totalAmountController = TextEditingController();
   final _titleController = TextEditingController();
+
+  /// Focus on the title field, so the duplicate check can run as it LOSES
+  /// focus rather than on every keystroke. Checking per character would flag
+  /// "Dinn" on the way to "Dinner 2" and fight the user as they type.
+  final _titleFocus = FocusNode();
+
+  /// Inline duplicate warning shown under the title field. Null when the name
+  /// is free.
+  ///
+  /// A warning, not a hard block: the server is what actually refuses a
+  /// duplicate, and the list this is checked against can be stale (another
+  /// device, a bill created since this screen opened). Telling the user early
+  /// is the point; deciding is still the server's.
+  String? _titleDuplicateWarning;
   final _descriptionController = TextEditingController();
 
   final List<_SelectedParticipant> _selectedParticipants = [];
@@ -157,11 +171,39 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         setState(() => _currentUserId = id.trim());
       }
     });
+    // ON BLUR, NOT ON EVERY KEYSTROKE.
+    //
+    // Checking per character flags "Dinn" on the way to "Dinner 2" and fights
+    // the user while they are still typing. Losing focus is the moment they
+    // have finished saying what they mean.
+    _titleFocus.addListener(() {
+      if (!_titleFocus.hasFocus) _checkTitleForDuplicate();
+    });
+  }
+
+  /// Flag a title that collides with one of this user's own LIVE bills.
+  ///
+  /// Advisory. The server holds the actual rule, because this list can be
+  /// stale — created on another device, or since this screen opened — and a
+  /// client check that blocked outright would refuse names the server would
+  /// have accepted.
+  void _checkTitleForDuplicate() {
+    if (!mounted) return;
+    final existing = _openBillsWithSameTitle(_titleController.text);
+    final warning = existing.isEmpty
+        ? null
+        : 'You already have an active bill called '
+            '"${existing.first.displayTitle}". Use a different name so you '
+            'and your co-payers can tell them apart.';
+    if (warning != _titleDuplicateWarning) {
+      setState(() => _titleDuplicateWarning = warning);
+    }
   }
 
   @override
   void dispose() {
     _totalAmountController.dispose();
+    _titleFocus.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
     _receiverAccountNumberController.dispose();
@@ -798,11 +840,21 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         const SizedBox(height: 8),
         TextField(
           controller: _titleController,
+          focusNode: _titleFocus,
           maxLength: 100,
           textCapitalization: TextCapitalization.sentences,
+          // Clear the warning as soon as they start changing the name —
+          // leaving it up while they fix it is just noise.
+          onChanged: (_) {
+            if (_titleDuplicateWarning != null) {
+              setState(() => _titleDuplicateWarning = null);
+            }
+          },
           style: const TextStyle(
               color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
           decoration: InputDecoration(
+            errorText: _titleDuplicateWarning,
+            errorMaxLines: 3,
             hintText: 'e.g., Dinner at Terra Kulture',
             hintStyle: const TextStyle(color: Color(0xFF6B7280)),
             counterStyle:
@@ -2243,6 +2295,15 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   void _goToStepTwo() {
     if (_titleController.text.trim().isEmpty) {
       showAppSnackbar('Title required', 'Give this split bill a title first.',
+          type: AppSnackbarType.error);
+      return;
+    }
+    // Catch it on Next as well as on blur: a user who types a name and taps
+    // Next straight away never blurs the field, so the inline warning would
+    // not have run.
+    _checkTitleForDuplicate();
+    if (_titleDuplicateWarning != null) {
+      showAppSnackbar('Name already in use', _titleDuplicateWarning!,
           type: AppSnackbarType.error);
       return;
     }
