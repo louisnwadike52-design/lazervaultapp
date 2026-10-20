@@ -1951,15 +1951,22 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         // at the top of the screen with nothing left to do and no way to put it
         // away short of ending the call.
         //
-        // Compact once a recipient is chosen but before there is an amount —
-        // the longest-lived state, and the one that least needs to be large.
+        // COMPACT IN EVERY STATE.
+        //
+        // It used to go compact only for recipientSelected and then expand the
+        // moment an amount arrived -- a 46px avatar and a 22sp hero number
+        // pinned above the conversation. This HUD is an overlay on a LIVE call:
+        // every pixel it takes is a line of transcript the user cannot see
+        // while they are being asked to confirm a transfer, which is precisely
+        // when they need to read what was heard. The figures stay perfectly
+        // legible small; the conversation does not survive being pushed off.
         VoiceTransferHud(
           context: transfer,
-          compact: transfer.status == VoiceTransferStatus.recipientSelected,
+          compact: true,
           onDismiss: () =>
               context.read<VoiceSessionCubit>().dismissTransferHud(),
         ),
-        SizedBox(height: 12.h),
+        SizedBox(height: 8.h),
         // Running transcript + live captions scroll INDEPENDENTLY below the pinned
         // HUD so older turns stay reachable while the transfer stays in view.
         Expanded(

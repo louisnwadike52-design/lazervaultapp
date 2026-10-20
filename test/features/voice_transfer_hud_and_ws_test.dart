@@ -150,15 +150,22 @@ void main() {
       expect(body, contains('emit(_rebuildCurrentState())'));
     });
 
-    test('the sheet wires the X and the compact mode', () {
+    test('the sheet wires the X and stays compact in every state', () {
       final src = code(sheet);
       expect(src, contains('onDismiss: () =>'));
       expect(src, contains('dismissTransferHud()'));
+      // It used to expand the moment an amount arrived, putting a 46px avatar
+      // and a 22sp hero number above the conversation. This HUD overlays a LIVE
+      // call, so the space it takes is transcript the user cannot read at the
+      // exact moment they are confirming a transfer.
+      expect(src, contains('compact: true'),
+          reason: 'the HUD expands again once an amount exists, pushing the '
+              'conversation off screen mid-transfer');
       expect(
           src,
-          contains(
-              'compact: transfer.status == VoiceTransferStatus.recipientSelected'),
-          reason: 'the longest-lived state is the one that should be small');
+          isNot(contains(
+              'compact: transfer.status == VoiceTransferStatus.recipientSelected')),
+          reason: 'the state-dependent sizing is back');
     });
   });
 

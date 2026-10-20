@@ -114,25 +114,30 @@ class VoiceTransferHud extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildStatusBar(c, accent),
-        SizedBox(height: compact ? 8.h : 12.h),
+        SizedBox(height: compact ? 6.h : 8.h),
         // Recipient panel — present from recipientSelected onward.
         if (c.recipientName != null || c.recipientUsername != null)
           _RecipientPanel(context: c, accent: accent, compact: compact),
         // Money + destination rows — present once an amount exists.
+        //
+        // The vertical rhythm is deliberately tight. This HUD sits ON TOP of
+        // the conversation during a live call, and at the old spacing it pushed
+        // the transcript off screen exactly when the user most needs to read
+        // what was heard and what the agent said back.
         if (c.hasAmount) ...[
-          SizedBox(height: 12.h),
+          SizedBox(height: 7.h),
           _buildAmountReadout(c, accent),
-          SizedBox(height: 10.h),
+          SizedBox(height: 6.h),
           ..._buildDataRows(c),
         ],
         // Terminal extras (reference / balance / reason).
         if (c.status == VoiceTransferStatus.success) ...[
-          SizedBox(height: 10.h),
+          SizedBox(height: 6.h),
           _buildSuccessFooter(c),
         ],
         if (c.status == VoiceTransferStatus.failed &&
             (c.failureReason ?? '').isNotEmpty) ...[
-          SizedBox(height: 10.h),
+          SizedBox(height: 6.h),
           _buildFailureFooter(c),
         ],
       ],
@@ -267,10 +272,14 @@ class VoiceTransferHud extends StatelessWidget {
     }
   }
 
-  // ── Amount readout (big, animated count-up) ──
+  // ── Amount readout (animated count-up) ──
+  //
+  // Sized to be READ, not to dominate. It was a 22sp hero number in a padded
+  // panel, which on a phone pushed the live transcript under the fold during
+  // the one flow where the user is reading every line.
   Widget _buildAmountReadout(VoiceTransferContext c, Color accent) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10.r),
         gradient: LinearGradient(
@@ -304,7 +313,7 @@ class VoiceTransferHud extends StatelessWidget {
               value: c.amountNaira ?? 0,
               currency: c.currency,
               color: Colors.white,
-              fontSize: 22.sp,
+              fontSize: 15.sp,
             ),
           ),
         ],

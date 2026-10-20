@@ -10,7 +10,9 @@ class _HudFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 16.h),
+      // Trimmed from 16/14/16/16. This frame wraps a HUD that sits over a live
+      // conversation, so its padding is paid for in transcript lines.
+      padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 11.h),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
