@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
+import '../../domain/contribution_cycle_due.dart';
 import 'contribution_type_badge.dart';
 import 'created_by_you_badge.dart';
 import 'group_funds_avatar.dart';
@@ -257,7 +258,15 @@ class ContributionCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Deadline',
+                        // A rotation's card is describing the cycle the member
+                        // pays into now, which is also what the red `isOverdue`
+                        // below measures (entity: nextPaymentDate). Labelling
+                        // it "Deadline" while printing the circle's end date
+                        // put the two one beside the other off different
+                        // clocks. See contribution_cycle_due.dart.
+                        contribution.isRotatingSavings
+                            ? 'Cycle due'
+                            : 'Deadline',
                         style: GoogleFonts.inter(
                           fontSize: 11.sp,
                           color: Colors.grey[500],
@@ -265,7 +274,7 @@ class ContributionCard extends StatelessWidget {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        _formatDeadline(contribution.deadline),
+                        _formatDeadline(contribution.activeCycleDue),
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w500,

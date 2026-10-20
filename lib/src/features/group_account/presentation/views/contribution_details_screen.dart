@@ -37,6 +37,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/group_account/data/services/payout_assignment_service.dart';
 import 'package:lazervault/src/features/group_account/domain/cycle_scoped_progress.dart';
+import 'package:lazervault/src/features/group_account/domain/contribution_cycle_due.dart';
 import 'package:lazervault/src/features/group_account/presentation/widgets/extend_rotation_sheet.dart';
 import 'package:lazervault/src/features/group_account/domain/rotation_extension.dart';
 import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
@@ -2584,7 +2585,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Due ${DateFormat('MMM d, yyyy').format(contribution.deadline)}',
+                // The ACTIVE CYCLE's close, not the circle's end date. See
+                // contribution_cycle_due.dart: these are different dates, and
+                // this label was asking a member to pay by the wrong one.
+                '${contribution.isRotatingSavings ? 'Cycle due' : 'Due'} '
+                '${DateFormat('MMM d, yyyy').format(contribution.activeCycleDue)}',
                 style: GoogleFonts.inter(
                   fontSize: 10.sp,
                   color: Colors.white.withValues(alpha: 0.75),
@@ -2888,12 +2893,20 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               // Reads off the same derived state as the badge, so the two
               // cannot disagree: a cancelled contribution is not "Closed" on
               // one card and "Cancelled" on the badge above it.
+              // A FINISHED circle is described by the date it ended, so that
+              // branch keeps `deadline`. A LIVE one is described by the cycle
+              // the member is paying into now — which moves when the cycle is
+              // restarted late and which `isOverdue` below already measures
+              // against. Reading `deadline` here showed the circle's end date
+              // and coloured it red off a different clock.
               title: contribution.displayState.isTerminal
                   ? contribution.displayState.label
-                  : 'Days Remaining',
+                  : (contribution.isRotatingSavings
+                      ? 'Cycle Closes In'
+                      : 'Days Remaining'),
               value: contribution.displayState.isTerminal
                   ? DateFormat('MMM d, yyyy').format(contribution.deadline)
-                  : _calculateDaysRemaining(contribution.deadline),
+                  : _calculateDaysRemaining(contribution.activeCycleDue),
               icon: Icons.schedule,
               color: contribution.displayState.isTerminal
                   ? (contribution.displayState ==
