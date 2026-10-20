@@ -144,7 +144,7 @@ class PendingDeepLink {
         // the app ignoring the user. They get the same modal they would have
         // got from the tile, with the admin's own message.
         final gated = serviceForRoute(confirmed.route);
-        if (gated != null && !FeatureFlags.quickServiceAvailable(gated.name)) {
+        if (gated != null && FeatureFlags.quickServiceEntryBlocked(gated.name)) {
           final ctx = Get.context;
           if (ctx != null) {
             showServiceUnavailableModal(

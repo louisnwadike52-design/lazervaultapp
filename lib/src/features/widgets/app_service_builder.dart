@@ -90,9 +90,10 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
     final serviceKey = widget.appService.serviceName.name;
     // Whitelisted testers are exactly who should still get in while a service
     // is switched off for everyone else, so the same override applies here.
-    final whitelisted = FeatureFlags.whitelisted(
-        'quick_service_$serviceKey', FeatureFlags.currentUserEmail());
-    if (!whitelisted && !FeatureFlags.quickServiceAvailable(serviceKey)) {
+    // One shared question for both entry points (this tile and a notification
+    // deep link), so the two cannot drift apart. It already folds in the
+    // whitelist override.
+    if (FeatureFlags.quickServiceEntryBlocked(serviceKey)) {
       showServiceUnavailableModal(
         context,
         serviceName: widget.appService.serviceName.displayName,

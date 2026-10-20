@@ -442,10 +442,32 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
             .toLowerCase();
     // A whitelisted email OVERRIDES the hide. That is the whole point: ship a
     // service to a few testers while it stays invisible to everyone else.
+    //
+    // It overrides EVERY switch above as well, the staged-rollout flags
+    // included — a tester on the list sees Insurance even while it is off for
+    // the world, which is what the list is for. The locale gate below is the
+    // one thing it cannot override, and correctly so: there the rail genuinely
+    // does not exist in the user's region, so showing the tile would hand them
+    // a flow that cannot complete.
     final email = FeatureFlags.currentUserEmail();
     for (final s in getAllServicesUnfiltered()) {
       final key = s.serviceName.name;
-      if (FeatureFlags.whitelisted('quick_service_$key', email)) continue;
+      if (FeatureFlags.whitelisted('quick_service_$key', email)) {
+        hidden.remove(s.serviceName);
+        continue;
+      }
+      // The per-service WITHDRAWAL switch, for all 39 services.
+      //
+      // Distinct from `_available`, which leaves the tile on the grid and
+      // explains itself on tap (see FeatureFlags.quickServiceVisible). This
+      // one removes it from the grid, from the swipe-down search corpus and
+      // from every per-account-type list — done here, at the one chokepoint,
+      // so those three cannot disagree. A tile hidden in one place and
+      // reachable in another is worse than one that is simply not there.
+      if (!FeatureFlags.quickServiceVisible(key)) {
+        hidden.add(s.serviceName);
+        continue;
+      }
       if (FeatureFlags.quickServiceHiddenFor(key).contains(activeTypeToken)) {
         hidden.add(s.serviceName);
       }

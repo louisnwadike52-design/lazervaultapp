@@ -1059,6 +1059,57 @@ class FeatureFlags {
       'quick_service_${service}_available';
   static String quickServiceMessageKey(String service) =>
       'quick_service_${service}_message';
+  static String quickServiceVisibleKey(String service) =>
+      'quick_service_${service}_visible';
+
+  /// Whether the service appears AT ALL. Default TRUE.
+  ///
+  /// This is the withdrawal switch, and it is deliberately NOT the same thing
+  /// as [quickServiceAvailable]:
+  ///
+  ///   _visible=false    gone from the grid, gone from the swipe-down search
+  ///                     corpus, gone from every per-account-type list. A deep
+  ///                     link or notification still gets the modal, which is
+  ///                     exactly when an explanation is worth having.
+  ///   _available=false  still on the grid, explains itself on tap. A service
+  ///                     that silently vanishes during an outage reads as a
+  ///                     bug, which is why that one shows rather than hides.
+  ///
+  /// Both are overridden by the whitelist, so a tester keeps a withdrawn
+  /// service while it is invisible to everyone else — the whole point of
+  /// shipping to a few addresses first.
+  ///
+  /// Only the exact string "false" hides it. A typo in an admin field must not
+  /// take a working service off every phone.
+  static bool quickServiceVisible(String service) {
+    final raw = _prefs?.getString(quickServiceVisibleKey(service));
+    if (raw == null || raw.trim().isEmpty) return true;
+    return raw.trim().toLowerCase() != 'false';
+  }
+
+  /// Whether [service] should be shown to the current user, considering the
+  /// withdrawal switch and the whitelist override together.
+  static bool quickServiceShown(String service, {String? email}) {
+    if (whitelisted('quick_service_$service', email ?? currentUserEmail())) {
+      return true;
+    }
+    return quickServiceVisible(service);
+  }
+
+  /// Whether ENTERING [service] should be refused, whichever switch is set.
+  ///
+  /// The two entry points — tapping a tile and following a notification or
+  /// deep link — must agree, so they both ask this one question. A withdrawn
+  /// service has no tile to tap, but a push can still name its route, and
+  /// landing inside a service an admin has taken off the app is the confusion
+  /// the modal exists to prevent. A tap that does nothing reads as the app
+  /// ignoring the user, so it is explained rather than swallowed.
+  static bool quickServiceEntryBlocked(String service, {String? email}) {
+    if (whitelisted('quick_service_$service', email ?? currentUserEmail())) {
+      return false;
+    }
+    return !quickServiceVisible(service) || !quickServiceAvailable(service);
+  }
 
   /// Account types this service is hidden from. Empty = shown to all.
   ///
