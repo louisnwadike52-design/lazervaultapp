@@ -412,6 +412,23 @@ class FeatureFlags {
   /// it back — nothing has to be rebuilt or redeployed.
   static const String rmbTransferVisibleKey = 'rmb_transfer_visible';
 
+  /// Whether the Exchange screen's "Send Abroad" tab is shown at all.
+  ///
+  /// Distinct from [intlPayoutEnabled], which decides whether a Send Abroad
+  /// transfer can COMPLETE and, while off, makes the tab explain why. That
+  /// still puts a tab in front of people for a rail that cannot run. This key
+  /// removes the tab, leaving Convert as the only mode, and is the switch an
+  /// operator uses to decide whether the feature is visible at all.
+  ///
+  /// Hidden by DEFAULT, for the same reason the payout switch is closed by
+  /// default: the corridor behind it is unfinished, and a cold start before
+  /// the first settings fetch should not flash a tab that is about to vanish.
+  /// Nothing else is withdrawn - the mode, the cubit, the recipient screen and
+  /// every route stay registered, so turning it on in the admin dashboard is
+  /// the only change needed to bring it back.
+  static const String exchangeSendAbroadVisibleKey =
+      'exchange_send_abroad_visible';
+
   // ── Airtime landing tabs (admin-toggled) ─────────────────────────────────
   // Show/hide each of the three Airtime tabs (Buy / International / Sell) from
   // the admin dashboard. Buy + International default ON; Sell (airtime-to-cash)
@@ -516,6 +533,7 @@ class FeatureFlags {
       cardAcceptanceVisibleKey,
       phoneBankingVisibleKey,
       rmbTransferVisibleKey,
+      exchangeSendAbroadVisibleKey,
       airtimeTabBuyEnabled,
       airtimeTabInternationalEnabled,
       airtimeTabSellEnabled,
@@ -1319,6 +1337,12 @@ class FeatureFlags {
   /// [rmbTransferVisibleKey] for why the default is off.
   static bool get rmbTransferVisible {
     return _prefs?.getBool(rmbTransferVisibleKey) ?? false;
+  }
+
+  /// The Exchange "Send Abroad" tab. Hidden unless an admin turns it on — see
+  /// [exchangeSendAbroadVisibleKey] for why the default is off.
+  static bool get exchangeSendAbroadVisible {
+    return _prefs?.getBool(exchangeSendAbroadVisibleKey) ?? false;
   }
 
   // ── Voice & Chat Assistant section visibility ────────────────────────────

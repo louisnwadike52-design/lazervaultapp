@@ -5,14 +5,24 @@ class ExchangeModeToggle extends StatelessWidget {
   final ExchangeMode selectedMode;
   final ValueChanged<ExchangeMode> onModeChanged;
 
+  /// Whether the "Send Abroad" tab is offered. Admin-controlled via
+  /// FeatureFlags.exchangeSendAbroadVisible.
+  ///
+  /// With one mode left there is nothing to toggle between, so the whole
+  /// control is omitted rather than rendered as a single full-width pill that
+  /// looks like a button and does nothing when tapped.
+  final bool showSendAbroad;
+
   const ExchangeModeToggle({
     super.key,
     required this.selectedMode,
     required this.onModeChanged,
+    this.showSendAbroad = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (!showSendAbroad) return const SizedBox.shrink();
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(

@@ -158,6 +158,7 @@ class EndpointRegistry {
     // feature_flag_chain_is_complete_test, which is why it is caught at all.)
     'phone_banking_visible',
     'rmb_transfer_visible',
+    'exchange_send_abroad_visible',
     'chat_default_accent',
     'auto_biometric_login_enabled',
     'crowdfund_donation_alerts_visible',

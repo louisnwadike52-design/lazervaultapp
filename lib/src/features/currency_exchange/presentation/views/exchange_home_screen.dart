@@ -261,7 +261,20 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     _amountController.text = amount.toStringAsFixed(0);
   }
 
+  /// Whether Send Abroad is offered at all. Admin switch, read live rather
+  /// than cached in state so a settings fetch that lands while this screen is
+  /// open takes effect on the next build.
+  bool get _sendAbroadOffered => FeatureFlags.exchangeSendAbroadVisible;
+
   void _onModeChanged(ExchangeMode mode) {
+    // THE TOGGLE IS NOT THE ONLY DOOR.
+    //
+    // A horizontal swipe on the form also flips the mode, and the history
+    // sheet can ask for one by route argument. Gating only the toggle would
+    // hide the tab while leaving a gesture that still reaches the hidden flow
+    // — the same way a gated hub screen stays open through its other
+    // entrances. Refusing here closes every caller at once.
+    if (mode == ExchangeMode.sendAbroad && !_sendAbroadOffered) return;
     setState(() => _mode = mode);
     context.read<ExchangeCubit>().setMode(mode);
     // Each flow type owns its own source-currency stickiness, so reapply
@@ -1035,6 +1048,11 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               onHorizontalDragEnd: (details) {
                 final velocity = details.primaryVelocity ?? 0;
                 if (velocity.abs() < 200) return;
+                // With Send Abroad hidden there is no second tab to swipe
+                // to, so the gesture is inert rather than quietly reaching a
+                // mode whose tab was removed. _onModeChanged refuses it too;
+                // returning here also avoids the pointless cubit round trip.
+                if (!_sendAbroadOffered) return;
                 final next = velocity < 0
                     ? ExchangeMode.sendAbroad // swipe left → next tab
                     : ExchangeMode.convert; // swipe right → previous tab
@@ -1050,6 +1068,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                     ExchangeModeToggle(
                       selectedMode: _mode,
                       onModeChanged: _onModeChanged,
+                      showSendAbroad: _sendAbroadOffered,
                     ),
                     // Send Abroad is gated: when international payout is off the
                     // tab still opens and explains itself, instead of collecting a
