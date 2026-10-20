@@ -1304,14 +1304,34 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     if (bankCode.isEmpty && r.displayBankName.trim().isNotEmpty) {
       bankCode = _bankCodeForName(r.displayBankName) ?? '';
     }
+    // A SAVED RECIPIENT HAS ALREADY BEEN VERIFIED.
+    //
+    // `accountHolderName` is the payee's real name on their rail, projected by
+    // the server onto the saved record. Re-running the name enquiry to learn
+    // something we were already holding put a transfer-style validation step
+    // in the middle of the split-bill flow: a spinner, and — when the provider
+    // was slow, rate-limiting or breaker-open — a verification error that
+    // dead-ended the organiser on a recipient they had used before.
+    //
+    // So a record that carries both a bank code and a holder name is applied
+    // whole and the flow continues. `_isBankReceiverReady` only asks for those
+    // three values, so Next is live immediately. A record missing either one
+    // still goes down the lookup path below, because then there is genuinely
+    // something to resolve.
+    final savedHolderName = (r.accountHolderName ?? '').trim();
+    final fullyResolved = bankCode.isNotEmpty && savedHolderName.isNotEmpty;
+
     _receiverAccountNumberController.text = acct;
     setState(() {
       _receiverBankSuggestions = const [];
-      _receiverBankAccountName = null; // re-resolved below
+      // Kept when the saved record supplies it; nulled only when we are about
+      // to resolve it, so the field is never briefly blank for no reason.
+      _receiverBankAccountName = fullyResolved ? savedHolderName : null;
       _receiverAccountNumber = acct;
       _receiverBankName = r.displayBankName;
       _receiverBankCode = bankCode.isNotEmpty ? bankCode : null;
     });
+    if (fullyResolved) return;
     // With a known bank code we can verify directly; otherwise resolve the bank
     // from the account number (account-first), exactly like manual entry —
     // auto-selecting the suggestion that matches the saved bank name.
@@ -1419,7 +1439,36 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       );
       return;
     }
-    context.read<AccountVerificationCubit>().verifyAccount(
+    // THE SHARED CUBIT MAY ALREADY HOLD THIS EXACT RESULT.
+    //
+    // AccountVerificationCubit is a single app-level instance, and it caches a
+    // resolved (country, bank, account) tuple for 30 minutes. Arriving here
+    // from the send-funds select-recipient screen — the Split Bills quick
+    // action — it is therefore commonly ALREADY sitting on
+    // AccountVerificationSuccess for the very account being entered. Calling
+    // verifyAccount then re-emits an EQUAL state, bloc drops it as "no
+    // change", _onAccountVerificationStateChanged never runs, and the holder
+    // name never reaches the form: _isBankReceiverReady stays false and Next
+    // is dead. Entering from quick services the cubit is Initial, the emit IS
+    // a change, and the same code works — which is the whole difference
+    // between the two entry points.
+    //
+    // So the current state is consumed directly rather than being waited for.
+    // A listener can only report transitions; this screen needs the VALUE.
+    final verifier = context.read<AccountVerificationCubit>();
+    final current = verifier.state;
+    if (current is AccountVerificationSuccess &&
+        current.accountNumber == acct &&
+        current.bankCode == bankCode) {
+      setState(() {
+        _isVerifyingReceiverBank = false;
+        _receiverAccountNumber = current.accountNumber;
+        _receiverBankAccountName = current.accountName;
+        if (current.bankName.isNotEmpty) _receiverBankName = current.bankName;
+      });
+      return;
+    }
+    verifier.verifyAccount(
           bankCode: bankCode,
           accountNumber: acct,
           bankName: _receiverBankName ?? '',
