@@ -2190,22 +2190,28 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     }
   }
 
-  Future<void> _setAecMicPublished(bool enabled) async {
-    if (!_onDeviceMode || !_hybridAecBargeIn) return;
-    final lp = _room?.localParticipant;
-    if (lp == null) return;
-    try {
-      await lp.setMicrophoneEnabled(
-        enabled,
-        audioCaptureOptions: _aecMicOptions,
-      );
-      // Publishing/unpublishing reconfigures the audio session, which drops the
-      // speaker override back to the earpiece. Re-assert it.
-      await _assertLoudspeaker();
-    } catch (e) {
-      print('VoiceSessionCubit: _setAecMicPublished($enabled) failed: $e');
-    }
-  }
+  // Same lock as [_applyCaptureOwnership]: these two drive the SAME track, and
+  // an AEC phase change interleaving with a mode switch is how the mic ends up
+  // owned by the side that is not listening.
+  Future<void> _setAecMicPublished(bool enabled) => _withMicLock(() async {
+        // Re-checked inside the lock — a mode switch queued behind this one may
+        // already have left on-device mode, and publishing an AEC mic then
+        // would hand LiveKit a track the current mode does not want.
+        if (!_onDeviceMode || !_hybridAecBargeIn) return;
+        final lp = _room?.localParticipant;
+        if (lp == null) return;
+        try {
+          await lp.setMicrophoneEnabled(
+            enabled,
+            audioCaptureOptions: _aecMicOptions,
+          );
+          // Publishing/unpublishing reconfigures the audio session, which drops
+          // the speaker override back to the earpiece. Re-assert it.
+          await _assertLoudspeaker();
+        } catch (e) {
+          print('VoiceSessionCubit: _setAecMicPublished($enabled) failed: $e');
+        }
+      });
 
   /// Debounced re-arm so a 'done' status that fires immediately after stop()
   /// doesn't recurse; also lets a pending agent reply land first.
@@ -2496,22 +2502,64 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   ///
   /// Mute wins over everything — a muted session must never publish, whatever the
   /// capture owner is.
-  Future<void> _applyCaptureOwnership() async {
-    final lp = _room?.localParticipant;
-    if (lp == null) return;
-    final shouldPublish = !_onDeviceMode && !_isMuted;
-    try {
-      await lp.setMicrophoneEnabled(shouldPublish);
-      print(
-          'VoiceSessionCubit: capture owner=${_onDeviceMode ? 'device' : 'livekit'} '
-          'micPublished=$shouldPublish mode=$_interactionMode');
-    } catch (e) {
-      // A failed track toggle must not kill the session — the other capture path
-      // may still work, and the next switch retries.
-      print(
-          'VoiceSessionCubit: setMicrophoneEnabled($shouldPublish) failed: $e');
-    }
+  /// Serialises every change to the LiveKit microphone track.
+  ///
+  /// THERE IS ONE MICROPHONE AND THREE CALLERS: mode switching
+  /// ([_applyCaptureOwnership]), the AEC barge-in phases
+  /// ([_setAecMicPublished]), and mute. They were all firing `unawaited`, so a
+  /// mode switch could interleave with an AEC phase change and the LAST toggle
+  /// to finish won — not the last one requested.
+  ///
+  /// The losing outcome is not a cosmetic one. If the track settles PUBLISHED
+  /// while [_onDeviceMode] is true, LiveKit holds the mic and the on-device
+  /// recogniser cannot open it (Android refuses the second opener outright),
+  /// while the agent has ALREADY been told `client_capture: on_device` and has
+  /// gated its own STT off. Nobody is transcribing, and the session looks
+  /// exactly like the reported fault: switching out of hands-free and getting
+  /// neither your input nor a reply.
+  ///
+  /// [_announceCaptureMode] carries a comment about a sibling of this bug that
+  /// was fixed on the announcement side; this is the track side of it.
+  Future<void> _micLock = Future<void>.value();
+  int _micIntent = 0;
+
+  /// Run [op] after every previously queued mic change, and only if no NEWER
+  /// intent has been registered meanwhile.
+  ///
+  /// The generation check is what makes rapid switching safe: an older
+  /// transition that is still in flight when the user changes mode again would
+  /// otherwise land after the newer one and leave the mic in the previous
+  /// mode's state.
+  Future<void> _withMicLock(Future<void> Function() op) {
+    final gen = ++_micIntent;
+    final next = _micLock.then((_) async {
+      if (gen != _micIntent || isClosed) return;
+      await op();
+    });
+    // Swallow here so one failed toggle cannot poison every later one; each
+    // caller already logs its own failure.
+    _micLock = next.catchError((_) {});
+    return next;
   }
+
+  Future<void> _applyCaptureOwnership() => _withMicLock(() async {
+        final lp = _room?.localParticipant;
+        if (lp == null) return;
+        // Read the intent INSIDE the lock: by the time this runs, the mode may
+        // have changed again and this is now the authoritative request.
+        final shouldPublish = !_onDeviceMode && !_isMuted;
+        try {
+          await lp.setMicrophoneEnabled(shouldPublish);
+          print(
+              'VoiceSessionCubit: capture owner=${_onDeviceMode ? 'device' : 'livekit'} '
+              'micPublished=$shouldPublish mode=$_interactionMode');
+        } catch (e) {
+          // A failed track toggle must not kill the session — the other capture
+          // path may still work, and the next switch retries.
+          print(
+              'VoiceSessionCubit: setMicrophoneEnabled($shouldPublish) failed: $e');
+        }
+      });
 
   void _announceCaptureMode() {
     final room = _room;

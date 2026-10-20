@@ -146,4 +146,51 @@ void main() {
       expect(_cubit, contains('bool get sttUnavailable'));
     });
   });
+
+  // ── 5. THE TRACK TOGGLES MUST NOT RACE ──
+  //
+  // (1) above fixed WHETHER the mic track moves on a switch. This is the other
+  // half: there is ONE microphone and three callers racing for it — mode
+  // switching, the AEC barge-in phases, and mute — and every one of them was
+  // fired `unawaited`. The toggle that finished last won, not the one requested
+  // last.
+  //
+  // Losing lands the track PUBLISHED while on-device mode is in force: LiveKit
+  // holds the mic so the device recogniser cannot open it, and the agent has
+  // already been told `client_capture: on_device` and gated its own STT off.
+  // Nobody transcribes — the user switches out of hands-free and gets neither
+  // their input nor a reply.
+  group('mic ownership changes are serialised', () {
+    test('both callers go through the one lock', () {
+      // Two paths touching setMicrophoneEnabled outside the lock is the bug.
+      expect(_cubit, contains('Future<void> _withMicLock('));
+      expect(_cubit, contains('_applyCaptureOwnership() => _withMicLock('));
+      expect(_cubit, contains('_setAecMicPublished(bool enabled) => _withMicLock('));
+    });
+
+    test('a superseded transition is dropped, not applied late', () {
+      // Without the generation check a switch still in flight when the user
+      // changes mode again lands AFTER the newer one and restores the previous
+      // mode's state.
+      final body = _method(_cubit, 'Future<void> _withMicLock(');
+      expect(body, contains('final gen = ++_micIntent'));
+      expect(body, contains('if (gen != _micIntent'));
+    });
+
+    test('intent is read inside the lock, not captured before it', () {
+      // Computing shouldPublish at call time and applying it later is the same
+      // bug wearing a different hat: by the time it runs the mode has moved on.
+      final body = _method(_cubit, 'Future<void> _applyCaptureOwnership()');
+      final lock = body.indexOf('_withMicLock');
+      final read = body.indexOf('final shouldPublish');
+      expect(lock, isNot(-1));
+      expect(read > lock, isTrue,
+          reason: 'shouldPublish is resolved before the lock is taken');
+    });
+
+    test('one failed toggle cannot poison every later one', () {
+      expect(_method(_cubit, 'Future<void> _withMicLock('),
+          contains('catchError'));
+    });
+  });
 }
