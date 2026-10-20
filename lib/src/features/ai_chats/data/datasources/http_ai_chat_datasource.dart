@@ -273,17 +273,27 @@ class HttpAiChatDataSource implements IAiChatDataSource {
         queryParams['offset'] = offset ?? 0;
       }
 
-      // Scope history by the CHAT-language locale — the SAME value the send path
-      // stores (ChatLanguagePreference, not the device locale) — so the chatbot
-      // keeps a per-language conversation and the read matches exactly what was
-      // written. Sourcing this from the device locale (the old behaviour) made
-      // the read locale drift off the stored one and wiped the conversation on
-      // every open.
-      final chatLocale = ChatLanguagePreference.localeFor(
-          await ChatLanguagePreference.getLanguage());
-      if (chatLocale.isNotEmpty) {
-        queryParams['locale'] = chatLocale;
-      }
+      // NO `locale` HERE. A conversation is ONE thread — identified by
+      // `session_id` (the central chatbot's is `general_{userId}`, one per user
+      // for life). The locale is metadata about each turn: the language it was
+      // spoken in. Sending it as a FILTER meant the moment the user changed
+      // chat language their whole history disappeared, because every earlier
+      // turn was stored under the old locale:
+      //
+      //   prod 2026-10-20 — session general_806fd9c5-…
+      //     en-NG  168 messages      ig-NG  2 messages
+      //   the app asked for locale=ig-NG and got 2 rows back, which is
+      //   precisely the reported "only shows last question and answer".
+      //
+      // The earlier attempt at this — make the read locale equal the WRITE
+      // locale so they match — treated the symptom. Matching only holds while
+      // the user never switches language, and switching is the one thing that
+      // makes the bug appear. The gateway now ignores the parameter inside a
+      // session; this stops sending it at all, so the fix does not depend on
+      // the client's build.
+      //
+      // The X-Locale header on the SEND path is unchanged and still correct:
+      // it records the language of the turn being written.
 
       // Only include session_id if provided (backend treats empty as "all")
       if (effectiveSessionId.isNotEmpty) {

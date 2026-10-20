@@ -289,10 +289,13 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
         queryParams['offset'] = 0;
       }
 
-      // Filter history by locale when provided
-      if (locale != null && locale.isNotEmpty) {
-        queryParams['locale'] = locale;
-      }
+      // NO `locale` FILTER. `session_id` above already identifies the thread;
+      // locale only records which language each turn was spoken in. Sent as a
+      // filter it hid every turn written before the user last changed chat
+      // language — on prod that was 168 of 170 messages in one session. The
+      // `locale` argument is still accepted and still travels on the SEND
+      // path, where it is correct; it just must never narrow a read of one
+      // conversation. Same reasoning as http_ai_chat_datasource.
 
       final response = await dio.get(
         '$baseUrl/chat/history',
