@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
+import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/funds/domain/batch_item_unified.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
+import 'package:lazervault/src/features/funds/domain/batch_source_account_display.dart';
 
 class BatchTransferDetailScreen extends StatefulWidget {
   const BatchTransferDetailScreen({super.key});
@@ -120,6 +122,65 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
   }
 
   /// Resolve the best name for a recipient item
+  /// ONE AVATAR RULE FOR BOTH PLACES A RECIPIENT IS DRAWN.
+  ///
+  /// The card and the per-recipient sheet had drifted: the card had already
+  /// been given bank logos for external legs, while the sheet still drew
+  /// `Icons.account_balance` for every one of them — so the same recipient was
+  /// identifiable in the list and anonymous once opened. Internal legs showed
+  /// a bare initial in both, which does not say the money stayed on
+  /// Lazervault.
+  ///
+  /// Precedence, highest first:
+  ///   1. the recipient's own profile picture, when there is one;
+  ///   2. the destination BANK's logo for an external leg;
+  ///   3. the Lazervault mark for an internal one — BankLogo resolves the
+  ///      bundled logo asset for the Lazervault name, which is how the
+  ///      send-funds flow and transfer history already draw it.
+  ///
+  /// A failed leg keeps its cross: that is a status, and it is the one thing
+  /// worth seeing before the identity.
+  ///
+  /// [profileImageUrl] is honoured whenever it is supplied. Nothing supplies
+  /// it yet: BatchTransferResult has no profile field, so an internal
+  /// recipient falls to the Lazervault mark. The precedence lives here rather
+  /// than at the call sites so adding that field is a one-line change in one
+  /// place instead of two.
+  Widget _recipientAvatar(
+    BatchTransferResult item, {
+    required double size,
+    required bool isFailed,
+    required Color statusColor,
+    String? profileImageUrl,
+  }) {
+    if (isFailed) {
+      return Icon(Icons.close_rounded, color: btRed, size: size * 0.45);
+    }
+    final photo = (profileImageUrl ?? '').trim();
+    if (photo.isNotEmpty) {
+      return UserAvatar(
+        imageUrl: photo,
+        firstName: _resolveRecipientName(item),
+        size: size,
+      );
+    }
+    if (item.isExternal) {
+      return BankLogo(
+        bankName: item.destinationBankName ?? '',
+        bankCode: item.destinationBankCode,
+        size: size,
+        borderRadius: size / 2,
+      );
+    }
+    // Internal: money that never left Lazervault, drawn with the Lazervault
+    // mark rather than an initial.
+    return BankLogo(
+      bankName: 'Lazervault',
+      size: size,
+      borderRadius: size / 2,
+    );
+  }
+
   String _resolveRecipientName(BatchTransferResult item) {
     // Prefer beneficiaryName (actual person name from request)
     // over recipientName (which may be account type like "Business")
@@ -401,6 +462,13 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
   }
 
   Widget _buildSourceCard(BatchTransferDetailEntity detail) {
+    // The account that ACTUALLY paid, named by the rail that issues its number
+    // now rather than by the one that minted it first. See
+    // batch_source_account_display.dart.
+    final src = batchSourceAccountDisplay(
+      sourceAccountNumber: detail.sourceAccountNumber,
+      sourceAccountName: detail.sourceAccountName,
+    );
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -425,7 +493,14 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Source Account',
+                  // The wallet's own label when we know it ("Personal",
+                  // "Family & Friends", or whatever the user renamed it to),
+                  // because "Source Account" alone does not say WHICH of a
+                  // user's accounts paid. Falls back to the generic heading
+                  // when the account is not on this device.
+                  src.resolvedLocally && src.label.isNotEmpty
+                      ? '${src.label} account'
+                      : 'Source Account',
                   style: GoogleFonts.inter(
                     color: btTextSecondary,
                     fontSize: 12.sp,
@@ -433,9 +508,7 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  detail.sourceAccountName.isNotEmpty
-                      ? detail.sourceAccountName
-                      : 'Account',
+                  src.holder.isNotEmpty ? src.holder : 'Account',
                   style: GoogleFonts.inter(
                     color: btTextPrimary,
                     fontSize: 15.sp,
@@ -444,7 +517,13 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                 ),
                 if (detail.sourceAccountNumber.isNotEmpty)
                   Text(
-                    '\u2022\u2022\u2022\u2022 ${detail.sourceAccountNumber.length > 4 ? detail.sourceAccountNumber.substring(detail.sourceAccountNumber.length - 4) : detail.sourceAccountNumber}',
+                    // The provider's bank beside the number, so a batch sent
+                    // from a re-minted wallet reads as the rail it really
+                    // used instead of silently as the first one.
+                    [
+                      if (src.bankName.isNotEmpty) src.bankName,
+                      '\u2022\u2022\u2022\u2022 ${detail.sourceAccountNumber.length > 4 ? detail.sourceAccountNumber.substring(detail.sourceAccountNumber.length - 4) : detail.sourceAccountNumber}',
+                    ].join('  \u2022  '),
                     style: GoogleFonts.inter(
                       color: btTextTertiary,
                       fontSize: 12.sp,
@@ -503,23 +582,12 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                     // BankLogo falls back to the bundled asset and then to its
                     // own placeholder, so a bank we have no artwork for is no
                     // worse off than before.
-                    child: isFailed
-                        ? Icon(Icons.close_rounded, color: btRed, size: 18.sp)
-                        : isExternal
-                            ? BankLogo(
-                                bankName: item.destinationBankName ?? '',
-                                bankCode: item.destinationBankCode,
-                                size: 40.w,
-                                borderRadius: 40.w / 2,
-                              )
-                            : Text(
-                                name.isNotEmpty ? name[0].toUpperCase() : '?',
-                                style: GoogleFonts.inter(
-                                  color: statusColor,
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                    child: _recipientAvatar(
+                      item,
+                      size: 40.w,
+                      isFailed: isFailed,
+                      statusColor: statusColor,
+                    ),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -715,22 +783,12 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: Center(
-                            child: isFailed
-                                ? Icon(Icons.close_rounded,
-                                    color: btRed, size: 22.sp)
-                                : isExternal
-                                    ? Icon(Icons.account_balance,
-                                        color: btOrange, size: 22.sp)
-                                    : Text(
-                                        name.isNotEmpty
-                                            ? name[0].toUpperCase()
-                                            : '?',
-                                        style: GoogleFonts.inter(
-                                          color: statusColor,
-                                          fontSize: 20.sp,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
+                            child: _recipientAvatar(
+                              item,
+                              size: 48.w,
+                              isFailed: isFailed,
+                              statusColor: statusColor,
+                            ),
                           ),
                         ),
                         SizedBox(width: 14.w),

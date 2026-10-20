@@ -260,8 +260,23 @@ class _BatchTransferHistoryScreenState
         DateFormat('MMM dd, yyyy \u2022 HH:mm').format(batch.createdAt);
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.batchTransferDetail,
-          arguments: {'batchId': batch.batchId}),
+      // RE-READ ON THE WAY BACK.
+      //
+      // The detail screen is not read-only: a batch can finish, a leg can be
+      // retried and a scheduled batch can be cancelled while it is open. With
+      // no handler here the list kept the status it was built with, so
+      // returning left the tile at the top of the list describing a state the
+      // batch had already left — and the only way to correct it was a pull to
+      // refresh the user had no reason to think they needed.
+      onTap: () async {
+        await Get.toNamed(AppRoutes.batchTransferDetail,
+            arguments: {'batchId': batch.batchId});
+        if (!mounted) return;
+        // Full refresh rather than patching the one tile: the detail can also
+        // change a batch's position in the list (a cancelled schedule leaves
+        // the scheduled set) and page 1 is cheap.
+        await _refresh();
+      },
       child: Container(
         margin: EdgeInsets.only(bottom: 10.h),
         padding: EdgeInsets.all(16.w),
