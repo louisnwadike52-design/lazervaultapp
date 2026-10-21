@@ -58,6 +58,21 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final _notesController = TextEditingController();
 
   PhoneNumber? _phone;
+
+  /// Dial-code country for the phone field.
+  ///
+  /// Starts at NG because most customers are local, but it FOLLOWS the country
+  /// picked for the address until the user sets it themselves. Previously it
+  /// was pinned to NG: someone entering a Bangladeshi customer picked
+  /// Bangladesh for the country and still faced "+234", which reads as the
+  /// form only accepting Nigerian numbers even though every country was
+  /// already accepted.
+  String _phoneCountryCode = 'NG';
+
+  /// Once the user opens the dial-code picker themselves, their choice wins —
+  /// a later address-country change must not silently move their number to a
+  /// different country.
+  bool _phoneCountryChosenByUser = false;
   String _selectedSegment = 'None';
   static const _segments = ['None', 'VIP', 'Retail', 'Wholesale', 'Government'];
 
@@ -354,6 +369,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             _textField(
               controller: _businessNameController,
               label: 'Business Name',
+              optional: true,
               hint: 'e.g. Doe Enterprises Ltd',
               icon: Icons.business_outlined,
               textCapitalization: TextCapitalization.words,
@@ -364,6 +380,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             _textField(
               controller: _tagsController,
               label: 'Tags',
+              optional: true,
               hint: 'Comma-separated, e.g. priority, wholesale',
               icon: Icons.label_outline,
             ),
@@ -387,6 +404,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             _textField(
               controller: _emailController,
               label: 'Email',
+              optional: true,
               hint: 'e.g. john@example.com',
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
@@ -398,6 +416,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             _textField(
               controller: _addressController,
               label: 'Address',
+              optional: true,
               hint: 'Street address',
               icon: Icons.location_on_outlined,
             ),
@@ -408,6 +427,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   child: _textField(
                     controller: _cityController,
                     label: 'City',
+                    optional: true,
                     hint: 'e.g. Lagos',
                     icon: Icons.location_city_outlined,
                   ),
@@ -417,6 +437,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   child: _textField(
                     controller: _stateController,
                     label: 'State',
+                    optional: true,
                     hint: 'e.g. Lagos',
                     icon: Icons.map_outlined,
                   ),
@@ -445,6 +466,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             _textField(
               controller: _tinController,
               label: 'TIN',
+              optional: true,
               hint: 'Tax Identification Number',
               icon: Icons.receipt_long_outlined,
             ),
@@ -452,6 +474,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             _textField(
               controller: _bankNameController,
               label: 'Bank Name',
+              optional: true,
               hint: 'e.g. First Bank',
               icon: Icons.account_balance_outlined,
             ),
@@ -459,6 +482,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             _textField(
               controller: _bankAccountNumberController,
               label: 'Bank Account Number',
+              optional: true,
               hint: 'e.g. 0123456789',
               icon: Icons.credit_card_outlined,
               keyboardType: TextInputType.number,
@@ -470,6 +494,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             _textField(
               controller: _bankCodeController,
               label: 'Bank Code',
+              optional: true,
               hint: 'e.g. 011',
               icon: Icons.pin_outlined,
               keyboardType: TextInputType.number,
@@ -480,6 +505,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             _textField(
               controller: _notesController,
               label: 'Notes',
+              optional: true,
               hint: 'Any additional notes about this customer',
               icon: Icons.notes_outlined,
               maxLines: 3,
@@ -504,14 +530,34 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
-  Widget _fieldLabel(String label) => Padding(
+  /// Field label, with optional fields SAID to be optional.
+  ///
+  /// Only the customer's name is required — every other validator returns null
+  /// on an empty value. That was invisible: the form read as a wall of
+  /// mandatory fields, so people hunted for a TIN or a bank code they did not
+  /// have before they could record a sale. Marking them is the whole fix.
+  Widget _fieldLabel(String label, {bool optional = false}) => Padding(
         padding: EdgeInsets.only(bottom: 6.h),
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-            color: _label,
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w500,
+        child: RichText(
+          text: TextSpan(
+            text: label,
+            style: GoogleFonts.inter(
+              color: _label,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+            ),
+            children: optional
+                ? [
+                    TextSpan(
+                      text: '  (optional)',
+                      style: GoogleFonts.inter(
+                        color: _hint,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ]
+                : const [],
           ),
         ),
       );
@@ -526,11 +572,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     int maxLines = 1,
     List<TextInputFormatter>? inputFormatters,
     TextCapitalization textCapitalization = TextCapitalization.none,
+    bool optional = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel(label),
+        _fieldLabel(label, optional: optional),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
@@ -580,9 +627,17 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel('Phone'),
+        _fieldLabel('Phone', optional: true),
         IntlPhoneField(
-          initialCountryCode: 'NG',
+          // Keyed on the country so a change to the address country rebuilds
+          // the field with the new dial code; IntlPhoneField reads
+          // initialCountryCode once.
+          key: ValueKey('phone-$_phoneCountryCode'),
+          initialCountryCode: _phoneCountryCode,
+          onCountryChanged: (c) {
+            _phoneCountryChosenByUser = true;
+            _phoneCountryCode = c.code;
+          },
           disableLengthCheck: true, // our validator handles optional + length
           autovalidateMode: AutovalidateMode.onUserInteraction,
           style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp),
@@ -613,7 +668,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel('Country'),
+        _fieldLabel('Country', optional: true),
         GestureDetector(
           onTap: _showCountryPicker,
           child: AbsorbPointer(
@@ -699,7 +754,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                             style: GoogleFonts.inter(
                                 color: _label, fontSize: 13.sp)),
                         onTap: () {
-                          setState(() => _countryController.text = c.name);
+                          setState(() {
+                            _countryController.text = c.name;
+                            // Move the dial code with it, unless the user has
+                            // already chosen one by hand.
+                            if (!_phoneCountryChosenByUser) {
+                              _phoneCountryCode = c.code;
+                            }
+                          });
                           Get.back();
                         },
                       );

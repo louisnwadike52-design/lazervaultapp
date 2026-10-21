@@ -326,7 +326,7 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
         SizedBox(height: 14.h),
         _buildTextField(
           controller: _descriptionController,
-          label: 'Description',
+          label: 'Description (optional)',
           hint: 'Brief description of the item',
           icon: Icons.description_outlined,
           maxLines: 3,
@@ -380,7 +380,7 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
         SizedBox(height: 14.h),
         _buildTextField(
           controller: _skuController,
-          label: 'SKU',
+          label: 'SKU (optional)',
           hint: 'e.g. USBC-001',
           icon: Icons.qr_code_outlined,
         ),
@@ -474,7 +474,7 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
         SizedBox(height: 14.h),
         _buildTextField(
           controller: _minimumStockController,
-          label: 'Minimum Stock Level',
+          label: 'Minimum Stock Level (optional)',
           hint: 'e.g. 10 (triggers low-stock alert)',
           icon: Icons.warning_amber_outlined,
           keyboardType: TextInputType.number,
@@ -496,14 +496,14 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
         SizedBox(height: 16.h),
         _buildTextField(
           controller: _locationController,
-          label: 'Storage Location',
+          label: 'Storage Location (optional)',
           hint: 'e.g. Warehouse A, Shelf 3',
           icon: Icons.location_on_outlined,
         ),
         SizedBox(height: 14.h),
         _buildTextField(
           controller: _notesController,
-          label: 'Notes',
+          label: 'Notes (optional)',
           hint: 'Any additional notes',
           icon: Icons.notes_outlined,
           maxLines: 3,
