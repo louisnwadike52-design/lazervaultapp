@@ -28,6 +28,25 @@ class PayoutReceiverBanner extends StatefulWidget {
   /// so the content behind them could not be reached at all.
   final bool hidePendingReceiver;
 
+  /// Bumped by the parent whenever it reloads, to force a re-fetch.
+  ///
+  /// This banner self-loads, and it used to re-fetch only when the
+  /// contribution's id, cycle index, auto-payout flag or current amount
+  /// changed. Setting a receiver moves NONE of those: the id and cycle are the
+  /// same, the mode is the same, and no money moved. So the parent could
+  /// reload — including a pull-to-refresh — and the banner would sit on its
+  /// cached pre-receiver state and keep demanding a receiver that was already
+  /// set.
+  ///
+  /// That is why the banner survived a refresh, and why this was never a
+  /// re-render problem: the widget rebuilt correctly every time, against stale
+  /// data it had no reason to replace.
+  ///
+  /// An explicit counter is used rather than widening the prop comparison,
+  /// because the trigger is "the parent believes something changed", which no
+  /// individual field reliably reports.
+  final int refreshTick;
+
   const PayoutReceiverBanner({
     super.key,
     required this.contribution,
@@ -36,6 +55,7 @@ class PayoutReceiverBanner extends StatefulWidget {
     this.onStateChanged,
     this.hideScheduled = false,
     this.hidePendingReceiver = false,
+    this.refreshTick = 0,
   });
 
   @override

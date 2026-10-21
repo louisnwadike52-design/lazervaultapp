@@ -112,7 +112,19 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
     final modeChanged = old.autoPayoutEnabled != now.autoPayoutEnabled;
     final idChanged = old.id != now.id;
     final amountChanged = old.currentAmount != now.currentAmount;
-    if (cycleChanged || modeChanged || idChanged || amountChanged) {
+    // An explicit refresh from the parent always re-fetches. See [refreshTick]:
+    // setting a receiver changes none of the fields above, so without this a
+    // pull-to-refresh could not clear a satisfied "set the receiver" banner.
+    final refreshRequested = oldWidget.refreshTick != widget.refreshTick;
+    if (cycleChanged ||
+        modeChanged ||
+        idChanged ||
+        amountChanged ||
+        refreshRequested) {
+      // A parent-driven refresh is also the point at which a local override
+      // must stop masking the server: if the row really did fail to persist,
+      // the user needs to see the banner again rather than a stale success.
+      if (refreshRequested) _receiverSetHere = false;
       _load();
     }
   }

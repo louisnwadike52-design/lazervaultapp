@@ -324,8 +324,21 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// payment, on pull-to-refresh, on app resume — did nothing, so the header
   /// kept reporting whatever was true when the screen opened. That is what
   /// made the statistics disagree with the payments list underneath them.
+  /// Incremented on every forced reload and handed to [PayoutReceiverBanner].
+  ///
+  /// The banner self-loads and cannot see that this screen refreshed: none of
+  /// the contribution fields it watches move when a receiver is set. Without
+  /// this counter a pull-to-refresh left it showing a demand that was already
+  /// satisfied.
+  int _payoutRefreshTick = 0;
+
   void _loadContributionDetails({bool force = false}) {
     if (_currentContribution != null && !force) return;
+    // Tell the self-loading children that this is a real refresh. Done here,
+    // not after the fetch returns, so they re-fetch in parallel with us.
+    if (force && mounted) {
+      setState(() => _payoutRefreshTick++);
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context
@@ -675,12 +688,18 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       // started, so the tall version here would be a second copy of the
                       // same action.
                       hidePendingReceiver: contribution.awaitingOpen,
+                      refreshTick: _payoutRefreshTick,
                       // After a manual trigger settles, the saga creates a new
                       // payout_transaction + zeros current_amount on the
                       // contribution. Refreshing the contribution details here
                       // makes the Payments / Overview tabs reflect the new state
                       // without the user pulling-to-refresh.
-                      onStateChanged: _loadContributionDetails,
+                      // force: true — a bare tear-off passes force=false, and
+                      // with a contribution already loaded that early-returns.
+                      // This callback fires exactly when something DID change,
+                      // so it must bypass the cache.
+                      onStateChanged: () =>
+                          _loadContributionDetails(force: true),
                     ),
                     // Status chips row: auto-debit + auto-payout (when scheduled)
                     // + role rendered side-by-side. Each chip is borderless, uses
@@ -807,7 +826,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 ? (contribution.currentCycle ?? 1)
                 : 0,
             isAdmin: isAdmin,
-            onReceiverChanged: _loadContributionDetails,
+            onReceiverChanged: () => _loadContributionDetails(force: true),
             // Only drives the SPACING below. It must never decide whether the
             // chip is in the tree — see the comment on autoPayoutRow.
             onVisibilityChanged: (visible) {
