@@ -231,6 +231,8 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
   // -------------------- TABS --------------------
 
   Widget _buildTabToggle() {
+    // Nothing to switch between — don't draw a one-pill toggle.
+    if (!_tabBarWorthShowing) return const SizedBox.shrink();
     return Container(
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
@@ -239,18 +241,37 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
       ),
       child: Row(
         children: [
-          _buildTabItem(0, Icons.cell_tower, 'Local', _localColor),
-          _buildTabItem(1, Icons.public, 'International', _intlColor),
+          if (_tabEnabled(0))
+            _buildTabItem(0, Icons.cell_tower, 'Local', _localColor),
+          if (_tabEnabled(1))
+            _buildTabItem(1, Icons.public, 'International', _intlColor),
         ],
       ),
     );
   }
 
+  /// Whether the scope toggle is worth drawing at all.
+  ///
+  /// A closed scope is now HIDDEN rather than dimmed, which leaves the
+  /// original objection to removing it: one lone pill reads as a broken
+  /// toggle and sends people to support asking where the other one went.
+  /// Answered by dropping the whole bar once fewer than two scopes remain —
+  /// with a single scope there is nothing to switch between, so the screen
+  /// simply shows it.
+  bool get _tabBarWorthShowing {
+    var open = 0;
+    for (var i = 0; i < 2; i++) {
+      if (_tabEnabled(i)) open++;
+    }
+    return open > 1;
+  }
+
   Widget _buildTabItem(int index, IconData icon, String label, Color active) {
     final isActive = _selectedTab == index;
-    // A closed scope stays VISIBLE and dimmed, and selecting it shows why.
-    // Removing the tab would leave a one-tab toggle that looks like the other
-    // scope never existed, and the user asking support where it went.
+    // A closed scope is not rendered at all (see _buildTabBar), so anything
+    // reaching here is open. The opacity is kept as a belt-and-braces for a
+    // caller that bypasses the filter rather than as the way a scope is
+    // closed.
     final enabled = _tabEnabled(index);
     return Expanded(
       child: Opacity(
