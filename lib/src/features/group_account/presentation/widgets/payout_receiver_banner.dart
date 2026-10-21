@@ -24,6 +24,7 @@
 // TriggerManual / ClearReceiver complete (parent calls .reload()).
 
 import 'dart:async';
+import 'package:lazervault/src/features/group_account/presentation/widgets/payout_assignment_blocked_dialog.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -550,6 +551,11 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
         status ==
             pb_enum.ScheduledPayoutStatus
                 .SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER) {
+      // Honours the same suppression as the pending banner. It offers the same
+      // action (change the receiver) and is the same height, so it would stack
+      // with the compact pair the details screen shows before a circle opens —
+      // the stacking that pushed the tabs off the bottom of the screen.
+      if (widget.hidePendingReceiver) return const SizedBox.shrink();
       return widget.isAdmin
           ? _payoutBlockedByRotationBanner(state)
           : _readOnlyBlockedBanner(state);
@@ -654,10 +660,32 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
             style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 12.sp),
           ),
           SizedBox(height: 10.h),
-          _filledCta(
-              label: 'Change Receiver',
-              onPressed: _openReceiverPicker,
-              color: color),
+          Row(children: [
+            Expanded(
+              child: _filledCta(
+                  label: 'Change Receiver',
+                  onPressed: _openReceiverPicker,
+                  color: color),
+            ),
+            SizedBox(width: 8.w),
+            // The banner states the situation; this states the RULE behind it.
+            // Without it the hold reads as a malfunction, which is what sent
+            // the creator round the assign-again loop.
+            TextButton(
+              onPressed: () => showPayoutAssignmentBlockedDialog(
+                context,
+                title: 'Why this payout is on hold',
+                reason: '$recipient is assigned to receive this cycle, but the '
+                    'rotation gives this cycle to a different member. The payout '
+                    'is held rather than paid so nobody collects out of turn.',
+                primaryLabel: 'Change receiver',
+                onPrimary: _openReceiverPicker,
+              ),
+              child: Text('Why?',
+                  style: GoogleFonts.inter(
+                      color: Colors.grey[400], fontSize: 12.sp)),
+            ),
+          ]),
         ],
       ),
       accent: color,

@@ -340,6 +340,24 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   Timer? _listenWatchdog;
   static const Duration _listenWatchdogPeriod = Duration(seconds: 2);
 
+  /// True while a watchdog-initiated reopen is still in flight.
+  ///
+  /// startLocalListening awaits recognizer init, so a 2s tick can arrive
+  /// while the previous one is still inside it. The guard inside that method
+  /// (`isListening || _isLocalListening`) has not been set yet at that point,
+  /// so without this the watchdog can stack starts onto one recognizer.
+  bool _watchdogReopening = false;
+
+  /// Whether the "mic was shut" warning has already been emitted for the
+  /// CURRENT outage.
+  ///
+  /// The watchdog ticks every 2s for the life of the call. If reopening keeps
+  /// failing — permission revoked mid-call, recognizer wedged — an unguarded
+  /// log writes a warning every two seconds for the whole session and buries
+  /// the telemetry it was meant to make visible. One line per outage says the
+  /// same thing.
+  bool _watchdogOutageLogged = false;
+
   void _startListenWatchdog() {
     _listenWatchdog?.cancel();
     _listenWatchdog = Timer.periodic(_listenWatchdogPeriod, (_) {
@@ -348,18 +366,31 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         return;
       }
       if (!_listeningPermitted()) return;
-      if (_speech.isListening || _isLocalListening) return;
-      AppLogger.warning(
-        'VoiceSessionCubit: listen watchdog found the mic shut while '
-        'listening was permitted — reopening (a re-arm was dropped)',
-      );
-      unawaited(startLocalListening());
+      if (_speech.isListening || _isLocalListening) {
+        // Healthy again — arm the log for the next genuine outage.
+        _watchdogOutageLogged = false;
+        return;
+      }
+      if (_watchdogReopening) return;
+      if (!_watchdogOutageLogged) {
+        _watchdogOutageLogged = true;
+        AppLogger.warning(
+          'VoiceSessionCubit: listen watchdog found the mic shut while '
+          'listening was permitted — reopening (a re-arm was dropped)',
+        );
+      }
+      _watchdogReopening = true;
+      unawaited(startLocalListening().whenComplete(() {
+        _watchdogReopening = false;
+      }));
     });
   }
 
   void _stopListenWatchdog() {
     _listenWatchdog?.cancel();
     _listenWatchdog = null;
+    _watchdogReopening = false;
+    _watchdogOutageLogged = false;
   }
 
   /// Whether the local microphone is muted.
@@ -1939,8 +1970,15 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _onDeviceMode = _resolveOnDeviceMode();
     if (_onDeviceMode) {
       _startListenWatchdog();
+      unawaited(_applyAssistantAudioProfile());
     } else {
       _stopListenWatchdog();
+      // Leaving on-device capture hands the mic back to LiveKit, which wants
+      // the communication profile. Restoring only in close() left the media
+      // profile — and the _assertLoudspeaker no-op that rides with it — in
+      // force for the rest of the session, so LiveKit mode played out of the
+      // earpiece with no way to correct it.
+      unawaited(_restoreAppAudioProfile());
     }
     // Move the LiveKit mic track to match the new owner. Without this the track
     // keeps the previous mode's state — see _applyCaptureOwnership.

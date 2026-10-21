@@ -346,6 +346,8 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
                     return const SizedBox.shrink();
                   }
                   return PagedPaginationBar(
+                    // This screen carries the floating "New" action.
+                    reserveFabGutter: true,
                     page: state.page,
                     totalPages: state.totalPages,
                     onGoTo: state.pageLoading

@@ -26,11 +26,16 @@ class PagedPaginationBar extends StatelessWidget {
   /// letting a second tap queue a third request.
   final ValueChanged<int>? onGoTo;
 
+  /// Reserve space on the right for a floating action button that overlaps
+  /// this bar. Only the screens that actually have one pass true.
+  final bool reserveFabGutter;
+
   const PagedPaginationBar({
     super.key,
     required this.page,
     required this.totalPages,
     required this.onGoTo,
+    this.reserveFabGutter = false,
   });
 
   /// The page numbers to render, with 0 standing for a gap.
@@ -119,17 +124,19 @@ class PagedPaginationBar extends StatelessWidget {
       );
     }
 
-    // Left-aligned, with the right-hand gutter reserved for the floating
-    // "New" action that sits in the same bottom corner. Centred, the last page
-    // numbers and the forward arrows slid underneath the FAB and could not be
-    // tapped at all on a 2+ page list.
+    // Left-aligned, with the right-hand gutter reserved for a floating action
+    // in the same bottom corner. Centred, the last page numbers and the
+    // forward arrows slid underneath the FAB and could not be tapped at all on
+    // a 2+ page list.
     //
-    // The gutter is sized to the extended FAB (icon + label) plus its margin,
-    // so the bar stays clear of it rather than merely starting further left.
+    // Only reserved where such an action actually exists ([reserveFabGutter]).
+    // The offers list has no FAB, and spending 150.w there would squeeze the
+    // controls for nothing — on a narrow phone enough to start scrolling the
+    // page numbers that otherwise fit.
     return Padding(
       padding: EdgeInsets.only(
         left: 12.w,
-        right: 150.w,
+        right: reserveFabGutter ? 150.w : 12.w,
         top: 8.h,
         bottom: 8.h,
       ),

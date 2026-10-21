@@ -15,6 +15,7 @@
 // reflect the new state machine.
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/group_account/presentation/widgets/payout_assignment_blocked_dialog.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:grpc/grpc.dart';
@@ -194,10 +195,24 @@ class _SelectPayoutReceiverBottomSheetState
       Navigator.of(context).pop(res);
     } on GrpcError catch (e) {
       if (!mounted) return;
+      final message = _humanizeGrpcError(e);
       setState(() {
         _isSaving = false;
-        _error = _humanizeGrpcError(e);
+        _error = message;
       });
+      // A REFUSAL IS A DECISION, NOT A FIELD ERROR.
+      //
+      // invalidArgument is the server saying "this member may not take this
+      // turn" — a rule the person has to understand before they can act on
+      // it. As an inline line it was missed: the creator read "receiver set"
+      // (from an earlier attempt), saw the Set Receiver banner still there,
+      // and assigned again. Surfaced as a modal, it cannot be scrolled past.
+      //
+      // Other codes keep the inline treatment: a sign-in or transport problem
+      // is a retry, not something to explain at this length.
+      if (e.code == StatusCode.invalidArgument) {
+        await showPayoutAssignmentBlockedDialog(context, reason: message);
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {

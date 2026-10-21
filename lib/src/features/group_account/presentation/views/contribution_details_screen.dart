@@ -334,13 +334,17 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   void _loadContributionDetails({bool force = false}) {
     if (_currentContribution != null && !force) return;
-    // Tell the self-loading children that this is a real refresh. Done here,
-    // not after the fetch returns, so they re-fetch in parallel with us.
-    if (force && mounted) {
-      setState(() => _payoutRefreshTick++);
-    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      // Tell the self-loading children that this is a real refresh, so they
+      // re-fetch alongside us rather than keeping a cached answer.
+      //
+      // Inside the post-frame callback deliberately: this method is called
+      // from initState, a tab listener, timers and pull-to-refresh, and a
+      // setState reached during a build throws. Here it cannot be.
+      if (force) {
+        setState(() => _payoutRefreshTick++);
+      }
       context
           .read<GroupAccountCubit>()
           .loadContributionDetails(widget.contributionId);
