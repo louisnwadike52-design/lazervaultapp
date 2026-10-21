@@ -119,10 +119,22 @@ class PagedPaginationBar extends StatelessWidget {
       );
     }
 
+    // Left-aligned, with the right-hand gutter reserved for the floating
+    // "New" action that sits in the same bottom corner. Centred, the last page
+    // numbers and the forward arrows slid underneath the FAB and could not be
+    // tapped at all on a 2+ page list.
+    //
+    // The gutter is sized to the extended FAB (icon + label) plus its margin,
+    // so the bar stays clear of it rather than merely starting further left.
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: EdgeInsets.only(
+        left: 12.w,
+        right: 150.w,
+        top: 8.h,
+        bottom: 8.h,
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           arrow(Icons.keyboard_double_arrow_left_rounded, 1, 'First page'),
           arrow(Icons.chevron_left_rounded, page - 1, 'Previous page'),

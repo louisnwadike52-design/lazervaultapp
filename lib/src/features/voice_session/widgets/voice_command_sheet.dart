@@ -4537,6 +4537,22 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     final cubit = context.read<VoiceSessionCubit>();
 
+    // THE PIN PAD OWNS THE SCREEN, SO IT MUST OWN THE MIC GATE TOO.
+    //
+    // The receipt sheet already did this; the PIN pad never did. The cost was
+    // both symptoms reported against this flow:
+    //
+    //   * the recogniser stayed OPEN behind the pad, so the agent's own
+    //     "enter your pin" prompt — and its post-transfer confirmation — were
+    //     captured as if the USER had said them, which is the AI voice turning
+    //     up inside the user's transcript;
+    //   * nothing re-armed the mic when the pad closed. Dismissing the pad, or
+    //     completing the transfer, left the session deaf.
+    //
+    // onBlockingSheetDismissed re-arms rather than merely un-gating, and it is
+    // called from the finally below so CANCEL and SUCCESS both recover.
+    cubit.onBlockingSheetShown();
+
     print(
       'VoiceCommandSheet: showing transaction-PIN sheet '
       '(type=$transactionType, amount=$currency $amount, '
@@ -4648,6 +4664,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       _pinSheetTimeoutTimer?.cancel();
       _pinSheetTimeoutTimer = null;
       _isPinSheetShowing = false;
+      // Hand the mic back on EVERY exit from this function — cancelled,
+      // locked, exhausted, completed, or thrown. This is the line whose
+      // absence made a cancelled PIN sheet end the conversation.
+      cubit.onBlockingSheetDismissed();
     }
   }
 

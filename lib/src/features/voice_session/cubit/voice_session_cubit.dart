@@ -3,6 +3,7 @@ import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:math' as math;
 import 'dart:async';
 import 'dart:io' show File, Platform;
+import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as get_pkg;
@@ -312,6 +313,53 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _modalOwnsScreen = false;
     if (isClosed || _teardownRequested) return;
     _reArmListeningSoon();
+  }
+
+  /// Periodic self-heal for the on-device recogniser.
+  ///
+  /// WHY A WATCHDOG AND NOT JUST A BETTER RE-ARM.
+  ///
+  /// Every path that reopens the mic funnels through [_reArmListeningSoon],
+  /// which schedules ONE delayed check of [_listeningPermitted]. That check is
+  /// a single instant: if a gate happens to be closed at that instant — the
+  /// agent still speaking, a reply still in flight, a sheet still up — the
+  /// re-arm is dropped and NOTHING schedules another. The session is then deaf
+  /// for the rest of the call with no error anywhere to explain it.
+  ///
+  /// That is the shape behind "it just seems stuck": cancelling the PIN sheet
+  /// and finishing a transfer both end with a gate briefly closed, and both
+  /// left the mic shut forever.
+  ///
+  /// Rather than hunt every such ordering, this re-checks on a slow timer and
+  /// reopens the mic whenever listening is permitted but not running. It makes
+  /// a dropped re-arm cost one tick instead of the whole conversation.
+  ///
+  /// It only ever CALLS the same guarded entry point, so it cannot open the mic
+  /// anywhere [_listeningPermitted] would not already allow it — push-to-talk,
+  /// muted and torn-down sessions are still left alone.
+  Timer? _listenWatchdog;
+  static const Duration _listenWatchdogPeriod = Duration(seconds: 2);
+
+  void _startListenWatchdog() {
+    _listenWatchdog?.cancel();
+    _listenWatchdog = Timer.periodic(_listenWatchdogPeriod, (_) {
+      if (isClosed || _teardownRequested) {
+        _stopListenWatchdog();
+        return;
+      }
+      if (!_listeningPermitted()) return;
+      if (_speech.isListening || _isLocalListening) return;
+      AppLogger.warning(
+        'VoiceSessionCubit: listen watchdog found the mic shut while '
+        'listening was permitted — reopening (a re-arm was dropped)',
+      );
+      unawaited(startLocalListening());
+    });
+  }
+
+  void _stopListenWatchdog() {
+    _listenWatchdog?.cancel();
+    _listenWatchdog = null;
   }
 
   /// Whether the local microphone is muted.
@@ -1396,6 +1444,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // real work that a gesture is not replacing.
           _serverInputMode = (data['inputMode'] as String?);
           _onDeviceMode = _resolveOnDeviceMode();
+          // Arm the self-heal for the whole session, not just after a mode
+          // switch — the dropped re-arms this backstops happen on the very
+          // first transfer as readily as the tenth.
+          if (_onDeviceMode) {
+            _startListenWatchdog();
+            unawaited(_applyAssistantAudioProfile());
+          }
           print(
               'VoiceSessionCubit: inputMode=${data['inputMode'] ?? 'on_device(default)'} -> onDeviceMode=$_onDeviceMode');
           // Endpointing windows, admin-tunable. Same rail as inputMode above.
@@ -1882,6 +1937,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // mic, so re-resolve it here too: the session-start value was correct only
     // for the mode in force at connect time.
     _onDeviceMode = _resolveOnDeviceMode();
+    if (_onDeviceMode) {
+      _startListenWatchdog();
+    } else {
+      _stopListenWatchdog();
+    }
     // Move the LiveKit mic track to match the new owner. Without this the track
     // keeps the previous mode's state — see _applyCaptureOwnership.
     if (wasOnDevice != _onDeviceMode) {
@@ -2205,10 +2265,74 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// changes nothing, and losing the loudspeaker must never take down a working
   /// call.
   Future<void> _assertLoudspeaker() async {
+    // Under the media profile this call is not just unnecessary, it is the
+    // bug: setSpeakerphoneOn drives Android back into MODE_IN_COMMUNICATION,
+    // which is the very mode the profile exists to get out of. Media playback
+    // already goes to the loudspeaker.
+    if (_mediaAudioProfileApplied) return;
     try {
       await Hardware.instance.setSpeakerphoneOn(true);
     } catch (e) {
       print('VoiceSessionCubit: could not force speakerphone: $e');
+    }
+  }
+
+  /// ANDROID PLAYBACK STREAM FOR THE ASSISTANT'S VOICE.
+  ///
+  /// The app configures WebRTC globally as `communication` (main.dart), which
+  /// is right for a call: it routes to the earpiece, enables the hardware echo
+  /// canceller, and bills playback to STREAM_VOICE_CALL.
+  ///
+  /// For this assistant it is wrong, and it is the single cause of both
+  /// standing complaints about the agent's voice:
+  ///
+  ///   * STREAM_VOICE_CALL carries its OWN volume, separate from the media
+  ///     volume the user actually sets, and it is typically much lower — the
+  ///     agent "can't be heard" even at full media volume.
+  ///   * Anything that takes audio focus in that mode DUCKS the stream, so
+  ///     the level moves within a sentence. Every workaround for that so far
+  ///     has been a delay tuned to hide the duck, which is why the level still
+  ///     rises and falls.
+  ///
+  /// Switching to `media` for the session puts the agent on the ordinary media
+  /// stream: the volume the user set, no focus duck, no HUD, and no reason to
+  /// ramp anything.
+  ///
+  /// SAFE HERE because Android hands-free is already strict half-duplex —
+  /// [_hybridAecBargeIn] is iOS-only and [_bargeInEnabled] is push-to-talk
+  /// only — so nothing on this path depends on communication-mode AEC. The
+  /// recogniser owns the mic and is closed while the agent speaks. iOS is left
+  /// alone: LiveKit manages its AVAudioSession and its barge-in path DOES use
+  /// hardware AEC.
+  ///
+  /// Scoped, not global: [_restoreAppAudioProfile] puts `communication` back on
+  /// teardown so calls and live audio elsewhere are unaffected.
+  bool _mediaAudioProfileApplied = false;
+
+  Future<void> _applyAssistantAudioProfile() async {
+    if (!Platform.isAndroid || _mediaAudioProfileApplied) return;
+    if (!_onDeviceMode || _hybridAecBargeIn) return;
+    try {
+      webrtc.Helper.setAndroidAudioConfiguration(
+          webrtc.AndroidAudioConfiguration.media);
+      _mediaAudioProfileApplied = true;
+      print('VoiceSessionCubit: android audio profile -> media '
+          '(stable level, user media volume)');
+    } catch (e) {
+      print('VoiceSessionCubit: could not apply media audio profile: $e');
+    }
+  }
+
+  Future<void> _restoreAppAudioProfile() async {
+    if (!_mediaAudioProfileApplied) return;
+    _mediaAudioProfileApplied = false;
+    try {
+      webrtc.Helper.setAndroidAudioConfiguration(
+          webrtc.AndroidAudioConfiguration.communication);
+      print('VoiceSessionCubit: android audio profile -> communication '
+          '(restored for the rest of the app)');
+    } catch (e) {
+      print('VoiceSessionCubit: could not restore audio profile: $e');
     }
   }
 
@@ -4372,6 +4496,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _visualFeedbackTimer = null;
     _modalOwnsScreenTimer?.cancel();
     _modalOwnsScreenTimer = null;
+    _stopListenWatchdog();
+    unawaited(_restoreAppAudioProfile());
     _disconnectWebSocket();
     // Guard against a double-dispose (a screen may already be tearing down and
     // racing this close()); listeners on the other side guard removeListener.
