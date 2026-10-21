@@ -1070,6 +1070,50 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                       onModeChanged: _onModeChanged,
                       showSendAbroad: _sendAbroadOffered,
                     ),
+                    // With Send Abroad off there is no toggle and no second
+                    // option, so nothing on the screen says what this actually
+                    // does. "Exchange" on its own reads as sending money
+                    // somewhere — say plainly that it moves between the user's
+                    // OWN balances here, before they pick an amount.
+                    if (!_sendAbroadOffered) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.04),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.swap_horiz_rounded,
+                              size: 16,
+                              color: Colors.white.withValues(alpha: 0.6),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'This converts money between your own '
+                                'Lazervault balances — your funds stay in your '
+                                'account, just in the new currency. It does not '
+                                'send money to anyone else.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 1.4,
+                                  color: Colors.white.withValues(alpha: 0.65),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     // Send Abroad is gated: when international payout is off the
                     // tab still opens and explains itself, instead of collecting a
                     // recipient, an amount and a PIN and failing at the provider.
