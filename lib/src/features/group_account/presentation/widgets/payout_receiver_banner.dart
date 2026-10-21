@@ -629,6 +629,52 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
     );
   }
 
+  /// Move the circle on to its next cycle by hand.
+  ///
+  /// THE DEADLOCK THIS EXISTS FOR.
+  ///
+  /// When a circle's rotation and its actual payouts diverge, EVERY member can
+  /// be refused for a cycle: the slot holder already collected this round, and
+  /// anyone else is not whose turn it is. The only way forward is to advance
+  /// the rotation — which the service has always been able to do and no screen
+  /// ever called, so the advice "advance the rotation" was unfollowable.
+  ///
+  /// The refusals here are expected states, not faults, so they are shown as
+  /// written rather than retried.
+  Future<void> _advanceRotation() async {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    try {
+      await serviceLocator<PayoutAssignmentService>()
+          .advanceRotation(contributionId: widget.contribution.id);
+      if (!mounted) return;
+      messenger?.showSnackBar(const SnackBar(
+        content: Text('Rotation advanced. The next member is now up.'),
+      ));
+      // The payout row this banner reads is re-evaluated server-side by the
+      // advance, so the parent must re-read rather than keep its snapshot.
+      widget.onStateChanged?.call();
+      await _load();
+    } on GrpcError catch (e) {
+      if (!mounted) return;
+      final msg = switch (e.code) {
+        StatusCode.failedPrecondition =>
+          'The rotation cannot advance yet: every remaining member is behind on '
+              'their payments, so the pot is deliberately held. It clears when '
+              'one of them pays.',
+        StatusCode.permissionDenied =>
+          'Only the circle creator can advance the rotation.',
+        _ => 'Could not advance the rotation just now. Try again in a moment.',
+      };
+      await showPayoutAssignmentBlockedDialog(context,
+          title: 'Rotation not advanced', reason: msg);
+    } catch (_) {
+      if (!mounted) return;
+      messenger?.showSnackBar(const SnackBar(
+        content: Text('Could not advance the rotation just now.'),
+      ));
+    }
+  }
+
   /// Receiver assigned, but this cycle's payout will not release to them.
   ///
   /// The rotation decides whose turn a cycle is; a hand-assigned receiver who
@@ -680,6 +726,8 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
                     'is held rather than paid so nobody collects out of turn.',
                 primaryLabel: 'Change receiver',
                 onPrimary: _openReceiverPicker,
+                secondaryLabel: 'Advance rotation to the next member',
+                onSecondary: _advanceRotation,
               ),
               child: Text('Why?',
                   style: GoogleFonts.inter(

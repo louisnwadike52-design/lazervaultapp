@@ -29,6 +29,8 @@ Future<void> showPayoutAssignmentBlockedDialog(
   String title = 'This member cannot take this turn',
   String primaryLabel = 'Pick someone else',
   VoidCallback? onPrimary,
+  String? secondaryLabel,
+  VoidCallback? onSecondary,
 }) {
   return showDialog<void>(
     context: context,
@@ -100,6 +102,36 @@ Future<void> showPayoutAssignmentBlockedDialog(
               ),
             ),
             SizedBox(height: 18.h),
+            // The way OUT of the deadlock, when there is one.
+            //
+            // A circle whose rotation and payouts have diverged can refuse
+            // every member for a cycle: the slot holder already collected
+            // this round, and anyone else is not whose turn it is. Telling
+            // someone to "advance the rotation" while offering no way to do
+            // it leaves them exactly as stuck as before.
+            if (secondaryLabel != null) ...[
+              SizedBox(height: 12.h),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    onSecondary?.call();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.18)),
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r)),
+                  ),
+                  child: Text(secondaryLabel,
+                      style: GoogleFonts.inter(
+                          fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
