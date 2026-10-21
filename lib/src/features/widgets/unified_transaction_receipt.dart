@@ -30,6 +30,72 @@ import 'package:lazervault/src/features/escrow/utils/escrow_receipt_fields.dart'
 import 'package:lazervault/src/features/invoice/utils/invoice_receipt_fields.dart';
 part 'unified_transaction_receipt_widgets.dart';
 
+/// The business-flow service types that produce a receipt.
+const Set<TransactionServiceType> kBusinessReceiptServiceTypes = {
+  TransactionServiceType.sale,
+  TransactionServiceType.expense,
+  TransactionServiceType.payroll,
+  TransactionServiceType.purchaseOrder,
+  // Tax covers both the VAT and WHT record screens. Filed with a return, so
+  // of all of these it is the one most likely to be asked for as a document
+  // rather than looked at once.
+  TransactionServiceType.tax,
+};
+
+/// Detail rows for a business receipt, carried into the saved document.
+///
+/// The business flows already write DISPLAY-READY labels into metadata
+/// ("Payment method", "Quantity", "Customer"), which is what the on-screen
+/// Details list renders. So unlike the bill rows — which map a dozen provider
+/// spellings onto one label — these pass through, and the saved PDF shows
+/// exactly what the screen showed.
+///
+/// Preferred keys first so the order is stable across sales, then anything
+/// else the flow attached, so a field added later reaches the document
+/// without another edit here.
+///
+/// Top-level and pure so it can be tested without building the screen: the
+/// bug this fixes was a saved document quietly carrying less than the screen,
+/// which is only catchable by asserting on the rows themselves.
+List<MapEntry<String, String>> businessReceiptRows(UnifiedTransaction tx) {
+  if (!kBusinessReceiptServiceTypes.contains(tx.serviceType)) return const [];
+  final md = tx.metadata ?? const <String, dynamic>{};
+  final rows = <MapEntry<String, String>>[];
+  final seen = <String>{};
+
+  void add(String label, String value) {
+    final v = value.trim();
+    if (v.isEmpty) return;
+    rows.add(MapEntry(label, v));
+    seen.add(label);
+  }
+
+  final description = tx.description?.trim() ?? '';
+  if (description.isNotEmpty) add('Description', description);
+
+  const preferred = [
+    'Type',
+    'Payment method',
+    'Quantity',
+    'Customer',
+    'Supplier',
+    'Vendor',
+    'Employee',
+    'Period',
+    'Category',
+    'Reference',
+  ];
+  for (final key in preferred) {
+    final v = md[key];
+    if (v != null) add(key, v.toString());
+  }
+  for (final e in md.entries) {
+    if (seen.contains(e.key)) continue;
+    add(e.key, e.value?.toString() ?? '');
+  }
+  return rows;
+}
+
 class UnifiedTransactionReceipt extends StatefulWidget {
   final UnifiedTransaction transaction;
   final bool fromHistory;
@@ -1164,6 +1230,13 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
 
   bool get _supportsPdfReceipt =>
       _billServiceTypes.contains(tx.serviceType) ||
+      // Business flows: a recorded sale, an expense, a pay run and a purchase
+      // order are all documents someone files, and they were the last
+      // receipts still exporting a flat image of this page instead of the
+      // branded PDF. Their detail rows ride along as _businessRows, so the
+      // saved document carries the same payload the screen shows rather than
+      // an amount and a date.
+      kBusinessReceiptServiceTypes.contains(tx.serviceType) ||
       tx.serviceType == TransactionServiceType.transfer ||
       tx.serviceType == TransactionServiceType.crypto ||
       // QR Pay + PayID receipts render the same Revolut-style unified
@@ -1365,6 +1438,20 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
 
     return rows;
   }
+
+  /// Detail rows for a business receipt, carried into the saved document.
+  ///
+  /// The business flows already write DISPLAY-READY labels into metadata
+  /// ("Payment method", "Quantity", "Customer"), which is what the on-screen
+  /// Details list renders. So unlike [_billRows] — which maps a dozen provider
+  /// spellings onto one label — this passes them through, and the saved PDF
+  /// shows exactly what the screen showed.
+  ///
+  /// Preferred keys first so the order is stable across sales, then anything
+  /// else the flow attached, so a field added later reaches the document
+  /// without another edit here.
+  List<MapEntry<String, String>> get _businessRows =>
+      businessReceiptRows(tx);
 
   List<MapEntry<String, String>> get _billRows {
     if (!_billServiceTypes.contains(tx.serviceType)) return const [];
@@ -1921,7 +2008,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                       _contributionRows +
                       _billRows +
                       _sprayRows +
-                      _escrowRows,
+                      _escrowRows +
+                      _businessRows,
               currentUserName: _currentUserName,
             );
 
@@ -1956,7 +2044,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                       _contributionRows +
                       _billRows +
                       _sprayRows +
-                      _escrowRows,
+                      _escrowRows +
+                      _businessRows,
           currentUserName: _currentUserName,
           // Anchors the iPad share popover; omitted it anchored top-left.
           sharePositionOrigin: _shareOrigin(),
