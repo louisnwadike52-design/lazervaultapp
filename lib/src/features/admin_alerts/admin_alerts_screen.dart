@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 
 /// Admin Alerts — operational alerts (Prometheus/Alertmanager → notifications-
 /// service) for admin-role users. Reachable only by users whose profile roles
@@ -71,6 +72,12 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
   bool _loading = true;
   String? _err;
 
+  /// Set when a non-admin reached this screen by a route that is not the
+  /// (already gated) settings tile. Renders a plain "not available" instead of
+  /// the operator surface — and, deliberately, instead of an error: there is
+  /// nothing wrong, this is simply not their screen.
+  bool _notPermitted = false;
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +85,34 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
   }
 
   Future<void> _load() async {
+    // SELF-GUARD — the settings tile is NOT the only way in.
+    //
+    // The doc comment on this class claimed the screen hid itself from
+    // non-admins, and it never did: isAdminRoles was only ever called by the
+    // settings tile. Meanwhile app_router registers /admin/alerts, and an
+    // `ops_alert` / `prometheus_alert` push deep-links straight here
+    // (core/notifications/resolver_account.dart). Arriving by either route
+    // opened the full operator surface to anyone.
+    //
+    // Nothing leaked — admin-gateway answers a non-admin with 403 — but the
+    // user saw an admin screen fail, which reads as a broken app rather than
+    // one they were never meant to open.
+    //
+    // Read through the service locator, NOT the widget tree: a GetX route does
+    // not necessarily carry the BlocProvider the settings tile relies on, and
+    // a guard that throws on the deep-link path is no guard at all.
+    final roles =
+        serviceLocator<AuthenticationCubit>().currentProfile?.user.roles;
+    if (!isAdminRoles(roles)) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _notPermitted = true;
+        _alerts = [];
+        _err = null;
+      });
+      return;
+    }
     setState(() {
       _loading = true;
       _err = null;
@@ -127,18 +162,36 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
             const Text('Admin Alerts', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-              onPressed: _load,
-              icon: const Icon(Icons.refresh, color: Colors.white)),
+          // No refresh for someone who may not read this feed — offering a
+          // retry on a screen that will never load is just a second way to
+          // look broken.
+          if (!_notPermitted)
+            IconButton(
+                onPressed: _load,
+                icon: const Icon(Icons.refresh, color: Colors.white)),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: _load,
         color: _success,
         backgroundColor: _card,
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _err != null
+        child: _notPermitted
+            ? ListView(children: const [
+                SizedBox(height: 140),
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      'This section is only available to system administrators.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: _textSecondary, fontSize: 15),
+                    ),
+                  ),
+                ),
+              ])
+            : _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _err != null
                 ? ListView(children: [
                     const SizedBox(height: 120),
                     Center(
