@@ -531,6 +531,30 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
           : _readOnlyPendingBanner();
     }
 
+    // A RECEIVER IS SET, YET THE ROW IS STILL pending_receiver.
+    //
+    // Exactly one path server-side produces that pair: the fire path refused
+    // the payout because the assigned member is not whose turn it is, and
+    // parked the row back to pending_receiver while DELIBERATELY KEEPING
+    // recipient_user_id. (The other way back to pending_receiver — no active
+    // receiver — nils the recipient, so it cannot look like this.)
+    //
+    // Falling through to the normal pending banner told the admin "no
+    // receiver is set" seconds after they had set one, and kept telling them
+    // after a refresh, because the server really does still say
+    // pending_receiver. That is why setting the receiver looked like it did
+    // nothing and why the same loop kept repeating.
+    //
+    // Say what actually happened instead.
+    if (hasReceiver &&
+        status ==
+            pb_enum.ScheduledPayoutStatus
+                .SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER) {
+      return widget.isAdmin
+          ? _payoutBlockedByRotationBanner(state)
+          : _readOnlyBlockedBanner(state);
+    }
+
     switch (status) {
       case pb_enum
             .ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER:
@@ -596,6 +620,77 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
         ],
       ),
       accent: color,
+    );
+  }
+
+  /// Receiver assigned, but this cycle's payout will not release to them.
+  ///
+  /// The rotation decides whose turn a cycle is; a hand-assigned receiver who
+  /// does not hold that position is refused at fire time rather than paid —
+  /// the guard that stops one member collecting two turns of the same circle.
+  Widget _payoutBlockedByRotationBanner(pb.GetPayoutReceiverResponse state) {
+    final recipient = _resolveRecipientName(state.receiver.recipientUserId);
+    const color = Color(0xFFFB923C);
+    return _shell(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(Icons.pause_circle_outline, color: color, size: 18.sp),
+            SizedBox(width: 8.w),
+            Text('Payout on hold for this cycle',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600)),
+          ]),
+          SizedBox(height: 6.h),
+          Text(
+            '$recipient is set to receive this cycle, but the payout was held '
+            'because this cycle belongs to a different member in the rotation. '
+            'A member cannot collect twice while others are still waiting for '
+            'their first turn.\n\nAssign the member whose turn it is, or '
+            'advance the rotation, and the payout will release.',
+            style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 12.sp),
+          ),
+          SizedBox(height: 10.h),
+          _filledCta(
+              label: 'Change Receiver',
+              onPressed: _openReceiverPicker,
+              color: color),
+        ],
+      ),
+      accent: color,
+    );
+  }
+
+  /// Same situation, for a member who cannot act on it.
+  Widget _readOnlyBlockedBanner(pb.GetPayoutReceiverResponse state) {
+    final recipient = _resolveRecipientName(state.receiver.recipientUserId);
+    return _shell(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(Icons.pause_circle_outline,
+                color: Colors.grey[400], size: 18.sp),
+            SizedBox(width: 8.w),
+            Text('Payout on hold',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600)),
+          ]),
+          SizedBox(height: 6.h),
+          Text(
+            '$recipient is set to receive this cycle, but the payout is held '
+            'because this cycle belongs to a different member in the rotation. '
+            'An admin needs to resolve it.',
+            style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 12.sp),
+          ),
+        ],
+      ),
+      accent: const Color(0xFF2D2D2D),
     );
   }
 
