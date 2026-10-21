@@ -79,4 +79,47 @@ void main() {
       expect(friendlyError(null), isNotEmpty);
     });
   });
+
+  // -------------------------------------------------------------------------
+  // The STRING sink had to learn what the OBJECT sink already knew.
+  //
+  // Go wraps a business refusal as fmt.Errorf("%w: ...", ErrInvalidRequest)
+  // and the handler returns err.Error() as the gRPC message, so
+  // "invalid request: " leads the sentence. _unwrappedMessage stripped that;
+  // sanitizeUserFacingError did not — and the payout receiver picker
+  // sanitises a plain e.message, so the refusal reached the user with a
+  // developer's error type on the front. It now shows in a MODAL, which is
+  // where that prefix would be least excusable.
+  // -------------------------------------------------------------------------
+  group('sanitizeUserFacingError strips Go error sentinels', () {
+    test('the rotation refusal reads as a sentence, not an error type', () {
+      const fromServer = 'invalid request: cycle 2 belongs to Ada Obi in the '
+          'rotation, so paying Chidi Eze now would take a turn before theirs. '
+          'Assign Ada Obi, or advance the rotation first';
+
+      final shown = sanitizeUserFacingError(fromServer);
+
+      expect(shown.toLowerCase(), isNot(startsWith('invalid request')));
+      expect(shown, startsWith('Cycle 2 belongs to Ada Obi'));
+      // The actionable half must survive intact — it is the only part that
+      // tells the admin what to do next.
+      expect(shown, contains('advance the rotation first'));
+    });
+
+    test('other sentinels too', () {
+      expect(sanitizeUserFacingError('failed precondition: the pot is held'),
+          'The pot is held');
+      expect(sanitizeUserFacingError('permission denied: only the creator may'),
+          'Only the creator may');
+    });
+
+    test('a bare sentinel is left whole rather than emptied', () {
+      expect(sanitizeUserFacingError('invalid request: '), 'invalid request:');
+    });
+
+    test('a genuine sentence containing a colon is untouched', () {
+      const msg = 'Note: your payout lands on Friday';
+      expect(sanitizeUserFacingError(msg), msg);
+    });
+  });
 }

@@ -574,6 +574,43 @@ String friendlyError(Object? error, {String? context}) {
 /// Strips the wrapper noise Dart prepends — "Exception: ", "StateError: " and
 /// the like — so the sentence underneath is judged on its own merits rather
 /// than being rejected as technical because of its envelope.
+/// Strip a Go error-sentinel prefix from an otherwise human sentence.
+///
+/// Go services wrap a business refusal as
+/// `fmt.Errorf("%w: ...", ErrInvalidRequest)`, and the handler returns
+/// `err.Error()` as the gRPC message — so the sentinel's own text leads the
+/// sentence. The user then reads "invalid request: cycle 2 belongs to Ada in
+/// the rotation…": a perfectly good sentence with a developer's error type
+/// bolted to the front, which reads as a fault in the app rather than
+/// something they can act on.
+///
+/// Shared by [_unwrappedMessage] (error objects) and
+/// [sanitizeUserFacingError] (already-extracted strings). It lived only in the
+/// first, so every surface that sanitises a plain `e.message` — the payout
+/// receiver picker among them — still showed the prefix. One implementation,
+/// both sinks.
+String stripServerSentinelPrefix(String text) {
+  for (final sentinel in const [
+    'invalid request: ',
+    'invalid argument: ',
+    'unauthorized: ',
+    'permission denied: ',
+    'failed precondition: ',
+    'not found: ',
+  ]) {
+    if (text.toLowerCase().startsWith(sentinel)) {
+      final stripped = text.substring(sentinel.length).trim();
+      // Only when something readable is left — a bare sentinel with nothing
+      // after it is better shown whole than reduced to an empty string.
+      if (stripped.isNotEmpty) {
+        return stripped[0].toUpperCase() + stripped.substring(1);
+      }
+      break;
+    }
+  }
+  return text;
+}
+
 String _unwrappedMessage(Object? error) {
   if (error == null) return '';
   String text;
@@ -648,25 +685,7 @@ String _unwrappedMessage(Object? error) {
   //
   // Stripped here rather than at each call site because every service wraps
   // this way and every surface would otherwise need its own rule.
-  for (final sentinel in const [
-    'invalid request: ',
-    'invalid argument: ',
-    'unauthorized: ',
-    'permission denied: ',
-    'failed precondition: ',
-    'not found: ',
-  ]) {
-    final lower = text.toLowerCase();
-    if (lower.startsWith(sentinel)) {
-      final stripped = text.substring(sentinel.length).trim();
-      // Only when something readable is left — a bare sentinel with nothing
-      // after it is better shown whole than reduced to an empty string.
-      if (stripped.isNotEmpty) {
-        text = stripped[0].toUpperCase() + stripped.substring(1);
-      }
-      break;
-    }
-  }
+  text = stripServerSentinelPrefix(text);
 
   final envelope = RegExp(
       r'^[A-Za-z_][A-Za-z0-9_]*(Exception|Error|Failure)?\s*:\s*(.+)$',
@@ -706,7 +725,9 @@ String sanitizeUserFacingError(String? message) {
   // Map the raw frozen/suspended-account error (carries a UUID) to a clean line.
   if (_messageLooksFrozen(msg)) return frozenAccountMessage;
   if (looksTechnical(msg)) return 'Something went wrong. Please try again.';
-  return msg;
+  // Last: the message is genuine and human, so remove the error-type prefix
+  // the Go wrapper put in front of it before it reaches a screen.
+  return stripServerSentinelPrefix(msg);
 }
 
 /// True when the error means the user's auth/session is no longer valid, so the
