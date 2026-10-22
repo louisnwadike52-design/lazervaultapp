@@ -423,10 +423,32 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
 
   /// Open the create-split-bill flow, then refresh on return. Shared by the
   /// FAB and the empty-state CTA so both behave identically.
+  ///
+  /// A NEW BILL DID NOT APPEAR UNTIL A PULL-TO-REFRESH. Two reasons, both
+  /// needed fixing:
+  ///
+  ///  1. On success the create screen does Get.offNamed(splitBillDetail),
+  ///     which REPLACES the create route. This await therefore resolves at
+  ///     that moment — while the user is still on the detail screen — not
+  ///     when they come back here. So the refresh fired early, and returning
+  ///     later refreshed nothing.
+  ///  2. _refreshData only reloads the CURRENT tab, and tabs are cached and
+  ///     loaded once by design (see _onTabChanged). A bill created from the
+  ///     Incoming tab refreshed Incoming; the Created cache it actually
+  ///     landed in was never invalidated, and switching tabs served the stale
+  ///     cache rather than refetching.
+  ///
+  /// So the Created cache is dropped and reloaded explicitly: that is where a
+  /// new bill lands regardless of which tab it was started from.
   Future<void> _openCreate() async {
     await Get.toNamed(AppRoutes.createSplitBill);
-    if (mounted) {
-      _refreshData();
+    if (!mounted) return;
+    setState(() => _createdBills = null);
+    await context.read<SplitBillCubit>().loadCreatedBills();
+    if (mounted && _currentTab == 0) {
+      // The user was on Incoming; refresh it too so both lists are current
+      // whichever one they land back on.
+      await context.read<SplitBillCubit>().loadIncomingBills();
     }
   }
 
