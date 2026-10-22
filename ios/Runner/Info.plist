@@ -65,12 +65,6 @@
 		<string>Lazervault saves receipts and transaction proofs to your photo library so you can share them or keep them for records.</string>
 		<key>NSSpeechRecognitionUsageDescription</key>
 		<string>Lazervault uses speech recognition to let you make payments, check your balance, and pay bills with voice commands.</string>
-		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>Lazervault uses your location to detect unusual sign-in activity, surface nearby agents for cash deposits, and comply with anti-fraud regulations.</string>
-		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>Lazervault uses your location in the background to keep your account secure — flagging logins from new places and verifying transactions against your usual locations to prevent fraud.</string>
-		<key>NSLocationAlwaysUsageDescription</key>
-		<string>Lazervault uses your location in the background to keep your account secure — flagging logins from new places and verifying transactions against your usual locations to prevent fraud.</string>
 		<key>NSFaceIDUsageDescription</key>
 		<string>Lazervault uses Face ID to confirm payments, unlock the app, and authorise sensitive operations without a password.</string>
 		<key>NSBluetoothAlwaysUsageDescription</key>
