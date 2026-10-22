@@ -97,7 +97,20 @@ end
 # --shrink                   (Android only) tells Gradle to use R8 + resource
 #                            shrinker (we also enable these in build.gradle.kts,
 #                            this is the Flutter side of the same switch).
-COMPRESSION_FLAGS = "--release --tree-shake-icons --obfuscate --split-debug-info=#{FLUTTER_DIR}/build/symbols/android --shrink"
+# --target-platform android-arm,android-arm64
+#                            drops the x86_64 slice. Android x86_64 exists only
+#                            on emulators and x86 Chromebooks; no phone uses it,
+#                            and distribution is Nigeria-only. It does NOT change
+#                            what any user downloads — Play already splits per
+#                            ABI, so an arm64 phone never received the x86_64
+#                            libs — it removes ~89 MB of native payload from the
+#                            UPLOAD (measured on 447: armeabi-v7a 73.4 MB,
+#                            arm64-v8a 82.2 MB, x86_64 88.8 MB).
+#                            COST: x86 Chromebooks can no longer install, and
+#                            x86_64 emulators cannot run release builds (Apple
+#                            Silicon emulators are arm64, so local QA is
+#                            unaffected). Delete this flag to restore both.
+COMPRESSION_FLAGS = "--release --tree-shake-icons --obfuscate --split-debug-info=#{FLUTTER_DIR}/build/symbols/android --shrink --target-platform android-arm,android-arm64"
 
 def aab_for(flavor)
   File.join(FLUTTER_DIR,
