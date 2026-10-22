@@ -2844,24 +2844,49 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (authState is! AuthenticationSuccess) return;
     final user = authState.profile.user;
     if (mandate != null && mandate.isPaused) {
-      serviceLocator<MandateCubit>().reinstateMandate(
+      // AWAITED, and announced only on a confirmed reinstate — the mirror of
+      // _switchToOneTime above.
+      //
+      // This used to fire the call without awaiting it and announce "We're
+      // reactivating your Direct Debit" in the same breath, then re-read on a
+      // blind 700ms timer. When the reinstate failed the user was told it was
+      // happening, the chip sat on "Switching…", and the only contradicting
+      // evidence was a snackbar from a different code path. Reported
+      // 2026-10-22 with both on screen at once.
+      //
+      // The 700ms timer was wrong on its own terms too: it is shorter than the
+      // round trip it was waiting for, so the re-read usually saw the old
+      // state even when the switch had worked.
+      final ok = await serviceLocator<MandateCubit>().reinstateMandate(
         mandateId: mandate.id,
         userId: user.id,
       );
-      Get.snackbar(
-        'Switching to Direct Debit',
-        'We’re reactivating your Direct Debit with ${account.bankName}. Future '
-            'deposits will skip bank login once it’s confirmed.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
-      // The cubit's reinstateMandate already polls until Mono confirms, so the
-      // "Switching…" chip settles to "Direct Debit" on its own.
-      Future.delayed(const Duration(milliseconds: 700), () {
-        if (mounted) _loadUserMandates();
-      });
+      if (!mounted) return;
+      if (ok) {
+        Get.snackbar(
+          'Switched to Direct Debit',
+          'Future deposits from ${account.bankName} will skip the bank login.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      } else {
+        // Name what still holds, so the user is not left waiting for a change
+        // that is not coming — the same shape as "Could not switch" above.
+        Get.snackbar(
+          'Could not switch',
+          'Your bank did not confirm the change, so ${account.bankName} is '
+              'still on one-time approval. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF7F1D1D),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+        );
+      }
+      // Re-read either way: on success to settle the badge, on failure to make
+      // sure the card reflects the state that actually holds.
+      if (mounted) _loadUserMandates();
       return;
     }
     // No reusable mandate — create + authorize a fresh one.
