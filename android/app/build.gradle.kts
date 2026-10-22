@@ -180,6 +180,30 @@ android {
             // so the loader can map them directly. Required for 16KB page-size
             // devices (Pixel 9 onwards).
             useLegacyPackaging = false
+
+            // Drop the x86/x86_64 slices entirely.
+            //
+            // The Flutter --target-platform flag alone is NOT enough and
+            // produced a WORSE artifact in 448: it removed Flutter's own
+            // libapp.so and libflutter.so for x86_64, but third-party AARs
+            // (WebRTC, MLKit, barhopper) still shipped theirs, leaving a
+            // base/lib/x86_64/ directory with NO engine in it. Play decides
+            // device support from the presence of lib/<abi>/, so an x86_64
+            // device could install that build and crash on launch with no
+            // Flutter engine to load. Excluding here removes the directory
+            // outright, so Play never offers the app to those devices.
+            //
+            // Safe with bundle.abi.enableSplit (unlike defaultConfig.ndk
+            // .abiFilters, which Gradle rejects alongside split config): this
+            // filters what gets PACKAGED, not how the bundle is split.
+            //
+            // Cost, unchanged from the earlier note: x86 Chromebooks cannot
+            // install and x86_64 emulators cannot run release builds. Apple
+            // Silicon emulators are arm64, so local QA is unaffected. Remove
+            // these two lines AND the --target-platform flag in the Fastfile
+            // together to restore x86_64 — changing only one of them is what
+            // created the broken 448.
+            excludes += listOf("**/x86/**", "**/x86_64/**")
         }
         resources {
             // Drop META-INF noise that bloats the APK without contributing.
