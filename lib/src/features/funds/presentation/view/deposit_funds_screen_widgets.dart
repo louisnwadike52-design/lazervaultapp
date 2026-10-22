@@ -317,4 +317,37 @@ extension _DepositMethodMeta on _DepositMethod {
         return null;
     }
   }
+
+  /// The admin feature-gate prefix for this rail.
+  ///
+  /// Lets an operator withdraw a deposit rail from the picker without a
+  /// release, which the server's own availability list cannot do: that list is
+  /// per-country provider capability, so it can say "this acquirer does not do
+  /// card here" but not "stop offering cards while we investigate".
+  ///
+  /// Part of the `feature_` family, so nothing new is needed in the gateway's
+  /// bulk read or EndpointRegistry — that family is already one prefix in
+  /// both. Adding a NEW prefix there needs a matching placeholder and has
+  /// taken the no-auth settings endpoint down before.
+  ///
+  ///   feature_deposit_<rail>_available          only "false" hides it
+  ///   feature_deposit_<rail>_message            copy, unused while hidden
+  ///   feature_deposit_<rail>_whitelist          emails that still see it
+  ///   feature_deposit_<rail>_whitelist_enabled  parks the list
+  ///
+  /// Apple Pay carries one too even though it was not asked for: it sits in
+  /// the same picker, and gating three of four rails would leave an operator
+  /// wondering which switch they were missing.
+  String get gatePrefix {
+    switch (this) {
+      case _DepositMethod.card:
+        return 'feature_deposit_card';
+      case _DepositMethod.bankTransfer:
+        return 'feature_deposit_transfer';
+      case _DepositMethod.linkAccount:
+        return 'feature_deposit_bank_link';
+      case _DepositMethod.applePay:
+        return 'feature_deposit_apple_pay';
+    }
+  }
 }

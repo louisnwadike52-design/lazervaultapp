@@ -144,32 +144,42 @@ class DepositCubit extends Cubit<DepositState> {
   }
 
   /// The rails banking-service reports as CLOSED right now, by its own id
-  /// ("card", "apple_pay"). Empty when nothing is closed, unknown, or the read
-  /// failed.
+  /// ("card", "apple_pay").
+  ///
+  /// An empty set means the server answered and nothing is closed. **NULL
+  /// means the answer is not known** — the call failed, timed out, or the
+  /// cubit is already closed.
+  ///
+  /// THE DIFFERENCE BETWEEN NULL AND EMPTY IS LOAD-BEARING. A closed rail is
+  /// now HIDDEN from the picker rather than dimmed, so a failed read must not
+  /// be indistinguishable from "everything is open" — and it must certainly
+  /// not read as "card is closed" and remove a working rail because a list
+  /// fetch timed out. Null tells the caller to keep offering whatever its own
+  /// rules allow; it used to collapse into the empty set, which was harmless
+  /// only while the consequence was an opacity value.
   ///
   /// EMITS NOTHING. [loadDepositMethods] above emits `DepositFailure` when the
   /// read fails, and on the deposit landing that renders as a failed deposit —
   /// a screen-filling error because a cosmetic list could not be fetched. This
   /// read is asked on arrival, so it has to be silent: the caller decides what
-  /// to do with the answer and keeps offering every rail when there is none.
+  /// to do with the answer.
   ///
-  /// FAILING OPEN IS CORRECT HERE. The gate this feeds is the OFFER, not the
+  /// FAILING OPEN IS STILL CORRECT. The gate this feeds is the OFFER, not the
   /// stop — banking-service refuses a closed rail in InitiateDeposit whatever
-  /// the app shows, so the worst case is a user who taps Card and is told
-  /// clearly why it cannot be used, instead of a user who cannot deposit at
-  /// all because a list fetch timed out.
-  Future<Set<String>> fetchClosedRails({
+  /// the app shows, so the worst case is a user who taps Card and is refused
+  /// there, instead of a user who cannot deposit at all.
+  Future<Set<String>?> fetchClosedRails({
     required String countryCode,
     required String currency,
   }) async {
-    if (isClosed) return const <String>{};
+    if (isClosed) return null;
     try {
       final result = await _initiateDepositUseCase.getDepositMethods(
         countryCode: countryCode,
         currency: currency,
       );
       return result.fold(
-        (_) => const <String>{},
+        (_) => null,
         (methods) => methods
             .where((m) => !m.available)
             .map((m) => m.id.trim().toLowerCase())
@@ -177,7 +187,7 @@ class DepositCubit extends Cubit<DepositState> {
             .toSet(),
       );
     } catch (_) {
-      return const <String>{};
+      return null;
     }
   }
 

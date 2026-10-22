@@ -40,7 +40,6 @@ import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono
 import 'package:lazervault/src/features/open_banking/domain/entities/deposit.dart';
 import 'package:lazervault/src/features/funds/data/services/mono_institutions_service.dart';
 import 'package:lazervault/src/features/funds/domain/services/pending_deposit.dart';
-import 'package:lazervault/core/shared_widgets/service_unavailable_modal.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/pay_by_transfer_card.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/flutterwave_payment_webview.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/recurring_access_toggle.dart';
@@ -131,7 +130,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   ///   • Card (Flutterwave hosted)        — ALL currencies. Flutterwave fully
   ///     supports NGN card charges, and banking-service routes paymentMethod
   ///     'card' to the Flutterwave hosted checkout even for NGN wallets.
-  List<_DepositMethod> get _availableMethods {
+  /// The rails this wallet could use, BEFORE any withdrawal signal.
+  ///
+  /// Currency and platform only. [_availableMethods] below is what the screen
+  /// actually offers.
+  List<_DepositMethod> get _offerableMethods {
     if (_isNGN) {
       return const [
         _DepositMethod.linkAccount,
@@ -155,6 +158,87 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       if (Platform.isIOS) _DepositMethod.applePay,
       _DepositMethod.card,
     ];
+  }
+
+  /// What the picker offers: the wallet's rails, minus every one that has been
+  /// withdrawn.
+  ///
+  /// ONE CHOKEPOINT. The empty state, the tile list and the count all derive
+  /// from this, so a rail cannot be missing from the list and still reachable
+  /// from something that recounted the rails itself.
+  ///
+  /// A withdrawn rail is now ABSENT rather than dimmed. The dimmed tile was a
+  /// deliberate choice and it was defensible while the only reason a rail
+  /// closed was an operator pausing it — a method that silently vanishes reads
+  /// as a bug to somebody who used it last week. But the provider-capability
+  /// case is not temporary and never explains itself away: "Card payments are
+  /// not available for this wallet" on a tile the user can still tap is an
+  /// invitation to keep tapping it. So an unsupported rail is withheld, and
+  /// [_withdrawnReason] puts the explanation in the empty state instead, where
+  /// it is read once rather than discovered by poking.
+  List<_DepositMethod> get _availableMethods =>
+      _offerableMethods.where((m) => _withdrawnReason(m) == null).toList();
+
+  /// Why [method] is withheld, or null when it is offered.
+  ///
+  /// Two independent signals, and the order matters only for the message:
+  ///
+  ///  1. the ADMIN gate — an operator withdrawing the rail by hand, which
+  ///     overrides everything except a whitelist entry;
+  ///  2. the SERVER's availability list — the active payout / virtual-account
+  ///     provider not supporting the rail for this wallet at all.
+  ///
+  /// Signal 2 is only trusted once the read has actually answered: see
+  /// [_railsResolved]. Until then nothing is withheld on its account, because
+  /// "not known yet" must not remove a working rail.
+  String? _withdrawnReason(_DepositMethod method) {
+    if (!FeatureFlags.gateAllowed(method.gatePrefix)) {
+      return FeatureFlags.gateMessage(method.gatePrefix);
+    }
+    final id = method.serverRailId;
+    if (id == null || !_railsResolved || !_closedRails.contains(id)) {
+      return null;
+    }
+    switch (method) {
+      case _DepositMethod.card:
+        // NO "at the moment", and no "try again later".
+        //
+        // The rail closes for two different reasons and the list the server
+        // sends does not say which: an operator pausing cards globally, which
+        // does come back, or the acquirer not having enabled card charges for
+        // our account in this corridor, which waiting does not fix. NGN is in
+        // the second case today. A line that promises a return would be a
+        // promise we cannot keep half the time, so it says what is true in
+        // both and names the way forward instead.
+        return 'Card payments are not available for this wallet. '
+            '${_isNGN ? 'You can still add money by bank transfer or from a linked bank account.' : 'Please use another method.'}';
+      case _DepositMethod.applePay:
+        return 'Apple Pay is not available at the moment. '
+            'Please try another method or check back later.';
+      case _DepositMethod.linkAccount:
+      case _DepositMethod.bankTransfer:
+        return null;
+    }
+  }
+
+  /// The reason to show when EVERY rail has been withheld.
+  ///
+  /// Without this, withdrawing the last rail would replace a tile carrying a
+  /// specific explanation with "No deposit methods are available for this
+  /// wallet yet" — which reads as an outage to retry. Prefers the card
+  /// message, since card is the rail most often withdrawn and the only one
+  /// whose copy names an alternative.
+  String? get _allWithdrawnReason {
+    final offerable = _offerableMethods;
+    if (offerable.isEmpty) return null; // locale/platform, not a withdrawal
+    String? first;
+    for (final m in offerable) {
+      final r = _withdrawnReason(m);
+      if (r == null) return null; // something is still offered
+      if (m == _DepositMethod.card) return r;
+      first ??= r;
+    }
+    return first;
   }
 
   // DirectPay progress controller for animated bottomsheet
@@ -243,6 +327,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// reason somebody cannot fund their wallet.
   Set<String> _closedRails = const <String>{};
 
+  /// Whether the availability read has actually answered.
+  ///
+  /// Needed because withholding a rail requires KNOWING it is unsupported.
+  /// While this is false the server signal is ignored entirely, so the picker
+  /// shows what the wallet's own rules allow — a fetch in flight, or one that
+  /// failed, must never be the reason somebody cannot fund their wallet.
+  ///
+  /// It latches true on the first answer and stays true: a later refresh that
+  /// fails leaves the last KNOWN set in place rather than reopening rails the
+  /// server already said were shut.
+  bool _railsResolved = false;
+
   /// Asks the server which rails are closed. Silent on failure — see
   /// [DepositCubit.fetchClosedRails] for why this does not go through the
   /// cubit's state machine.
@@ -252,39 +348,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       countryCode: _countryCodeForCurrency(_currency),
       currency: _currency,
     );
-    if (!mounted || closed == _closedRails) return;
-    setState(() => _closedRails = closed);
-  }
-
-  /// Why this method cannot be used right now, or null when it can.
-  ///
-  /// The tile stays on screen and explains itself on tap rather than
-  /// disappearing. A payment method that silently vanishes reads as a bug —
-  /// especially to somebody who used it last week — and produces exactly the
-  /// support ticket the switch was meant to prevent.
-  String? _methodClosedReason(_DepositMethod method) {
-    final id = method.serverRailId;
-    if (id == null || !_closedRails.contains(id)) return null;
-    switch (method) {
-      case _DepositMethod.card:
-        // NO "at the moment", and no "try again later".
-        //
-        // The rail closes for two different reasons and the list the server
-        // sends does not say which: an operator pausing cards globally, which
-        // does come back, or the acquirer not having enabled card charges for
-        // our account in this corridor, which waiting does not fix. NGN is in
-        // the second case today. A line that promises a return would be a
-        // promise we cannot keep half the time, so it says what is true in
-        // both and names the way forward instead.
-        return 'Card payments are not available for this wallet. '
-            '${_isNGN ? 'You can still add money by bank transfer or from a linked bank account.' : 'Please use another method.'}';
-      case _DepositMethod.applePay:
-        return 'Apple Pay is not available at the moment. '
-            'Please try another method or check back later.';
-      case _DepositMethod.linkAccount:
-      case _DepositMethod.bankTransfer:
-        return null;
-    }
+    if (!mounted) return;
+    // NULL means the read did not answer. Keep the last known set — and if
+    // nothing has ever been known, keep offering everything, because
+    // _railsResolved stays false. Only a real answer may withhold a rail.
+    if (closed == null) return;
+    if (_railsResolved && closed == _closedRails) return;
+    setState(() {
+      _closedRails = closed;
+      _railsResolved = true;
+    });
   }
 
   /// Get currency from selected card
@@ -1094,10 +1167,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       // Name the CURRENCY and the way forward. "No methods available" alone
       // reads as an outage the user should retry, when it is a region we do
       // not serve yet and switching back to Naira is the actual fix.
+      //
+      // A rail WITHHELD carries its own explanation, which is more specific
+      // than either of those — so it wins when there is one. This is where the
+      // text that used to live on a dimmed tile now goes.
+      final withdrawn = _allWithdrawnReason;
       return Text(
         LocaleGating.restricted
             ? LocaleGating.reasonFor('Adding money')
-            : 'No deposit methods are available for this wallet yet.',
+            : withdrawn ??
+                'No deposit methods are available for this wallet yet.',
         style: TextStyle(
             color: Colors.white.withValues(alpha: 0.6),
             fontSize: 13.sp,
@@ -1116,23 +1195,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
   Widget _buildMethodCard(_DepositMethod method, bool isLoading) {
     final accent = const Color.fromARGB(255, 78, 3, 208);
-    final closedReason = _methodClosedReason(method);
-    final isClosed = closedReason != null;
-    return Opacity(
-      // Dimmed, not hidden, and not disabled either — it still takes the tap,
-      // because the answer to "why can't I use my card" is the point.
-      opacity: isClosed ? 0.55 : 1,
-      child: InkWell(
+    // No dimmed state and no unavailable modal here any more: a withheld rail
+    // never reaches this builder, because _availableMethods has already
+    // dropped it. Every tile on screen is one the user can actually use.
+    return InkWell(
       borderRadius: BorderRadius.circular(14.r),
-      onTap: isLoading
-          ? null
-          : isClosed
-              ? () => showServiceUnavailableModal(
-                    context,
-                    serviceName: method.label,
-                    message: closedReason,
-                  )
-              : () => _openDepositMethodGated(method),
+      onTap: isLoading ? null : () => _openDepositMethodGated(method),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
@@ -1180,11 +1248,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    // Dimming alone is not a message — it reads as a styling
-                    // choice, and on a bright screen outdoors it is invisible.
-                    isClosed
-                        ? 'Not available right now, tap to see why'
-                        : method.subtitle,
+                    // Always the real subtitle now. The "tap to see why" line
+                    // existed for the dimmed tile; a withheld rail is absent
+                    // from this list, so nothing on screen needs explaining.
+                    method.subtitle,
                     style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12.sp),
@@ -1196,7 +1263,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 color: Colors.white.withValues(alpha: 0.4), size: 22.sp),
           ],
         ),
-      ),
       ),
     );
   }
