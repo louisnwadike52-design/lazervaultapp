@@ -47,7 +47,6 @@ import '../services/voice_note_capture.dart';
 import '../../../../core/config/voice_language_availability.dart';
 
 class VoiceSessionCubit extends Cubit<VoiceSessionState> {
-
   // ── Voice session failures: one message for the user, the truth for ops ──
   //
   // These exist because the failure in the field showed the user
@@ -90,6 +89,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       // it already has.
     }
   }
+
   // --- Configuration ---
   // LiveKit Cloud's URL stays dotenv-only — LiveKit lives outside the
   // Cloudflare tunnel (it has its own SFU edge). The voice-ws, voice-
@@ -465,6 +465,52 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// agent_caption_end for natural hands-free turn-taking.
   bool _awaitingAgentReply = false;
 
+  /// Deadline on the agent actually replying.
+  ///
+  /// WHY THIS EXISTS. Dispatching a turn sets [_awaitingAgentReply] AND calls
+  /// stopLocalListening(), and the only thing that undoes both is the
+  /// `agent_caption_end` event. So a reply that never arrives — the agent
+  /// errored, the data channel dropped the turn, the worker died — left the
+  /// session permanently deaf: the mic stayed off, the dispatch guard
+  /// (`!_awaitingAgentReply`) refused every subsequent turn, and the user
+  /// spoke into an app that could no longer hear them or answer. There was no
+  /// timeout anywhere; the session simply never recovered.
+  ///
+  /// This is the floor under that. It does NOT shorten any happy path: the
+  /// window is longer than any normal agent turn, and both caption events
+  /// cancel it, so it only ever fires when the reply is genuinely not coming.
+  Timer? _agentReplyWatchdog;
+
+  /// Long on purpose. A tool-calling turn (a transfer quote, a bill lookup)
+  /// can legitimately take many seconds before the first caption, and
+  /// cancelling a turn that was about to answer is worse than waiting. This is
+  /// a deadlock breaker, not a latency budget.
+  static const Duration _agentReplyWatchdogWindow = Duration(seconds: 25);
+
+  /// Arm the reply deadline. Cancels any previous one, so the clock always
+  /// belongs to the most recent dispatch.
+  void _armAgentReplyWatchdog() {
+    _agentReplyWatchdog?.cancel();
+    _agentReplyWatchdog = Timer(_agentReplyWatchdogWindow, () {
+      if (isClosed || _teardownRequested) return;
+      if (!_awaitingAgentReply) return; // the reply landed; nothing to recover
+      print('VoiceSessionCubit: agent reply watchdog fired — re-arming mic');
+      _awaitingAgentReply = false;
+      _agentSpeaking = false;
+      // The agent is not speaking, so nothing is echoing: clear the audio flag
+      // too or the echo gate keeps swallowing the user after we re-arm.
+      _setAgentAudioAudible(false);
+      if (_onDeviceMode) _reArmListeningSoon();
+      _emitCaptionUpdate();
+    });
+  }
+
+  /// Disarm it. Called wherever the agent demonstrably responded.
+  void _cancelAgentReplyWatchdog() {
+    _agentReplyWatchdog?.cancel();
+    _agentReplyWatchdog = null;
+  }
+
   /// True between agent_caption_start and agent_caption_end — the agent is
   /// actively producing speech. While true, the recognizer may stay open in a
   /// BARGE-IN window (echo-filtered) so the user can interrupt and be reasoned on.
@@ -490,6 +536,47 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// window now starts when the sound genuinely stops rather than when the
   /// subtitles do.
   bool _agentAudioAudible = false;
+
+  /// Ceiling on how long [_agentAudioAudible] may stay true.
+  ///
+  /// WHY THIS EXISTS. The flag is driven ONLY by LiveKit SpeakingChangedEvent
+  /// on the remote track, and it is cleared only by a trailing event saying
+  /// the agent stopped. That event does not always come — a participant that
+  /// drops, a track muted server-side, or a reconnect can leave the last
+  /// observed state as "speaking" with nothing following it.
+  ///
+  /// Stuck true, the echo gate in _onSpeechResult discards EVERY recognised
+  /// word as the agent's own voice. The user talks, the captions stay empty,
+  /// no turn is ever dispatched and no reply comes back — indistinguishable
+  /// from the app having gone deaf, and exactly the Android symptom reported.
+  ///
+  /// So the flag gets a deadline. Generous on purpose: it must outlast any
+  /// genuine agent utterance, because clearing it early re-opens the echo
+  /// window this guard exists to close. It is a stuck-state breaker only.
+  Timer? _agentAudibleCeiling;
+  static const Duration _agentAudibleMaxWindow = Duration(seconds: 60);
+
+  /// Mirror of `_agentAudioAudible = ...` that keeps the ceiling in step.
+  /// Everything that writes the flag goes through here so a future caller
+  /// cannot reintroduce the stuck state by assigning it directly.
+  void _setAgentAudioAudible(bool audible) {
+    _agentAudioAudible = audible;
+    _agentAudibleCeiling?.cancel();
+    if (!audible) {
+      _agentAudibleCeiling = null;
+      return;
+    }
+    _agentAudibleCeiling = Timer(_agentAudibleMaxWindow, () {
+      if (isClosed || !_agentAudioAudible) return;
+      print(
+          'VoiceSessionCubit: agent-audible ceiling hit — clearing echo gate');
+      _agentAudioAudible = false;
+      // Start the tail window as if the sound had just stopped, so the handful
+      // of frames after this are still treated as possible echo rather than
+      // snapping the gate fully open.
+      _echoGuard.noteAgentStoppedSpeaking(DateTime.now());
+    });
+  }
 
   /// The agent is audible if EITHER signal says so.
   ///
@@ -633,19 +720,28 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // Client-side silence timer (reset on every partial). Longer on iOS to tolerate
   // natural pauses before we finalise a turn ourselves.
   //
-  // Raised from 3200/2500 to 4000/3200 when turns were being cut in half, then
-  // TRIMMED BACK to these once device-side transcription got accurate enough not
-  // to need the padding. The total a user waits after they stop talking is
-  // `pauseFor + grace` (the recogniser's own silence detection, then ours):
-  // iOS was 3200+2800 = 6.0s and Android 2500+2000 = 4.5s, which reads as the
-  // agent being slow to take its turn. Now 2000+1900 = 3.9s and 1600+1400 = 3.0s.
+  // RESTORED to 4000/3200 + 2800/2000 (2026-10-22).
   //
-  // The anti-splitting protection is NOT what was cut: the grace still absorbs a
-  // continuation after a native final, and adaptive endpointing still extends
-  // both windows by [_incompleteExtraWait] when the text ends mid-thought. What
-  // went is the flat padding that fired while the user had already finished.
-  static int get _turnSilenceDefaultMs => _isIOS ? 2700 : 2100;
-  static int get _graceDefaultMs => _isIOS ? 1900 : 1400;
+  // History: raised from 3200/2500 to 4000/3200 when turns were being cut in
+  // half, then trimmed to 2700/2100 + 1900/1400 in a4a10713 on the theory that
+  // device-side transcription had got accurate enough not to need the padding.
+  // In hands-free use it had not: the shorter windows cut people off mid-turn
+  // again, which is the failure the padding existed to prevent. A turn taken
+  // away from a speaker mid-sentence is a worse fault than an agent that waits
+  // a beat too long, so the padding comes back.
+  //
+  // The total a user waits after they stop talking is `pauseFor + grace` (the
+  // recogniser's own silence detection, then ours): iOS 3200+2800 = 6.0s,
+  // Android 2500+2000 = 4.5s.
+  //
+  // This affects HANDS-FREE only. Push-to-talk already ignores both clocks —
+  // the gesture ends the turn and pauseFor is pinned to the full listen window.
+  //
+  // Both remain admin-tunable per market via the /voice/session/start
+  // overrides below, which is the right place to trade latency against being
+  // cut off for a given language and speech rate.
+  static int get _turnSilenceDefaultMs => _isIOS ? 4000 : 3200;
+  static int get _graceDefaultMs => _isIOS ? 2800 : 2000;
 
   /// Server overrides for the two endpointing windows, from
   /// `/voice/session/start`. Null until the session reports them, and null
@@ -1705,7 +1801,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             // loudspeaker buffer and room reverb.
             _echoGuard.noteAgentStoppedSpeaking(DateTime.now());
           }
-          _agentAudioAudible = audible;
+          _setAgentAudioAudible(audible);
           return;
         }
         if (event.participant == _room?.localParticipant) {
@@ -2198,14 +2294,15 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // had been said up to that point was all the turn ever contained.
           // In a gesture mode nothing but the gesture may end capture.
           //
-          // Trimmed from 3200/2500 alongside the client windows above: this is
-          // the FIRST half of what the user experiences as "the agent is slow to
-          // answer", and the client grace timer behind it still absorbs a
-          // continuation, so shortening here costs a split sentence only if the
-          // grace is also too short.
+          // RESTORED to 3200/2500 (2026-10-22) together with the client
+          // windows above. This is the FIRST half of the wait, and shortening
+          // it is what let the platform recogniser close a turn while the user
+          // was still mid-sentence in hands-free. The two clocks were trimmed
+          // together and are restored together — leaving one short reproduces
+          // the fault on its own.
           pauseFor: isPushToTalk
               ? const Duration(seconds: 60)
-              : Duration(milliseconds: _isIOS ? 2000 : 1600),
+              : Duration(milliseconds: _isIOS ? 3200 : 2500),
           localeId: await _resolveSttLocaleId(),
         ),
       );
@@ -2423,8 +2520,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // iOS keeps 200ms. Its route is held stable by the published-but-muted
     // track and there is no focus-duck to avoid, so waiting there would only
     // make the mic slower to open.
-    Future.delayed(
-        Duration(milliseconds: _isIOS ? 200 : _androidReArmDelayMs), () {
+    Future.delayed(Duration(milliseconds: _isIOS ? 200 : _androidReArmDelayMs),
+        () {
       if (_listeningPermitted() && !_speech.isListening && !_isLocalListening) {
         startLocalListening();
       }
@@ -2645,6 +2742,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // Pause listening until the agent has finished replying (re-armed on
     // agent_caption_end) so we never transcribe the agent's own TTS.
     _awaitingAgentReply = true;
+    // ...and put a deadline on that reply arriving, so a turn the agent never
+    // answers cannot leave the mic off and every later turn refused.
+    _armAgentReplyWatchdog();
     _bargedInThisTurn = false; // reset for the upcoming agent turn
     unawaited(stopLocalListening());
     // Show "processing" while we wait for the agent (parity with the LiveKit
@@ -3497,6 +3597,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             unawaited(_assertLoudspeaker());
             // On-device mode: the agent is now speaking.
             if (_onDeviceMode) {
+              // The reply arrived — the deadline has done its job.
+              _cancelAgentReplyWatchdog();
               _agentSpeaking = true;
               _awaitingAgentReply = true;
               _bargedInThisTurn = false;
@@ -3579,6 +3681,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               // agent's own sentence came back through and was rendered as the
               // user's turn. Start the tail window before re-arming.
               _echoGuard.noteAgentStoppedSpeaking(DateTime.now());
+              _cancelAgentReplyWatchdog();
               _awaitingAgentReply = false;
               if (_hybridAecBargeIn) {
                 _setAecMicPublished(false).whenComplete(_reArmListeningSoon);
@@ -4425,7 +4528,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // true, no event would ever arrive to clear it and the echo guard would
     // suppress every utterance of the NEXT session. A stuck-open guard is a
     // deaf agent, which is worse than the echo it prevents.
-    _agentAudioAudible = false;
+    _setAgentAudioAudible(false);
     // New session must never begin inside a stale tail window.
     _echoGuard.reset();
     _bargedInThisTurn = false;
@@ -4528,6 +4631,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   @override
   Future<void> close() async {
+    // Both deadlines added for the deaf-session faults. A Timer outliving the
+    // cubit would fire into a closed object; each callback also guards on
+    // isClosed, but cancelling here is the part that does not rely on that.
+    _agentReplyWatchdog?.cancel();
+    _agentAudibleCeiling?.cancel();
     // Definitive teardown — always release the auto-logout suppression.
     VoiceSessionActivity.setActive(false);
     _visualFeedbackTimer?.cancel();
