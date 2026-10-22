@@ -13,7 +13,8 @@ import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/edit_profile_dialog.dart';
 import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/settings_tier_badge.dart';
-import 'package:lazervault/src/features/widgets/profile_picture_picker.dart';
+import 'package:lazervault/src/features/profile/presentation/widgets/profile_picture_actions.dart';
+import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'my_account_widgets.dart';
 
@@ -99,7 +100,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                           SizedBox(height: 16.h),
 
                           // Profile Header
-                          _buildProfileHeader(user),
+                          _buildProfileHeader(user, state),
 
                           SizedBox(height: 24.h),
 
@@ -131,7 +132,8 @@ class _MyAccountViewState extends State<_MyAccountView> {
     );
   }
 
-  Widget _buildProfileHeader(dynamic user) {
+  Widget _buildProfileHeader(dynamic user, ProfileState state) {
+    final isUploadingPicture = state is ProfilePictureUploading;
     final fullName =
         user != null ? '${user.firstName} ${user.lastName}' : 'User Name';
     final email = user?.email ?? 'user@email.com';
@@ -162,15 +164,71 @@ class _MyAccountViewState extends State<_MyAccountView> {
         children: [
           Row(
             children: [
-              // Profile Picture Picker
-              ProfilePicturePicker(
-                currentProfilePicture: user?.profilePicture,
-                size: 60,
-                onImageSelected: (base64Image) {
-                  context.read<ProfileCubit>().updateUserProfile(
-                        profilePicture: base64Image,
-                      );
-                },
+              // THE AVATAR MUST NOT SEND IMAGE BYTES THROUGH UpdateProfile.
+              //
+              // This used to be a ProfilePicturePicker whose callback handed
+              // `data:image/jpeg;base64,...` straight to updateUserProfile.
+              // users.profile_picture is varchar(500) and an 800x800 JPEG is
+              // tens of kilobytes once base64'd, so every single upload came
+              // back "failed to update profile" — SQLSTATE 22001, value too
+              // long. It could never have worked.
+              //
+              // The working path already existed and nothing on this screen
+              // called it: showProfilePictureActions → ProfileCubit
+              // .uploadProfilePicture → storage-service → store the PUBLIC
+              // URL, which is short enough for the column and is what every
+              // other surface already renders. It also fans the new avatar out
+              // to AuthenticationCubit, so the dashboard header, the drawer
+              // and the settings header refresh without a reload — which the
+              // base64 path never did either.
+              //
+              // Same call shape as settings_screen.dart and themed_drawer.dart
+              // so all three behave identically, including the Hero that
+              // animates into the full-screen viewer and back.
+              GestureDetector(
+                onTap: user == null || isUploadingPicture
+                    ? null
+                    : () => showProfilePictureActions(
+                          context,
+                          imageUrl: user?.profilePicture as String?,
+                          profileCubit: context.read<ProfileCubit>(),
+                        ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Hero(
+                      tag: kProfileAvatarHeroTag,
+                      child: UserAvatar(
+                        size: 60.w,
+                        imageUrl: user?.profilePicture as String?,
+                        firstName: user?.firstName as String?,
+                        lastName: user?.lastName as String?,
+                        fallbackMode: UserAvatarFallback.initials,
+                        borderColor: Colors.white.withValues(alpha: 0.6),
+                        borderWidth: 3,
+                      ),
+                    ),
+                    if (isUploadingPicture)
+                      Container(
+                        width: 60.w,
+                        height: 60.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withValues(alpha: 0.45),
+                        ),
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: 20.w,
+                          height: 20.w,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
               SizedBox(width: 16.w),
 

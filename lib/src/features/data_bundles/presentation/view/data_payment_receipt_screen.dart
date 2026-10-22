@@ -16,7 +16,6 @@ import '../cubit/auto_renew_cubit.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../../data/datasources/data_beneficiary_remote_datasource.dart';
 import '../widgets/rollover_preference_sheet.dart';
-import '../widgets/save_data_beneficiary_sheet.dart';
 import '../../services/data_bundles_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
@@ -64,7 +63,6 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen>
   /// lands with a different status (processing → completed, etc.) so
   /// the user sees the in-flight row settle without leaving the screen.
   DataPurchaseEntity? _purchase;
-  bool _beneficiarySaved = false;
 
   @override
   void initState() {
@@ -822,15 +820,10 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen>
     String networkName,
     String planName,
   ) {
-    // Save-as-beneficiary only makes sense once the purchase cleared —
-    // a failed/refunded row means the number might not even be valid,
-    // so saving it as a contact would just sow confusion. International
-    // rows have their own saved-contact flow (not wired here), so the
-    // button stays scoped to local NGN rows for now.
-    final canSaveContact = purchase.isCompleted &&
-        !purchase.isInternational &&
-        purchase.phoneNumber.isNotEmpty &&
-        !_beneficiarySaved;
+    // No save-as-beneficiary button here. The receipt keeps Download and
+    // Share; saving a number as a beneficiary is still offered from the data
+    // history actions sheet, which is where someone looking for a past
+    // recipient already is.
     if (_needsCatalogueReselect(purchase)) {
       return Padding(
         padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 12.h),
@@ -890,67 +883,9 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen>
                   : () => _shareReceipt(purchase, networkName, planName),
             ),
           ),
-          if (canSaveContact) ...[
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _actionButton(
-                icon: Icons.person_add_alt_outlined,
-                label: 'Save',
-                onTap: () => _openSaveBeneficiarySheet(purchase, networkName),
-              ),
-            ),
-          ],
         ],
       ),
     );
-  }
-
-  /// Opens the save-data-beneficiary sheet with fields pre-populated
-  /// from the receipt payload. Cancel pops the sheet with `false` and
-  /// leaves local state untouched; a successful save flips
-  /// `_beneficiarySaved` so the button disappears (no re-save button on
-  /// the same receipt) and surfaces a confirmation snackbar.
-  Future<void> _openSaveBeneficiarySheet(
-    DataPurchaseEntity purchase,
-    String networkName,
-  ) async {
-    final args = Get.arguments as Map<String, dynamic>? ?? const {};
-    final network = args['network'] as String? ?? purchase.networkCode;
-    final resolvedName = _resolveNetworkName(
-      network,
-      networkName.isNotEmpty ? networkName : purchase.networkName,
-    );
-    if (network.isEmpty && resolvedName.isEmpty) {
-      Get.snackbar(
-        'Cannot save',
-        "We couldn't identify the network for this number.",
-        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 3),
-      );
-      return;
-    }
-    final saved = await SaveDataBeneficiarySheet.show(
-      context,
-      phoneNumber: purchase.phoneNumber,
-      networkCode: network,
-      networkName: resolvedName,
-    );
-    if (!mounted) return;
-    if (saved == true) {
-      setState(() => _beneficiarySaved = true);
-      Get.snackbar(
-        'Saved',
-        'Added to your data contacts',
-        backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 2),
-        margin: EdgeInsets.all(16.w),
-        borderRadius: 12,
-      );
-    }
   }
 
   Widget _actionButton({
