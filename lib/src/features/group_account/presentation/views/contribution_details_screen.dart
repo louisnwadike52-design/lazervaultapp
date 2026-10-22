@@ -1823,13 +1823,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A2E),
-        title: Text('End this circle?',
+        title: Text('End this contribution?',
             style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w700)),
         content: Text(
-          'The circle closes for good after '
+          'The contribution closes for good after '
           '${state.currentRound == 1 ? 'this round' : '${state.currentRound} rounds'}. '
           'No further round can be started and nobody owes another '
           'contribution.\n\nThis cannot be undone. No money moves.',
@@ -1846,7 +1846,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('End circle',
+            child: Text('End contribution',
                 style: GoogleFonts.inter(
                     color: const Color(0xFFF59E0B),
                     fontWeight: FontWeight.w700)),

@@ -149,7 +149,7 @@ class ContributionRoundBanner extends StatelessWidget {
               SizedBox(width: 10.w),
               Expanded(
                 child: _button(
-                  label: 'End circle',
+                  label: 'End contribution',
                   filled: false,
                   accent: _amber,
                   // SHOWN ALWAYS, ENABLED ONLY WHEN THE SERVER WILL ACCEPT.
@@ -181,7 +181,7 @@ class ContributionRoundBanner extends StatelessWidget {
     );
   }
 
-  /// Why "End circle" is unavailable, in one line.
+  /// Why "End contribution" is unavailable, in one line.
   ///
   /// Derived from the state rather than written per-call-site, so it can never
   /// contradict the sentence already shown above it.
@@ -233,7 +233,7 @@ class ContributionRoundBanner extends StatelessWidget {
               SizedBox(width: 10.w),
               Expanded(
                 child: _button(
-                  label: 'End circle',
+                  label: 'End contribution',
                   filled: false,
                   accent: _amber,
                   onTap: (busy || !state.code.allowsEnding)
