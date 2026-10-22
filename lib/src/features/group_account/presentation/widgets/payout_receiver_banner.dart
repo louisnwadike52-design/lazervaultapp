@@ -923,33 +923,51 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
     final settledAt = state.scheduledPayout.hasSettledAt()
         ? state.scheduledPayout.settledAt.toDateTime()
         : null;
-    return _shell(
-      Row(children: [
-        Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 18.sp),
-        SizedBox(width: 8.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                  'Paid $amount '
-                  '${payout.currency.isNotEmpty ? payout.currency : widget.contribution.currency}'
-                  ' to $recipient',
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600)),
-              if (settledAt != null) ...[
-                SizedBox(height: 2.h),
-                Text(_formatDate(settledAt),
-                    style: GoogleFonts.inter(
-                        color: Colors.grey[400], fontSize: 11.sp)),
-              ],
-            ],
+    final currency = payout.currency.isNotEmpty
+        ? payout.currency
+        : widget.contribution.currency;
+
+    // A BADGE, NOT A CARD.
+    //
+    // Settled is the one state here that needs no action — it is a receipt,
+    // not a prompt. As a full-height card it sat between the round controls
+    // and the tab bar and pushed the Cycles list below the fold, so the
+    // screen had to be scrolled past a line of good news to reach the thing
+    // the user came for.
+    //
+    // The other states keep the card: each of them asks for something.
+    return Container(
+      margin: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(
+            color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 14.sp),
+          SizedBox(width: 6.w),
+          // One line. Ellipsised rather than wrapped, because wrapping is how
+          // it grows back into the card this replaced.
+          Expanded(
+            child: Text(
+              settledAt != null
+                  ? 'Paid $amount $currency to $recipient · ${_formatDate(settledAt)}'
+                  : 'Paid $amount $currency to $recipient',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
-        ),
-      ]),
-      accent: const Color(0xFF10B981),
+        ],
+      ),
     );
   }
 
