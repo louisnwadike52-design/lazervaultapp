@@ -49,6 +49,14 @@
          system photo picker) and requests no media permission at runtime —
          verified against its sources, which contain no READ_MEDIA_* or
          READ_EXTERNAL_STORAGE reference at all. -->
+    <!-- FOREGROUND_SERVICE comes back at MERGE time from flutter_background
+         1.3.1, which is a TRANSITIVE dependency (pubspec.lock, not
+         pubspec.yaml) — removing it from this file was not enough, as build 446
+         proved: the permission was still present in the shipped AAB. Stripping
+         it at merge is safe because the bundle contains NO service with a
+         foregroundServiceType at all (verified by reading base/manifest out of
+         the 446 AAB), and nothing in lib/ calls FlutterBackground. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove" />
