@@ -67,6 +67,17 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
   // Set when the initial provider fetch fails so the chips row can offer an
   // inline retry instead of spinning on "Loading providers…" forever.
   String? _providersError;
+
+  /// True once a provider fetch has ANSWERED, successfully, whatever it
+  /// contained.
+  ///
+  /// Without this, an empty list and an in-flight request look identical —
+  /// both are `_providers.isEmpty` with no error — so a successful fetch that
+  /// returned nothing rendered "Loading providers…" forever. That is exactly
+  /// what users hit when the backend hid every cable provider: the request
+  /// completed in 0.23s with an empty list and the screen span indefinitely.
+  /// An empty catalogue is a STATE, and it has to be sayable.
+  bool _providersAnswered = false;
   CableTVProviderEntity? _provider;
   SmartCardValidationEntity? _validation;
   bool _validating = false;
@@ -162,6 +173,7 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
       setState(() {
         _providers = s.providers;
         _providersError = null;
+        _providersAnswered = true;
       });
     } else if (s is SmartCardValidating) {
       setState(() => _validating = true);
@@ -202,7 +214,13 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
   }
 
   void _reloadProviders() {
-    setState(() => _providersError = null);
+    setState(() {
+      _providersError = null;
+      // Back to "in flight" until the retry answers, so the row shows the
+      // spinner rather than leaving the previous empty-catalogue message up
+      // while a fresh fetch is running.
+      _providersAnswered = false;
+    });
     context.read<CableTVCubit>().getProviders();
   }
 
@@ -658,6 +676,30 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
         SizedBox(width: 8.w),
         Expanded(
           child: Text("Couldn't load providers",
+              style: GoogleFonts.inter(color: _muted, fontSize: 12.sp)),
+        ),
+        TextButton(
+          onPressed: _reloadProviders,
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text('Retry',
+              style: GoogleFonts.inter(
+                  color: _accent,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600)),
+        ),
+      ]);
+    }
+    // ANSWERED, BUT EMPTY — say so, and offer the way out. Falling through to
+    // the spinner here is what made a working-but-empty catalogue look like a
+    // hung screen.
+    if (_providers.isEmpty && _providersAnswered) {
+      return Row(children: [
+        Expanded(
+          child: Text('No TV providers available right now',
               style: GoogleFonts.inter(color: _muted, fontSize: 12.sp)),
         ),
         TextButton(

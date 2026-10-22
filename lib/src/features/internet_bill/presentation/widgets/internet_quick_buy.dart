@@ -66,6 +66,13 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
   // Set when the initial provider fetch fails so the chips row can offer an
   // inline retry instead of spinning on "Loading providers…" forever.
   String? _providersError;
+
+  /// True once a provider fetch has ANSWERED, successfully, whatever it
+  /// contained. Same fix as cable_tv_quick_buy: without it an empty list and
+  /// an in-flight request are indistinguishable (`_providers.isEmpty`, no
+  /// error), so a successful fetch returning nothing spins on "Loading
+  /// providers…" forever. An empty catalogue is a state and must be sayable.
+  bool _providersAnswered = false;
   InternetProviderEntity? _provider;
   InternetAccountValidationEntity? _validation;
   bool _validating = false;
@@ -177,6 +184,7 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
       setState(() {
         _providers = s.providers;
         _providersError = null;
+        _providersAnswered = true;
       });
     } else if (s is InternetAccountValidating) {
       setState(() => _validating = true);
@@ -210,7 +218,12 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
   }
 
   void _reloadProviders() {
-    setState(() => _providersError = null);
+    setState(() {
+      _providersError = null;
+      // Back to "in flight" so a retry shows the spinner rather than leaving
+      // the empty-catalogue message up while a fresh fetch runs.
+      _providersAnswered = false;
+    });
     context.read<InternetBillCubit>().getProviders();
   }
 
@@ -631,6 +644,29 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
         SizedBox(width: 8.w),
         Expanded(
           child: Text("Couldn't load providers",
+              style: GoogleFonts.inter(color: _muted, fontSize: 12.sp)),
+        ),
+        TextButton(
+          onPressed: _reloadProviders,
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text('Retry',
+              style: GoogleFonts.inter(
+                  color: _accent,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600)),
+        ),
+      ]);
+    }
+    // ANSWERED, BUT EMPTY — say so and offer the way out, instead of a
+    // spinner that never resolves.
+    if (_providers.isEmpty && _providersAnswered) {
+      return Row(children: [
+        Expanded(
+          child: Text('No internet providers available right now',
               style: GoogleFonts.inter(color: _muted, fontSize: 12.sp)),
         ),
         TextButton(
