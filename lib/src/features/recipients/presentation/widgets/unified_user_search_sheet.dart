@@ -12,6 +12,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/contacts/data/models/lazervault_user_match_model.dart';
 import 'package:lazervault/src/features/contacts/domain/usecases/find_lazervault_users_usecase.dart';
+import 'package:lazervault/src/features/ai_chats/presentation/widgets/fullscreen_image_viewer.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/unified_user_search_cubit.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
 import 'package:lazervault/core/utilities/invite_link.dart';
@@ -657,22 +658,37 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     return bits.join('  •  ');
   }
 
+  /// Hero tag for one result's avatar.
+  ///
+  /// [UnifiedSearchResult.dedupeKey] is the identity this sheet ALREADY uses to
+  /// keep the same person from appearing twice, so it is unique across both
+  /// sections by construction. That matters more than it looks: two Heroes
+  /// sharing a tag in one route is an assertion failure the moment a transition
+  /// starts, i.e. a crash on tapping an avatar rather than a visual glitch.
+  ///
+  /// A saved contact and the same human from the directory carry different
+  /// keys ("r:<id>" vs "u:<id>"), so even when both are listed the tags differ.
+  Object _avatarHeroTag(UnifiedSearchResult r) =>
+      'user-search-avatar:${r.dedupeKey}';
+
   Widget _avatar(UnifiedSearchResult r) {
     final initials =
         _initials(r.displayName.isNotEmpty ? r.displayName : r.name);
-    return Container(
+    final hasPicture = r.profilePicture.isNotEmpty;
+
+    final circle = Container(
       width: 44.w,
       height: 44.w,
       decoration: BoxDecoration(
         color: _brand.withValues(alpha: 0.10),
         shape: BoxShape.circle,
-        image: r.profilePicture.isNotEmpty
+        image: hasPicture
             ? DecorationImage(
                 image: _avatarImage(r.profilePicture), fit: BoxFit.cover)
             : null,
       ),
       alignment: Alignment.center,
-      child: r.profilePicture.isNotEmpty
+      child: hasPicture
           ? null
           : Text(
               initials,
@@ -682,6 +698,29 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
                 color: _brand,
               ),
             ),
+    );
+
+    // No picture → no viewer. The tap falls through to the row's InkWell and
+    // picks the person, which is what this sheet is for; opening a viewer on a
+    // set of initials would be a dead end that also swallowed the selection.
+    if (!hasPicture) return circle;
+
+    // WITH a picture the avatar takes the tap itself. The row still selects —
+    // a child gesture detector wins the arena for its own hit area only — so
+    // "tap the face to look at it, tap anywhere else to pick them" needs no
+    // extra affordance to explain.
+    //
+    // The viewer handles the way back: drag it down and it tracks the finger,
+    // fading the backdrop, then flies home to this circle through the shared
+    // Hero rather than cutting to the list.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FullScreenImageViewer.open(
+        context,
+        mediaUrl: r.profilePicture,
+        heroTag: _avatarHeroTag(r),
+      ),
+      child: Hero(tag: _avatarHeroTag(r), child: circle),
     );
   }
 
