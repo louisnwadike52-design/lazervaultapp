@@ -9,6 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart'
     as currency_formatter;
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -538,9 +540,36 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
         }
 
         if (state is AccountCardsSummaryLoaded) {
-          final currencyAccounts = state.accountSummaries
+          final allCurrencyAccounts = state.accountSummaries
               .where((a) => a.currency == widget.session.currency)
               .toList();
+
+          // PAY FROM THE ACCOUNT THE USER IS ACTUALLY ON.
+          //
+          // This screen used to list every eligible wallet, so a tap-to-pay
+          // started on the dashboard's Personal account could be armed from
+          // Savings or Business — a different pocket from the one whose
+          // balance the user had just been looking at. The contactless flow
+          // has no step where the account is chosen on purpose; the balance on
+          // the dashboard IS the promise.
+          //
+          // Matched the way activeAccountSnapshot() does, on EITHER id: the
+          // active id is sometimes the spending-account id rather than the
+          // summary id, and matching only one of them silently resolves to
+          // nothing.
+          final activeId = serviceLocator<AccountManager>().activeAccountId;
+          final activeOnly = allCurrencyAccounts
+              .where((a) => a.id == activeId || a.spendingAccountId == activeId)
+              .toList();
+
+          // Fall back to the full list when the active account cannot be
+          // resolved (the manager not yet populated, or an id that matches no
+          // summary in this currency). An unresolved active account must not
+          // present an EMPTY picker — that reads as "you have no accounts" and
+          // strands a payment the user can actually make.
+          final scopedToActive = activeOnly.isNotEmpty;
+          final currencyAccounts =
+              scopedToActive ? activeOnly : allCurrencyAccounts;
 
           // "Pay from" must list only accounts that can ACTUALLY pay. Two
           // things disqualify one, and the picker honoured neither:
@@ -630,9 +659,16 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                       SizedBox(width: 12.w),
                       Expanded(
                         child: Text(
-                          hiddenCount > 0
-                              ? 'No ${widget.session.currency} account can cover this payment right now. Top up or unfreeze an account to continue.'
-                              : 'None of your accounts have sufficient balance.',
+                          // Scoped to the active account, the old copy ("No
+                          // NGN account can cover this") would be a claim about
+                          // every wallet that we did not check and that may well
+                          // be false. Say what is true and name the way out:
+                          // the dashboard is where the account is switched.
+                          scopedToActive
+                              ? 'Your active account cannot cover this payment. Top up, unfreeze it, or switch account on the dashboard.'
+                              : hiddenCount > 0
+                                  ? 'No ${widget.session.currency} account can cover this payment right now. Top up or unfreeze an account to continue.'
+                                  : 'None of your accounts have sufficient balance.',
                           style: GoogleFonts.inter(
                             color: const Color(0xFFEF4444),
                             fontSize: 12.sp,
@@ -655,7 +691,11 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
               // Say what was left out. Filtering silently is its own bug: the
               // user knows they have a Business account and, finding it gone
               // with no explanation, reasonably concludes the app lost it.
-              if (hiddenCount > 0) ...[
+              // Only when we are showing the whole list. Scoped to the active
+              // account, "3 accounts hidden" would be counting wallets we
+              // deliberately did not offer, which reads as a fault rather than
+              // the intent.
+              if (hiddenCount > 0 && !scopedToActive) ...[
                 SizedBox(height: 6.h),
                 Text(
                   hiddenCount == 1
