@@ -112,7 +112,24 @@ class SavedRecipientsRail extends StatelessWidget {
     // +4h over the previous 132: the shadow gutters above and below the card
     // grew from 6/6 to 8/14, and a rail that does not grow with them clips the
     // very shadow it just made room for.
-    final railHeight = 136.h * scale.clamp(1.0, 1.5);
+    //
+    // Then +4h again (2026-10-22). 136 was still a hair short: the card's own
+    // content — 10h padding, the icon row, 7h, the name line, 2h, the bank line
+    // and 10h padding — came to 0.34px MORE than the box at default text scale,
+    // which Flutter reports as "BOTTOM OVERFLOWED BY 0.340 PIXELS". Release
+    // builds clip that silently, so it only became visible when the screen was
+    // captured from a debug build for the store listing.
+    //
+    // Sub-pixel, but it is a real unsatisfied constraint, and the margin here
+    // is what absorbs the rounding that flutter_screenutil's .h introduces at
+    // arbitrary device heights. 140 restores a whole logical pixel of slack on
+    // top of that, so the next density that rounds slightly differently has
+    // somewhere to go instead of painting a stripe.
+    //
+    // The scale clamp above still handles LARGE text settings; this base only
+    // has to be correct at scale 1.0, which is where the overflow was measured
+    // (Pixel 9 Pro XL, 1344x2992, default font size).
+    final railHeight = 140.h * scale.clamp(1.0, 1.5);
 
     return SizedBox(
       height: railHeight,
