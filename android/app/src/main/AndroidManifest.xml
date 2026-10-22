@@ -31,10 +31,28 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     
-    <!-- Storage permissions for PDF download and sharing -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" android:minSdkVersion="30" />
+    <!-- Storage for PDF receipts and statements.
+         MANAGE_EXTERNAL_STORAGE was REMOVED (2026-10-22): it is a Play
+         policy-rejection vector whose permitted uses are file managers,
+         backup/restore, antivirus, document management, on-device file search,
+         encryption and device migration. Generating a receipt is none of those,
+         and the app never needed it — every PDF is written to APP-SPECIFIC
+         storage (getTemporaryDirectory / getApplicationDocumentsDirectory /
+         getExternalStorageDirectory, which is /Android/data/<pkg>/files) and
+         handed out through FileProvider, none of which requires a permission.
+         Do NOT re-add it; if a "save to Downloads" feature is ever wanted, use
+         MediaStore or the Storage Access Framework instead.
+
+         The two legacy permissions below are capped so they are never requested
+         on devices that ignore them anyway: WRITE_EXTERNAL_STORAGE is a no-op
+         from API 29 (scoped storage), and READ_EXTERNAL_STORAGE is superseded
+         by the photo picker from API 33. Capping keeps older image_picker /
+         file_picker paths working without widening the permission set on
+         modern devices. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <!-- OTP autofill uses the Google SMS Retriever API (sms_autofill:
          listenForCode + getAppSignature), which needs NO SMS permission — the
