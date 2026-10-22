@@ -10,7 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// a market with a different speech rate was an app release.
 ///
 /// They are now admin-tunable through the same /voice/session/start response that
-/// already carries inputMode, with the platform defaults raised.
+/// already carries inputMode. The platform defaults have been retuned since
+/// (a4a10713 cut the flat padding that fired after the user had finished), so
+/// this pins the BAND they must stay in rather than the numbers themselves.
 ///
 /// The cubit needs a live microphone, a platform recognizer and a LiveKit room to
 /// exercise, so these read the source. What is worth pinning is the CLAMP and the
@@ -40,13 +42,53 @@ void main() {
       expect(source, contains('Duration get _endOfTurnGraceWindow'));
     });
 
-    test('the platform defaults were raised', () {
-      // More room to pause, which is what was asked for. Only ever delays the END
-      // of a turn, so a short complete command still dispatches promptly.
-      expect(source, contains('_isIOS ? 4000 : 3200'),
-          reason: 'silence window, up from 3200/2500');
-      expect(source, contains('_isIOS ? 2800 : 2000'),
-          reason: 'grace window, up from 2200/1400');
+    test('the platform defaults stay inside a usable band', () {
+      // THIS USED TO PIN EXACT LITERALS ('_isIOS ? 4000 : 3200') and it went
+      // stale the moment the numbers were legitimately retuned: a4a10713 cut
+      // the turn wait because the flat padding was firing after the user had
+      // already finished, and the suite went red for a change that was
+      // correct. A guard that fails on every intentional edit teaches people
+      // to edit the guard, which is how it stops guarding anything.
+      //
+      // So pin the PROPERTY instead of the value. These are tuning knobs and
+      // are meant to move; what must not happen is a number that breaks
+      // turn-taking for everyone on the build.
+      int platformDefault(String getter, bool ios) {
+        final m = RegExp(
+          'int get $getter => _isIOS \\? (\\d+) : (\\d+);',
+        ).firstMatch(source);
+        expect(m, isNotNull,
+            reason: '$getter is no longer a platform-conditional int default '
+                '— if the shape changed, update this test deliberately');
+        return int.parse(m!.group(ios ? 1 : 2)!);
+      }
+
+      for (final ios in [true, false]) {
+        final platform = ios ? 'iOS' : 'Android';
+
+        // Below ~1.5s sits inside an ordinary mid-sentence pause, so the agent
+        // would dispatch a turn while the user is still talking — the exact
+        // complaint this setting was added to fix. Above ~6s the user has
+        // concluded it is broken and starts repeating themselves.
+        final silence = platformDefault('_turnSilenceDefaultMs', ios);
+        expect(silence, inInclusiveRange(1500, 6000),
+            reason: '$platform silence default is ${silence}ms');
+
+        // The grace absorbs a continuation after a native "final". Too small
+        // and a sentence gets split into two turns; too large and it is just
+        // the silence window again.
+        final grace = platformDefault('_graceDefaultMs', ios);
+        expect(grace, inInclusiveRange(800, 4000),
+            reason: '$platform grace default is ${grace}ms');
+      }
+
+      // The ternary exists because the two recognisers finalise differently —
+      // iOS needs the longer wait. Equal is fine; shorter on iOS means the
+      // branch is now backwards, which no band check would catch.
+      expect(platformDefault('_turnSilenceDefaultMs', true),
+          greaterThanOrEqualTo(platformDefault('_turnSilenceDefaultMs', false)));
+      expect(platformDefault('_graceDefaultMs', true),
+          greaterThanOrEqualTo(platformDefault('_graceDefaultMs', false)));
     });
 
     test('an override is read from the session-start response', () {
