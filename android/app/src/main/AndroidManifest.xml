@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Permissions and features should be direct children of manifest -->
     <uses-feature android:name="android.hardware.camera" />
@@ -26,10 +27,31 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
         android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
-    <!-- Required permissions for screen share -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <!-- FOREGROUND_SERVICE, _MEDIA_PROJECTION and _MICROPHONE were REMOVED
+         (2026-10-22). They were added for a screen-share feature that does not
+         exist: nothing in lib/ references screen share or MediaProjection, and
+         the only foreground service ever declared was flutter_background's
+         IsolateHolderService — a package that is not in pubspec.yaml, so that
+         class is not even in the build. Neither flutter_webrtc nor
+         livekit_client declares or starts a foreground service either.
+         Declaring these obliges a Play "Foreground Service permissions"
+         declaration for a capability the app does not have.
+         If background voice EVER needs to outlive the foreground, re-add
+         FOREGROUND_SERVICE + FOREGROUND_SERVICE_MICROPHONE together with a
+         real <service android:foregroundServiceType="microphone">, and declare
+         it in the Console. Do not re-add them bare.
+
+         READ_MEDIA_* are merged in by open_filex, which we use only to open
+         PDFs this app generated in its OWN storage — it never reads user
+         media. Left in place they trigger Play's "Photo and video permissions"
+         declaration, so they are stripped at merge. Safe: image_picker_android
+         0.8.13 picks via ACTION_GET_CONTENT (SAF) or PickVisualMedia (the
+         system photo picker) and requests no media permission at runtime —
+         verified against its sources, which contain no READ_MEDIA_* or
+         READ_EXTERNAL_STORAGE reference at all. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove" />
     
     <!-- Storage for PDF receipts and statements.
          MANAGE_EXTERNAL_STORAGE was REMOVED (2026-10-22): it is a Play
@@ -78,12 +100,9 @@
         
         <!-- Removed features and permissions from here -->
 
-        <!-- Screen share service belongs inside the main application tag -->
-        <service
-            android:name="de.julianassmann.flutter_background.IsolateHolderService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="mediaProjection" />
+        <!-- The flutter_background IsolateHolderService declaration was removed
+             (2026-10-22): that package is not a dependency, so the class does
+             not exist in the build. See the permission note above. -->
 
         <!-- Removed nested application tag that was here -->
 
