@@ -65,7 +65,21 @@
 		<string>Lazervault saves receipts and transaction proofs to your photo library so you can share them or keep them for records.</string>
 		<key>NSSpeechRecognitionUsageDescription</key>
 		<string>Lazervault uses speech recognition to let you make payments, check your balance, and pay bills with voice commands.</string>
-		<key>NSFaceIDUsageDescription</key>
+		<!-- REQUIRED even though this app never requests location. Apple's static
+	     analysis (ITMS-90683 on build 446) flags any LINKED SDK that references
+	     CoreLocation — MLKit, used for scan-to-pay, links it — and demands a
+	     purpose string whether or not the API is ever called. These were removed
+	     in 446 on the basis that nothing REQUESTS authorization at runtime, which
+	     was true but is the wrong test; the delivery warning was the result.
+	     The strings are deliberately honest: the app does not use location, so
+	     they must not claim a purpose it does not have. NSLocationAlwaysUsage-
+	     Description is intentionally NOT restored — Apple did not ask for it, it
+	     is deprecated, and requesting "always" access we never use is worse. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Lazervault does not request or use your location. This entry is required because a bundled scanning component links Apple's location framework; the app will never ask you for location access.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Lazervault does not request or use your location. This entry is required because a bundled scanning component links Apple's location framework; the app will never ask you for location access.</string>
+	<key>NSFaceIDUsageDescription</key>
 		<string>Lazervault uses Face ID to confirm payments, unlock the app, and authorise sensitive operations without a password.</string>
 		<key>NSBluetoothAlwaysUsageDescription</key>
 		<string>Lazervault uses Bluetooth for contactless tap-to-pay between phones.</string>
