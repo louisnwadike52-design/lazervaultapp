@@ -27,13 +27,21 @@ import '../utils/wallet_analytics_fold.dart';
 /// sync-all so the numbers reflect the banks' latest statements; sync
 /// failures are non-fatal (the last synced rows still serve).
 class StatisticsCubit extends Cubit<StatisticsState> {
-  /// Drop the previous user's figures on a user switch.
+  /// Drop the previous user's figures AND the scope they were fetched for.
   ///
   /// A lazy singleton holding spending analytics — balances, categories,
   /// trends. Shown to the next person to sign in on the device until a
   /// refetch lands, which is both wrong and private data.
+  ///
+  /// This used to emit StatisticsInitial and stop there, which cleared what
+  /// was on SCREEN but left `_availableWallets` holding the previous user's
+  /// account ids — and those ids are what the next load fans out over. So the
+  /// figures disappeared and the requests still went to the wrong accounts.
+  /// Clearing the scope is the half that actually matters; see
+  /// [_resetUserScopedState] and the userId setter.
   void clearOnLogout() {
-    if (!isClosed) emit(StatisticsInitial());
+    _userId = '';
+    _resetUserScopedState();
   }
 
   /// Hard ceiling on the wallet-analytics + monthly-trends gRPC awaits. Without
@@ -169,9 +177,47 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   void setAvailableWalletsForTest(List<StatisticsWallet> w) =>
       _availableWallets = w;
 
-  /// User id used for banking-service calls; set once by the screen.
+  /// User id used for banking-service calls, and the identity this cubit's
+  /// cached scope belongs to.
+  ///
+  /// SETTING A DIFFERENT USER WIPES EVERYTHING USER-SCOPED. This cubit is a
+  /// lazy SINGLETON, so it outlives a session: on 2026-10-22 an account switch
+  /// on one phone (Praiz → Chris) left the previous user's wallet ids in
+  /// `_availableWallets`, and the statistics screen fans out over exactly
+  /// those. Every analytics call went out for someone else's accounts and
+  /// accounts-service refused all of them with
+  ///
+  ///   PermissionDenied: account does not belong to user
+  ///
+  /// so the page never loaded. The server was right to refuse; the stale cache
+  /// was the fault. The emitted STATE is reset too — it still held the
+  /// previous user's figures, and the screen would otherwise render them for a
+  /// moment before the first refusal landed.
+  ///
+  /// Keyed on the id rather than on a logout hook because an account switch
+  /// does not have to pass through logout(). The one hook that is guaranteed
+  /// to run is the screen telling this cubit whose data it is now asking for.
+  /// Same id re-set is a no-op, so navigating back to the page keeps whatever
+  /// scope the user had chosen.
   // ignore: avoid_setters_without_getters
-  set userId(String id) => _userId = id;
+  set userId(String id) {
+    final next = id.trim();
+    if (next == _userId) return;
+    _userId = next;
+    _resetUserScopedState();
+  }
+
+  /// Drop everything belonging to the previous user.
+  ///
+  /// Wallet ids, the linked-bank scope and the rendered figures are all
+  /// per-user. Period and source are left alone: they are display preferences
+  /// that leak nothing and are not addressed to any account.
+  void _resetUserScopedState() {
+    _availableWallets = const [];
+    _selectedWalletIds = const [];
+    _selectedBankAccountIds = const [];
+    if (!isClosed) emit(StatisticsInitial());
+  }
 
   /// Test-only: set source without triggering the debounced reload.
   @visibleForTesting

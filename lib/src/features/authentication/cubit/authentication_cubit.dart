@@ -32,6 +32,13 @@ import 'package:lazervault/core/notifications/notification_navigator.dart';
 import 'package:lazervault/src/features/authentication/utils/login_identifier.dart';
 import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/src/features/notifications/presentation/cubit/notification_badge_cubit.dart';
+import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_count_cubit.dart';
+import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/config/country_config.dart';
@@ -1194,6 +1201,55 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (serviceLocator.isRegistered<PendingActionsCubit>()) {
       serviceLocator<PendingActionsCubit>().clear();
     }
+    // And the statistics cubit, for the same reason with a sharper edge: it
+    // caches the WALLET IDS the analytics calls are addressed to, not just the
+    // figures. Left alone across an account switch on one phone, every call
+    // went out for the previous user's accounts and accounts-service refused
+    // all of them — "account does not belong to user" — so the statistics page
+    // never loaded at all. Reported 2026-10-22 (Praiz → Chris, same device).
+    //
+    // The cubit also self-invalidates when its userId changes, which is the
+    // guard that covers a switch that never passes through here. This call is
+    // for logging out and stopping: the next person at the phone should not
+    // see the previous user's spending on a stale frame.
+    if (serviceLocator.isRegistered<StatisticsCubit>()) {
+      serviceLocator<StatisticsCubit>().clearOnLogout();
+    }
+    // THE SAME DEFECT, FOUR MORE TIMES. Each of these is a lazy singleton
+    // holding per-user data, each already HAD a reset method, and nothing
+    // called any of them — found while fixing the statistics one above.
+    //
+    // Budgets, direct-debit mandates, the unread badge and the split-bill
+    // count all belong to whoever was signed in. On a shared phone the next
+    // user saw the previous user's numbers until each happened to refetch.
+    if (serviceLocator.isRegistered<BudgetCubit>()) {
+      serviceLocator<BudgetCubit>().reset();
+    }
+    if (serviceLocator.isRegistered<MandateCubit>()) {
+      serviceLocator<MandateCubit>().clearOnLogout();
+    }
+    if (serviceLocator.isRegistered<NotificationBadgeCubit>()) {
+      serviceLocator<NotificationBadgeCubit>().clear();
+    }
+    if (serviceLocator.isRegistered<SplitBillCountCubit>()) {
+      serviceLocator<SplitBillCountCubit>().clearOnLogout();
+    }
+    // P2P chat conversations — messages between this user and other people.
+    // Found by the guard test, not by eye: the earlier sweep used a regex that
+    // could not match a digit in a class name, so "P2P" slipped past it.
+    if (serviceLocator.isRegistered<P2PConversationsCubit>()) {
+      serviceLocator<P2PConversationsCubit>().clearOnLogout();
+    }
+    // Voice transcripts are the most private of the set: clearAll() already
+    // existed for a REGION switch, on the reasoning that a conversation is
+    // about one account's money. A different PERSON is the stronger version of
+    // that argument.
+    if (serviceLocator.isRegistered<VoiceChatHistoryCubit>()) {
+      serviceLocator<VoiceChatHistoryCubit>().clearAll();
+    }
+    // CryptoConfigCubit is deliberately NOT cleared: it holds platform fee
+    // configuration (mode, bps, caps, min order sizes), not user data.
+    //
     // Re-arm the once-per-run launch prompt so the next user gets their own.
     PendingPaymentsPromptGate.resetForNewSession();
     // Clear the cached FCM-registration flag so the NEXT user to log in on this
