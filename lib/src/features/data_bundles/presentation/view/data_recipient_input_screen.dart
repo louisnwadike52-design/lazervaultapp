@@ -7,6 +7,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/services/locale_manager.dart';
 import '../../domain/entities/data_plan_entity.dart';
 import 'package:lazervault/core/utils/route_args.dart';
+import 'package:lazervault/core/utils/ng_msisdn.dart';
 
 class DataRecipientInputScreen extends StatefulWidget {
   const DataRecipientInputScreen({super.key});
@@ -96,14 +97,19 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
     super.dispose();
   }
 
-  /// Digits-only, leading-0-stripped form of the current input. Accepts
-  /// `0803…` (11 digits) and `803…` (10 digits) interchangeably, so the
-  /// validation reads one shape everywhere downstream.
-  String _normalizedPhone() {
-    final digits =
-        _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
-    return digits.startsWith('0') ? digits.substring(1) : digits;
-  }
+  /// The ten-digit national number for the current input, or "" when it is
+  /// not a Nigerian mobile yet.
+  ///
+  /// DELEGATES TO ng_msisdn.dart, which is the one parser every bill flow is
+  /// meant to share. The local version here only stripped a leading zero, so
+  /// this screen accepted `0803…` and `803…` but rejected `+234803…`,
+  /// `00234803…` and a contact-book entry saved as `234803…` — all of which
+  /// the shared parser accepts and which the airtime and quick-buy fields
+  /// already took. Two validators for one question is how they drift.
+  ///
+  /// It also applies the rule the local one had no notion of: a Nigerian
+  /// mobile national number begins 7, 8 or 9.
+  String _normalizedPhone() => ngNationalNumber(_phoneController.text) ?? '';
 
   /// Build full E.164 phone number with country dial code.
   String _buildFullPhone() {
@@ -156,13 +162,14 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
   /// `onChanged` (soft validation) and `onContinue` (hard gate) so the
   /// two code paths can't diverge.
   String? _validatePhone(String normalized, String network) {
-    if (normalized.isEmpty) return 'Phone number is required';
-    if (normalized.length < 10) return 'Phone number must be 10 digits';
-    if (normalized.length > 10) {
-      // Defensive: LengthLimitingTextInputFormatter caps at 11 digits
-      // with the leading 0, so post-strip we expect exactly 10. Anything
-      // longer is malformed input (e.g. user pasted with country code).
-      return 'Phone number must be 10 digits';
+    final raw = _phoneController.text.trim();
+    if (raw.isEmpty) return 'Phone number is required';
+    if (normalized.isEmpty) {
+      // ngMsisdnHint stays quiet while there is not yet enough typed to
+      // judge — shouting "invalid" at the third keystroke is noise, and the
+      // disabled button already says "not yet". A null here means "keep
+      // going", not "valid": the length gate below still holds the CTA.
+      return ngMsisdnHint(raw);
     }
     if (!_prefixMatchesNetwork(normalized, network)) {
       return "This number isn't on ${_networkDisplayFor(network)}. "
@@ -363,8 +370,19 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
                             inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(11),
+                              // Digits and a leading +, because the parser
+                              // accepts +234… and 00234… as well as 0803… and
+                              // 803…. digitsOnly alone silently ate the + from
+                              // a pasted international number and left 234…,
+                              // which then read as the wrong length.
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9+]')),
+                              // LENGTH LIMIT AS YOU TYPE. 15 is the longest
+                              // accepted spelling (00234 + 10 digits); the
+                              // common 0803… form stops at 11 on its own
+                              // because nothing valid is longer. Capping at 11
+                              // made a pasted +2348031234567 untypeable.
+                              LengthLimitingTextInputFormatter(15),
                             ],
                             onChanged: _onPhoneChanged,
                             style: GoogleFonts.inter(
