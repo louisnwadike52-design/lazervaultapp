@@ -207,6 +207,32 @@ flutter {
     source = "../.."
 }
 
+// 16 KB MEMORY PAGE SUPPORT — Play rejects production releases whose native
+// libraries are not aligned to 16 KB (p_align >= 16384).
+//
+// Exactly ONE library failed: libnoise.so, at p_align 4096. Verified by parsing
+// the PT_LOAD program headers of every .so in the 447 AAB — libapp, libflutter,
+// libjingle_peerconnection, libmlkit_google_ocr_pipeline, libbarhopper,
+// libdartjni and the rest are all already 16384 or 65536.
+//
+// libnoise.so is com.github.paramsen:noise:2.0.0, pulled in transitively by
+// livekit_client 2.4.9. LiveKit uses it ONLY in FFTAudioAnalyzer, which is
+// constructed in exactly one place — Visualizer.kt — and a Visualizer is built
+// only inside LiveKitPlugin.handleStartVisualizer, reached only when Dart calls
+// the "startVisualizer" method channel. This app never calls it: its
+// VoiceAudioVisualizer is a pure Flutter widget driven by a double audioLevel,
+// not LiveKit's native FFT path. So the class is never loaded and excluding the
+// artifact cannot throw NoClassDefFoundError at runtime.
+//
+// IF ANYONE ADOPTS LiveKit's NATIVE VISUALIZER (a startVisualizer call), this
+// exclusion must be removed or that call will crash. The durable alternative is
+// upgrading livekit_client (2.13.1 was available at the time of writing), which
+// also moves flutter_webrtc 0.14.x -> 1.6.x — a major jump through the whole
+// voice stack, deliberately not taken days before a store submission.
+configurations.all {
+    exclude(group = "com.github.paramsen", module = "noise")
+}
+
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     // Google Play Services base — provides GoogleApiAvailability / ConnectionResult
