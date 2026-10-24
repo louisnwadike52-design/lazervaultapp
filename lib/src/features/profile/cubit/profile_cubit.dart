@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/src/features/profile/domain/entities/user_preferences.dart';
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -18,6 +19,15 @@ import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_resu
 
 class ProfileCubit extends Cubit<ProfileState> {
   final IProfileRepository _repository;
+
+  /// Last preferences seen on a successful load.
+  ///
+  /// updateUserProfile emits ProfileLoading first, so by the time its result
+  /// arrives the state is NO LONGER ProfileLoaded and the preferences that
+  /// ProfileLoaded needs are gone. Holding them here is what lets a successful
+  /// save re-emit a complete ProfileLoaded instead of silently emitting
+  /// nothing — see the fold below.
+  UserPreferences? _lastPreferences;
   final CurrencySyncService _currencySyncService;
 
   ProfileCubit({
@@ -48,6 +58,9 @@ class ProfileCubit extends Cubit<ProfileState> {
         final preferences = data['preferences'];
 
         // Emit ProfileLoaded so the UI is unblocked
+        // Cached so updateUserProfile can rebuild a complete ProfileLoaded
+        // after its own ProfileLoading has replaced this state.
+        _lastPreferences = preferences;
         emit(ProfileLoaded(user: user, preferences: preferences));
 
         final localeManager = serviceLocator<LocaleManager>();
@@ -109,14 +122,27 @@ class ProfileCubit extends Cubit<ProfileState> {
     result.fold(
       (failure) => emit(ProfileError(failure.message)),
       (user) {
-        final currentState = state;
-        if (currentState is ProfileLoaded) {
-          emit(ProfileLoaded(
-            user: user,
-            preferences: currentState.preferences,
-          ));
-          emit(const ProfileUpdateSuccess('Profile updated successfully'));
-
+        // UNCONDITIONAL. This used to be guarded on `state is ProfileLoaded`,
+        // which is NEVER true here: emit(ProfileLoading()) runs at the top of
+        // this method, and ProfileLoading and ProfileLoaded are siblings. So a
+        // SUCCESSFUL save emitted nothing at all, and every listener waiting
+        // for a verdict waited forever — the edit dialog spun on its save
+        // button with the change already persisted, for address, username and
+        // name alike. A FAILED save emitted ProfileError and behaved, which is
+        // why it looked like only some fields were broken.
+        final prefs = _lastPreferences ??
+            (state is ProfileLoaded
+                ? (state as ProfileLoaded).preferences
+                : null);
+        if (prefs != null) {
+          _lastPreferences = prefs;
+          emit(ProfileLoaded(user: user, preferences: prefs));
+        }
+        // Emitted even when preferences are unknown: the save DID succeed, and
+        // the dialog must be told so it can close. Withholding this because we
+        // cannot rebuild a complete ProfileLoaded is what caused the hang.
+        emit(const ProfileUpdateSuccess('Profile updated successfully'));
+        {
           // Keep LocaleManager in sync when country changes via profile update
           if (user.country != null && user.country!.isNotEmpty) {
             final localeManager = serviceLocator<LocaleManager>();
