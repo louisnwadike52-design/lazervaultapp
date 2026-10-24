@@ -239,8 +239,18 @@ bool isNetworkStatusCode(dynamic statusCode) {
 /// own.
 bool _namesAProviderWithACode(String lower) {
   const providers = <String>[
-    'quidax', 'flutterwave', 'nomba', 'fincra', 'klasha', 'vtpass',
-    'epins', 'prestmit', 'reloadly', 'mono', 'vtuafrica', 'paystack',
+    'quidax',
+    'flutterwave',
+    'nomba',
+    'fincra',
+    'klasha',
+    'vtpass',
+    'epins',
+    'prestmit',
+    'reloadly',
+    'mono',
+    'vtuafrica',
+    'paystack',
   ];
   var named = false;
   for (final p in providers) {
@@ -776,4 +786,34 @@ String voiceSessionStartMessage(int statusCode, String body) {
   }
   if (statusCode >= 500) return serverErrorMessage;
   return 'We could not start voice just now. Please try again.';
+}
+
+/// Extracts the user-facing message from a caught error object.
+///
+/// `Exception('…')` stringifies as "Exception: …", so every layer that catches,
+/// prefixes and re-throws adds another wrapper. A business message that left
+/// the data source perfectly readable —
+///
+///   "you have an unpaid esusu to settle first: … Settle it and this lifts
+///    straight away"
+///
+/// — reached the UI as "Failed to create contribution: Exception: Failed to
+/// create contribution: Exception: you have an unpaid esusu…". That string
+/// contains the word "Exception", so [looksTechnical] flagged it, correctly,
+/// and the whole thing was replaced by a generic "Please try again" — advice
+/// that can never work, because the server was refusing on a rule the user has
+/// to act on. Measured in production 2026-10-24 on esusu creation.
+///
+/// The innermost text is the real message, so peel every wrapper and keep the
+/// last segment. Anything still technical falls back, as before.
+String userFacingErrorFrom(Object? error,
+    [String fallback = 'Something went wrong. Please try again.']) {
+  if (error == null) return fallback;
+  var msg = error.toString();
+  const marker = 'Exception: ';
+  final idx = msg.lastIndexOf(marker);
+  if (idx >= 0) msg = msg.substring(idx + marker.length);
+  msg = msg.trim();
+  if (msg.isEmpty || looksTechnical(msg)) return fallback;
+  return sanitizeUserFacingError(msg);
 }

@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import '../../domain/entities/group_entities.dart';
@@ -465,7 +467,12 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
     } catch (e) {
       if (isClosed) return;
       emit(CreateContributionError(
-        message: 'Failed to create contribution: ${e.toString()}',
+        // The server refuses creation on business rules the member can act on
+        // (an unpaid esusu, arrears). Those messages are written FOR them and
+        // say what clears it, so show them rather than "please try again",
+        // which is advice that cannot work.
+        message: userFacingErrorFrom(
+            e, 'Failed to create contribution. Please try again.'),
       ));
     }
   }

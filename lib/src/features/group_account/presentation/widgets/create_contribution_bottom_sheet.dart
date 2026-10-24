@@ -2313,20 +2313,35 @@ class _CreateContributionBottomSheetState
           final isLast = entry.key == items.length - 1;
           return Column(
             children: [
+              // Both sides are Flexible and the value wraps. Two unconstrained
+              // Texts in a Row overflowed the moment a value ran long — the
+              // auto-debit line ("On, we debit each member's share at cycle
+              // close") ran off the right edge, and "Total Cycles" collided
+              // with its own value for want of a gap. These are the terms of a
+              // money commitment, so the value WRAPS rather than ellipsising:
+              // truncating "₦50.00 after 1 days" helps nobody.
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    entry.value.label,
-                    style: GoogleFonts.inter(
-                        fontSize: 14.sp, color: Colors.grey[400]),
+                  Flexible(
+                    flex: 4,
+                    child: Text(
+                      entry.value.label,
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp, color: Colors.grey[400]),
+                    ),
                   ),
-                  Text(
-                    entry.value.value,
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  SizedBox(width: 12.w),
+                  Flexible(
+                    flex: 6,
+                    child: Text(
+                      entry.value.value,
+                      textAlign: TextAlign.end,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],

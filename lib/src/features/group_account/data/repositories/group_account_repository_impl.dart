@@ -230,7 +230,10 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       );
       return contributionModel;
     } catch (e) {
-      throw Exception('Failed to create contribution: $e');
+      // Rethrow as-is. Prefixing and stringifying here wrapped the data
+      // source's already-friendly message in another "Exception: ", and the
+      // sanitizer then discarded the whole thing as technical.
+      rethrow;
     }
   }
 
