@@ -142,6 +142,17 @@ class ProfileCubit extends Cubit<ProfileState> {
         // the dialog must be told so it can close. Withholding this because we
         // cannot rebuild a complete ProfileLoaded is what caused the hang.
         emit(const ProfileUpdateSuccess('Profile updated successfully'));
+        // ...then settle BACK to the loaded state. ProfileUpdateSuccess is a
+        // one-shot signal for the dialog's BlocListener, not somewhere to
+        // park: it is not a ProfileLoaded, so every builder that reads
+        // `state is ProfileLoaded ? state.user : null` — my_account, the
+        // dashboard summary card, tag pay, the QR screen, the settings login
+        // tile — saw a null user after any successful save, and nothing
+        // reloads the profile on mount to heal it. Only the settings screen
+        // survived, because it caches a _lastGood fallback.
+        if (prefs != null) {
+          emit(ProfileLoaded(user: user, preferences: prefs));
+        }
         {
           // Keep LocaleManager in sync when country changes via profile update
           if (user.country != null && user.country!.isNotEmpty) {
@@ -200,6 +211,11 @@ class ProfileCubit extends Cubit<ProfileState> {
           ));
         }
         emit(const ProfileUpdateSuccess('Profile picture updated'));
+        // Settle back to the loaded state — see the note in updateProfile.
+        if (currentState is ProfileLoaded) {
+          emit(
+              ProfileLoaded(user: user, preferences: currentState.preferences));
+        }
         await _syncAvatarWithAuth(user);
       },
     );
@@ -237,6 +253,13 @@ class ProfileCubit extends Cubit<ProfileState> {
           ));
         }
         emit(const ProfileUpdateSuccess('Profile picture removed'));
+        // Settle back to the loaded state — see the note in updateProfile.
+        if (currentState is ProfileLoaded) {
+          emit(ProfileLoaded(
+            user: cleared,
+            preferences: currentState.preferences,
+          ));
+        }
         await _syncAvatarWithAuth(cleared);
       },
     );
