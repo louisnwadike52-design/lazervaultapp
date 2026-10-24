@@ -31,6 +31,11 @@ end
 # Apple's App Thinning at install time slices the .ipa per-device so users
 # only download what they need (architecture, asset variant, etc.) — these
 # settings shrink the master IPA before Apple's slicing kicks in.
+# NOTE: the Dart-side switches below are read by Flutter's xcode_backend.dart,
+# which looks for DART_OBFUSCATION, SPLIT_DEBUG_INFO, TREE_SHAKE_ICONS and
+# CODE_SIZE_DIRECTORY — by those exact names. `OBFUSCATE=true` was passed for
+# three lanes and matched nothing, so iOS shipped unobfuscated while Android
+# (which passes --obfuscate on the CLI) did not.
 COMPRESSION_XCARGS = [
   "DEPLOYMENT_POSTPROCESSING=YES",
   "STRIP_INSTALLED_PRODUCT=YES",
@@ -354,7 +359,7 @@ platform :ios do
       export_method:    "app-store",
       output_directory: "build/ios/ipa",
       output_name:      "Runner-dev.ipa",
-      xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
+      xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true DART_OBFUSCATION=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
     )
     ipa_path = "build/ios/ipa/Runner-dev.ipa"
     upload_to_testflight(
@@ -415,7 +420,7 @@ platform :ios do
       export_method:    "app-store",
       output_directory: "build/ios/ipa",
       output_name:      "Runner-staging.ipa",
-      xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
+      xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true DART_OBFUSCATION=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
     )
     ipa_path = "build/ios/ipa/Runner-staging.ipa"
     upload_to_testflight(
@@ -450,7 +455,7 @@ platform :ios do
       export_method:    "app-store",
       output_directory: "build/ios/ipa",
       output_name:      "Runner-prod.ipa",
-      xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
+      xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true DART_OBFUSCATION=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
     )
     ipa_path = "build/ios/ipa/Runner-prod.ipa"
     upload_to_testflight(
