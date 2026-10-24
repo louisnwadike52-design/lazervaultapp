@@ -148,7 +148,8 @@ class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
           padding: EdgeInsets.all(24.w),
           child: Text(state.message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: btTextSecondary, fontSize: 13.sp)),
+              style:
+                  GoogleFonts.inter(color: btTextSecondary, fontSize: 13.sp)),
         ),
       );
     }

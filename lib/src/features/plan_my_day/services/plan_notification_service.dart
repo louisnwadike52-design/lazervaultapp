@@ -129,7 +129,7 @@ class PlanNotificationService {
       key: taskId,
       title: 'Task reminder',
       body:
-          '$title is due at $timeStr${description!= null && description.isNotEmpty? ' — $description' : ''}',
+          '$title is due at $timeStr${description != null && description.isNotEmpty ? ' — $description' : ''}',
       when: reminderTime,
     );
     await _scheduleAt(

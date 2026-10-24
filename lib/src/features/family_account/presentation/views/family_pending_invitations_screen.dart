@@ -333,7 +333,7 @@ class _FamilyPendingInvitationsScreenState
           ),
           SizedBox(height: 6.h),
           Text(
-            'Invited by ${e.invitedBy.isEmpty? "—": e.invitedBy}',
+            'Invited by ${e.invitedBy.isEmpty ? "—" : e.invitedBy}',
             style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
           ),
           SizedBox(height: 10.h),

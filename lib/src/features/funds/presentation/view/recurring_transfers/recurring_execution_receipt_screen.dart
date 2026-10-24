@@ -94,8 +94,7 @@ class RecurringExecutionReceiptScreen extends StatelessWidget {
       // Rendered as a humanized money row by the receipt (outgoing only — the
       // fee is the sender's cost).
       if (execution.fee > 0) 'fee_minor': (execution.fee * 100).round(),
-      if (execution.failureReason.isNotEmpty)
-        'reason': execution.failureReason,
+      if (execution.failureReason.isNotEmpty) 'reason': execution.failureReason,
       // Lets the receipt rebuild a payee for "Redo".
       'recipient_name': transfer.recipientName,
       'recipient_account': transfer.recipientAccountNumber,

@@ -491,8 +491,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             // answer that cannot be delivered as text, and the agent's reply
             // already says to share it from the card above.
             if (qrCard is Map) {
-              messageMetadata['qr_card'] =
-                  Map<String, dynamic>.from(qrCard);
+              messageMetadata['qr_card'] = Map<String, dynamic>.from(qrCard);
             }
 
             final botMessage = MicroserviceChatMessageEntity(
@@ -578,8 +577,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
                 Map<String, dynamic>.from(pinPrompt);
           }
           if (pinSetup is Map) {
-            messageMetadata['pin_setup'] =
-                Map<String, dynamic>.from(pinSetup);
+            messageMetadata['pin_setup'] = Map<String, dynamic>.from(pinSetup);
           }
           if (receiptCard != null) {
             messageMetadata['receipt_card'] = receiptCard;
@@ -604,8 +602,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           // that cannot be delivered as text, and the agent's reply already
           // says to share it from the card above.
           if (qrCard is Map) {
-            messageMetadata['qr_card'] =
-                Map<String, dynamic>.from(qrCard);
+            messageMetadata['qr_card'] = Map<String, dynamic>.from(qrCard);
           }
           // AI "jump to message": the locate tool returns deterministic anchors
           // under the TRANSIENT `_jump_to_messages` key. Remove it (so it never
@@ -765,8 +762,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             // answer that cannot be delivered as text, and the agent's reply
             // already says to share it from the card above.
             if (qrCard is Map) {
-              messageMetadata['qr_card'] =
-                  Map<String, dynamic>.from(qrCard);
+              messageMetadata['qr_card'] = Map<String, dynamic>.from(qrCard);
             }
             if (pinPrompt is Map) {
               messageMetadata['pin_prompt'] =
@@ -855,8 +851,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           // that cannot be delivered as text, and the agent's reply already
           // says to share it from the card above.
           if (qrCard is Map) {
-            messageMetadata['qr_card'] =
-                Map<String, dynamic>.from(qrCard);
+            messageMetadata['qr_card'] = Map<String, dynamic>.from(qrCard);
           }
           final botMessage = MicroserviceChatMessageEntity(
             text: chatResponse.response,

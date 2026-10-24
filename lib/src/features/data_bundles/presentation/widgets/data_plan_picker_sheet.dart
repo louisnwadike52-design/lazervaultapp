@@ -34,7 +34,8 @@ Future<DataPlanEntity?> showDataPlanPickerSheet(
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (_) => BlocProvider(
-      create: (_) => GetIt.I<DataBundlesCubit>()..getDataPlans(network: network),
+      create: (_) =>
+          GetIt.I<DataBundlesCubit>()..getDataPlans(network: network),
       child: _DataPlanPickerSheet(
         network: network,
         selectedVariationId: selectedVariationId,
@@ -112,8 +113,7 @@ class _DataPlanPickerSheetState extends State<_DataPlanPickerSheet> {
                               fontWeight: FontWeight.w700)),
                       SizedBox(height: 2.h),
                       Text(widget.network.toUpperCase(),
-                          style:
-                              TextStyle(color: _secondary, fontSize: 11.sp)),
+                          style: TextStyle(color: _secondary, fontSize: 11.sp)),
                     ],
                   ),
                 ),
@@ -205,7 +205,8 @@ class _DataPlanPickerSheetState extends State<_DataPlanPickerSheet> {
                   separatorBuilder: (_, __) => SizedBox(height: 8.h),
                   itemBuilder: (_, i) {
                     final p = plans[i];
-                    final selected = p.variationId == widget.selectedVariationId;
+                    final selected =
+                        p.variationId == widget.selectedVariationId;
                     return GestureDetector(
                       onTap: () => Navigator.of(context).pop(p),
                       child: Container(

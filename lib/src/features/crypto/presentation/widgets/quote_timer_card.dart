@@ -267,7 +267,6 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
         : s;
   }
 
-
   /// The all-in rate for the quoted trade: the fiat leg over the asset leg.
   ///
   /// Derived from the amounts rather than taken from the quote, so our margin

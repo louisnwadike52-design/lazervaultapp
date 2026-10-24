@@ -13,6 +13,7 @@ import 'package:lazervault/core/config/feature_flags.dart';
 /// Returns the public URL of the uploaded image.
 class CrowdfundImageUploadService {
   static const _accessTokenKey = 'access_token';
+
   /// Admin-tunable, not a constant. This was `10 * 1024 * 1024`, so changing
   /// what the app accepts needed a release and a store review for a number an
   /// operator should be able to turn. FeatureFlags caps it at 100MB because

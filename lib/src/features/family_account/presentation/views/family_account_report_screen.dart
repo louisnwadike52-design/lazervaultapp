@@ -192,7 +192,7 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
                       _cell(m(t.amount.abs())),
                       _cell(
                           '${t.memberName.isNotEmpty ? t.memberName : 'Member'}'
-                          '${t.description!= null && t.description!.isNotEmpty? ' — ${t.description}' : ''}'),
+                          '${t.description != null && t.description!.isNotEmpty ? ' — ${t.description}' : ''}'),
                     ])),
               ],
             ),

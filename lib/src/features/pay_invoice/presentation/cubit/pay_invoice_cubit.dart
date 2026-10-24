@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/tagged_invoice_entity.dart';
 import '../../domain/repositories/pay_invoice_repository.dart';
 import 'pay_invoice_state.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 class PayInvoiceCubit extends Cubit<PayInvoiceState> {
   final PayInvoiceRepository repository;
@@ -38,8 +39,9 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       emit(PayInvoicesLoaded(invoices: invoices));
     } catch (e) {
       if (isClosed) return;
-      emit(
-          PayInvoiceError(message: 'Failed to load invoices: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to load invoices. Please try again.')));
     }
   }
 
@@ -62,7 +64,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Failed to load invoices by status: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to load invoices by status. Please try again.')));
     }
   }
 
@@ -87,7 +90,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Failed to load overdue invoices: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to load overdue invoices. Please try again.')));
     }
   }
 
@@ -110,7 +114,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Failed to load upcoming invoices: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to load upcoming invoices. Please try again.')));
     }
   }
 
@@ -138,7 +143,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Failed to search invoices: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to search invoices. Please try again.')));
     }
   }
 
@@ -160,7 +166,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Failed to filter invoices by priority: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to filter invoices by priority. Please try again.')));
     }
   }
 
@@ -181,7 +188,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Failed to load invoice details: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to load invoice details. Please try again.')));
     }
   }
 
@@ -291,7 +299,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Error submitting extension request: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Error submitting extension request. Please try again.')));
     }
   }
 
@@ -311,7 +320,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Error submitting dispute: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Error submitting dispute. Please try again.')));
     }
   }
 
@@ -330,7 +340,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Failed to load payment statistics: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to load payment statistics. Please try again.')));
     }
   }
 
@@ -350,7 +361,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Failed to load account balance: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to load account balance. Please try again.')));
     }
   }
 
@@ -370,7 +382,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Failed to load payment methods: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to load payment methods. Please try again.')));
     }
   }
 
@@ -390,7 +403,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Failed to load recent transactions: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to load recent transactions. Please try again.')));
     }
   }
 
@@ -411,7 +425,9 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Error setting reminder: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Error setting reminder. Please try again.')));
     }
   }
 
@@ -431,7 +447,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Error requesting details: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Error requesting details. Please try again.')));
     }
   }
 
@@ -460,7 +477,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Error adding payment method: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Error adding payment method. Please try again.')));
     }
   }
 
@@ -489,7 +507,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoiceError(
-          message: 'Error removing payment method: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Error removing payment method. Please try again.')));
     }
   }
 

@@ -4,6 +4,7 @@ import 'package:lazervault/src/features/invoice/domain/entities/tagged_invoice_e
 import 'package:lazervault/src/features/invoice/domain/repositories/tagged_invoice_repository.dart';
 import 'package:lazervault/src/generated/common.pbenum.dart';
 import 'tagged_invoice_state.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
   final TaggedInvoiceRepository repository;
@@ -218,7 +219,7 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(TaggedInvoiceError(
-        message: 'Payment failed: ${e.toString()}',
+        message: userFacingErrorFrom(e, 'Payment failed. Please try again.'),
         errorCode: 'PAYMENT_FAILED',
       ));
     }

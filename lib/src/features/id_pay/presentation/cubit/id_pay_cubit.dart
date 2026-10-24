@@ -148,10 +148,9 @@ class IDPayCubit extends Cubit<IDPayState> {
       // Carry the code through. The lookup screen is the one place that has
       // to tell "no such PayID" from "we could not reach the server", and
       // the message is already humanised by then.
-      (failure) =>
-          emit(IDPayError(
-              message: failure.message,
-              code: failure.statusCode?.toString() ?? '')),
+      (failure) => emit(IDPayError(
+          message: failure.message,
+          code: failure.statusCode?.toString() ?? '')),
       (data) => emit(IDPayLookedUpWithOrg(
         idPay: data.$1,
         organization: data.$2,

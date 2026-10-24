@@ -351,7 +351,6 @@ String upAppStatusLabel(up.UpliftApplicationStatus s) {
       .replaceAll('_', ' ');
 }
 
-
 /// True when the fund carries an application deadline that has already passed.
 ///
 /// The server refuses a late application outright, so every surface that
@@ -570,8 +569,8 @@ class UpliftFundCard extends StatelessWidget {
                   Text(
                     '${upNaira(released, fund.currency)} released of '
                     '${upNaira(committed, fund.currency)}',
-                    style: const TextStyle(
-                        color: kUpTextSecondary, fontSize: 11),
+                    style:
+                        const TextStyle(color: kUpTextSecondary, fontSize: 11),
                   ),
                 ],
                 if (trailing != null)
@@ -778,8 +777,8 @@ class _Thumb extends StatelessWidget {
       // Opaque so the tap lands here and not on the card's InkWell behind it:
       // tapping the picture should show the picture, not open the fund.
       behavior: HitTestBehavior.opaque,
-      onTap: () => showUpliftImageViewer(
-          context, fund.coverImageUrl, fund.title),
+      onTap: () =>
+          showUpliftImageViewer(context, fund.coverImageUrl, fund.title),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: UpRemoteImage(
@@ -1351,8 +1350,7 @@ class UpCard extends StatelessWidget {
           // of faint lines. The fill plus the shadow already separate a card
           // from the page; an explicit borderColor is still honoured for the
           // few places where the outline MEANS something.
-          border:
-              borderColor == null ? null : Border.all(color: borderColor!),
+          border: borderColor == null ? null : Border.all(color: borderColor!),
           boxShadow: const [
             BoxShadow(
                 color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),

@@ -102,7 +102,8 @@ String? senderIdError(String number, String idType, String nationality) {
     case 'NIN':
     case 'NATIONAL_ID':
       if (nat.isEmpty || nat == 'NG') {
-        if (!_ninRe.hasMatch(v)) return 'A Nigerian National ID (NIN) is 11 digits.';
+        if (!_ninRe.hasMatch(v))
+          return 'A Nigerian National ID (NIN) is 11 digits.';
       } else if (v.length < 5 || v.length > 20) {
         return "That national ID number doesn't look right.";
       }

@@ -78,7 +78,8 @@ class _HeldFundsBreakdownSheetState extends State<HeldFundsBreakdownSheet> {
       final res = await widget.client.getMyAccountHolds(
         accounts_pb.GetMyAccountHoldsRequest(accountId: widget.accountId),
         options: (token != null && token.isNotEmpty)
-            ? CallOptions(metadata: {...authHeader(token, key: 'authorization')})
+            ? CallOptions(
+                metadata: {...authHeader(token, key: 'authorization')})
             : null,
       );
       if (!mounted) return;

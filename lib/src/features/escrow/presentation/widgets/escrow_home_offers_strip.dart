@@ -108,8 +108,8 @@ class EscrowHomeOffersStrip extends StatelessWidget {
           //
           // 12 pad + title 18 + 5 + subtitle 15 + 5 + badges + 8 + amount 18
           // + 12 pad, with badges at ~20 per row.
-          height: (offers.any((o) =>
-                      EscrowRoles.feePromoBadge(o, viewerUserId) != null)
+          height: (offers.any(
+                      (o) => EscrowRoles.feePromoBadge(o, viewerUserId) != null)
                   ? 158.0
                   : 136.0)
               .h,

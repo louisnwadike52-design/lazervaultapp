@@ -8,6 +8,7 @@ import '../domain/usecases/get_portfolio_usecase.dart';
 import '../domain/usecases/place_order_usecase.dart';
 import '../domain/usecases/get_watchlists_usecase.dart';
 import '../domain/repositories/i_stock_repository.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/utils/user_friendly_error.dart';
 import 'stock_state.dart';
 
@@ -364,7 +365,9 @@ class StockCubit extends Cubit<StockState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(OrderFailed(message: 'Failed to place order: ${e.toString()}'));
+      emit(OrderFailed(
+          message: userFacingErrorFrom(
+              e, 'Failed to place order. Please try again.')));
     }
   }
 

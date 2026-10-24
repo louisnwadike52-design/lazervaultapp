@@ -415,8 +415,8 @@ class _AiScanConfirmScreenState extends State<AiScanConfirmScreen>
                     if (n != null) _accountNumberController.text = n;
                   }),
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 14.w, vertical: 8.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                     decoration: BoxDecoration(
                       color: current == name
                           ? const Color(0xFF4E03D0)

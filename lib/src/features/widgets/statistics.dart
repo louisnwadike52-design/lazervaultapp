@@ -638,8 +638,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
           _sourceSegment(
               StatisticsSource.bank, 'Bank', Icons.account_balance_rounded,
               enabled: _bankScopesOffered),
-          _sourceSegment(
-              StatisticsSource.both, 'Both', Icons.dashboard_rounded,
+          _sourceSegment(StatisticsSource.both, 'Both', Icons.dashboard_rounded,
               enabled: _bankScopesOffered),
         ],
       ),
@@ -658,70 +657,71 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       child: Opacity(
         opacity: enabled ? 1 : 0.4,
         child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          if (!enabled) {
-            showAppSnackbar(
-              '$label statistics are not available',
-              LocaleGating.reasonFor('$label statistics'),
-              type: AppSnackbarType.info,
-            );
-            return;
-          }
-          if (_statsSource == value) return;
-          // Mirror StatisticsCubit.changeSource(), which WIPES the per-bank
-          // filter on every source switch. Without clearing the local set too,
-          // the Banks pill would keep showing "N banks"/active-purple while the
-          // cubit has actually reverted to All — a lie the user can't explain.
-          setState(() {
-            _statsSource = value;
-            _selectedBankIds = <String>{};
-          });
-          context.read<StatisticsCubit>().changeSource(value);
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          // Vertical room so a 2-line label on a narrow phone has somewhere to
-          // go, and horizontal room so the text never touches the pill edge.
-          padding: EdgeInsets.symmetric(vertical: 9.h, horizontal: 6.w),
-          constraints: BoxConstraints(minHeight: 38.h),
-          decoration: BoxDecoration(
-            // Deep brand violet fill with WHITE content on top (~15:1). A fill
-            // and the text on it have to move together: lightening only the
-            // fill left white on light violet at about 2:1.
-            color: selected
-                ? InvoiceThemeColors.primaryPurple
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(10.r),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon,
-                  size: 14.sp,
-                  color: selected ? Colors.white : const Color(0xFF9CA3AF)),
-              SizedBox(width: 6.w),
-              // Shrink-to-fit rather than ellipsize: "Lazervault" is the widest
-              // label and clipping it to "Lazerv..." hides which scope is
-              // active, which is the one thing this control exists to say.
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(label,
-                      maxLines: 1,
-                      style: GoogleFonts.inter(
-                          color:
-                              selected ? Colors.white : const Color(0xFF9CA3AF),
-                          fontSize: 12.sp,
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w600)),
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            if (!enabled) {
+              showAppSnackbar(
+                '$label statistics are not available',
+                LocaleGating.reasonFor('$label statistics'),
+                type: AppSnackbarType.info,
+              );
+              return;
+            }
+            if (_statsSource == value) return;
+            // Mirror StatisticsCubit.changeSource(), which WIPES the per-bank
+            // filter on every source switch. Without clearing the local set too,
+            // the Banks pill would keep showing "N banks"/active-purple while the
+            // cubit has actually reverted to All — a lie the user can't explain.
+            setState(() {
+              _statsSource = value;
+              _selectedBankIds = <String>{};
+            });
+            context.read<StatisticsCubit>().changeSource(value);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            // Vertical room so a 2-line label on a narrow phone has somewhere to
+            // go, and horizontal room so the text never touches the pill edge.
+            padding: EdgeInsets.symmetric(vertical: 9.h, horizontal: 6.w),
+            constraints: BoxConstraints(minHeight: 38.h),
+            decoration: BoxDecoration(
+              // Deep brand violet fill with WHITE content on top (~15:1). A fill
+              // and the text on it have to move together: lightening only the
+              // fill left white on light violet at about 2:1.
+              color: selected
+                  ? InvoiceThemeColors.primaryPurple
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon,
+                    size: 14.sp,
+                    color: selected ? Colors.white : const Color(0xFF9CA3AF)),
+                SizedBox(width: 6.w),
+                // Shrink-to-fit rather than ellipsize: "Lazervault" is the widest
+                // label and clipping it to "Lazerv..." hides which scope is
+                // active, which is the one thing this control exists to say.
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(label,
+                        maxLines: 1,
+                        style: GoogleFonts.inter(
+                            color: selected
+                                ? Colors.white
+                                : const Color(0xFF9CA3AF),
+                            fontSize: 12.sp,
+                            fontWeight:
+                                selected ? FontWeight.w700 : FontWeight.w600)),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }

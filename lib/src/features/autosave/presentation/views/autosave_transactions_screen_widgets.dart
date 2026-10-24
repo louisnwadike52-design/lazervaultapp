@@ -490,8 +490,11 @@ class _TransactionDetailsSheet extends StatelessWidget {
                     title: 'Trigger',
                     rows: [
                       _row('Type', _triggerName(tx.triggerType)),
-                      _row('Reason',
-                          tx.triggerReason.isEmpty ? 'Not recorded' : tx.triggerReason),
+                      _row(
+                          'Reason',
+                          tx.triggerReason.isEmpty
+                              ? 'Not recorded'
+                              : tx.triggerReason),
                       _row(
                         'Outcome',
                         tx.success ? 'Success' : 'Failed',

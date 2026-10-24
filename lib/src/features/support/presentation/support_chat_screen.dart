@@ -400,8 +400,10 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                 child: Image.network(
                   url,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Icon(Icons.broken_image_outlined,
-                      color: Colors.white54, size: 48.sp),
+                  errorBuilder: (_, __, ___) => Icon(
+                      Icons.broken_image_outlined,
+                      color: Colors.white54,
+                      size: 48.sp),
                 ),
               ),
             ),

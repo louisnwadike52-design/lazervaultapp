@@ -190,7 +190,7 @@ class _NewTicketSheetState extends State<_NewTicketSheet> {
           ...preview.map((t) => Padding(
                 padding: EdgeInsets.only(top: 3.h, left: 23.w),
                 child: Text(
-                  '• ${t.ticketNumber}${t.subject.isNotEmpty? ' — ${t.subject}' : ''}',
+                  '• ${t.ticketNumber}${t.subject.isNotEmpty ? ' — ${t.subject}' : ''}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: _textSecondary, fontSize: 11.sp),

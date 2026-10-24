@@ -405,7 +405,8 @@ class CrowdfundGrpcDataSource {
       amount: w.amount.toDouble() / 100,
       feeAmount: w.feeAmount.toDouble() / 100,
       netAmount: w.netAmount.toDouble() / 100,
-      currency: w.currency.trim().isEmpty ? 'NGN' : w.currency.trim().toUpperCase(),
+      currency:
+          w.currency.trim().isEmpty ? 'NGN' : w.currency.trim().toUpperCase(),
       status: w.status,
       createdAt: DateTime.tryParse(w.createdAt)?.toLocal() ?? DateTime.now(),
     );

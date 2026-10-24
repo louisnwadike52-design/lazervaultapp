@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 part 'voice_enrollment_state.dart';
 
@@ -186,7 +187,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
     } catch (e) {
       _isRecording = false;
       emit(VoiceEnrollmentError(
-        message: 'Failed to start recording: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to start recording. Please try again.'),
       ));
     }
   }
@@ -238,7 +240,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
       }
     } catch (e) {
       emit(VoiceEnrollmentError(
-        message: 'Failed to process recording: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to process recording. Please try again.'),
       ));
     }
   }
@@ -386,7 +389,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
       }
     } catch (e) {
       emit(VoiceEnrollmentError(
-        message: 'Failed to request permission: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to request permission. Please try again.'),
       ));
     }
   }
@@ -531,7 +535,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
     } catch (e) {
       _isRecording = false;
       emit(VoiceEnrollmentError(
-        message: 'Failed to start recording: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to start recording. Please try again.'),
       ));
     }
   }
@@ -595,7 +600,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
     } catch (e) {
       _isRecording = false;
       emit(VoiceEnrollmentError(
-        message: 'Failed to process recording: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to process recording. Please try again.'),
       ));
     }
   }

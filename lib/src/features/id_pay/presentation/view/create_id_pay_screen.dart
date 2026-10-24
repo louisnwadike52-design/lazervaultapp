@@ -68,7 +68,6 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
     'Custom': -1,
   };
 
-
   @override
   void initState() {
     super.initState();

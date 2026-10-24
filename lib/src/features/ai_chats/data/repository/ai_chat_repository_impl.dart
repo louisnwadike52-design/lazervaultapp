@@ -459,8 +459,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
         ));
       }
 
-      return const Right(ChatHistoryPage<ChatMessageEntity>.single(
-          <ChatMessageEntity>[]));
+      return const Right(
+          ChatHistoryPage<ChatMessageEntity>.single(<ChatMessageEntity>[]));
     } catch (e) {
       return Left(Failure(message: e.toString(), statusCode: 500));
     }

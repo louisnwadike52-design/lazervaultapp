@@ -323,7 +323,8 @@ class EscrowRoles {
   /// it, which is wrong in two of the three fee modes.
   static String releaseSheetMessage(
       EscrowDealEntity d, String Function(double) money) {
-    final seller = d.sellerName.trim().isEmpty ? 'the seller' : d.sellerName.trim();
+    final seller =
+        d.sellerName.trim().isEmpty ? 'the seller' : d.sellerName.trim();
     final held = money(d.buyerTotal);
     final net = money(d.sellerNet);
     final fee = money(d.fee);

@@ -1064,7 +1064,6 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     );
   }
 
-
   /// One recipient of this batch as the shared receipt model.
   UnifiedTransaction _unifiedFor(
       BatchTransferResult item, BatchTransferDetailEntity detail) {
@@ -1102,7 +1101,6 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     setState(() => _isDownloading = true);
 
     try {
-
       // Same document the item receipt screen and transaction history
       // produce. This used to call BatchTransferPdfService from a loose map,
       // so one payment had two different PDFs depending on which button the
@@ -1143,7 +1141,6 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     setState(() => _isSharing = true);
 
     try {
-
       await TagPayPdfService.shareUnifiedTransferReceipt(
         transaction: _unifiedFor(item, detail),
       );

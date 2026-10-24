@@ -35,7 +35,16 @@ class CryptoReceiptFields {
   /// Canonical fiat codes. Used to tell a fiat leg from an asset leg without
   /// asking the server, which does not send the distinction on every path.
   static const Set<String> fiatCodes = {
-    'NGN', 'USD', 'GBP', 'EUR', 'CAD', 'GHS', 'KES', 'ZAR', 'CNY', 'RMB',
+    'NGN',
+    'USD',
+    'GBP',
+    'EUR',
+    'CAD',
+    'GHS',
+    'KES',
+    'ZAR',
+    'CNY',
+    'RMB',
   };
 
   /// Whether this ledger row is a crypto trade carrying the canonical payload.
@@ -114,9 +123,8 @@ class CryptoReceiptFields {
     if (assetQty.isNotEmpty && assetCode.isNotEmpty) {
       add('Description', '$assetQty $assetCode');
     }
-    final ref = (reference ?? '').trim().isNotEmpty
-        ? reference!.trim()
-        : orderRef;
+    final ref =
+        (reference ?? '').trim().isNotEmpty ? reference!.trim() : orderRef;
     add('Reference', ref);
     add('Type', 'Crypto');
     add(
@@ -138,7 +146,8 @@ class CryptoReceiptFields {
               : (isSell ? toCcy : fromCcy),
     );
     if (isConvert) {
-      if (fromAmt.isNotEmpty && fromCcy.isNotEmpty) add('From', '$fromAmt $fromCcy');
+      if (fromAmt.isNotEmpty && fromCcy.isNotEmpty)
+        add('From', '$fromAmt $fromCcy');
       if (toAmt.isNotEmpty && toCcy.isNotEmpty) add('To', '$toAmt $toCcy');
     } else if (assetQty.isNotEmpty && assetCode.isNotEmpty) {
       add(assetAmountLabel, '$assetQty $assetCode');

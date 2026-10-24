@@ -63,7 +63,8 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   }
 
   void _reload() {
-    context.read<EscrowCubit>()
+    context
+        .read<EscrowCubit>()
         .loadDeals(role: _role, status: _statusQuery, page: _page);
     _loadActiveOffers();
   }

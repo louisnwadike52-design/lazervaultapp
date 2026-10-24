@@ -120,8 +120,8 @@ Future<void> showPayoutAssignmentBlockedDialog(
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.18)),
+                    side:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.18)),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.r)),

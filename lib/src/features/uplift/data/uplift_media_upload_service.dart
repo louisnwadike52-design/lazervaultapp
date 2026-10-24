@@ -15,6 +15,7 @@ import 'package:lazervault/core/config/feature_flags.dart';
 /// CrowdfundImageUploadService but targets the /uplifts upload route.
 class UpliftMediaUploadService {
   static const _accessTokenKey = 'access_token';
+
   /// Admin-tunable (see CrowdfundImageUploadService for the why). Capped at
   /// 100MB by FeatureFlags, which is the Cloudflare tunnel's body limit.
   static int get _maxFileMb => FeatureFlags.mediaMaxImageMb;

@@ -107,7 +107,9 @@ class ServiceChatBottomSheet extends StatefulWidget {
 }
 
 class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
-    with TickerProviderStateMixin, ChatLoadOlderOnScrollTop<ServiceChatBottomSheet> {
+    with
+        TickerProviderStateMixin,
+        ChatLoadOlderOnScrollTop<ServiceChatBottomSheet> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late AnimationController _typingDotsController;
@@ -178,7 +180,8 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
   }
 
   @override
-  Future<void> loadOlderChat() => context.read<MicroserviceChatCubit>().loadOlderHistory();
+  Future<void> loadOlderChat() =>
+      context.read<MicroserviceChatCubit>().loadOlderHistory();
 
   Future<void> _loadUserAvatar() async {
     const storage = FlutterSecureStorage();

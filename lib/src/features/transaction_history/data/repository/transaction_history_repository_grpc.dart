@@ -975,7 +975,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // relabelled as us — that would put the Lazervault logo on money that
     // left the platform.
     if ((metadata['bank_name'] as String?)?.isEmpty ?? true) {
-      final counterpartyId = (metadata['counterparty_user_id'] ?? '').toString();
+      final counterpartyId =
+          (metadata['counterparty_user_id'] ?? '').toString();
       final hasBankCode =
           ((metadata['bank_code'] ?? metadata['destination_bank_code']) ?? '')
               .toString()

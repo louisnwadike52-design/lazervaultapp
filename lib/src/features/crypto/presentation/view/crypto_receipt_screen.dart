@@ -306,7 +306,6 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
       heroCurrency = toAsset;
     }
 
-
     // THE CANONICAL PAYLOAD, not a bespoke label map.
     //
     // This screen used to build its own human-labelled map ("Asset", "You

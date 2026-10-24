@@ -410,8 +410,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         setState(() {
           _submitting = false;
           _remaining = 0;
-          _errorText =
-              'That code has expired, tap "Send me a new code" below.';
+          _errorText = 'That code has expired, tap "Send me a new code" below.';
         });
         return;
       case 'OTP_ATTEMPTS_EXCEEDED':

@@ -155,11 +155,10 @@ Widget buildCoPayerCard({
                   decoration: InputDecoration(
                     hintText: '0',
                     hintStyle: const TextStyle(color: Color(0xFF4B5563)),
-                    prefixText: input == SplitShareInput.amount
-                        ? currencySymbol
-                        : null,
-                    prefixStyle: const TextStyle(
-                        color: Color(0xFF9CA3AF), fontSize: 20),
+                    prefixText:
+                        input == SplitShareInput.amount ? currencySymbol : null,
+                    prefixStyle:
+                        const TextStyle(color: Color(0xFF9CA3AF), fontSize: 20),
                     suffixText: input == SplitShareInput.percent ? '%' : null,
                     suffixStyle: const TextStyle(
                         color: Color(0xFF9CA3AF),
@@ -181,8 +180,8 @@ Widget buildCoPayerCard({
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                          color: Color(0xFF8B5CF6), width: 2),
+                      borderSide:
+                          const BorderSide(color: Color(0xFF8B5CF6), width: 2),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),

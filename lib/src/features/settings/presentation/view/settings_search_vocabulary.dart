@@ -32,42 +32,114 @@ class SettingsSearchVocabulary {
 
   // ── Customize ──────────────────────────────────────────────────────────
   static const sendFunds = [
-    'transfer style', 'classic', 'standard', 'send', 'transfer',
-    'send funds', 'sendfunds', 'send money', 'short flow', 'long flow',
-    'quick send', 'payment flow',
+    'transfer style',
+    'classic',
+    'standard',
+    'send',
+    'transfer',
+    'send funds',
+    'sendfunds',
+    'send money',
+    'short flow',
+    'long flow',
+    'quick send',
+    'payment flow',
   ];
   static const loginMethod = [
-    'passcode', 'password', 'email', 'phone', 'sign in', 'login',
-    'login method', 'how i sign in',
+    'passcode',
+    'password',
+    'email',
+    'phone',
+    'sign in',
+    'login',
+    'login method',
+    'how i sign in',
   ];
   static const dashboardLayout = [
-    'dashboard', 'dashboard layout', 'layout', 'home', 'home screen',
-    'adverts', 'ads', 'showcase', 'classic', 'theme', 'appearance',
-    'arrange', 'services grid', 'tiles',
+    'dashboard',
+    'dashboard layout',
+    'layout',
+    'home',
+    'home screen',
+    'adverts',
+    'ads',
+    'showcase',
+    'classic',
+    'theme',
+    'appearance',
+    'arrange',
+    'services grid',
+    'tiles',
   ];
   static const adaptiveServices = [
-    'adaptive', 'adaptive quick services', 'quick services', 'reorder',
-    'most used', 'personalise', 'personalize', 'frequently used',
-    'service order', 'shortcuts',
+    'adaptive',
+    'adaptive quick services',
+    'quick services',
+    'reorder',
+    'most used',
+    'personalise',
+    'personalize',
+    'frequently used',
+    'service order',
+    'shortcuts',
   ];
   static const depositTips = [
-    'deposit', 'deposit tips', 'balance', 'refresh', 'tips', 'guide',
-    'keep balance live', 'linked bank', 'add money',
+    'deposit',
+    'deposit tips',
+    'balance',
+    'refresh',
+    'tips',
+    'guide',
+    'keep balance live',
+    'linked bank',
+    'add money',
   ];
   static const lazerfundsGuides = [
-    'lazerfunds', 'uplift', 'guide', 'guides', 'explainer', 'tips',
-    'how it works', 'tutorial', 'onboarding', 'first time', 'walkthrough',
+    'lazerfunds',
+    'uplift',
+    'guide',
+    'guides',
+    'explainer',
+    'tips',
+    'how it works',
+    'tutorial',
+    'onboarding',
+    'first time',
+    'walkthrough',
   ];
   static const voiceTips = [
-    'voice', 'voice tips', 'tips', 'guide', 'guides', 'nova', 'assistant',
-    'hold to talk', 'tap to talk', 'push to talk', 'coach', 'how it works',
+    'voice',
+    'voice tips',
+    'tips',
+    'guide',
+    'guides',
+    'nova',
+    'assistant',
+    'hold to talk',
+    'tap to talk',
+    'push to talk',
+    'coach',
+    'how it works',
     'first time',
   ];
   static const pendingPrompt = [
-    'pending', 'payments', 'reminder', 'reminders', 'payment reminders',
-    'launch', 'startup', 'prompt', 'popup', 'waiting', 'invoice',
-    'split bill', 'tag pay', 'requests', 'dont show again',
-    "don't show again", 'on launch',
+    'pending',
+    'payments',
+    'reminder',
+    'reminders',
+    'payment reminders',
+    'launch',
+    'startup',
+    'prompt',
+    'popup',
+    'waiting',
+    'invoice',
+    'split bill',
+    'tag pay',
+    'requests',
+    'dont show again',
+    "don't show again",
+    'on launch',
   ];
 
   /// Everything the Customize section can answer to. Composed, not retyped.
@@ -92,20 +164,47 @@ class SettingsSearchVocabulary {
   // been told about, so the section was filtered out before the tile filter
   // ran and the setting could not be found at all.
   static const fraudDetection = [
-    'fraud', 'fraud detection', 'security', 'anomaly', 'freeze',
-    'protection', 'suspicious', 'risk', 'unusual activity',
+    'fraud',
+    'fraud detection',
+    'security',
+    'anomaly',
+    'freeze',
+    'protection',
+    'suspicious',
+    'risk',
+    'unusual activity',
   ];
   static const socialAndBiometricLogin = [
-    'google', 'apple', 'google sign-in', 'apple sign-in',
-    'sign in with google', 'sign in with apple', 'social login',
-    'biometric', 'fingerprint', 'face id', 'voice login',
+    'google',
+    'apple',
+    'google sign-in',
+    'apple sign-in',
+    'sign in with google',
+    'sign in with apple',
+    'social login',
+    'biometric',
+    'fingerprint',
+    'face id',
+    'voice login',
   ];
   static const autoLogout = [
-    'auto logout', 'auto-logout', 'timeout', 'idle', 'idle timeout',
-    'inactivity', 'session', 'session timeout', 'lock',
+    'auto logout',
+    'auto-logout',
+    'timeout',
+    'idle',
+    'idle timeout',
+    'inactivity',
+    'session',
+    'session timeout',
+    'lock',
   ];
   static const twoFactor = [
-    '2fa', 'mfa', 'otp', 'authenticator', 'totp', 'two factor',
+    '2fa',
+    'mfa',
+    'otp',
+    'authenticator',
+    'totp',
+    'two factor',
   ];
 
   /// Everything the Security section can answer to.
@@ -126,34 +225,78 @@ class SettingsSearchVocabulary {
 
   // ── Notifications & Display ────────────────────────────────────────────
   static const escrowNotice = [
-    'escrow', 'escrow pay', 'escrow notice', 'escrow terms',
-    'escrow rules', 'liability', 'show again', 'middleman',
-    'payment channel', 'notice', 'rules',
+    'escrow',
+    'escrow pay',
+    'escrow notice',
+    'escrow terms',
+    'escrow rules',
+    'liability',
+    'show again',
+    'middleman',
+    'payment channel',
+    'notice',
+    'rules',
   ];
   static const chatToneVolume = [
-    'volume', 'loud', 'quiet', 'sound', 'chat tone', 'message tone',
+    'volume',
+    'loud',
+    'quiet',
+    'sound',
+    'chat tone',
+    'message tone',
   ];
 
   /// Everything the Notifications & Display section can answer to.
   static const notifications = [
     ...escrowNotice,
     ...chatToneVolume,
-    'notifications', 'push', 'email notifications', 'sms', 'dark mode',
-    'theme', 'display', 'alerts', 'chat sound', 'message sound',
-    'vibration', 'haptics', 'balance vibration', 'balance update',
-    'vibrate on balance', 'haptic feedback', 'balance animation',
+    'notifications',
+    'push',
+    'email notifications',
+    'sms',
+    'dark mode',
+    'theme',
+    'display',
+    'alerts',
+    'chat sound',
+    'message sound',
+    'vibration',
+    'haptics',
+    'balance vibration',
+    'balance update',
+    'vibrate on balance',
+    'haptic feedback',
+    'balance animation',
     'account update',
   ];
 
   // ── Voice & Chat Assistant ─────────────────────────────────────────────
   static const voiceSetup = [
-    'voice setup', 'set up voice', 'voice clone', 'cloning',
-    'clone my voice', 'voice enrollment', 'enroll', 'voice recognition',
-    'my voice', 'assistant voice', 'tts', 'voice selection', 'language',
+    'voice setup',
+    'set up voice',
+    'voice clone',
+    'cloning',
+    'clone my voice',
+    'voice enrollment',
+    'enroll',
+    'voice recognition',
+    'my voice',
+    'assistant voice',
+    'tts',
+    'voice selection',
+    'language',
   ];
   static const perServiceVoice = [
-    'voice', 'chat', 'assistant', 'voice agent', 'per-service',
-    'language', 'voice selection', 'prompt hint', 'prompt', 'hint',
+    'voice',
+    'chat',
+    'assistant',
+    'voice agent',
+    'per-service',
+    'language',
+    'voice selection',
+    'prompt hint',
+    'prompt',
+    'hint',
   ];
 
   /// The per-service voice tiles' own names — every `slug` and lowercased
@@ -167,19 +310,38 @@ class SettingsSearchVocabulary {
   /// Keep in step with that catalogue: a new per-service voice tile needs its
   /// slug and label here or it is unreachable from the search bar.
   static const perServiceServiceNames = [
-    'transfers', 'send funds & transfers',
+    'transfers',
+    'send funds & transfers',
     'crypto',
     'investments',
-    'exchange', 'currency exchange',
-    'banking', 'banking (deposits & withdrawals)', 'deposits', 'withdrawals',
-    'products', 'bills & utilities', 'bills', 'utilities',
-    'commerce', 'invoices & gift cards', 'invoices', 'gift cards',
+    'exchange',
+    'currency exchange',
+    'banking',
+    'banking (deposits & withdrawals)',
+    'deposits',
+    'withdrawals',
+    'products',
+    'bills & utilities',
+    'bills',
+    'utilities',
+    'commerce',
+    'invoices & gift cards',
+    'invoices',
+    'gift cards',
     'insurance',
-    'business', 'business (payroll & customers)', 'payroll', 'customers',
-    'statistics', 'spending insights', 'insights',
-    'sprayme', 'lazerspray',
+    'business',
+    'business (payroll & customers)',
+    'payroll',
+    'customers',
+    'statistics',
+    'spending insights',
+    'insights',
+    'sprayme',
+    'lazerspray',
     'lifestyle',
-    'accounts', 'accounts & cards', 'cards',
+    'accounts',
+    'accounts & cards',
+    'cards',
   ];
 
   /// Everything the Voice & Chat Assistant section can answer to.
@@ -199,19 +361,28 @@ class SettingsSearchVocabulary {
 
   // ── Group Funds ────────────────────────────────────────────────────────
   static const groupFundsTerms = [
-    'group funds terms', 'terms', 'first visit', 'first', 'visit',
-    'show terms again', 'reset terms', 'dont show again',
+    'group funds terms',
+    'terms',
+    'first visit',
+    'first',
+    'visit',
+    'show terms again',
+    'reset terms',
+    'dont show again',
     "don't show again",
   ];
 
   /// Everything the Group Funds section can answer to.
   static const groupFunds = [
     ...groupFundsTerms,
-    'group funds', 'esusu', 'rosca', 'contribution',
-    'terms and conditions', 'how it works',
+    'group funds',
+    'esusu',
+    'rosca',
+    'contribution',
+    'terms and conditions',
+    'how it works',
   ];
 }
-
 
 /// True when every whitespace-separated token of [query] appears somewhere in
 /// [haystackParts].

@@ -206,7 +206,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       _selectedFrequency = rule.frequency;
       _selectedScheduleDay = rule.scheduleDay;
       // Stored in UTC; the picker holds the user's own clock.
-      final localTime = AutoSaveScheduleTime.toLocalTimeOfDay(rule.scheduleTime);
+      final localTime =
+          AutoSaveScheduleTime.toLocalTimeOfDay(rule.scheduleTime);
       if (localTime != null) _selectedTime = localTime;
     }
     if (rule.triggerType == TriggerType.roundUp && rule.roundUpTo != null) {
@@ -1161,7 +1162,9 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                     // than quietly disallow a wallet.
                     a.id.toString() == _selectedSourceAccountId ||
                     (!(a.accountType.toLowerCase().contains('saving') ||
-                            a.accountType.toLowerCase().contains('money market')) &&
+                            a.accountType
+                                .toLowerCase()
+                                .contains('money market')) &&
                         a.id.toString() != _selectedDestinationAccountId))
                 .toList();
 

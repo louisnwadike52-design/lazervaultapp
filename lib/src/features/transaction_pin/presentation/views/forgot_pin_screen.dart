@@ -964,53 +964,53 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
         if (_useBackupCode)
           _buildBackupCodeField()
         else
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(6, (index) {
-            return Container(
-              width: 46.w,
-              height: 54.h,
-              margin: EdgeInsets.symmetric(horizontal: 4.w),
-              child: TextField(
-                controller: _otpControllers[index],
-                focusNode: _otpFocusNodes[index],
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                maxLength: 1,
-                style: GoogleFonts.inter(
-                  fontSize: 22.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(6, (index) {
+              return Container(
+                width: 46.w,
+                height: 54.h,
+                margin: EdgeInsets.symmetric(horizontal: 4.w),
+                child: TextField(
+                  controller: _otpControllers[index],
+                  focusNode: _otpFocusNodes[index],
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  maxLength: 1,
+                  style: GoogleFonts.inter(
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                  ),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    contentPadding: EdgeInsets.zero,
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                      borderSide:
+                          const BorderSide(color: _purpleAccent, width: 1.5),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  // Locked while the typed code is being checked, so a stray
+                  // keystroke cannot edit the code mid-request and leave the
+                  // boxes disagreeing with what was sent.
+                  enabled: !_verifyingOtp,
+                  onChanged: (value) => _onOtpChanged(index, value),
                 ),
-                decoration: InputDecoration(
-                  counterText: '',
-                  contentPadding: EdgeInsets.zero,
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide:
-                        const BorderSide(color: _purpleAccent, width: 1.5),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                ),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                // Locked while the typed code is being checked, so a stray
-                // keystroke cannot edit the code mid-request and leave the
-                // boxes disagreeing with what was sent.
-                enabled: !_verifyingOtp,
-                onChanged: (value) => _onOtpChanged(index, value),
-              ),
-            );
-          }),
-        ),
+              );
+            }),
+          ),
         // The way back in when the authenticator itself is gone. Only on that
         // channel: email and SMS codes have no backup-code equivalent.
         if (isAuthenticator) _buildBackupCodeToggle(),

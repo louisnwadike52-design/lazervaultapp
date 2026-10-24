@@ -265,8 +265,9 @@ class CategoryDeadlineStep extends StatelessWidget {
     );
     if (picked == null || !context.mounted) return;
 
-    final isToday =
-        picked.year == now.year && picked.month == now.month && picked.day == now.day;
+    final isToday = picked.year == now.year &&
+        picked.month == now.month &&
+        picked.day == now.day;
 
     final time = await showTimePicker(
       context: context,

@@ -97,8 +97,8 @@ class _CrowdfundWithdrawalReceiptScreenState
                 Text(
                   r.destinationNote,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                      fontSize: 13.sp, color: Colors.white70),
+                  style:
+                      GoogleFonts.inter(fontSize: 13.sp, color: Colors.white70),
                 ),
                 SizedBox(height: 6.h),
                 Text(

@@ -108,8 +108,7 @@ class InvoiceReceiptFields {
     String? counterpartyName,
     String? counterpartyAccount,
   }) {
-    if (!describes(metadata,
-        description: description, reference: reference)) {
+    if (!describes(metadata, description: description, reference: reference)) {
       return const [];
     }
 
@@ -187,10 +186,11 @@ class InvoiceReceiptFields {
     final totalMajor = totalMinor / 100.0;
     if (totalMajor > 0) {
       final paid = amountPaid ?? 0;
-      final sameAsPaid = docCcy == currency.toUpperCase() &&
-          (paid - totalMajor).abs() < 0.005;
+      final sameAsPaid =
+          docCcy == currency.toUpperCase() && (paid - totalMajor).abs() < 0.005;
       if (!sameAsPaid) {
-        add('$docLabel total', '${symbolFor(docCcy)}${_money.format(totalMajor)}');
+        add('$docLabel total',
+            '${symbolFor(docCcy)}${_money.format(totalMajor)}');
       }
     }
     if (isSplit) {

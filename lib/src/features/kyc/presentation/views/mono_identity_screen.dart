@@ -357,8 +357,7 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
                       icon: const Icon(Icons.edit_outlined,
                           size: 18, color: _primary),
                       label: Text(
-                        kycProfileFixLabel(
-                            kycProfileFieldFor(_errorMessage)),
+                        kycProfileFixLabel(kycProfileFieldFor(_errorMessage)),
                         style: const TextStyle(
                             color: _primary, fontWeight: FontWeight.w600),
                       ),

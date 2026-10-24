@@ -240,7 +240,8 @@ class EscrowTransferView {
   /// keep their existing behaviour for everything else.
   static EscrowTransferView? of(Map<String, dynamic>? metadata) {
     if (!EscrowReceiptFields.describes(metadata)) return null;
-    final event = EscrowReceiptFields.str(metadata, 'escrow_event').toLowerCase();
+    final event =
+        EscrowReceiptFields.str(metadata, 'escrow_event').toLowerCase();
     final isSeller =
         EscrowReceiptFields.str(metadata, 'escrow_role').toLowerCase() ==
             'seller';

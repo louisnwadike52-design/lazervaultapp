@@ -277,34 +277,34 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
       child: Opacity(
         opacity: enabled ? 1.0 : 0.45,
         child: GestureDetector(
-        onTap: () => setState(() => _selectedTab = index),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(vertical: 12.h),
-          decoration: BoxDecoration(
-            color: isActive ? active : Colors.transparent,
-            borderRadius: BorderRadius.circular(10.r),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isActive ? Colors.white : const Color(0xFF9CA3AF),
-                size: 18.sp,
-              ),
-              SizedBox(width: 6.w),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
+          onTap: () => setState(() => _selectedTab = index),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: EdgeInsets.symmetric(vertical: 12.h),
+            decoration: BoxDecoration(
+              color: isActive ? active : Colors.transparent,
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
                   color: isActive ? Colors.white : const Color(0xFF9CA3AF),
+                  size: 18.sp,
                 ),
-              ),
-            ],
+                SizedBox(width: 6.w),
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: isActive ? Colors.white : const Color(0xFF9CA3AF),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );

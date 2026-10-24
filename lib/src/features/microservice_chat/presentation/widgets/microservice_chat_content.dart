@@ -46,7 +46,9 @@ class MicroserviceChatContent extends StatefulWidget {
 }
 
 class _MicroserviceChatContentState extends State<MicroserviceChatContent>
-    with SingleTickerProviderStateMixin, ChatLoadOlderOnScrollTop<MicroserviceChatContent> {
+    with
+        SingleTickerProviderStateMixin,
+        ChatLoadOlderOnScrollTop<MicroserviceChatContent> {
   /// Opens the secure PIN pad as soon as a turn asks for one, on this surface too.
   ///
   /// Every per-service chatbot (bills, crypto, insurance, exchange…) renders through
@@ -139,7 +141,8 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
   }
 
   @override
-  Future<void> loadOlderChat() => context.read<MicroserviceChatCubit>().loadOlderHistory();
+  Future<void> loadOlderChat() =>
+      context.read<MicroserviceChatCubit>().loadOlderHistory();
 
   Future<void> _loadUserAvatar() async {
     const storage = FlutterSecureStorage();
@@ -735,8 +738,8 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
           // into conversation history.
           if (!isUser && message.metadata?['pin_setup'] != null)
             ChatPinSetupCard(
-              reason: (message.metadata?['pin_setup']
-                  as Map?)?['reason'] as String?,
+              reason: (message.metadata?['pin_setup'] as Map?)?['reason']
+                  as String?,
             ),
           if (quickActions != null && quickActions.isNotEmpty)
             QuickActionChips(

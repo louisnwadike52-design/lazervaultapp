@@ -4,6 +4,7 @@ import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_batch_transfer_usecase.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 class BatchTransferCubit extends Cubit<BatchTransferState> {
   final InitiateBatchTransferUseCase initiateBatchTransferUseCase;
@@ -91,7 +92,8 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
                 'No internet connection. Please check your network and try again.'));
       } else {
         emit(BatchTransferFailure(
-            message: 'Error during batch transfer process: ${e.toString()}'));
+            message: userFacingErrorFrom(
+                e, 'Error during batch transfer process. Please try again.')));
       }
     } finally {
       _isProcessing = false;

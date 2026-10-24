@@ -37,7 +37,8 @@ class ChatPinSetupCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.lock_outline, color: Color(0xFF9B6DFF), size: 20),
+              const Icon(Icons.lock_outline,
+                  color: Color(0xFF9B6DFF), size: 20),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(

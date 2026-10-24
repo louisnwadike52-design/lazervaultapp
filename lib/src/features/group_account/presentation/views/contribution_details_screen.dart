@@ -192,12 +192,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   /// Loads the cycle the contribution is on now. Cheap to call repeatedly:
   /// it no-ops when the same cycle is already loaded or in flight.
-  Future<void> _loadCurrentCycleView(Contribution c, {bool force = false}) async {
+  Future<void> _loadCurrentCycleView(Contribution c,
+      {bool force = false}) async {
     final want = _cycleOf(c);
     if (_cycleViewLoading) return;
     if (!force && _cycleViewIndex == want && _cycleView != null) return;
 
-    final usecase = context.read<GroupAccountCubit>().getContributionCycleDetails;
+    final usecase =
+        context.read<GroupAccountCubit>().getContributionCycleDetails;
     if (usecase == null) return;
 
     setState(() {
@@ -1635,7 +1637,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// Only the creator gets the button — the server refuses anyone else — but
   /// members still see the explanation, because the person waiting for a turn
   /// that never came deserves to know why rather than seeing a silent screen.
-  Widget _buildStalledRotationBanner(Contribution contribution, bool isCreator) {
+  Widget _buildStalledRotationBanner(
+      Contribution contribution, bool isCreator) {
     final total = contribution.totalCycles ?? 0;
     final current = contribution.currentCycle ?? 0;
     return Container(
@@ -1644,7 +1647,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       decoration: BoxDecoration(
         color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
+        border:
+            Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1782,10 +1786,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     if (ok != true || !mounted) return;
 
     setState(() => _roundActionBusy = true);
-    final next = await context.read<GroupAccountCubit>().startNextContributionRound(
-          contributionId: contribution.id,
-          groupId: contribution.groupId,
-        );
+    final next =
+        await context.read<GroupAccountCubit>().startNextContributionRound(
+              contributionId: contribution.id,
+              groupId: contribution.groupId,
+            );
     if (!mounted) return;
     setState(() {
       _roundActionBusy = false;
@@ -1875,8 +1880,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             : (next.reason.isNotEmpty
                 ? next.reason
                 : 'The circle could not be ended yet')),
-        backgroundColor:
-            next.roundsEnded ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+        backgroundColor: next.roundsEnded
+            ? const Color(0xFF10B981)
+            : const Color(0xFFF59E0B),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 4),
       ));
@@ -6206,46 +6212,47 @@ extension ChangeCyclesDialog on _ContributionDetailsScreenState {
             behavior: HitTestBehavior.opaque,
             onTap: () => FocusScope.of(dialogContext).unfocus(),
             child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'How many payout rounds this rotation runs for. Everyone in the '
-                'rotation needs a turn, so it cannot be fewer than the number '
-                'of members.',
-                style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 13.sp),
-              ),
-              SizedBox(height: 12.h),
-              TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
-                autofocus: true,
-                onChanged: (v) {
-                  final next = validate(v);
-                  if (next != error) setDialogState(() => error = next);
-                },
-                decoration: InputDecoration(
-                  labelText: 'Cycles',
-                  labelStyle: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.6)),
-                  errorText: error,
-                  helperText:
-                      'Currently on cycle $current · $memberCount members',
-                  helperStyle: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.45),
-                      fontSize: 11.sp),
-                  filled: true,
-                  fillColor: const Color(0xFF141414),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide.none,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'How many payout rounds this rotation runs for. Everyone in the '
+                  'rotation needs a turn, so it cannot be fewer than the number '
+                  'of members.',
+                  style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 13.sp),
+                ),
+                SizedBox(height: 12.h),
+                TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
+                  autofocus: true,
+                  onChanged: (v) {
+                    final next = validate(v);
+                    if (next != error) setDialogState(() => error = next);
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Cycles',
+                    labelStyle: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.6)),
+                    errorText: error,
+                    helperText:
+                        'Currently on cycle $current · $memberCount members',
+                    helperStyle: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.45),
+                        fontSize: 11.sp),
+                    filled: true,
+                    fillColor: const Color(0xFF141414),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
             ),
           ),
           actions: [

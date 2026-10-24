@@ -231,9 +231,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
   /// from there and the per-recipient fields from the row.
   UnifiedTransaction _unifiedFor(Map<String, dynamic> transfer) {
     final rawTs = receiptData['timestamp'];
-    final at = rawTs is DateTime
-        ? rawTs
-        : DateTime.tryParse(rawTs?.toString() ?? '');
+    final at =
+        rawTs is DateTime ? rawTs : DateTime.tryParse(rawTs?.toString() ?? '');
     return batchItemUnifiedFromMap(
       transfer,
       batchId: receiptData['batchId']?.toString() ?? '',

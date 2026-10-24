@@ -1517,7 +1517,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
                                       // family account is named — user request
                                       // 2026-09-07); the generic category label
                                       // is only the legacy-unnamed fallback.
-                                      (account.accountLabel?.trim().isNotEmpty ??
+                                      (account.accountLabel
+                                                  ?.trim()
+                                                  .isNotEmpty ??
                                               false)
                                           ? account.accountLabel!.trim()
                                           : 'Family & Friends',

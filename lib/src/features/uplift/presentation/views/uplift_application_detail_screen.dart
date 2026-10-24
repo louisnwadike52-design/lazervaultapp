@@ -408,14 +408,16 @@ class _UpliftApplicationDetailScreenState
     // by any other client) must not be able to launch something that is not
     // a web page.
     if (uri == null || !upIsAcceptablePitchLink(url)) {
-      Get.snackbar('Cannot open this link', 'The pitch link is not a web address.',
+      Get.snackbar(
+          'Cannot open this link', 'The pitch link is not a web address.',
           backgroundColor: kUpError,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      Get.snackbar('Cannot open this link', 'No app on this device can open it.',
+      Get.snackbar(
+          'Cannot open this link', 'No app on this device can open it.',
           backgroundColor: kUpError,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
@@ -436,9 +438,7 @@ class _UpliftApplicationDetailScreenState
           itemBuilder: (_, i) => ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: UpRemoteImage(
-                url: imgs[i],
-                width: 110,
-                fallback: const SizedBox.shrink()),
+                url: imgs[i], width: 110, fallback: const SizedBox.shrink()),
           ),
         ),
       ),

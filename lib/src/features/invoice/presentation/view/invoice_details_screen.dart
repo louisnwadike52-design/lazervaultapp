@@ -912,7 +912,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           'to_name': invoice.payerDetails!.partyName,
         // What the invoice was for, and when it was due — the rows that make
         // the receipt recognisable as THIS invoice a month later.
-        if (invoice.title.trim().isNotEmpty) 'invoice_title': invoice.title.trim(),
+        if (invoice.title.trim().isNotEmpty)
+          'invoice_title': invoice.title.trim(),
         if (invoice.dueDate != null)
           'due_date': invoice.dueDate!.toIso8601String(),
       },

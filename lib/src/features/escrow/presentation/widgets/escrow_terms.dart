@@ -86,8 +86,7 @@ class EscrowTerms {
 
   static Future<void> setGuideSeen() async {
     try {
-      await (await SharedPreferences.getInstance())
-          .setBool(guideSeenKey, true);
+      await (await SharedPreferences.getInstance()).setBool(guideSeenKey, true);
     } catch (_) {}
   }
 

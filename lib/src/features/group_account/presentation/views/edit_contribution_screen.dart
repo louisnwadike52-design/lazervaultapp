@@ -59,6 +59,7 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
   late String _initialTargetText;
   late TextEditingController _totalCyclesController;
   late String _initialCyclesText;
+
   /// Active members hold a turn; invitees and decliners do not.
   late int _activeMembers;
   bool _hasPayments = false;
@@ -1101,8 +1102,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
       return 'Add members to the circle to set how long it runs.';
     }
     final cycles = int.tryParse(_totalCyclesController.text.trim());
-    final rounds =
-        ContributionEditRules.roundsFor(cycles: cycles, activeMembers: _activeMembers);
+    final rounds = ContributionEditRules.roundsFor(
+        cycles: cycles, activeMembers: _activeMembers);
     if (rounds == null) {
       return 'Must come in full rounds of $_activeMembers so everyone gets '
           'the same number of turns.';

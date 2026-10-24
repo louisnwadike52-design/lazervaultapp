@@ -92,8 +92,6 @@ class _InternetPaymentReceiptScreenState
     return args['payment'] as InternetPaymentEntity?;
   }
 
-
-
   /// Re-fetches internet payment history and swaps in the row matching the
   /// current reference/id. Preserves newBalance/renewalDate from the original
   /// pay response (the history endpoint doesn't surface them). On a flip out

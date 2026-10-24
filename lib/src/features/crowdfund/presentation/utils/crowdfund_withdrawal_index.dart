@@ -47,7 +47,8 @@ class CrowdfundWithdrawalIndex {
     return (list == null || list.isEmpty) ? null : list.first;
   }
 
-  int count(String crowdfundId) => (_byCampaign[crowdfundId] ?? const []).length;
+  int count(String crowdfundId) =>
+      (_byCampaign[crowdfundId] ?? const []).length;
 
   bool get isEmpty => _byCampaign.isEmpty;
 }

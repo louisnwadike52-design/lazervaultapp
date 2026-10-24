@@ -324,8 +324,7 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
               _cycles == 1
                   ? 'cycle · 1 member'
                   : 'cycles · ${widget.activeMembers} members',
-              style:
-                  GoogleFonts.inter(color: _muted, fontSize: 12.sp),
+              style: GoogleFonts.inter(color: _muted, fontSize: 12.sp),
             ),
           ],
         ),

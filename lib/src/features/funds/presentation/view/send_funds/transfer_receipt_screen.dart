@@ -843,11 +843,8 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                     fontSize: 12.sp,
                     height: 1.3)),
             SizedBox(height: 16.h),
-            tile(
-                ReceiptFileFormat.pdf,
-                Icons.picture_as_pdf_outlined,
-                const Color(0xFFEF4444),
-                'Vector document, best for printing.'),
+            tile(ReceiptFileFormat.pdf, Icons.picture_as_pdf_outlined,
+                const Color(0xFFEF4444), 'Vector document, best for printing.'),
             SizedBox(height: 10.h),
             tile(
                 ReceiptFileFormat.jpg,

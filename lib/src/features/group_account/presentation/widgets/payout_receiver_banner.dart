@@ -942,8 +942,8 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(999.r),
-        border: Border.all(
-            color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

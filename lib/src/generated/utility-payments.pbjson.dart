@@ -7477,11 +7477,10 @@ const GetEPinNetworksResponse$json = {
 };
 
 /// Descriptor for `GetEPinNetworksResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getEPinNetworksResponseDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRFUGluTmV0d29ya3NSZXNwb25zZRI4CghuZXR3b3JrcxgBIAMoCzIcLnV0aWxpdHlwYX'
-        'ltZW50cy5FUGluTmV0d29ya1IIbmV0d29ya3MSIQoMbWluX3F1YW50aXR5GAIgASgNUgttaW5R'
-        'dWFudGl0eQ==');
+final $typed_data.Uint8List getEPinNetworksResponseDescriptor = $convert.base64Decode(
+    'ChdHZXRFUGluTmV0d29ya3NSZXNwb25zZRI4CghuZXR3b3JrcxgBIAMoCzIcLnV0aWxpdHlwYX'
+    'ltZW50cy5FUGluTmV0d29ya1IIbmV0d29ya3MSIQoMbWluX3F1YW50aXR5GAIgASgNUgttaW5R'
+    'dWFudGl0eQ==');
 
 @$core.Deprecated('Use initiateEPinPurchaseRequestDescriptor instead')
 const InitiateEPinPurchaseRequest$json = {

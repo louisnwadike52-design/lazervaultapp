@@ -183,8 +183,7 @@ class CrowdfundCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: 6.h),
-            CrowdfundProgressIndicator(
-                progressPercentage: progress.percent),
+            CrowdfundProgressIndicator(progressPercentage: progress.percent),
             SizedBox(height: 6.h),
             // Footer
             Row(
@@ -194,8 +193,7 @@ class CrowdfundCard extends StatelessWidget {
                 // over a #1a1030 card is close to invisible, and it is the
                 // one number that says whether anyone backed this at all.
                 Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20.r),
@@ -290,5 +288,4 @@ class CrowdfundCard extends StatelessWidget {
       ),
     );
   }
-
 }

@@ -2017,12 +2017,10 @@ class _AiChatContentState extends State<AiChatContent>
                             Radius.circular(ChatThemePreference.bubbleRadius.r),
                         topRight:
                             Radius.circular(ChatThemePreference.bubbleRadius.r),
-                        bottomLeft: Radius.circular(isUser
-                            ? ChatThemePreference.bubbleRadius.r
-                            : 4.r),
-                        bottomRight: Radius.circular(isUser
-                            ? 4.r
-                            : ChatThemePreference.bubbleRadius.r),
+                        bottomLeft: Radius.circular(
+                            isUser ? ChatThemePreference.bubbleRadius.r : 4.r),
+                        bottomRight: Radius.circular(
+                            isUser ? 4.r : ChatThemePreference.bubbleRadius.r),
                       ),
                       border: isUser
                           ? null
@@ -2402,13 +2400,12 @@ class _AiChatContentState extends State<AiChatContent>
                         // still gets through.
                         final gated = serviceForRoute(btn.payload);
                         if (gated != null &&
-                            FeatureFlags.quickServiceEntryBlocked(
-                                gated.name)) {
+                            FeatureFlags.quickServiceEntryBlocked(gated.name)) {
                           showServiceUnavailableModal(
                             context,
                             serviceName: gated.displayName,
-                            message: FeatureFlags.quickServiceMessage(
-                                gated.name),
+                            message:
+                                FeatureFlags.quickServiceMessage(gated.name),
                           );
                           return;
                         }
@@ -2731,11 +2728,10 @@ class _AiChatContentState extends State<AiChatContent>
         _messageController.text.trim().isNotEmpty || _isAttaching;
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 140),
-      transitionBuilder: (child, anim) =>
-          ScaleTransition(scale: anim, child: FadeTransition(opacity: anim, child: child)),
+      transitionBuilder: (child, anim) => ScaleTransition(
+          scale: anim, child: FadeTransition(opacity: anim, child: child)),
       child: hasSomethingToSend
-          ? KeyedSubtree(
-              key: const ValueKey('send'), child: _buildSendButton())
+          ? KeyedSubtree(key: const ValueKey('send'), child: _buildSendButton())
           : KeyedSubtree(key: const ValueKey('mic'), child: _buildMicButton()),
     );
   }

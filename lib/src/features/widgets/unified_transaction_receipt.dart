@@ -421,7 +421,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       child: SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
-          onPressed: () => Get.toNamed(AppRoutes.escrowDetail, arguments: dealId),
+          onPressed: () =>
+              Get.toNamed(AppRoutes.escrowDetail, arguments: dealId),
           icon: Icon(Icons.receipt_long_outlined, size: 17.sp),
           label: Text('Open the escrow deal',
               style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
@@ -1450,8 +1451,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   /// Preferred keys first so the order is stable across sales, then anything
   /// else the flow attached, so a field added later reaches the document
   /// without another edit here.
-  List<MapEntry<String, String>> get _businessRows =>
-      businessReceiptRows(tx);
+  List<MapEntry<String, String>> get _businessRows => businessReceiptRows(tx);
 
   List<MapEntry<String, String>> get _billRows {
     if (!_billServiceTypes.contains(tx.serviceType)) return const [];
@@ -2038,14 +2038,13 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           transaction: tx,
           copyType: _chosenCopy,
           format: _chosenFormat,
-          extraRows:
-              _giftCard?.rows ??
-                  _invoiceRows +
-                      _contributionRows +
-                      _billRows +
-                      _sprayRows +
-                      _escrowRows +
-                      _businessRows,
+          extraRows: _giftCard?.rows ??
+              _invoiceRows +
+                  _contributionRows +
+                  _billRows +
+                  _sprayRows +
+                  _escrowRows +
+                  _businessRows,
           currentUserName: _currentUserName,
           // Anchors the iPad share popover; omitted it anchored top-left.
           sharePositionOrigin: _shareOrigin(),

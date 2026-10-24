@@ -135,6 +135,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     if (fee <= 0) return null;
     return '${_trimNum(fee)} ${_selected?.cryptoSymbol.toUpperCase() ?? ''}';
   }
+
   // Fiat value of a holding's full balance (locale currency). Prefers the
   // server-computed totalValue; falls back to quantity × current price.
   double _fiatBalanceOf(CryptoHolding h) =>

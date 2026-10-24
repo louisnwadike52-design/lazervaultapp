@@ -66,8 +66,7 @@ class IDPayCard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  color:
-                                      InvoiceThemeColors.primaryPurpleLight,
+                                  color: InvoiceThemeColors.primaryPurpleLight,
                                   fontSize: idPay.hasTitle ? 13.sp : 16.sp,
                                   fontWeight: idPay.hasTitle
                                       ? FontWeight.w600

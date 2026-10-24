@@ -404,7 +404,7 @@ class EPinPdfService {
       sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       files: [XFile(file.path)],
       text:
-          'Recharge cards ${order.reference} — ${order.quantity}${denom.isNotEmpty? ' x $denom' : ''}${order.network.trim().isNotEmpty? ' (${order.network})' : ''}',
+          'Recharge cards ${order.reference} — ${order.quantity}${denom.isNotEmpty ? ' x $denom' : ''}${order.network.trim().isNotEmpty ? ' (${order.network})' : ''}',
       subject: 'Lazervault Recharge Cards',
     ));
   }

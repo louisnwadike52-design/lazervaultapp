@@ -192,28 +192,29 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
             : _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _err != null
-                ? ListView(children: [
-                    const SizedBox(height: 120),
-                    Center(
-                        child:
-                            Text(_err!, style: const TextStyle(color: _error))),
-                  ])
-                : _alerts.isEmpty
-                    ? ListView(children: const [
-                        SizedBox(height: 140),
-                        Icon(Icons.shield_outlined, color: _success, size: 48),
-                        SizedBox(height: 12),
+                    ? ListView(children: [
+                        const SizedBox(height: 120),
                         Center(
-                            child: Text('All clear, no ops alerts.',
-                                style: TextStyle(color: _textSecondary))),
+                            child: Text(_err!,
+                                style: const TextStyle(color: _error))),
                       ])
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _alerts.length,
-                        separatorBuilder: (_, __) =>
-                            const Divider(color: _divider, height: 16),
-                        itemBuilder: (_, i) => _tile(_alerts[i]),
-                      ),
+                    : _alerts.isEmpty
+                        ? ListView(children: const [
+                            SizedBox(height: 140),
+                            Icon(Icons.shield_outlined,
+                                color: _success, size: 48),
+                            SizedBox(height: 12),
+                            Center(
+                                child: Text('All clear, no ops alerts.',
+                                    style: TextStyle(color: _textSecondary))),
+                          ])
+                        : ListView.separated(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _alerts.length,
+                            separatorBuilder: (_, __) =>
+                                const Divider(color: _divider, height: 16),
+                            itemBuilder: (_, i) => _tile(_alerts[i]),
+                          ),
       ),
     );
   }

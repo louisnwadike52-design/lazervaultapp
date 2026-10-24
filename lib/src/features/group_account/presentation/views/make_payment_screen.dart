@@ -872,8 +872,8 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
               final fixed = _fixedRoscaAmount ?? 0;
               if (fixed > 0 && (amount - fixed).abs() > 0.005) {
                 final cur = widget.contribution?.currency ?? '';
-                final shown = fixed.toStringAsFixed(
-                    fixed == fixed.truncateToDouble() ? 0 : 2);
+                final shown = fixed
+                    .toStringAsFixed(fixed == fixed.truncateToDouble() ? 0 : 2);
                 return 'This esusu takes exactly $cur $shown per cycle';
               }
             }

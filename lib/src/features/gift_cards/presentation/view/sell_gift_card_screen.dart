@@ -439,7 +439,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       } else {
         Get.snackbar(
           'Card Scanned',
-          'Details extracted${state.confidence < 0.6? ' (low confidence — please verify)' : '. Please verify and complete the form.'}',
+          'Details extracted${state.confidence < 0.6 ? ' (low confidence — please verify)' : '. Please verify and complete the form.'}',
           backgroundColor: state.confidence < 0.6
               ? const Color(0xFFFB923C)
               : const Color(0xFF10B981),

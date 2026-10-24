@@ -488,8 +488,7 @@ class IDPayPdfService {
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
-                pw.Text(
-                    ReceiptFooter.copyright(),
+                pw.Text(ReceiptFooter.copyright(),
                     style:
                         _getTextStyle(fontSize: 9, color: PdfColors.grey600)),
                 pw.SizedBox(height: 2),

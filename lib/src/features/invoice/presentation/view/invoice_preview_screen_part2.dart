@@ -1336,11 +1336,10 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   /// Opens the shared unified search (saved contacts incl. alias → global) and
   /// toggles the picked user into the tagged set.
   Future<void> _openUnifiedSearch() async {
-    final result =
-        await UnifiedUserSearchSheet.show(context,
-            title: 'Tag people',
-            // A tag names a person on the platform, not an account number.
-            mode: RecipientPickerMode.lazervaultUsers);
+    final result = await UnifiedUserSearchSheet.show(context,
+        title: 'Tag people',
+        // A tag names a person on the platform, not an account number.
+        mode: RecipientPickerMode.lazervaultUsers);
     if (result == null || !mounted) return;
     final id = result.userId;
     if (id.isEmpty) return;

@@ -165,8 +165,19 @@ class RecipientModel {
   /// so the decoration is noise — and on a one-line row it is noise that
   /// pushes the actual name out.
   static const _institutionTokens = <String>{
-    'lazervault', 'flw', 'flutterwave', 'nomba', 'moniepoint', 'paystack',
-    'kuda', 'opay', 'palmpay', 'providus', 'wema', 'sterling', 'mfb',
+    'lazervault',
+    'flw',
+    'flutterwave',
+    'nomba',
+    'moniepoint',
+    'paystack',
+    'kuda',
+    'opay',
+    'palmpay',
+    'providus',
+    'wema',
+    'sterling',
+    'mfb',
   };
 
   /// Strips a leading `INSTITUTION/` from an account name.
@@ -180,9 +191,9 @@ class RecipientModel {
     if (!v.contains('/')) return v;
     final head = v.substring(0, v.indexOf('/')).trim();
     final bank = bankName.trim();
-    final headIsInstitution = (bank.isNotEmpty &&
-            head.toLowerCase() == bank.toLowerCase()) ||
-        _institutionTokens.contains(head.toLowerCase());
+    final headIsInstitution =
+        (bank.isNotEmpty && head.toLowerCase() == bank.toLowerCase()) ||
+            _institutionTokens.contains(head.toLowerCase());
     if (!headIsInstitution) return v;
     final tail = v.substring(v.indexOf('/') + 1).trim();
     // Never strip down to nothing — a bare institution name beats an empty row.
@@ -289,8 +300,7 @@ class RecipientModel {
           json['internal_account_uuid'] ??
           json['internalAccountId']) as String?,
       accountHolderName:
-          (json['accountHolderName'] ?? json['account_holder_name'])
-              as String?,
+          (json['accountHolderName'] ?? json['account_holder_name']) as String?,
     );
   }
 

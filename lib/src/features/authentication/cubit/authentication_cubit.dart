@@ -221,8 +221,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
               // re-mint from. By preserving refresh_token + the durable biometric
               // copy, the fingerprint fast-path rotates them the moment the
               // network recovers. Stay logged in if we still hold the profile.
-              print(
-                  'Auto login: transient refresh failure, session preserved');
+              print('Auto login: transient refresh failure, session preserved');
               if (_currentProfile != null) {
                 emit(AuthenticationAuthenticated(_currentProfile!));
               } else {

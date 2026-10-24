@@ -340,8 +340,7 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
                       itemCount: bills.length,
                       itemBuilder: (context, index) {
                         final b = bills[index];
-                        final enabled =
-                            FeatureFlags.gateAllowed(_gate(b));
+                        final enabled = FeatureFlags.gateAllowed(_gate(b));
                         return _BillTile(
                           icon: b.icon,
                           title: b.title,
@@ -497,80 +496,80 @@ class _BillTileState extends State<_BillTile> {
       child: Opacity(
         opacity: widget.enabled ? 1.0 : 0.45,
         child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: InvoiceThemeColors.secondaryBackground,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(
-            color: _pressed
-                ? InvoiceThemeColors.primaryPurple
-                : InvoiceThemeColors.borderColor,
-            width: _pressed ? 2 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
+          duration: const Duration(milliseconds: 150),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: InvoiceThemeColors.secondaryBackground,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
               color: _pressed
-                  ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
-                  : Colors.black.withValues(alpha: 0.1),
-              blurRadius: _pressed ? 15 : 8,
-              offset: _pressed ? const Offset(0, 6) : const Offset(0, 4),
+                  ? InvoiceThemeColors.primaryPurple
+                  : InvoiceThemeColors.borderColor,
+              width: _pressed ? 2 : 1,
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 44.w,
-              height: 44.w,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
-                    InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
-                  ],
+            boxShadow: [
+              BoxShadow(
+                color: _pressed
+                    ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
+                    : Colors.black.withValues(alpha: 0.1),
+                blurRadius: _pressed ? 15 : 8,
+                offset: _pressed ? const Offset(0, 6) : const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
                 ),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(
-                  widget.icon,
-                  size: 22.sp,
-                  color: InvoiceThemeColors.primaryPurple,
+                child: Center(
+                  child: Icon(
+                    widget.icon,
+                    size: 22.sp,
+                    color: InvoiceThemeColors.primaryPurple,
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              widget.title,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+              SizedBox(height: 8.h),
+              Text(
+                widget.title,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            SizedBox(height: 3.h),
-            Text(
-              widget.description,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                fontSize: 10.sp,
-                color: InvoiceThemeColors.textGray400,
-                height: 1.25,
+              SizedBox(height: 3.h),
+              Text(
+                widget.description,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 10.sp,
+                  color: InvoiceThemeColors.textGray400,
+                  height: 1.25,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-        ),
     );
   }
 }

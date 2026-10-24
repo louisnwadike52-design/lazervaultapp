@@ -14,6 +14,7 @@ enum DeepLinkType {
   crowdfundCampaign,
   lazerSprayJoin,
   groupAccount,
+
   /// A link that identifies a COMPLETED payment, not something to open and pay
   /// — currently the donation receipt's `crowdfund/donation/<txn>`.
   paymentReceipt,
@@ -339,8 +340,7 @@ class DeepLinkService {
             segments[0] == 'lazerspray' &&
             segments[1] == 'join');
     if (isSprayJoin) {
-      final code =
-          (queryParams['code'] ?? '').trim().toUpperCase();
+      final code = (queryParams['code'] ?? '').trim().toUpperCase();
       // An empty or malformed code would open the join screen with nothing to
       // submit. Better to fall through to the manual-entry screen (below,
       // via `unknown` -> dashboard) than to auto-submit garbage and show the

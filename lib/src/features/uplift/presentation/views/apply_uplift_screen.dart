@@ -72,8 +72,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
   int get _capKobo => widget.fund.perBusinessCap.toInt();
 
   /// The one value that goes on the wire, whichever control produced it.
-  String get _pitchMedia =>
-      _usePitchLink ? _pitchLink.text.trim() : _videoUrl;
+  String get _pitchMedia => _usePitchLink ? _pitchLink.text.trim() : _videoUrl;
 
   Future<void> _submit() async {
     // Last line of defence. The Discover list and the detail screen both hide
@@ -177,8 +176,8 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
                     'The deadline for ${f.title} has passed, so this fund is '
                     'no longer taking applications.',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        color: kUpTextSecondary, height: 1.4),
+                    style:
+                        const TextStyle(color: kUpTextSecondary, height: 1.4),
                   ),
                   const SizedBox(height: 18),
                   TextButton(

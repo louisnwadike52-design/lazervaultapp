@@ -67,8 +67,7 @@ class ContributionEditRules {
     if (cycles % activeMembers != 0) {
       final lower = (cycles ~/ activeMembers) * activeMembers;
       final upper = lower + activeMembers;
-      final options =
-          lower >= activeMembers ? '$lower or $upper' : '$upper';
+      final options = lower >= activeMembers ? '$lower or $upper' : '$upper';
       return 'With $activeMembers members, cycles must come in full rounds '
           'so everyone gets the same number of turns. Try $options.';
     }
@@ -88,7 +87,6 @@ class ContributionEditRules {
   /// members and must not widen the pot or the cycle count. Counting them is
   /// how a circle ends up with a slot nobody can fill.
   static int activeMemberCount(List<ContributionMember> members) => members
-      .where((m) =>
-          m.membershipStatus == ContributionMembershipStatus.active)
+      .where((m) => m.membershipStatus == ContributionMembershipStatus.active)
       .length;
 }

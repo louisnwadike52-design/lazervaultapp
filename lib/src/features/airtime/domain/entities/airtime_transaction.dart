@@ -308,7 +308,11 @@ extension AirtimeTransactionDisplay on AirtimeTransaction {
   String? get refundSignal {
     final m = metadata;
     if (m == null) return null;
-    for (final key in const ['refundStatus', 'refund_status', 'refund_source']) {
+    for (final key in const [
+      'refundStatus',
+      'refund_status',
+      'refund_source'
+    ]) {
       final v = m[key]?.toString().trim();
       if (v != null && v.isNotEmpty && v.toLowerCase() != 'none') return v;
     }

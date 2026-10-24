@@ -40,8 +40,8 @@ class AutoSaveScheduleTime {
     final parsed = _parse(utcHhmm);
     if (parsed == null) return null;
     final now = DateTime.now().toUtc();
-    final asUtc = DateTime.utc(
-        now.year, now.month, now.day, parsed.$1, parsed.$2);
+    final asUtc =
+        DateTime.utc(now.year, now.month, now.day, parsed.$1, parsed.$2);
     final local = asUtc.toLocal();
     return TimeOfDay(hour: local.hour, minute: local.minute);
   }

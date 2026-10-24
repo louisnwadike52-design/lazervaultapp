@@ -105,11 +105,12 @@ class EscrowMediaUploadService {
   /// null when the user backs out of the picker.
   Future<EscrowMediaUploadResult?> pickAndUploadImage({
     ImageSource source = ImageSource.gallery,
-  /// Called with the chosen file the moment it is picked, BEFORE validation,
-  /// compression and upload. The chat composer uses it to put the tile in the
-  /// thread immediately — the picture is already on the device, so making the
-  /// user watch a spinner until a round trip finishes is a delay with nothing
-  /// behind it.
+
+    /// Called with the chosen file the moment it is picked, BEFORE validation,
+    /// compression and upload. The chat composer uses it to put the tile in the
+    /// thread immediately — the picture is already on the device, so making the
+    /// user watch a spinner until a round trip finishes is a delay with nothing
+    /// behind it.
     void Function(File picked)? onPicked,
   }) async {
     final XFile? x = await _picker.pickImage(
@@ -155,6 +156,7 @@ class EscrowMediaUploadService {
   /// and upload. Returns null when the user backs out of the picker.
   Future<EscrowMediaUploadResult?> pickAndUploadVideo({
     ImageSource source = ImageSource.gallery,
+
     /// See [pickAndUploadImage]'s onPicked.
     void Function(File picked)? onPicked,
   }) async {

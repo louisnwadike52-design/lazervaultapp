@@ -1337,8 +1337,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                         fontWeight: FontWeight.w600)),
                 SizedBox(width: 6.w),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
                   decoration: BoxDecoration(
                     color: EscrowTheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8.r),
@@ -1529,30 +1528,32 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     final secondary = <Widget>[];
 
     if (deal.canMarkDelivered(uid)) {
-      primary.add(_primaryBtn('Mark as delivered', () => _runAction(() => _markDelivered(deal))));
+      primary.add(_primaryBtn(
+          'Mark as delivered', () => _runAction(() => _markDelivered(deal))));
     }
     if (deal.canRelease(uid)) {
-      primary.add(_primaryBtn(
-          'Confirm delivery & release funds', () => _runAction(() => _release(deal))));
+      primary.add(_primaryBtn('Confirm delivery & release funds',
+          () => _runAction(() => _release(deal))));
     }
     // Seller responds to a pending refund request.
     if (deal.canRespondRefund(uid)) {
-      primary.add(_primaryBtn('Accept and refund', () => _runAction(() => _acceptRefund(deal))));
-      secondary.add(_secondaryBtn(
-          'Decline', EscrowTheme.warning, () => _runAction(() => _declineRefund(deal))));
+      primary.add(_primaryBtn(
+          'Accept and refund', () => _runAction(() => _acceptRefund(deal))));
+      secondary.add(_secondaryBtn('Decline', EscrowTheme.warning,
+          () => _runAction(() => _declineRefund(deal))));
     }
     // Buyer asks for a refund after delivery.
     if (deal.canRequestRefund(uid)) {
-      secondary.add(_secondaryBtn(
-          'Request a refund', EscrowTheme.amber, () => _runAction(() => _requestRefund(deal))));
+      secondary.add(_secondaryBtn('Request a refund', EscrowTheme.amber,
+          () => _runAction(() => _requestRefund(deal))));
     }
     if (deal.canDispute(uid)) {
-      secondary.add(_secondaryBtn(
-          'Open a dispute', EscrowTheme.warning, () => _runAction(() => _dispute(deal))));
+      secondary.add(_secondaryBtn('Open a dispute', EscrowTheme.warning,
+          () => _runAction(() => _dispute(deal))));
     }
     if (deal.canCancel(uid)) {
-      secondary.add(_secondaryBtn(
-          'Cancel & refund', EscrowTheme.error, () => _runAction(() => _cancel(deal))));
+      secondary.add(_secondaryBtn('Cancel & refund', EscrowTheme.error,
+          () => _runAction(() => _cancel(deal))));
     }
     // The buyer used to have this button and now does not. Saying why, where
     // it used to be, is the difference between a rule and a missing feature —

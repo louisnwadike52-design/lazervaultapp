@@ -102,11 +102,10 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
   /// Opens the shared unified search (saved contacts incl. alias → global)
   /// and selects the picked user.
   Future<void> _openUnifiedSearch() async {
-    final result =
-        await UnifiedUserSearchSheet.show(context,
-            title: 'Find member',
-            // A family member is a Lazervault user with their own wallet.
-            mode: RecipientPickerMode.lazervaultUsers);
+    final result = await UnifiedUserSearchSheet.show(context,
+        title: 'Find member',
+        // A family member is a Lazervault user with their own wallet.
+        mode: RecipientPickerMode.lazervaultUsers);
     if (result == null || !mounted) return;
     _selectUser(result.toUserSearchResultEntity());
   }

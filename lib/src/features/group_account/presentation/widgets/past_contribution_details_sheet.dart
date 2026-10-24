@@ -54,7 +54,7 @@ void _showCallerBreakdownSheet(BuildContext context, UserPaymentGroup group) {
                 children: [
                   Expanded(
                     child: Text(
-                      'Your payments, ${group.attemptCount} attempt${group.attemptCount == 1? '' : 's'}',
+                      'Your payments, ${group.attemptCount} attempt${group.attemptCount == 1 ? '' : 's'}',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 14.sp,

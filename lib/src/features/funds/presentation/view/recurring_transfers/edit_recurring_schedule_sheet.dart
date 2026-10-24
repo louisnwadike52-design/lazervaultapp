@@ -50,7 +50,8 @@ class RecurringScheduleEdit {
       out.add('Amount ${from.currency} ${f.format(from.amount)} '
           '→ ${from.currency} ${f.format(amount)}');
     }
-    if (frequency != null) out.add('Frequency ${from.frequency.label} → ${frequency!.label}');
+    if (frequency != null)
+      out.add('Frequency ${from.frequency.label} → ${frequency!.label}');
     if (scheduleDay != null) out.add('Day changes');
     if (scheduleTime != null) {
       final tz = from.scheduleTimezoneLabel;
@@ -155,8 +156,7 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
     // Compared in minor units: 100.00 and 100.0 are the same amount, and a
     // re-send of an unchanged value would make the server recompute the next
     // run for nothing.
-    final amountChanged =
-        (parsed * 100).round() != (t.amount * 100).round();
+    final amountChanged = (parsed * 100).round() != (t.amount * 100).round();
 
     final timeChanged = _config.scheduleTimeString != t.scheduleTime;
     final freqChanged = _config.frequency != t.frequency;
@@ -252,7 +252,6 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
                 style: TextStyle(color: _muted, fontSize: 12.sp),
               ),
               SizedBox(height: 18.h),
-
               if (_isTerminal) ...[
                 _Notice(
                   icon: Icons.lock_outline,
@@ -264,7 +263,6 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
                 ),
                 SizedBox(height: 16.h),
               ],
-
               Text('Amount', style: TextStyle(color: _muted, fontSize: 13.sp)),
               SizedBox(height: 8.h),
               TextField(
@@ -289,8 +287,8 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
                 ),
               ),
               SizedBox(height: 18.h),
-
-              Text('Schedule', style: TextStyle(color: _muted, fontSize: 13.sp)),
+              Text('Schedule',
+                  style: TextStyle(color: _muted, fontSize: 13.sp)),
               SizedBox(height: 8.h),
               InkWell(
                 onTap: _isTerminal ? null : _openScheduleEditor,
@@ -308,12 +306,11 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
                       Expanded(
                         child: Text(
                           _config.summary,
-                          style: TextStyle(
-                              color: Colors.white, fontSize: 13.sp),
+                          style:
+                              TextStyle(color: Colors.white, fontSize: 13.sp),
                         ),
                       ),
-                      Icon(Icons.chevron_right,
-                          color: _muted, size: 20.sp),
+                      Icon(Icons.chevron_right, color: _muted, size: 20.sp),
                     ],
                   ),
                 ),
@@ -329,7 +326,6 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
                 ),
               ],
               SizedBox(height: 18.h),
-
               Text('Note', style: TextStyle(color: _muted, fontSize: 13.sp)),
               SizedBox(height: 8.h),
               TextField(
@@ -350,7 +346,6 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
                 ),
               ),
               SizedBox(height: 6.h),
-
               if (!_isTerminal && t.status == RecurringTransferStatus.paused)
                 _Notice(
                   icon: Icons.pause_circle_outline,
@@ -361,7 +356,6 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
                       'and take effect when you resume it.',
                 ),
               SizedBox(height: 14.h),
-
               SizedBox(
                 width: double.infinity,
                 height: 50.h,
@@ -377,8 +371,8 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
                   ),
                   child: Text(
                     'Save changes',
-                    style: TextStyle(
-                        fontSize: 15.sp, fontWeight: FontWeight.w600),
+                    style:
+                        TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

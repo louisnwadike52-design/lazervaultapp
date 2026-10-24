@@ -137,7 +137,7 @@ class EscrowOfferEntity {
     if (canDecline(viewerUserId)) {
       // Addressed to this viewer but not fundable by them right now.
       return (
-        'Waiting for you, review this ${isSellOffer? 'listing' : 'request'}',
+        'Waiting for you, review this ${isSellOffer ? 'listing' : 'request'}',
         true
       );
     }

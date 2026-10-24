@@ -109,16 +109,19 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             ),
             SizedBox(height: 12.h),
             ListTile(
-              leading: const Icon(Icons.camera_alt_rounded, color: Colors.white),
+              leading:
+                  const Icon(Icons.camera_alt_rounded, color: Colors.white),
               title: Text('Take a photo',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp)),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 15.sp)),
               onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
             ),
             ListTile(
               leading:
                   const Icon(Icons.photo_library_rounded, color: Colors.white),
               title: Text('Choose from gallery',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp)),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 15.sp)),
               onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
             ),
             SizedBox(height: 8.h),
@@ -156,10 +159,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           // telling someone to grant photo access when the camera was refused
           // sends them to the wrong switch.
           content: Text(switch (e.code) {
-            'camera_access_denied' =>
-              'Please grant camera access in Settings',
-            'photo_access_denied' =>
-              'Please grant photo access in Settings',
+            'camera_access_denied' => 'Please grant camera access in Settings',
+            'photo_access_denied' => 'Please grant photo access in Settings',
             _ => 'Could not open that: ${e.message}',
           }),
           backgroundColor: const Color(0xFFEF4444),

@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/cards/domain/usecases/reveal_card_detail
 import 'package:lazervault/src/features/cards/domain/usecases/fund_card_usecase.dart';
 import 'package:lazervault/src/features/cards/domain/usecases/withdraw_from_card_usecase.dart';
 import 'package:lazervault/src/features/cards/presentation/cubit/card_state.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 /// Card Cubit for managing card state
 class CardCubit extends Cubit<CardState> {
@@ -83,8 +84,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(
-          CardError(message: 'Failed to create virtual card: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to create virtual card. Please try again.')));
     }
   }
 
@@ -122,7 +124,8 @@ class CardCubit extends Cubit<CardState> {
     } catch (e) {
       if (isClosed) return;
       emit(CardError(
-          message: 'Failed to create disposable card: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to create disposable card. Please try again.')));
     }
   }
 
@@ -156,7 +159,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to get user cards: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to get user cards. Please try again.')));
     }
   }
 
@@ -181,7 +186,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to get card details: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to get card details. Please try again.')));
     }
   }
 
@@ -207,7 +214,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to freeze card: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to freeze card. Please try again.')));
     }
   }
 
@@ -227,7 +236,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to unfreeze card: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to unfreeze card. Please try again.')));
     }
   }
 
@@ -252,7 +263,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to cancel card: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to cancel card. Please try again.')));
     }
   }
 
@@ -277,7 +290,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to update nickname: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to update nickname. Please try again.')));
     }
   }
 
@@ -304,7 +319,8 @@ class CardCubit extends Cubit<CardState> {
     } catch (e) {
       if (isClosed) return;
       emit(CardError(
-          message: 'Failed to update spending limit: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to update spending limit. Please try again.')));
     }
   }
 
@@ -324,7 +340,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to set default card: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to set default card. Please try again.')));
     }
   }
 
@@ -359,7 +377,8 @@ class CardCubit extends Cubit<CardState> {
     } catch (e) {
       if (isClosed) return;
       emit(CardError(
-          message: 'Failed to request physical card: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to request physical card. Please try again.')));
     }
   }
 
@@ -384,7 +403,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to set card PIN: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to set card PIN. Please try again.')));
     }
   }
 
@@ -403,7 +424,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to reveal card PIN: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to reveal card PIN. Please try again.')));
     }
   }
 
@@ -422,8 +445,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(
-          CardError(message: 'Failed to reveal card details: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to reveal card details. Please try again.')));
     }
   }
 
@@ -448,7 +472,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to fund card: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to fund card. Please try again.')));
     }
   }
 
@@ -473,7 +499,9 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to withdraw from card: ${e.toString()}'));
+      emit(CardError(
+          message: userFacingErrorFrom(
+              e, 'Failed to withdraw from card. Please try again.')));
     }
   }
 

@@ -1080,7 +1080,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                            content: Text(friendlyError(e, context: 'export that report')),
+                            content: Text(friendlyError(e,
+                                context: 'export that report')),
                             backgroundColor: const Color(0xFFEF4444)),
                       );
                     }
@@ -1104,7 +1105,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                            content: Text(friendlyError(e, context: 'export that report')),
+                            content: Text(friendlyError(e,
+                                context: 'export that report')),
                             backgroundColor: const Color(0xFFEF4444)),
                       );
                     }

@@ -1548,9 +1548,9 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         ),
         SizedBox(height: 12.h),
         AmountPresetRow(
-        // These screens paint their own near-black background while the app
-        // theme is light, so the row cannot read it from the ambient theme.
-        brightness: Brightness.dark,
+          // These screens paint their own near-black background while the app
+          // theme is light, so the row cannot read it from the ambient theme.
+          brightness: Brightness.dark,
           amounts: _quickAmounts,
           selected: _selectedQuickAmount,
           onSelected: _onQuickAmountSelected,
@@ -1565,7 +1565,6 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       ],
     );
   }
-
 
   Widget _buildAmountInput(ElectricityProviderEntity provider) {
     return Column(

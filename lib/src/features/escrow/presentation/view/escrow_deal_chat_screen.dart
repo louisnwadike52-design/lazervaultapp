@@ -235,7 +235,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         // does not jump. A refetch of the whole thread would make a one-line
         // reply cost a full page load on a slow connection.
         _messages = [
-          for (final m in _messages) if (m.id == localId) sent else m,
+          for (final m in _messages)
+            if (m.id == localId) sent else m,
         ];
         _pendingIds.remove(localId);
         _failedIds.remove(localId);
@@ -293,17 +294,21 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
             ),
             SizedBox(height: 8.h),
             ListTile(
-              leading: Icon(Icons.photo_outlined, color: Colors.white, size: 20.sp),
+              leading:
+                  Icon(Icons.photo_outlined, color: Colors.white, size: 20.sp),
               title: Text('Photo',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
               subtitle: Text('Up to 8 MB',
                   style: GoogleFonts.inter(color: _muted, fontSize: 10.5.sp)),
               onTap: () => Navigator.pop(ctx, 'image'),
             ),
             ListTile(
-              leading: Icon(Icons.videocam_outlined, color: Colors.white, size: 20.sp),
+              leading: Icon(Icons.videocam_outlined,
+                  color: Colors.white, size: 20.sp),
               title: Text('Video',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
               subtitle: Text('Up to 60 seconds',
                   style: GoogleFonts.inter(color: _muted, fontSize: 10.5.sp)),
               onTap: () => Navigator.pop(ctx, 'video'),
@@ -375,7 +380,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         if (pending != null) pending!.failed = true;
         _uploading = false;
       });
-      showAppSnackbar('Escrow Pay', escrowMediaErrorMessage(e), type: AppSnackbarType.error);
+      showAppSnackbar('Escrow Pay', escrowMediaErrorMessage(e),
+          type: AppSnackbarType.error);
     }
   }
 
@@ -393,8 +399,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
     if (_recording || _uploading) return;
     if (!await _recorder.hasPermission()) {
       if (!mounted) return;
-      showAppSnackbar('Escrow Pay',
-          'Microphone access is needed to record a voice note.',
+      showAppSnackbar(
+          'Escrow Pay', 'Microphone access is needed to record a voice note.',
           type: AppSnackbarType.error);
       return;
     }
@@ -408,8 +414,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
       await _recorder.start(kVoiceNoteRecordConfig, path: path);
     } catch (_) {
       if (!mounted) return;
-      showAppSnackbar('Escrow Pay',
-          'Could not start recording. Please try again.',
+      showAppSnackbar(
+          'Escrow Pay', 'Could not start recording. Please try again.',
           type: AppSnackbarType.error);
       return;
     }
@@ -454,8 +460,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
     } catch (_) {}
     if (!ok) {
       if (mounted) {
-        showAppSnackbar('Escrow Pay',
-            'That recording came out empty. Please try again.',
+        showAppSnackbar(
+            'Escrow Pay', 'That recording came out empty. Please try again.',
             type: AppSnackbarType.error);
       }
       return;
@@ -500,7 +506,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         pending.failed = true;
         _uploading = false;
       });
-      showAppSnackbar('Escrow Pay', escrowMediaErrorMessage(e), type: AppSnackbarType.error);
+      showAppSnackbar('Escrow Pay', escrowMediaErrorMessage(e),
+          type: AppSnackbarType.error);
     }
   }
 
@@ -518,7 +525,9 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
       // to work for "no such deal" and "not yours" alike.
       return 'This conversation is not available.';
     }
-    if (s.contains('unavailable') || s.contains('socket') || s.contains('network')) {
+    if (s.contains('unavailable') ||
+        s.contains('socket') ||
+        s.contains('network')) {
       return 'Server not reachable. Please try again.';
     }
     if (s.contains('too long')) return 'That message is too long.';
@@ -617,9 +626,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
           margin: EdgeInsets.only(right: 8.w),
           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
           decoration: BoxDecoration(
-            color: isYou
-                ? _accent.withValues(alpha: 0.18)
-                : _card,
+            color: isYou ? _accent.withValues(alpha: 0.18) : _card,
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
                 color: isYou ? _accent.withValues(alpha: 0.55) : _border),
@@ -640,8 +647,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            if (buyer.isNotEmpty)
-              chip(buyer, 'buyer', widget.viewerIsBuyer),
+            if (buyer.isNotEmpty) chip(buyer, 'buyer', widget.viewerIsBuyer),
             if (seller.isNotEmpty)
               chip(seller, 'seller', !widget.viewerIsBuyer),
           ],
@@ -689,7 +695,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
             'No messages yet. Ask a question about this deal, delivery, '
             'condition, timing, and it stays attached to it.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(color: _muted, fontSize: 12.5.sp, height: 1.4),
+            style: GoogleFonts.inter(
+                color: _muted, fontSize: 12.5.sp, height: 1.4),
           ),
         ),
       );
@@ -827,7 +834,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
                     behavior: HitTestBehavior.opaque,
                     child: Padding(
                       // Widens the tap target without moving the text.
-                      padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
                       child: Text('Retry',
                           style: GoogleFonts.inter(
                               color: Colors.white,
@@ -977,8 +985,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
           Icon(Icons.mic, color: Colors.white, size: 18.sp),
           SizedBox(width: 8.w),
           Text(_clock(Duration(milliseconds: m.durationMs)),
-              style:
-                  GoogleFonts.inter(color: Colors.white, fontSize: 11.5.sp)),
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 11.5.sp)),
         ],
       );
     } else if (m.kind == 'video') {
@@ -988,8 +995,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
           Icon(Icons.videocam, color: Colors.white, size: 18.sp),
           SizedBox(width: 8.w),
           Text('Video',
-              style:
-                  GoogleFonts.inter(color: Colors.white, fontSize: 11.5.sp)),
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 11.5.sp)),
         ],
       );
     } else {
@@ -1038,7 +1044,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
                       SizedBox(width: 3.w),
                       Text('Not sent',
                           style: GoogleFonts.inter(
-                              color: const Color(0xFFFCA5A5), fontSize: 9.5.sp)),
+                              color: const Color(0xFFFCA5A5),
+                              fontSize: 9.5.sp)),
                     ] else ...[
                       SizedBox(
                         width: 9.sp,
@@ -1097,8 +1104,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
                   errorBuilder: (_, __, ___) => Padding(
                     padding: EdgeInsets.all(16.w),
                     child: Text('Image unavailable',
-                        style: GoogleFonts.inter(
-                            color: _muted, fontSize: 11.sp)),
+                        style:
+                            GoogleFonts.inter(color: _muted, fontSize: 11.sp)),
                   ),
                   loadingBuilder: (c, child, progress) => progress == null
                       ? child
@@ -1181,8 +1188,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
                       'Recording… tap the tick to send',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style:
-                          GoogleFonts.inter(color: _muted, fontSize: 11.sp),
+                      style: GoogleFonts.inter(color: _muted, fontSize: 11.sp),
                     ),
                   ),
                 ],
@@ -1190,31 +1196,32 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
             )
           else
             Expanded(
-            child: TextField(
-              controller: _controller,
-              minLines: 1,
-              maxLines: 4,
-              // The server's limit, read from policy rather than compiled
-              // in: it is admin-tunable, so a hardcoded 4000 would start
-              // lying the moment an operator changed it.
-              maxLength: _policy.message,
-              textInputAction: TextInputAction.newline,
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
-              decoration: InputDecoration(
-                counterText: '',
-                hintText: 'Message about this deal…',
-                hintStyle: GoogleFonts.inter(color: _muted, fontSize: 12.5.sp),
-                filled: true,
-                fillColor: _card,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide.none,
+              child: TextField(
+                controller: _controller,
+                minLines: 1,
+                maxLines: 4,
+                // The server's limit, read from policy rather than compiled
+                // in: it is admin-tunable, so a hardcoded 4000 would start
+                // lying the moment an operator changed it.
+                maxLength: _policy.message,
+                textInputAction: TextInputAction.newline,
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
+                decoration: InputDecoration(
+                  counterText: '',
+                  hintText: 'Message about this deal…',
+                  hintStyle:
+                      GoogleFonts.inter(color: _muted, fontSize: 12.5.sp),
+                  filled: true,
+                  fillColor: _card,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
             ),
-          ),
           if (!_recording)
             IconButton(
               tooltip: 'Record a voice note',
@@ -1277,7 +1284,9 @@ class _PendingMedia {
 String escrowMediaErrorMessage(Object e) {
   final raw = e.toString();
   final s = raw.toLowerCase();
-  if (s.contains('unavailable') || s.contains('socket') || s.contains('network')) {
+  if (s.contains('unavailable') ||
+      s.contains('socket') ||
+      s.contains('network')) {
     return 'Server not reachable. Please try again.';
   }
   if (s.contains('not found')) return 'This conversation is not available.';

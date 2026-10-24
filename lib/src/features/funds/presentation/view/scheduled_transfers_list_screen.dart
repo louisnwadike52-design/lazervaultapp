@@ -514,7 +514,7 @@ class _ScheduledTransfersListScreenState
                     color: Colors.white)),
             SizedBox(height: 8.h),
             Text(
-              '${_money(t)} to ${t.destinationAccount.isNotEmpty? t.destinationAccount: 'recipient'} · fires ${_fireLabel(t)}. No money has moved yet, cancelling stops it entirely.',
+              '${_money(t)} to ${t.destinationAccount.isNotEmpty ? t.destinationAccount : 'recipient'} · fires ${_fireLabel(t)}. No money has moved yet, cancelling stops it entirely.',
               style: GoogleFonts.inter(
                   fontSize: 12.5.sp, color: _label, height: 1.4),
             ),

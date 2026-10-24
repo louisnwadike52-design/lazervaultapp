@@ -30,8 +30,7 @@ class UpliftCommitScreen extends StatefulWidget {
   /// What the fund promises in total: the per-business cap times the number
   /// of businesses. This is the figure the fund advertises, so it is the one
   /// the pool has to reach.
-  int get requiredPoolKobo =>
-      fund.perBusinessCap.toInt() * fund.targetCount;
+  int get requiredPoolKobo => fund.perBusinessCap.toInt() * fund.targetCount;
 
   /// What is still missing, after whatever has already been committed.
   /// Never negative: an over-funded pool needs nothing, it does not owe the
@@ -105,8 +104,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
     // The pool is held in the FUND's currency, so an account in another one
     // cannot fund it — a conversion would have to happen somewhere, and
     // nothing in this flow does one.
-    if (account.currency.toUpperCase() !=
-        widget.fund.currency.toUpperCase()) {
+    if (account.currency.toUpperCase() != widget.fund.currency.toUpperCase()) {
       return 'This fund is in ${widget.fund.currency.toUpperCase()} — '
           'switch to a ${widget.fund.currency.toUpperCase()} account to commit';
     }
@@ -195,8 +193,8 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
       // Named for what this step IS in each context. During creation it is
       // the last thing between a filled-in form and an open fund; later it
       // is a top-up.
-      appBar: upAppBar(
-          widget.isFundingNewFund ? 'Fund the pool' : 'Commit funds'),
+      appBar:
+          upAppBar(widget.isFundingNewFund ? 'Fund the pool' : 'Commit funds'),
       body: UpGradientScaffoldBody(
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -231,8 +229,8 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
                       'Needs ${upNaira(widget.requiredPoolKobo, widget.fund.currency)}'
                       ' in total, ${upNaira(widget.fund.perBusinessCap.toInt(), widget.fund.currency)}'
                       ' × ${widget.fund.targetCount} businesses',
-                      style: const TextStyle(
-                          color: Colors.white70, fontSize: 12),
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 12),
                     ),
                     if (widget.shortfallKobo > 0 &&
                         widget.fund.committedPool.toInt() > 0)
@@ -330,8 +328,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
                     : 'Funds are held in the fund pool and released to '
                         'businesses per approved milestone.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: kUpTextSecondary, fontSize: 12)),
+                style: const TextStyle(color: kUpTextSecondary, fontSize: 12)),
           ],
         ),
       ),
@@ -346,8 +343,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-          color: kUpCard,
-          borderRadius: BorderRadius.circular(12)),
+          color: kUpCard, borderRadius: BorderRadius.circular(12)),
       child: Row(children: [
         Container(
           width: 40,

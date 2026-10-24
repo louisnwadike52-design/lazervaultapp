@@ -183,7 +183,8 @@ class _ExtendRotationSheetState extends State<ExtendRotationSheet> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF111111),
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: const Color(0xFF3A3A3A), width: 1.5),
+                  border:
+                      Border.all(color: const Color(0xFF3A3A3A), width: 1.5),
                 ),
                 child: Row(
                   children: [

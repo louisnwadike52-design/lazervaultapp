@@ -2252,7 +2252,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return;
       emit(PublicGroupDetailError(
         groupId: groupId,
-        message: 'Failed to load group details: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to load group details. Please try again.'),
       ));
     }
   }
@@ -2318,7 +2319,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return;
       AppLogger.error('group-funds: load your invitations failed',
           error: e, flow: 'group_accounts');
-      emit(GroupAccountError(friendlyError(e, context: 'load your invitations')));
+      emit(GroupAccountError(
+          friendlyError(e, context: 'load your invitations')));
     }
   }
 
@@ -2369,7 +2371,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return;
       AppLogger.error('group-funds: cancel that invitation failed',
           error: e, flow: 'group_accounts');
-      emit(GroupAccountError(friendlyError(e, context: 'cancel that invitation')));
+      emit(GroupAccountError(
+          friendlyError(e, context: 'cancel that invitation')));
     }
   }
 
@@ -2427,7 +2430,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return;
       AppLogger.error('group-funds: load the invitations for this group failed',
           error: e, flow: 'group_accounts');
-      emit(GroupAccountError(friendlyError(e, context: 'load the invitations for this group')));
+      emit(GroupAccountError(
+          friendlyError(e, context: 'load the invitations for this group')));
     }
   }
 
@@ -2682,7 +2686,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       // canStartNextRound is still true-or-false about the NEXT one, so the
       // round number is what says whether this call changed anything.
       final started = r.state.currentRound > 1 &&
-          r.state.code != ContributionRoundCode.stillRunning
+              r.state.code != ContributionRoundCode.stillRunning
           ? 'Round ${r.state.currentRound} has started'
           : '';
       emit(ContributionRoundLoaded(
@@ -2772,7 +2776,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return null;
       AppLogger.error('group-funds: restart this contribution failed',
           error: e, flow: 'group_accounts');
-      emit(GroupAccountError(friendlyError(e, context: 'restart this contribution')));
+      emit(GroupAccountError(
+          friendlyError(e, context: 'restart this contribution')));
       return null;
     }
   }

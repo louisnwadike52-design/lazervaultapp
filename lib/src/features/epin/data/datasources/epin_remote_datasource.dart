@@ -48,8 +48,7 @@ class EPinRemoteDataSourceImpl implements EPinRemoteDataSource {
         // 0 means the server did not state one (an older build). Treat that
         // as 1 rather than blocking — a floor the app invents would refuse
         // orders a working rail would take.
-        minQuantity:
-            response.minQuantity > 0 ? response.minQuantity : 1,
+        minQuantity: response.minQuantity > 0 ? response.minQuantity : 1,
       );
     } on GrpcError catch (e) {
       throw Exception('Failed to fetch recharge card networks: ${e.message}');

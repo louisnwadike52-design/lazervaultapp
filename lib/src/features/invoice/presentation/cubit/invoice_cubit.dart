@@ -9,6 +9,7 @@ import '../../domain/entities/invoice_entity.dart';
 import '../../domain/entities/invoice_fee_quote.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import 'invoice_state.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 class InvoiceCubit extends Cubit<InvoiceState> {
   final InvoiceRepository repository;
@@ -119,7 +120,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
           },
         ));
       } else {
-        emit(InvoiceError(message: 'Failed to load invoices: ${e.toString()}'));
+        emit(InvoiceError(
+            message: userFacingErrorFrom(
+                e, 'Failed to load invoices. Please try again.')));
       }
     }
   }
@@ -201,7 +204,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
           },
         ));
       } else {
-        emit(InvoiceError(message: 'Failed to load invoices: ${e.toString()}'));
+        emit(InvoiceError(
+            message: userFacingErrorFrom(
+                e, 'Failed to load invoices. Please try again.')));
       }
     }
   }
@@ -269,7 +274,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
           query: query,
         ));
       } else {
-        emit(InvoiceError(message: 'Search failed: ${e.toString()}'));
+        emit(InvoiceError(
+            message:
+                userFacingErrorFrom(e, 'Search failed. Please try again.')));
       }
     }
   }
@@ -314,7 +321,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(InvoiceError(
-          message: 'Failed to load invoice details: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to load invoice details. Please try again.')));
     }
   }
 
@@ -340,7 +348,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to pay service fee: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to pay service fee. Please try again.')));
     }
   }
 
@@ -518,7 +528,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         }
       }
 
-      emit(InvoiceError(message: 'Failed to create invoice: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to create invoice. Please try again.')));
       // Restore form state so user can retry with updated data
       if (previousFormState != null) {
         emit(previousFormState);
@@ -547,7 +559,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       await loadInvoices();
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to update invoice: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to update invoice. Please try again.')));
       // Restore form state so user can retry with updated data
       if (previousFormState != null) {
         emit(previousFormState);
@@ -568,7 +582,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
           message: 'Reminder sent to unpaid payers'));
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to send reminder: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to send reminder. Please try again.')));
     }
     if (!isClosed) await loadInvoiceDetails(invoiceId);
   }
@@ -586,7 +602,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       await loadInvoices();
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to send invoice: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to send invoice. Please try again.')));
     }
   }
 
@@ -628,7 +646,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         ));
       } else {
         emit(InvoiceError(
-            message: 'Failed to mark invoice as paid: ${e.toString()}'));
+            message: userFacingErrorFrom(
+                e, 'Failed to mark invoice as paid. Please try again.')));
       }
     }
   }
@@ -661,7 +680,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to unlock invoice: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to unlock invoice. Please try again.')));
     }
   }
 
@@ -679,7 +700,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       await loadInvoices();
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to cancel invoice: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to cancel invoice. Please try again.')));
     }
   }
 
@@ -694,7 +717,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       await loadInvoices();
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to delete invoice: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to delete invoice. Please try again.')));
     }
   }
 
@@ -710,8 +735,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(
-          InvoiceError(message: 'Failed to generate QR code: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to generate QR code. Please try again.')));
     }
   }
 
@@ -724,7 +750,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       emit(InvoiceOperationSuccess(message: 'Invoice shared successfully'));
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to share invoice: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to share invoice. Please try again.')));
     }
   }
 
@@ -740,7 +768,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       emit(InvoicesLoaded(invoices: invoices));
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to load invoices: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to load invoices. Please try again.')));
     }
   }
 
@@ -757,7 +787,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(InvoiceError(
-          message: 'Failed to load overdue invoices: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to load overdue invoices. Please try again.')));
     }
   }
 
@@ -778,7 +809,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       await loadInvoices();
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to tag users: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to tag users. Please try again.')));
     }
   }
 
@@ -902,7 +935,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to create invoice: ${e.toString()}'));
+      emit(InvoiceError(
+          message: userFacingErrorFrom(
+              e, 'Failed to create invoice. Please try again.')));
     }
   }
 

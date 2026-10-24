@@ -548,8 +548,8 @@ class _ContributionPaymentConfirmationScreenState
     if (target > 0) {
       final remaining =
           contributionReceiptRemaining(target: target, total: total);
-      rows.add(_buildDetailRow(
-          'Remaining', '$sym${remaining.toStringAsFixed(2)}'));
+      rows.add(
+          _buildDetailRow('Remaining', '$sym${remaining.toStringAsFixed(2)}'));
       // Follows `total`, NOT c.progressPercentage — the entity's getter is
       // computed from the pre-payment figure the server sent.
       final pct = contributionReceiptProgress(target: target, total: total);
@@ -559,8 +559,7 @@ class _ContributionPaymentConfirmationScreenState
     }
 
     final deadline = c.deadline;
-    rows.add(_buildDetailRow(
-        c.isRotatingSavings ? 'Cycle ends' : 'Deadline',
+    rows.add(_buildDetailRow(c.isRotatingSavings ? 'Cycle ends' : 'Deadline',
         DateFormat('d MMM yyyy').format(deadline.toLocal())));
 
     return rows;

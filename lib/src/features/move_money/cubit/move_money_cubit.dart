@@ -7,6 +7,7 @@ import 'package:lazervault/core/utils/debouncer.dart';
 import '../data/datasources/move_money_grpc_datasource.dart';
 import '../domain/entities/move_fee_calculation.dart';
 import 'move_money_state.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 /// Cubit for managing move money feature state
 class MoveMoneyCubit extends Cubit<MoveMoneyState> {
@@ -120,7 +121,9 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
     } on MoveMoneyException catch (e) {
       _emitTypedError(e, sourceLinkedAccountId);
     } catch (e) {
-      emit(MoveMoneyError(message: 'Transfer failed: ${e.toString()}'));
+      emit(MoveMoneyError(
+          message:
+              userFacingErrorFrom(e, 'Transfer failed. Please try again.')));
     }
   }
 
@@ -267,7 +270,8 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
       emit(MoveTransferStatusLoaded(transfer: transfer));
     } catch (e) {
       emit(MoveMoneyError(
-          message: 'Failed to get transfer status: ${e.toString()}'));
+          message: userFacingErrorFrom(
+              e, 'Failed to get transfer status. Please try again.')));
     }
   }
 
@@ -289,8 +293,9 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
       );
       emit(MoveTransfersLoaded(transfers: transfers, total: total));
     } catch (e) {
-      emit(
-          MoveMoneyError(message: 'Failed to load transfers: ${e.toString()}'));
+      emit(MoveMoneyError(
+          message: userFacingErrorFrom(
+              e, 'Failed to load transfers. Please try again.')));
     }
   }
 

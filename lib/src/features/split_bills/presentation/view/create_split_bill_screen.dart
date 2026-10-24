@@ -398,8 +398,8 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     final wanted = title.trim().toLowerCase();
     if (wanted.isEmpty) return const [];
     return state.bills
-        .where((b) =>
-            b.isActive && b.displayTitle.trim().toLowerCase() == wanted)
+        .where(
+            (b) => b.isActive && b.displayTitle.trim().toLowerCase() == wanted)
         .toList(growable: false);
   }
 
@@ -410,8 +410,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('You already have a "${other.displayTitle}"',
             style: const TextStyle(
                 color: Colors.white,
@@ -424,21 +423,18 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                   '${other.totalParticipants} people. Create another one?'
               : 'You have ${existing.length} open split bills with this name. '
                   'Create another one?',
-          style: TextStyle(
-              color: Colors.grey[400], fontSize: 13, height: 1.45),
+          style: TextStyle(color: Colors.grey[400], fontSize: 13, height: 1.45),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Go back',
-                style: TextStyle(color: Colors.grey[400])),
+            child: Text('Go back', style: TextStyle(color: Colors.grey[400])),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Create anyway',
                 style: TextStyle(
-                    color: Color(0xFF8B5CF6),
-                    fontWeight: FontWeight.w600)),
+                    color: Color(0xFF8B5CF6), fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -1521,11 +1517,11 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       return;
     }
     verifier.verifyAccount(
-          bankCode: bankCode,
-          accountNumber: acct,
-          bankName: _receiverBankName ?? '',
-          country: _bankCountry,
-        );
+      bankCode: bankCode,
+      accountNumber: acct,
+      bankName: _receiverBankName ?? '',
+      country: _bankCountry,
+    );
   }
 
   /// Account-first: on a full 10-digit number with no bank chosen yet, ask the
@@ -2015,14 +2011,14 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                 // the whole bill. Printing it as "My share" told the creator
                 // they were paying for everyone.
                 if (myShareSubtitle(
-                      input: _shareInputFor(_splitMethod),
-                      includeMyself: _includeMyself,
-                      myShare: _myShare,
-                      totalAmount: _totalAmount,
-                      assignedToOthers: _customAmounts.values
-                          .fold(0.0, (sum, amt) => sum + amt),
-                      currencySymbol: _currencySymbol,
-                    )
+                  input: _shareInputFor(_splitMethod),
+                  includeMyself: _includeMyself,
+                  myShare: _myShare,
+                  totalAmount: _totalAmount,
+                  assignedToOthers:
+                      _customAmounts.values.fold(0.0, (sum, amt) => sum + amt),
+                  currencySymbol: _currencySymbol,
+                )
                     case final subtitle?)
                   Text(
                     subtitle,
@@ -2153,9 +2149,10 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       key: ValueKey('${participant.key}:${input.name}'),
       initial: _participantInitial(participant),
       primary: _participantPrimary(participant),
-      handle: participant.displayName.isNotEmpty && participant.username.isNotEmpty
-          ? '@${participant.username}'
-          : null,
+      handle:
+          participant.displayName.isNotEmpty && participant.username.isNotEmpty
+              ? '@${participant.username}'
+              : null,
       input: input,
       amount: amount,
       currencySymbol: _currencySymbol,
@@ -2163,8 +2160,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       floor: floor,
       // Seeds the field from the model so a value survives the rebuild that
       // follows every keystroke elsewhere on the screen.
-      initialValue:
-          (stored != null && stored > 0) ? _trimShare(stored) : null,
+      initialValue: (stored != null && stored > 0) ? _trimShare(stored) : null,
       onChanged: (value) {
         final parsed = double.tryParse(value) ?? 0.0;
         if (input == SplitShareInput.percent) {
@@ -2210,7 +2206,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         // out from an off-by-one.
         note: _includeMyself
             ? '$others ${others == 1 ? 'co-payer' : 'co-payers'} and you'
-            : '$others ${others == 1? 'co-payer' : 'co-payers'} — you are not paying a share',
+            : '$others ${others == 1 ? 'co-payer' : 'co-payers'} — you are not paying a share',
       ),
       if (_splitMethod == _SplitMethod.equal && _totalParticipants > 0)
         buildSplitSummaryRow(

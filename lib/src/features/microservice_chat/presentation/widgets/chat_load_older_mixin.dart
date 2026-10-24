@@ -89,7 +89,6 @@ mixin ChatLoadOlderOnScrollTop<T extends StatefulWidget> on State<T> {
   }
 }
 
-
 /// The top-of-list "loading older messages" strip.
 ///
 /// A header ROW inside the list rather than a bar above it: it has to scroll

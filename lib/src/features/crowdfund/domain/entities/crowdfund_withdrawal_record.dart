@@ -52,10 +52,17 @@ class CrowdfundWithdrawalRecord extends Equatable {
 
   /// What the creator actually received. Falls back to gross because
   /// netAmount is only populated when a fee is booked.
-  double get received =>
-      feeAmount > 0 && netAmount > 0 ? netAmount : amount;
+  double get received => feeAmount > 0 && netAmount > 0 ? netAmount : amount;
 
   @override
-  List<Object?> get props =>
-      [id, crowdfundId, amount, feeAmount, netAmount, currency, status, createdAt];
+  List<Object?> get props => [
+        id,
+        crowdfundId,
+        amount,
+        feeAmount,
+        netAmount,
+        currency,
+        status,
+        createdAt
+      ];
 }

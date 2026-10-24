@@ -1784,85 +1784,87 @@ class _SelectRecipientsState extends State<SelectRecipients>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-            // Header row: "Saved recipients" with the "View all" CTA on the RIGHT
-            // (opens the full list + search sheet). Only shown when there are any.
-            Row(
-              children: [
-                Text(
-                  'Saved recipients',
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(width: 6.w),
-                // Filter icon → bottom sheet (Bank / Lazervault user / Favorites /
-                // Recurring). Shows a dot when a non-default filter is active.
-                InkWell(
-                  borderRadius: BorderRadius.circular(20.r),
-                  onTap: _showSavedFilterSheet,
-                  child: Padding(
-                    padding: EdgeInsets.all(4.w),
-                    child: Icon(
-                      _savedFavoritesOnly
-                          ? Icons.filter_alt
-                          : Icons.filter_alt_outlined,
-                      size: 18.sp,
-                      color: _savedFavoritesOnly
-                          ? const Color.fromARGB(255, 78, 3, 208)
-                          : Colors.grey[600],
-                    ),
-                  ),
-                ),
-                // Layout toggle, next to the section it controls rather than
-                // buried in settings — the same place the Lifestyle tab puts
-                // its view switch, so the gesture is already learned.
-                if (saved.isNotEmpty)
-                  InkWell(
-                    borderRadius: BorderRadius.circular(20.r),
-                    onTap: _toggleSavedView,
-                    child: Padding(
-                      padding: EdgeInsets.all(4.w),
-                      child: Icon(
-                        _savedView == SavedRecipientsView.rail
-                            ? Icons.view_list_rounded
-                            : Icons.view_carousel_rounded,
-                        size: 18.sp,
-                        color: Colors.grey[600],
+                  // Header row: "Saved recipients" with the "View all" CTA on the RIGHT
+                  // (opens the full list + search sheet). Only shown when there are any.
+                  Row(
+                    children: [
+                      Text(
+                        'Saved recipients',
+                        style: TextStyle(
+                          color: Colors.grey[700],
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                  ),
-                const Spacer(),
-                if (saved.isNotEmpty)
-                  InkWell(
-                    borderRadius: BorderRadius.circular(8.r),
-                    onTap: () => _openSavedRecipientsSheet(),
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
-                      child: Row(
-                        children: [
-                          Text(
-                            'View all',
-                            style: TextStyle(
-                              color: const Color.fromARGB(255, 78, 3, 208),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
+                      SizedBox(width: 6.w),
+                      // Filter icon → bottom sheet (Bank / Lazervault user / Favorites /
+                      // Recurring). Shows a dot when a non-default filter is active.
+                      InkWell(
+                        borderRadius: BorderRadius.circular(20.r),
+                        onTap: _showSavedFilterSheet,
+                        child: Padding(
+                          padding: EdgeInsets.all(4.w),
+                          child: Icon(
+                            _savedFavoritesOnly
+                                ? Icons.filter_alt
+                                : Icons.filter_alt_outlined,
+                            size: 18.sp,
+                            color: _savedFavoritesOnly
+                                ? const Color.fromARGB(255, 78, 3, 208)
+                                : Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                      // Layout toggle, next to the section it controls rather than
+                      // buried in settings — the same place the Lifestyle tab puts
+                      // its view switch, so the gesture is already learned.
+                      if (saved.isNotEmpty)
+                        InkWell(
+                          borderRadius: BorderRadius.circular(20.r),
+                          onTap: _toggleSavedView,
+                          child: Padding(
+                            padding: EdgeInsets.all(4.w),
+                            child: Icon(
+                              _savedView == SavedRecipientsView.rail
+                                  ? Icons.view_list_rounded
+                                  : Icons.view_carousel_rounded,
+                              size: 18.sp,
+                              color: Colors.grey[600],
                             ),
                           ),
-                          SizedBox(width: 2.w),
-                          Icon(Icons.chevron_right,
-                              size: 16.sp,
-                              color: const Color.fromARGB(255, 78, 3, 208)),
-                        ],
-                      ),
-                    ),
+                        ),
+                      const Spacer(),
+                      if (saved.isNotEmpty)
+                        InkWell(
+                          borderRadius: BorderRadius.circular(8.r),
+                          onTap: () => _openSavedRecipientsSheet(),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 4.w, vertical: 2.h),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'View all',
+                                  style: TextStyle(
+                                    color:
+                                        const Color.fromARGB(255, 78, 3, 208),
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(width: 2.w),
+                                Icon(Icons.chevron_right,
+                                    size: 16.sp,
+                                    color:
+                                        const Color.fromARGB(255, 78, 3, 208)),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-              ],
-            ),
-            SizedBox(height: 8.h),
-            _buildShortSavedList(state),
+                  SizedBox(height: 8.h),
+                  _buildShortSavedList(state),
                   // Keeps the swipe target alive below the cards: without a
                   // box here the gesture would end where the list does, and
                   // the empty region the user actually swipes on is below it.

@@ -150,6 +150,7 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
   }
 
   @override
+
   /// The deal's own conversation, oldest first.
   ///
   /// A non-party gets NOT_FOUND from the server rather than a permission
@@ -226,7 +227,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
     return _messageFromProto(resp.message);
   }
 
-  EscrowMessageEntity _messageFromProto(pb.DealMessage m) => EscrowMessageEntity(
+  EscrowMessageEntity _messageFromProto(pb.DealMessage m) =>
+      EscrowMessageEntity(
         id: m.id,
         dealId: m.dealId,
         senderId: m.senderId,

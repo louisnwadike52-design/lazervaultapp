@@ -1931,12 +1931,12 @@ class _SettingsViewState extends State<_SettingsView> {
         },
       ),
       _navTile(
-          icon: Icons.help_outline,
-          title: 'Read the terms now',
-          subtitle: 'Who holds the money, and what happens if someone stops '
-              'paying.',
-          onTap: () => showGroupFundsTermsSheet(context),
-        ),
+        icon: Icons.help_outline,
+        title: 'Read the terms now',
+        subtitle: 'Who holds the money, and what happens if someone stops '
+            'paying.',
+        onTap: () => showGroupFundsTermsSheet(context),
+      ),
     ]);
   }
 

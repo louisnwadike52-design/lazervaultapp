@@ -2220,8 +2220,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                           size: 15.sp, color: RmbUi.accent),
                       SizedBox(width: 4.w),
                       Text('Verified',
-                          style: TextStyle(
-                              color: RmbUi.accent, fontSize: 11.sp)),
+                          style:
+                              TextStyle(color: RmbUi.accent, fontSize: 11.sp)),
                     ],
                   ),
                 ),
@@ -2241,15 +2241,16 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                 return StatefulBuilder(
                   builder: (sheetCtx, setSheet) {
                     final matches = states
-                        .where((n) =>
-                            n.toLowerCase().contains(query.trim().toLowerCase()))
+                        .where((n) => n
+                            .toLowerCase()
+                            .contains(query.trim().toLowerCase()))
                         .toList();
                     return Container(
                       height: MediaQuery.of(sheetCtx).size.height * 0.75,
                       decoration: BoxDecoration(
                         color: RmbUi.bg,
-                        borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(20.r)),
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(20.r)),
                       ),
                       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
                       child: Column(
@@ -2281,8 +2282,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                           SizedBox(height: 12.h),
                           TextField(
                             autofocus: true,
-                            style: TextStyle(
-                                color: Colors.white, fontSize: 14.sp),
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 14.sp),
                             onChanged: (v) => setSheet(() => query = v),
                             decoration:
                                 _inputDecoration('Search states').copyWith(
@@ -2441,7 +2442,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                           'idNumber',
                           idNumber,
                           idRules[idType]?.hint.isNotEmpty == true
-                              ? '${idTypeLabels[idType]?? 'ID'} — e.g. ${idRules[idType]!.hint}'
+                              ? '${idTypeLabels[idType] ?? 'ID'} — e.g. ${idRules[idType]!.hint}'
                               : 'ID number',
                           // Hard cap WHILE TYPING, from the same rule table the
                           // server validates against: input stops at the
@@ -2466,36 +2467,36 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                     if (locked.contains('sender_birth_date'))
                       lockedField('Date of birth', dob == null ? '' : iso(dob!))
                     else
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 10.h),
-                      child: GestureDetector(
-                        onTap: pickDob,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 14.w, vertical: 14.h),
-                          decoration: BoxDecoration(
-                            color: RmbUi.card,
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(color: RmbUi.border),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                    dob == null ? 'Date of birth' : iso(dob!),
-                                    style: TextStyle(
-                                        color: dob == null
-                                            ? RmbUi.label
-                                            : Colors.white,
-                                        fontSize: 14.sp)),
-                              ),
-                              Icon(Icons.calendar_today_rounded,
-                                  size: 16.sp, color: RmbUi.textSecondary),
-                            ],
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 10.h),
+                        child: GestureDetector(
+                          onTap: pickDob,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 14.w, vertical: 14.h),
+                            decoration: BoxDecoration(
+                              color: RmbUi.card,
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(color: RmbUi.border),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                      dob == null ? 'Date of birth' : iso(dob!),
+                                      style: TextStyle(
+                                          color: dob == null
+                                              ? RmbUi.label
+                                              : Colors.white,
+                                          fontSize: 14.sp)),
+                                ),
+                                Icon(Icons.calendar_today_rounded,
+                                    size: 16.sp, color: RmbUi.textSecondary),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
                     _dropdown(
                         'Nationality',
                         nationality,
@@ -2572,7 +2573,9 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                         // The same sheet is both the first-time gate and the
                         // edit form; "continue" would be wrong when the user
                         // opened it to correct a detail.
-                        existing.complete ? 'Save changes' : 'Save and continue',
+                        existing.complete
+                            ? 'Save changes'
+                            : 'Save and continue',
                         complete
                             ? () async {
                                 final p = ComplianceProfile(

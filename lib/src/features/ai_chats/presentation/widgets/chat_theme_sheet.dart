@@ -85,7 +85,8 @@ class _ChatThemeSheetState extends State<ChatThemeSheet> {
             ),
             Row(
               children: [
-                Icon(Icons.palette_outlined, color: accent.primary, size: 20.sp),
+                Icon(Icons.palette_outlined,
+                    color: accent.primary, size: 20.sp),
                 SizedBox(width: 8.w),
                 Text('Chat theme',
                     style: TextStyle(
@@ -115,8 +116,7 @@ class _ChatThemeSheetState extends State<ChatThemeSheet> {
                       borderRadius: BorderRadius.circular(radius),
                     ),
                     child: Text('How much did I spend on bills?',
-                        style:
-                            TextStyle(color: Colors.white, fontSize: 12.sp)),
+                        style: TextStyle(color: Colors.white, fontSize: 12.sp)),
                   ),
                   SizedBox(height: 8.h),
                   Align(
@@ -195,8 +195,7 @@ class _ChatThemeSheetState extends State<ChatThemeSheet> {
               title: Text('Rounded bubbles',
                   style: TextStyle(color: Colors.white, fontSize: 14.sp)),
               subtitle: Text('Off gives message bubbles square corners.',
-                  style:
-                      TextStyle(color: Colors.grey[500], fontSize: 11.sp)),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 11.sp)),
             ),
 
             if (ChatThemePreference.hasUserChoice)
@@ -206,15 +205,14 @@ class _ChatThemeSheetState extends State<ChatThemeSheet> {
                   onPressed: () async {
                     await ChatThemePreference.clearAccent();
                     if (!mounted) return;
-                    setState(
-                        () => _accentId = ChatThemePreference.accent.id);
+                    setState(() => _accentId = ChatThemePreference.accent.id);
                   },
                   // Back to what the platform sets, which is not necessarily
                   // the first swatch — "reset" must mean the same as "never
                   // chose".
                   child: Text('Use the default',
-                      style: TextStyle(
-                          color: Colors.grey[400], fontSize: 12.sp)),
+                      style:
+                          TextStyle(color: Colors.grey[400], fontSize: 12.sp)),
                 ),
               ),
           ],

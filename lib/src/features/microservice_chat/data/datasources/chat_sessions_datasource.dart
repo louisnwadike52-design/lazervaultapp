@@ -58,12 +58,12 @@ class ChatSessionsDataSource {
       '$_baseUrl/chat/sessions',
       queryParameters: {
         'user_id': userId,
-      // NO `access_token` HERE. uvicorn prints the full request line, so a
-      // token in the query string was written into the gateway's access log
-      // in plaintext — a live JWT with 24h of full account access, in a file
-      // that persists. The Authorization header below authenticates the call
-      // (the gateway reads it first); the query parameter was pure
-      // duplication.
+        // NO `access_token` HERE. uvicorn prints the full request line, so a
+        // token in the query string was written into the gateway's access log
+        // in plaintext — a live JWT with 24h of full account access, in a file
+        // that persists. The Authorization header below authenticates the call
+        // (the gateway reads it first); the query parameter was pure
+        // duplication.
         'limit': limit,
         if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
       },

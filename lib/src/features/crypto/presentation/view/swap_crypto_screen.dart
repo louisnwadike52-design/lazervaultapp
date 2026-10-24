@@ -247,8 +247,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       final gbpValue = toAmount * _toCrypto!.currentPrice;
       final swappedQty = gbpValue / _fromHolding!.currentPrice;
       final margin = _convertMarginFraction;
-      final fromCryptoQty =
-          margin < 1 ? swappedQty / (1 - margin) : swappedQty;
+      final fromCryptoQty = margin < 1 ? swappedQty / (1 - margin) : swappedQty;
       _isUpdatingAmounts = true;
       // Mirror the FROM field in whichever unit it's currently showing.
       _fromAmountController.text = fromCryptoQty > 0
@@ -939,7 +938,6 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       ),
     );
   }
-
 
   Widget _buildSwapSummary() {
     // No fee estimate here. Both rows it fed are gone: the trading fee is the

@@ -159,9 +159,8 @@ class ContributionRoundBanner extends StatelessWidget {
                   // them a guaranteed refusal. Disabled-with-a-reason is the
                   // honest middle, and the reason is the server's own
                   // sentence, printed below.
-                  onTap: (busy || !state.code.allowsEnding)
-                      ? null
-                      : onEndCircle,
+                  onTap:
+                      (busy || !state.code.allowsEnding) ? null : onEndCircle,
                 ),
               ),
             ],
@@ -236,9 +235,8 @@ class ContributionRoundBanner extends StatelessWidget {
                   label: 'End contribution',
                   filled: false,
                   accent: _amber,
-                  onTap: (busy || !state.code.allowsEnding)
-                      ? null
-                      : onEndCircle,
+                  onTap:
+                      (busy || !state.code.allowsEnding) ? null : onEndCircle,
                 ),
               ),
             ],

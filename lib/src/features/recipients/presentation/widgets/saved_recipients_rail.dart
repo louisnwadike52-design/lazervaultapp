@@ -179,7 +179,6 @@ class _RecipientCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onMore;
 
-
   bool get _isInternal => recipient.type == 'internal';
 
   @override
@@ -264,9 +263,10 @@ class _RecipientCard extends StatelessWidget {
                       // logo, so this keeps the old look exactly where no
                       // better one exists.
                       BankLogo(
-                        bankName: _isInternal && recipient.bankName.trim().isEmpty
-                            ? BrandBank.displayName
-                            : recipient.displayBankName,
+                        bankName:
+                            _isInternal && recipient.bankName.trim().isEmpty
+                                ? BrandBank.displayName
+                                : recipient.displayBankName,
                         bankCode: recipient.sortCode,
                         size: 34.w,
                         borderRadius: 17.w,

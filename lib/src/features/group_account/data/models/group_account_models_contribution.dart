@@ -360,8 +360,7 @@ class ContributionMemberModel extends ContributionMember {
       cyclePaidAmount: (json['cyclePaidAmount'] as num?)?.toDouble() ?? 0,
       missedCycles: (json['missedCycles'] as num?)?.toInt() ?? 0,
       hasCollectedThisRound: json['hasCollectedThisRound'] as bool? ?? false,
-      collectedCycleIndex:
-          (json['collectedCycleIndex'] as num?)?.toInt() ?? 0,
+      collectedCycleIndex: (json['collectedCycleIndex'] as num?)?.toInt() ?? 0,
     );
   }
 

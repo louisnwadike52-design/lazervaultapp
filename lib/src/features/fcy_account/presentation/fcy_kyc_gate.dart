@@ -62,9 +62,9 @@ Future<bool> ensureFcyKycForPayout(
   // authoritative gate that will refuse the payout; here, a wrong "skip"
   // would mean nothing ever asks.
   try {
-    final reqs = await (requirements ??
-            serviceLocator<TransferRequirementsService>())
-        .fetch(destCurrency: currency, sourceCurrency: sourceCurrency);
+    final reqs =
+        await (requirements ?? serviceLocator<TransferRequirementsService>())
+            .fetch(destCurrency: currency, sourceCurrency: sourceCurrency);
     if (reqs != null && !reqs.requiresSenderKyc) return true;
   } catch (_) {
     // Keep the gate.

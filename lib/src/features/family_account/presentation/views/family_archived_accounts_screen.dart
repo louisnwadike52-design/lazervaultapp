@@ -180,7 +180,9 @@ class _FamilyArchivedAccountsScreenState
           child: Row(
             children: [
               Icon(
-                showing ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                showing
+                    ? Icons.visibility_rounded
+                    : Icons.visibility_off_rounded,
                 size: 18.sp,
                 color: showing ? const Color(0xFF4F46E5) : _muted,
               ),

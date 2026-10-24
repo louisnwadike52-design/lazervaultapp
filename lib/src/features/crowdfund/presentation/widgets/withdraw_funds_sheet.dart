@@ -388,8 +388,7 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
               result: state.result,
             );
             Navigator.pop(context);
-            Get.to(() =>
-                CrowdfundWithdrawalReceiptScreen(receipt: receipt));
+            Get.to(() => CrowdfundWithdrawalReceiptScreen(receipt: receipt));
           } else if (state is CrowdfundError) {
             setState(() => _isSubmitting = false);
             _showError(state.message);

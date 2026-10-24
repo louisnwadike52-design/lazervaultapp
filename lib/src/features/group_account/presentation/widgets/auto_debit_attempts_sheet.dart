@@ -44,8 +44,8 @@ class AutoDebitAttemptsSheet extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: ConstrainedBox(
-          constraints:
-              BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
+          constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8),
           child: Padding(
             padding: EdgeInsets.fromLTRB(18.w, 10.h, 18.w, 14.h),
             child: Column(
@@ -196,8 +196,9 @@ class AutoDebitAttemptsSheet extends StatelessWidget {
   /// pay manually.
   _AttemptState _state(ContributionMember m) {
     final when = m.autoChargeLastAttemptAt;
-    final whenLabel =
-        when != null ? DateFormat('MMM d, h:mm a').format(when.toLocal()) : null;
+    final whenLabel = when != null
+        ? DateFormat('MMM d, h:mm a').format(when.toLocal())
+        : null;
     final tries = m.autoChargeAttempts;
     final triesLabel = tries == 1 ? '1 attempt' : '$tries attempts';
     final reason = m.autoChargeLastError.trim();
@@ -216,8 +217,8 @@ class AutoDebitAttemptsSheet extends StatelessWidget {
         'Stopped',
         const Color(0xFFEF4444),
         'We stopped after $triesLabel${whenLabel != null ? ', last $whenLabel' : ''}. '
-        'This member needs to pay manually.'
-        '${reason.isNotEmpty ? '\nLast reason: $reason' : ''}',
+            'This member needs to pay manually.'
+            '${reason.isNotEmpty ? '\nLast reason: $reason' : ''}',
       );
     }
     if (m.autoChargeTriedAndFailed) {
@@ -225,8 +226,8 @@ class AutoDebitAttemptsSheet extends StatelessWidget {
         'Retrying',
         const Color(0xFFFB923C),
         '$triesLabel so far${whenLabel != null ? ', last $whenLabel' : ''}. '
-        'We try again once a day.'
-        '${reason.isNotEmpty ? '\nLast reason: $reason' : ''}',
+            'We try again once a day.'
+            '${reason.isNotEmpty ? '\nLast reason: $reason' : ''}',
       );
     }
     if (tries > 0) {

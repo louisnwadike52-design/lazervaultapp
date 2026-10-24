@@ -243,8 +243,7 @@ class EscrowDealsPage {
     required this.limit,
   });
 
-  static const empty =
-      EscrowDealsPage(items: [], total: 0, page: 1, limit: 20);
+  static const empty = EscrowDealsPage(items: [], total: 0, page: 1, limit: 20);
 
   /// At least 1, so an empty list is "page 1 of 1" rather than "of 0",
   /// which reads as a broken counter.
@@ -267,8 +266,7 @@ class EscrowOffersPage {
     required this.limit,
   });
 
-  static const empty =
-      EscrowOffersPage(items: [], total: 0, page: 1, limit: 5);
+  static const empty = EscrowOffersPage(items: [], total: 0, page: 1, limit: 5);
 
   /// At least 1, for the same reason as above.
   int get totalPages => total <= 0 ? 1 : ((total + limit - 1) ~/ limit);

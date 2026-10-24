@@ -74,7 +74,9 @@ class _CrowdfundStatisticsScreenState extends State<CrowdfundStatisticsScreen> {
         title: Text(
           'Crowdfund statistics',
           style: GoogleFonts.inter(
-              fontSize: 18.sp, fontWeight: FontWeight.w700, color: Colors.white),
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white),
         ),
       ),
       body: RefreshIndicator(
@@ -99,8 +101,9 @@ class _CrowdfundStatisticsScreenState extends State<CrowdfundStatisticsScreen> {
                 // so one slow call never blocks the other's figures.
                 final loadingCampaigns = campaignState is! MyCrowdfundsLoaded &&
                     campaignState is! CrowdfundError;
-                final loadingDonations = donationState is! UserDonationsLoaded &&
-                    donationState is! CrowdfundError;
+                final loadingDonations =
+                    donationState is! UserDonationsLoaded &&
+                        donationState is! CrowdfundError;
                 if (loadingCampaigns && loadingDonations) {
                   return const Center(child: LazerVaultLoader());
                 }
@@ -145,9 +148,8 @@ class _CrowdfundStatisticsScreenState extends State<CrowdfundStatisticsScreen> {
     // The withdrawable figure is the one people act on, so it leads — and it
     // is deliberately NOT "total raised": a campaign that has already paid
     // out would otherwise invite a withdrawal of money that has left.
-    final withdrawable = created
-        .where((c) => c.currentAmount > 0)
-        .toList(growable: false);
+    final withdrawable =
+        created.where((c) => c.currentAmount > 0).toList(growable: false);
 
     return _card(
       title: 'Money you raised',
@@ -211,8 +213,7 @@ class _CrowdfundStatisticsScreenState extends State<CrowdfundStatisticsScreen> {
                           color: Colors.white)),
                   Text(_money(c.currentAmount, c.currency),
                       style: GoogleFonts.inter(
-                          fontSize: 12.sp,
-                          color: const Color(0xFF34D399))),
+                          fontSize: 12.sp, color: const Color(0xFF34D399))),
                 ],
               ),
             ),
@@ -275,7 +276,8 @@ class _CrowdfundStatisticsScreenState extends State<CrowdfundStatisticsScreen> {
               emphasise: true),
           if (s.donationsRefunded > 0) ...[
             SizedBox(height: 10.h),
-            _figure('Came back to you', _money(s.donationsRefunded, s.currency)),
+            _figure(
+                'Came back to you', _money(s.donationsRefunded, s.currency)),
             SizedBox(height: 10.h),
             _figure('Net given', _money(s.netGiven, s.currency)),
           ],
@@ -361,8 +363,7 @@ class _CrowdfundStatisticsScreenState extends State<CrowdfundStatisticsScreen> {
         Flexible(
           child: Text(label,
               style: GoogleFonts.inter(
-                  fontSize: 12.sp,
-                  color: Colors.white.withValues(alpha: 0.6))),
+                  fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.6))),
         ),
         SizedBox(width: 12.w),
         Text(value,

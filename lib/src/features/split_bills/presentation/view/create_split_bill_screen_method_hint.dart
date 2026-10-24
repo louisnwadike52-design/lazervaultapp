@@ -19,7 +19,8 @@ Widget _buildSplitMethodHintStrip(String text) {
     decoration: BoxDecoration(
       color: const Color(0xFF4834D4).withValues(alpha: 0.10),
       borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: const Color(0xFF4834D4).withValues(alpha: 0.30)),
+      border:
+          Border.all(color: const Color(0xFF4834D4).withValues(alpha: 0.30)),
     ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,

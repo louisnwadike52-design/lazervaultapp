@@ -601,8 +601,7 @@ class _AddMemberForContributionSheetState
     // the badge never appeared even when the row did.
     final pending = m.isPendingInvite;
     final name = m.userName.trim().isNotEmpty ? m.userName.trim() : 'Member';
-    final selected =
-        _selectedUser != null && _selectedUser!.userId == m.userId;
+    final selected = _selectedUser != null && _selectedUser!.userId == m.userId;
 
     return Opacity(
       // Slightly dimmed to carry the status at a glance, but NOT disabled —
@@ -610,20 +609,20 @@ class _AddMemberForContributionSheetState
       opacity: pending ? 0.78 : 1,
       child: GestureDetector(
         onTap: () => setState(() {
-                  // The roster holds one display name; the entity wants it
-                  // split. Split on the first space only, so "Praiz Onah
-                  // Chidera" keeps its surname rather than losing the tail.
-                  final sp = name.indexOf(' ');
-                  _selectedUser = UserSearchResultEntity(
-                    userId: m.userId,
-                    username: m.userUsername ?? '',
-                    firstName: sp == -1 ? name : name.substring(0, sp),
-                    lastName: sp == -1 ? '' : name.substring(sp + 1).trim(),
-                    email: m.email,
-                    phoneNumber: '',
-                    profilePicture: m.profileImage ?? '',
-                  );
-                }),
+          // The roster holds one display name; the entity wants it
+          // split. Split on the first space only, so "Praiz Onah
+          // Chidera" keeps its surname rather than losing the tail.
+          final sp = name.indexOf(' ');
+          _selectedUser = UserSearchResultEntity(
+            userId: m.userId,
+            username: m.userUsername ?? '',
+            firstName: sp == -1 ? name : name.substring(0, sp),
+            lastName: sp == -1 ? '' : name.substring(sp + 1).trim(),
+            email: m.email,
+            phoneNumber: '',
+            profilePicture: m.profileImage ?? '',
+          );
+        }),
         child: Container(
           margin: EdgeInsets.only(bottom: 8.h),
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),

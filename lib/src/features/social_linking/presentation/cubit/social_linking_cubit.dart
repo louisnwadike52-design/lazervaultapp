@@ -5,6 +5,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../data/datasources/social_linking_grpc_datasource.dart';
 import '../../domain/entities/social_account_entity.dart';
 import 'social_linking_state.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 /// Cubit for managing social account linking operations
 class SocialLinkingCubit extends Cubit<SocialLinkingState> {
@@ -61,7 +62,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(
-        message: 'Failed to load accounts: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to load accounts. Please try again.'),
         errorType: SocialLinkingErrorType.general,
       ));
     }
@@ -130,7 +132,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(
-        message: 'Failed to link Google account: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to link Google account. Please try again.'),
         errorType: SocialLinkingErrorType.general,
         provider: SocialProvider.google,
       ));
@@ -207,7 +210,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(
-        message: 'Failed to link Apple account: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to link Apple account. Please try again.'),
         errorType: SocialLinkingErrorType.general,
         provider: SocialProvider.apple,
       ));
@@ -265,7 +269,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(
-        message: 'Failed to unlink account: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to unlink account. Please try again.'),
         errorType: SocialLinkingErrorType.general,
         provider: account.provider,
       ));
@@ -302,7 +307,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(
-        message: 'Failed to set primary account: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to set primary account. Please try again.'),
         errorType: SocialLinkingErrorType.general,
         provider: account.provider,
       ));
@@ -391,7 +397,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(
-        message: 'Failed to reauthorize Google account: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to reauthorize Google account. Please try again.'),
         errorType: SocialLinkingErrorType.general,
         provider: SocialProvider.google,
       ));
@@ -452,7 +459,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(
-        message: 'Failed to reauthorize Apple account: ${e.toString()}',
+        message: userFacingErrorFrom(
+            e, 'Failed to reauthorize Apple account. Please try again.'),
         errorType: SocialLinkingErrorType.general,
         provider: SocialProvider.apple,
       ));

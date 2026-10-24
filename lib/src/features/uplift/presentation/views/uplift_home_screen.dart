@@ -407,10 +407,8 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
                     // populated the card states where they stand instead.
                     : upHasLiveApplication(f)
                         ? Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 10),
-                            child: Text(
-                                upAppStatusLabel(f.myApplicationStatus),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(upAppStatusLabel(f.myApplicationStatus),
                                 style: const TextStyle(
                                     color: kUpTextSecondary,
                                     fontWeight: FontWeight.w600)),
@@ -433,26 +431,26 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
                         // exactly when somebody racing the deadline taps.
                         : upApplicationsClosed(f)
                             ? const Padding(
-                                padding:
-                                    EdgeInsets.symmetric(horizontal: 10),
+                                padding: EdgeInsets.symmetric(horizontal: 10),
                                 child: Text('Applications closed',
                                     style: TextStyle(
                                         color: kUpTextSecondary,
                                         fontWeight: FontWeight.w600)),
                               )
                             : TextButton(
-                            onPressed: () async {
-                              await Get.to(() => ApplyUpliftScreen(fund: f));
-                              await _refreshAfterFundChange();
-                            },
-                            child: Text(
-                                f.myApplicationId.isNotEmpty
-                                    ? 'Apply again'
-                                    : 'Apply',
-                                style: const TextStyle(
-                                    color: kUpPrimarySoft,
-                                    fontWeight: FontWeight.w600)),
-                          ),
+                                onPressed: () async {
+                                  await Get.to(
+                                      () => ApplyUpliftScreen(fund: f));
+                                  await _refreshAfterFundChange();
+                                },
+                                child: Text(
+                                    f.myApplicationId.isNotEmpty
+                                        ? 'Apply again'
+                                        : 'Apply',
+                                    style: const TextStyle(
+                                        color: kUpPrimarySoft,
+                                        fontWeight: FontWeight.w600)),
+                              ),
               ),
           if (state.discoverHasMore)
             Padding(

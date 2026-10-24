@@ -483,7 +483,7 @@ class _P2PChatPageState extends State<P2PChatPage>
           ? cid
           : (_otherUserId.isNotEmpty ? _otherUserId : null),
       agentDescription:
-          'Ask about this conversation, messages and money you\'ve sent or received with ${peerName.isNotEmpty? peerName: 'this person'}.',
+          'Ask about this conversation, messages and money you\'ve sent or received with ${peerName.isNotEmpty ? peerName : 'this person'}.',
       accentColor: const Color(0xFF7C3AED),
       extraMetadata: {
         if (cid != null && cid.isNotEmpty) 'conversation_id': cid,

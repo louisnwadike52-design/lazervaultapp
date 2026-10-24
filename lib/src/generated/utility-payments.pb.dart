@@ -30860,8 +30860,7 @@ class GetEPinNetworksResponse extends $pb.GeneratedMessage {
       createEmptyInstance: create)
     ..pc<EPinNetwork>(1, _omitFieldNames ? '' : 'networks', $pb.PbFieldType.PM,
         subBuilder: EPinNetwork.create)
-    ..a<$core.int>(
-        2, _omitFieldNames ? '' : 'minQuantity', $pb.PbFieldType.OU3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'minQuantity', $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')

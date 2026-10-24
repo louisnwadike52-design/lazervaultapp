@@ -929,8 +929,7 @@ class TagPayPdfService {
                     ?.replaceAll(RegExp(r'[^0-9.]'), '') ??
                 '0') ??
         0.0;
-    var principalAmount =
-        _principalOf(transaction.amount, feeAmount, incoming);
+    var principalAmount = _principalOf(transaction.amount, feeAmount, incoming);
 
     // AN ESCROW LEG CARRIES ITS OWN FIGURES.
     //
@@ -953,12 +952,14 @@ class TagPayPdfService {
     // buyer's refund) the counterparty belongs in FROM; on an outflow they are
     // the beneficiary. Both slots fell back to the row title before.
     final escrowOther = (escrowView?.counterpartyName ?? '').trim();
-    final resolvedRecipient = (escrowView != null && !incoming && escrowOther.isNotEmpty)
-        ? escrowOther
-        : recipientName;
-    final resolvedSourceName = (escrowView != null && incoming && escrowOther.isNotEmpty)
-        ? escrowOther
-        : sourceAccountName;
+    final resolvedRecipient =
+        (escrowView != null && !incoming && escrowOther.isNotEmpty)
+            ? escrowOther
+            : recipientName;
+    final resolvedSourceName =
+        (escrowView != null && incoming && escrowOther.isNotEmpty)
+            ? escrowOther
+            : sourceAccountName;
 
     return generateTransferReceiptFile(
       copyType: copyType,
@@ -1273,7 +1274,8 @@ class TagPayPdfService {
     void addRow(String label, String value) {
       detailRows.add(pw.Padding(
         padding: const pw.EdgeInsets.symmetric(vertical: 3),
-        child: _buildDetailRow(_pdfSafe(label) ?? label, _pdfSafe(value) ?? value),
+        child:
+            _buildDetailRow(_pdfSafe(label) ?? label, _pdfSafe(value) ?? value),
       ));
     }
 

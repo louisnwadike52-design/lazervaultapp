@@ -63,6 +63,8 @@ class BackupCodeInput {
   static bool looksLikeTotp(String raw) {
     final t = raw.trim();
     if (t.length != 6) return false;
-    return t.split('').every((c) => c.codeUnitAt(0) >= 0x30 && c.codeUnitAt(0) <= 0x39);
+    return t
+        .split('')
+        .every((c) => c.codeUnitAt(0) >= 0x30 && c.codeUnitAt(0) <= 0x39);
   }
 }

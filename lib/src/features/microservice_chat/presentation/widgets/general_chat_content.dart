@@ -45,7 +45,9 @@ class GeneralChatContent extends StatefulWidget {
 }
 
 class _GeneralChatContentState extends State<GeneralChatContent>
-    with SingleTickerProviderStateMixin, ChatLoadOlderOnScrollTop<GeneralChatContent> {
+    with
+        SingleTickerProviderStateMixin,
+        ChatLoadOlderOnScrollTop<GeneralChatContent> {
   /// Drives the secure PIN pad open the moment a turn asks for one.
   ///
   /// NOVA used to render the confirm-transfer card and stop there: the message said
@@ -79,8 +81,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
 
   Future<void> _rate(
       GeneralChatMessageEntity m, ChatFeedbackVerdict verdict) async {
-    final sessionId =
-        context.read<GeneralChatCubit>().currentSessionId ?? '';
+    final sessionId = context.read<GeneralChatCubit>().currentSessionId ?? '';
     if (sessionId.isEmpty) return;
     final key = _responseKey(m.timestamp);
     final previous = _feedback[key] ?? ChatFeedbackVerdict.none;
@@ -149,7 +150,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
   }
 
   @override
-  Future<void> loadOlderChat() => context.read<GeneralChatCubit>().loadOlderHistory();
+  Future<void> loadOlderChat() =>
+      context.read<GeneralChatCubit>().loadOlderHistory();
 
   Future<void> _loadUserAvatar() async {
     const storage = FlutterSecureStorage();
@@ -1169,12 +1171,10 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           if (!isUser)
             ChatResponseActions(
               responseText: message.text,
-              verdict:
-                  _feedback[_responseKey(message.timestamp)] ??
-                      ChatFeedbackVerdict.none,
-              canRate:
-                  (context.read<GeneralChatCubit>().currentSessionId ?? '')
-                      .isNotEmpty,
+              verdict: _feedback[_responseKey(message.timestamp)] ??
+                  ChatFeedbackVerdict.none,
+              canRate: (context.read<GeneralChatCubit>().currentSessionId ?? '')
+                  .isNotEmpty,
               onVerdict: (v) => _rate(message, v),
             ),
           // The PIN-SETUP hand-off. A card, never a field: the agent used
@@ -1182,8 +1182,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           // into conversation history.
           if (!isUser && message.metadata?['pin_setup'] != null)
             ChatPinSetupCard(
-              reason: (message.metadata?['pin_setup']
-                  as Map?)?['reason'] as String?,
+              reason: (message.metadata?['pin_setup'] as Map?)?['reason']
+                  as String?,
             ),
           if (quickActions != null && quickActions.isNotEmpty)
             QuickActionChips(

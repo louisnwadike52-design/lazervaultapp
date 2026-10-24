@@ -170,8 +170,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: kUpCard,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Leave without opening this fund?',
             style: TextStyle(
                 color: Colors.white,
@@ -199,8 +198,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop('discard'),
             child: const Text('Discard',
-                style:
-                    TextStyle(color: kUpError, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: kUpError, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -331,9 +329,10 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
         // to punish an abandoned payment step would be worse than leaving it
         // where they can finish it.
         Get.back(result: true);
-        Get.snackbar('Saved as a draft',
+        Get.snackbar(
+            'Saved as a draft',
             '${fund.title} is not open yet, commit the pool to start taking '
-            'applications',
+                'applications',
             backgroundColor: kUpCard,
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM);
@@ -343,8 +342,8 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
       try {
         await _repo.publishFund(fund.id);
         Get.back(result: true);
-        Get.snackbar('Fund opened',
-            '${fund.title} is now accepting applications',
+        Get.snackbar(
+            'Fund opened', '${fund.title} is now accepting applications',
             backgroundColor: kUpCard,
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM);
@@ -353,9 +352,10 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
         // "could not open fund" after a successful debit reads as a lost
         // payment.
         Get.back(result: true);
-        Get.snackbar('Pool funded, not published yet',
+        Get.snackbar(
+            'Pool funded, not published yet',
             'Your commitment went through. Open ${fund.title} from My Funds '
-            'to start taking applications.',
+                'to start taking applications.',
             backgroundColor: kUpWarning,
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM);
@@ -594,8 +594,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.savings_outlined,
-                  color: kUpPrimary, size: 20),
+              const Icon(Icons.savings_outlined, color: kUpPrimary, size: 20),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -604,8 +603,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
                     Text(
                       'You will fund ${upNaira(_requiredPoolKobo, 'NGN')}',
                       style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700),
+                          color: Colors.white, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 4),
                     const Text(
@@ -614,9 +612,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
                       'Anything not promised to a business can be withdrawn '
                       'later.',
                       style: TextStyle(
-                          color: kUpTextSecondary,
-                          fontSize: 12,
-                          height: 1.4),
+                          color: kUpTextSecondary, fontSize: 12, height: 1.4),
                     ),
                   ],
                 ),
@@ -868,8 +864,8 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
     // default is fine". Taking the whole date selection away for it would
     // make the time step feel mandatory, which is the opposite of the ask.
     final chosen = time ?? const TimeOfDay(hour: 0, minute: 0);
-    final at = DateTime(
-        date.year, date.month, date.day, chosen.hour, chosen.minute);
+    final at =
+        DateTime(date.year, date.month, date.day, chosen.hour, chosen.minute);
 
     if (!at.isAfter(DateTime.now())) {
       // The 12:00-AM-today case, and any other backwards pick. Name the
@@ -895,8 +891,18 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
   String _fmtDeadline(DateTime d) {
     final l = d.toLocal();
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final hour12 = l.hour % 12 == 0 ? 12 : l.hour % 12;
     final minute = l.minute.toString().padLeft(2, '0');

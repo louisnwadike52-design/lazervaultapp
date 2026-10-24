@@ -15,8 +15,18 @@ String _shortDate(DateTime when) {
   if (diff == 0) return 'Today';
   if (diff == 1) return 'Yesterday';
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   final base = '${when.day} ${months[when.month - 1]}';
   return when.year == now.year ? base : '$base ${when.year}';

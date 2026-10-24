@@ -1453,8 +1453,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(3.r),
                     child: LinearProgressIndicator(
-                      value:
-                          CrowdfundProgress.of(crowdfund).fraction,
+                      value: CrowdfundProgress.of(crowdfund).fraction,
                       backgroundColor: Colors.white.withValues(alpha: 0.1),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                           Color(0xFF4E03D0)),

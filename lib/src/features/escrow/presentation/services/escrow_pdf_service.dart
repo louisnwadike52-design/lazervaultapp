@@ -505,8 +505,7 @@ class EscrowPdfService {
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
-                pw.Text(
-                    ReceiptFooter.copyright(),
+                pw.Text(ReceiptFooter.copyright(),
                     style: _ts(fontSize: 9, color: PdfColors.grey600)),
                 pw.SizedBox(height: 2),
                 pw.Text('Page 1 of 1',
