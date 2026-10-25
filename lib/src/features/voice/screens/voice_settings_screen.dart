@@ -623,12 +623,8 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
               if (r.language.code != cubit.selectedLanguageCode) {
                 await cubit.setLanguage(r.language.code);
               }
+              // Applied live by setVoice itself.
               await cubit.setVoice(r.voice.id);
-              if (r.voice.id == kMyVoiceSentinelId) {
-                await cubit.notifyCustomVoiceChanged(true);
-              } else {
-                await cubit.notifyVoiceChanged(r.voice.id);
-              }
             }
           : null,
     );

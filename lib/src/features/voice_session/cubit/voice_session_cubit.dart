@@ -1263,6 +1263,30 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // their voice and then deliberately chose a stock one would be pulled back
     // to their clone on the next session that saw "ready".
     await prefs.setBool(_prefKeyVoiceChosenByUser, true);
+    await _applyVoiceToLiveSession(voiceId);
+  }
+
+  /// Push a voice choice to a session that is ALREADY RUNNING.
+  ///
+  /// This lives here because setVoice had seven callers and only three of them
+  /// followed up with the notify — so changing the voice from the other four
+  /// (notably the fallback picks made when a language switch invalidates the
+  /// current voice) persisted the choice and left the live agent speaking in
+  /// the old one until the session was restarted.
+  ///
+  /// It also had the sentinel-vs-preset branch copied at each of those three
+  /// sites. Which event a voice needs is a property of the voice, not of the
+  /// screen that picked it, so it is decided once, here.
+  ///
+  /// An empty id means "no explicit voice" — the backend re-resolves one for
+  /// the language — so there is nothing to send.
+  Future<void> _applyVoiceToLiveSession(String voiceId) async {
+    if (voiceId.isEmpty || !hasActiveVoiceSession) return;
+    if (voiceId == kMyVoiceSentinelId) {
+      await notifyCustomVoiceChanged(true);
+    } else {
+      await notifyVoiceChanged(voiceId);
+    }
   }
 
   /// Adopt the user's cloned voice as soon as it is ready.

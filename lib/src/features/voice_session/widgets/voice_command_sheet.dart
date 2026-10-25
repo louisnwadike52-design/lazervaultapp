@@ -804,17 +804,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         yourVoiceAvatarUrl: yourVoice?.avatarUrl,
       );
       if (selected != null && mounted) {
+        // setVoice applies to a live session itself (see
+        // _applyVoiceToLiveSession) — the clone toggle for "Your Voice",
+        // otherwise a preset TTS swap. setLanguage already sent
+        // language_changed above; this carries the final voice choice.
         await cubit.setVoice(selected.id);
-        // Apply LIVE when a call is active (the clone toggle for "Your Voice",
-        // otherwise a preset TTS swap). setLanguage already sent language_changed
-        // above; this carries the final voice choice.
-        if (cubit.hasActiveVoiceSession) {
-          if (selected.id == kMyVoiceSentinelId) {
-            await cubit.notifyCustomVoiceChanged(true);
-          } else {
-            await cubit.notifyVoiceChanged(selected.id);
-          }
-        }
       }
     }
 
@@ -891,12 +885,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     if (languageChanged) {
       await cubit.setLanguage(result.language.code);
     }
+    // Applied live by setVoice itself.
     await cubit.setVoice(result.voice.id);
-    if (result.voice.id == kMyVoiceSentinelId) {
-      await cubit.notifyCustomVoiceChanged(true);
-    } else {
-      await cubit.notifyVoiceChanged(result.voice.id);
-    }
   }
 
   void _startAnimations() {
