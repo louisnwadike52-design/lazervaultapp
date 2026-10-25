@@ -76,4 +76,49 @@ void main() {
       );
     });
   });
+
+  group('a lost end-of-speech event cannot strand the mic', () {
+    late String src;
+    setUpAll(() {
+      src = File(
+              'lib/src/features/voice_session/cubit/voice_session_cubit.dart')
+          .readAsStringSync();
+    });
+
+    test('the speech phase is watched, not just the reply', () {
+      // _armAgentReplyWatchdog covers "the reply never came" and the
+      // speech-start handler cancels it — correctly. From then on nothing was
+      // watching, while the recogniser was refused for the whole agent phase
+      // and the listen watchdog honoured that same gate.
+      expect(src.contains('void _armAgentSpeechWatchdog()'), isTrue);
+      final startAt = src.indexOf('_bargedInThisTurn = false;');
+      final armAt = src.indexOf('_armAgentSpeechWatchdog();');
+      expect(startAt, greaterThan(-1));
+      expect(armAt, greaterThan(startAt),
+          reason: 'the watchdog is not armed where the agent phase begins');
+    });
+
+    test('it is disarmed on every way the phase can end', () {
+      // The real end event, a barge-in, and session teardown. Missing any one
+      // of these either leaves it armed into the next turn or fires it after
+      // dispose.
+      expect(RegExp(r'_cancelAgentSpeechWatchdog\(\)').allMatches(src).length,
+          greaterThanOrEqualTo(3),
+          reason: 'expected the definition plus the end-of-speech and '
+              'barge-in call sites');
+      expect(src.contains('_agentSpeechWatchdog?.cancel();'), isTrue,
+          reason: 'not cancelled in close() — the timer outlives the session');
+    });
+
+    test('recovery clears the echo gate as well as the flag', () {
+      // Clearing _agentSpeaking alone re-opens the mic into an echo gate that
+      // is still swallowing the user, which looks identical to a dead mic.
+      final body = src.substring(src.indexOf('void _armAgentSpeechWatchdog()'),
+          src.indexOf('void _cancelAgentSpeechWatchdog()'));
+      expect(body.contains('_setAgentAudioAudible(false)'), isTrue);
+      expect(body.contains('_handBackMicAfterAgentTurn()'), isTrue,
+          reason: 'recovery must drop the iOS AEC mic before reopening the '
+              'recogniser, like the normal end-of-turn path');
+    });
+  });
 }

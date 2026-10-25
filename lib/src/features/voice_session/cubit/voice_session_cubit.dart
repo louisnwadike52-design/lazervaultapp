@@ -511,6 +511,56 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     });
   }
 
+  /// Ceiling on a single agent reply.
+  ///
+  /// Generous on purpose: the agent reads transaction lists and receipts aloud,
+  /// so a legitimate turn can run far longer than a sentence. This is not a
+  /// latency budget, it is the point past which we conclude the end-of-speech
+  /// event was LOST.
+  static const Duration _agentSpeechWatchdogWindow = Duration(seconds: 90);
+
+  Timer? _agentSpeechWatchdog;
+
+  /// Recover a mic stranded by a dropped `agent_caption_end`.
+  ///
+  /// THE GAP THIS FILLS. _armAgentReplyWatchdog covers "the reply never came",
+  /// and the agent-speech-start handler CANCELS it — correctly, the reply
+  /// demonstrably came. From that moment nothing was watching: the recogniser is
+  /// refused for the whole agent phase, and the listen watchdog honours that
+  /// same gate (`if (!_listeningPermitted()) return;`), so if the end-of-speech
+  /// event was lost, `_agentSpeaking` stayed true and the mic never reopened for
+  /// the rest of the session.
+  ///
+  /// Both modes do have a user-driven escape — a push-to-talk press and the
+  /// hands-free "Tap to stop" both run _triggerBargeIn, which clears the flag —
+  /// but requiring the user to notice and rescue a dead session is not a
+  /// recovery path. Hands-free previously had no automatic one at all.
+  void _armAgentSpeechWatchdog() {
+    _agentSpeechWatchdog?.cancel();
+    _agentSpeechWatchdog = Timer(_agentSpeechWatchdogWindow, () {
+      if (isClosed || _teardownRequested) return;
+      if (!_agentSpeaking) return; // the end event landed; nothing to recover
+      AppLogger.warning(
+        'VoiceSessionCubit: agent speech watchdog fired after '
+        '${_agentSpeechWatchdogWindow.inSeconds}s — the end-of-speech event was '
+        'lost; clearing the agent phase and giving the mic back',
+      );
+      _agentSpeaking = false;
+      _awaitingAgentReply = false;
+      // Nothing is playing any more, so the echo gate must stop swallowing the
+      // user — the same pairing _armAgentReplyWatchdog makes.
+      _setAgentAudioAudible(false);
+      _echoGuard.noteAgentStoppedSpeaking(DateTime.now());
+      _handBackMicAfterAgentTurn();
+      _emitCaptionUpdate();
+    });
+  }
+
+  void _cancelAgentSpeechWatchdog() {
+    _agentSpeechWatchdog?.cancel();
+    _agentSpeechWatchdog = null;
+  }
+
   /// Disarm it. Called wherever the agent demonstrably responded.
   void _cancelAgentReplyWatchdog() {
     _agentReplyWatchdog?.cancel();
@@ -2783,6 +2833,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // A barge-in stops the agent, but audio already in the output buffer still
     // plays out — so the tail window starts here too.
     _echoGuard.noteAgentStoppedSpeaking(DateTime.now());
+    _cancelAgentSpeechWatchdog();
     _awaitingAgentReply = false;
     _isAgentSpeaking = false;
     _currentAgentCaption = null; // the new reply will replace the bubble
@@ -3734,6 +3785,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               _agentSpeaking = true;
               _awaitingAgentReply = true;
               _bargedInThisTurn = false;
+              // Cancelling the REPLY watchdog here is right (the reply came),
+              // but it left nothing watching the speech phase itself.
+              _armAgentSpeechWatchdog();
               // Pause the on-device recognizer (it has no AEC, would hear the TTS).
               unawaited(stopLocalListening());
               if (_hybridAecBargeIn) {
@@ -3817,6 +3871,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               // user's turn. Start the tail window before re-arming.
               _echoGuard.noteAgentStoppedSpeaking(DateTime.now());
               _cancelAgentReplyWatchdog();
+              _cancelAgentSpeechWatchdog();
               _awaitingAgentReply = false;
               _handBackMicAfterAgentTurn();
             }
@@ -4766,6 +4821,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // cubit would fire into a closed object; each callback also guards on
     // isClosed, but cancelling here is the part that does not rely on that.
     _agentReplyWatchdog?.cancel();
+    _agentSpeechWatchdog?.cancel();
     _agentAudibleCeiling?.cancel();
     // Definitive teardown — always release the auto-logout suppression.
     VoiceSessionActivity.setActive(false);
