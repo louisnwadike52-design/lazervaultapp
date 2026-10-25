@@ -212,29 +212,25 @@ void main() {
     });
 
     test('the loudspeaker is re-asserted, not set once at connect', () {
-      // Asserting only at connect is what made the agent inaudible after
-      // ANOTHER component (the transaction-PIN sheet, a platform interruption)
-      // took the audio session and handed it back reconfigured. So there must
-      // be at least one re-assertion beyond the connect path: the declaration,
-      // the connect call, and one more.
+      // Asserting only at connect is what made the agent inaudible after a mic
+      // publish or the transaction-PIN sheet: another component reconfigures the
+      // audio session and hands it back with the route changed.
       //
-      // The threshold was 4 and is now 3 on purpose. The fourth site sat inside
-      // _setAecMicPublished on the belief that toggling the AEC mic
-      // "publishes/unpublishes and reverts the route". It does not:
-      // _aecMicOptions sets `stopAudioCaptureOnMute: false`, so LiveKit takes
-      // its mute path on an existing publication and only flips
-      // mediaStreamTrack.enabled — no audio unit stop, no session
-      // reconfiguration, nothing to re-assert. Re-asserting there was itself
-      // the defect, because on iOS the override replaces LiveKit's pinned
-      // videoChat mode with WebRTC's quieter voiceChat default and the next
-      // assertion swaps it back — the level rising and falling inside a reply.
-      // See voice_audio_route_policy.dart.
+      // On iOS the re-assertion is cheap and idempotent — Hardware's iOS branch
+      // re-invokes onConfigureNativeAudio, which is PINNED to
+      // playAndRecordSpeaker, so it restores our own configuration rather than
+      // imposing a different one. It was briefly removed on the theory that it
+      // caused the agent's level to swing; it does not. That was LiveKit's
+      // DEFAULT configuration function returning `playback` (spokenAudio) while
+      // remote-only and `playAndRecordSpeaker` (videoChat) once the AEC mic
+      // published — two different output curves, swapped every turn. The pin at
+      // the Room construction site is what fixed it.
       final src = cubit();
       expect(
         RegExp(r'_assertLoudspeaker\(\)').allMatches(src).length,
-        greaterThanOrEqualTo(3),
-        reason: 'the speaker must be re-assertable after another component '
-            'reconfigures the session, not set once at connect',
+        greaterThanOrEqualTo(4),
+        reason: 'asserting the speaker only at connect is what made the agent '
+            'inaudible after a mic publish or the transaction-PIN sheet',
       );
     });
   });

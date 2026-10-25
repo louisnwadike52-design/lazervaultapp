@@ -2540,14 +2540,15 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// changes nothing, and losing the loudspeaker must never take down a working
   /// call.
   Future<void> _assertLoudspeaker() async {
-    // ONE place decides whether the route may be touched at all; the reasoning
-    // (and why this is inert on iOS and under the Android media profile) lives
+    // ONE place decides whether the route may be touched; the reasoning lives
     // in voice_audio_route_policy.dart next to the test that pins it.
     //
-    // Re-asserting the route mid-turn is what made the agent's level rise and
-    // fall inside a sentence: the override replaces LiveKit's pinned videoChat
-    // mode with WebRTC's quieter voiceChat default, and the next assertion puts
-    // it back.
+    // On iOS this re-applies the PINNED LiveKit configuration (Hardware's iOS
+    // branch re-invokes onConfigureNativeAudio and pushes the result through
+    // Native.configureAudio), so it is idempotent and restores the route after
+    // another component reconfigures the session. Under the Android media
+    // profile it takes the flutter_webrtc path instead and would undo the
+    // profile, so it is suppressed there.
     if (!shouldOverrideOutputRoute(
       isIOS: _isIOS,
       androidMediaProfileApplied: _mediaAudioProfileApplied,
@@ -2635,12 +2636,17 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             enabled,
             audioCaptureOptions: _aecMicOptions,
           );
-          // NOT a publish/unpublish. `_aecMicOptions` sets
-          // `stopAudioCaptureOnMute: false`, so `setMicrophoneEnabled` on an
-          // EXISTING publication takes LiveKit's mute path and only toggles
-          // `mediaStreamTrack.enabled` — the audio unit is never stopped and the
-          // session is never reconfigured, which is what keeps the agent's level
-          // steady across a turn. Nothing to re-assert; the route is pinned.
+          // The FIRST call here publishes a track, which moves LiveKit's
+          // track state from remoteOnly to localAndRemote and re-invokes
+          // onConfigureNativeAudio. Later calls do not: `_aecMicOptions` sets
+          // `stopAudioCaptureOnMute: false`, so an existing publication takes
+          // LiveKit's mute path and only toggles `mediaStreamTrack.enabled`.
+          //
+          // The pinned configuration means both outcomes are the same
+          // configuration — which is what keeps the level steady — so this
+          // re-assertion is a cheap idempotent restore, not the level swing it
+          // was once blamed for.
+          await _assertLoudspeaker();
         } catch (e) {
           print('VoiceSessionCubit: _setAecMicPublished($enabled) failed: $e');
         }
