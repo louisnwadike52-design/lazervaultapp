@@ -212,14 +212,29 @@ void main() {
     });
 
     test('the loudspeaker is re-asserted, not set once at connect', () {
-      // Each of these points reconfigures the audio session and silently
-      // reverts the route to the earpiece.
+      // Asserting only at connect is what made the agent inaudible after
+      // ANOTHER component (the transaction-PIN sheet, a platform interruption)
+      // took the audio session and handed it back reconfigured. So there must
+      // be at least one re-assertion beyond the connect path: the declaration,
+      // the connect call, and one more.
+      //
+      // The threshold was 4 and is now 3 on purpose. The fourth site sat inside
+      // _setAecMicPublished on the belief that toggling the AEC mic
+      // "publishes/unpublishes and reverts the route". It does not:
+      // _aecMicOptions sets `stopAudioCaptureOnMute: false`, so LiveKit takes
+      // its mute path on an existing publication and only flips
+      // mediaStreamTrack.enabled — no audio unit stop, no session
+      // reconfiguration, nothing to re-assert. Re-asserting there was itself
+      // the defect, because on iOS the override replaces LiveKit's pinned
+      // videoChat mode with WebRTC's quieter voiceChat default and the next
+      // assertion swaps it back — the level rising and falling inside a reply.
+      // See voice_audio_route_policy.dart.
       final src = cubit();
       expect(
         RegExp(r'_assertLoudspeaker\(\)').allMatches(src).length,
-        greaterThanOrEqualTo(4),
-        reason: 'asserting the speaker only at connect is what made the agent '
-            'inaudible after a mic publish or the transaction-PIN sheet',
+        greaterThanOrEqualTo(3),
+        reason: 'the speaker must be re-assertable after another component '
+            'reconfigures the session, not set once at connect',
       );
     });
   });

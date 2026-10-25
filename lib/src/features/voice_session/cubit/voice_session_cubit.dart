@@ -48,6 +48,7 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/logger.dart';
+import '../voice_audio_route_policy.dart';
 import '../services/voice_note_capture.dart';
 import '../../../../core/config/voice_language_availability.dart';
 
@@ -2456,11 +2457,20 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// changes nothing, and losing the loudspeaker must never take down a working
   /// call.
   Future<void> _assertLoudspeaker() async {
-    // Under the media profile this call is not just unnecessary, it is the
-    // bug: setSpeakerphoneOn drives Android back into MODE_IN_COMMUNICATION,
-    // which is the very mode the profile exists to get out of. Media playback
-    // already goes to the loudspeaker.
-    if (_mediaAudioProfileApplied) return;
+    // ONE place decides whether the route may be touched at all; the reasoning
+    // (and why this is inert on iOS and under the Android media profile) lives
+    // in voice_audio_route_policy.dart next to the test that pins it.
+    //
+    // Re-asserting the route mid-turn is what made the agent's level rise and
+    // fall inside a sentence: the override replaces LiveKit's pinned videoChat
+    // mode with WebRTC's quieter voiceChat default, and the next assertion puts
+    // it back.
+    if (!shouldOverrideOutputRoute(
+      isIOS: _isIOS,
+      androidMediaProfileApplied: _mediaAudioProfileApplied,
+    )) {
+      return;
+    }
     try {
       await Hardware.instance.setSpeakerphoneOn(true);
     } catch (e) {
@@ -2542,9 +2552,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             enabled,
             audioCaptureOptions: _aecMicOptions,
           );
-          // Publishing/unpublishing reconfigures the audio session, which drops
-          // the speaker override back to the earpiece. Re-assert it.
-          await _assertLoudspeaker();
+          // NOT a publish/unpublish. `_aecMicOptions` sets
+          // `stopAudioCaptureOnMute: false`, so `setMicrophoneEnabled` on an
+          // EXISTING publication takes LiveKit's mute path and only toggles
+          // `mediaStreamTrack.enabled` — the audio unit is never stopped and the
+          // session is never reconfigured, which is what keeps the agent's level
+          // steady across a turn. Nothing to re-assert; the route is pinned.
         } catch (e) {
           print('VoiceSessionCubit: _setAecMicPublished($enabled) failed: $e');
         }
