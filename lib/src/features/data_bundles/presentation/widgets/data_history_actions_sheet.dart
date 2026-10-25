@@ -11,6 +11,7 @@ import '../../data/datasources/data_beneficiary_remote_datasource.dart';
 import '../../domain/entities/data_beneficiary.dart';
 import '../../domain/entities/data_purchase_entity.dart';
 import 'save_data_beneficiary_sheet.dart';
+import 'package:lazervault/core/utils/ng_network_prefixes.dart';
 
 class DataHistoryActionsSheet {
   DataHistoryActionsSheet._();
@@ -39,6 +40,28 @@ class DataHistoryActionsSheet {
       default:
         return '';
     }
+  }
+
+  /// The network to save, falling back to the phone number's NCC prefix.
+  ///
+  /// History rows written before the backend stamped `network_code` carry
+  /// neither code nor name, so "Save contact" refused on numbers whose
+  /// carrier is not in doubt — 0703 is MTN, 0904 is Airtel. NgNetworkPrefixes
+  /// is the same allocation table the airtime and data quick-buys detect
+  /// with, so a save resolves the carrier exactly as the buy-data flow the
+  /// old error message told people to go and use instead.
+  ///
+  /// Returns ('', '') only when the prefix genuinely is unallocated, or for
+  /// international numbers, where NCC prefixes do not apply.
+  static (String, String) _effectiveNetwork(DataPurchaseEntity p, bool isIntl) {
+    final name = _resolveNetworkName(p.networkCode, p.networkName);
+    if (p.networkCode.isNotEmpty || name.isNotEmpty) {
+      return (p.networkCode, name);
+    }
+    if (isIntl) return ('', '');
+    final ticker = NgNetworkPrefixes.detect(p.phoneNumber);
+    if (ticker == null) return ('', '');
+    return (ticker, _resolveNetworkName(ticker, ''));
   }
 
   static Future<void> show(
@@ -285,9 +308,8 @@ class DataHistoryActionsSheet {
               // and a disposed context cannot host the save modal.
               final ctx = Get.context;
               Get.back();
-              final resolvedName =
-                  _resolveNetworkName(networkCode, networkName);
-              if (networkCode.isEmpty && resolvedName.isEmpty) {
+              final (effCode, resolvedName) = _effectiveNetwork(p, isIntl);
+              if (effCode.isEmpty && resolvedName.isEmpty) {
                 // Refuse to save when we can't identify the carrier —
                 // persisting a literal "Unknown" string pollutes the
                 // saved-contacts list and breaks "Buy Data" later on
@@ -308,7 +330,7 @@ class DataHistoryActionsSheet {
               await SaveDataBeneficiarySheet.show(
                 ctx,
                 phoneNumber: p.phoneNumber,
-                networkCode: networkCode,
+                networkCode: effCode,
                 networkName: resolvedName,
                 countryCode: countryCode,
                 existingBeneficiaryId: existingId,
