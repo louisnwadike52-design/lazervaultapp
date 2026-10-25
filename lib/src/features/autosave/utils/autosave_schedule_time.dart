@@ -26,11 +26,17 @@ class AutoSaveScheduleTime {
 
   /// Local time of day to the "HH:MM" UTC string the server stores.
   static String toUtcHhmm(TimeOfDay local) {
-    final now = DateTime.now();
-    final asLocal =
-        DateTime(now.year, now.month, now.day, local.hour, local.minute);
-    final utc = asLocal.toUtc();
-    return _hhmm(utc.hour, utc.minute);
+    // Shift by the offset in force NOW, rather than building a DateTime at
+    // the picked time-of-day and converting it.
+    //
+    // The old form asked for TODAY's offset AT THAT HOUR, while the reverse
+    // asked for today's offset at the UTC hour — two different answers on a
+    // DST transition day. On 2026-10-25 (clocks back at 02:00) a picked
+    // 00:00 stored as 23:00 and read back as 23:00: an hour lost, silently.
+    // Using one offset for both directions makes the round trip exact by
+    // construction, in every zone, on every day.
+    return _shift(
+        local.hour, local.minute, -DateTime.now().timeZoneOffset.inMinutes);
   }
 
   /// A stored UTC "HH:MM" back to the device's own clock. Returns null when
@@ -39,11 +45,12 @@ class AutoSaveScheduleTime {
   static TimeOfDay? toLocalTimeOfDay(String? utcHhmm) {
     final parsed = _parse(utcHhmm);
     if (parsed == null) return null;
-    final now = DateTime.now().toUtc();
-    final asUtc =
-        DateTime.utc(now.year, now.month, now.day, parsed.$1, parsed.$2);
-    final local = asUtc.toLocal();
-    return TimeOfDay(hour: local.hour, minute: local.minute);
+    // The exact inverse of toUtcHhmm — same offset, opposite sign.
+    final shifted =
+        _shift(parsed.$1, parsed.$2, DateTime.now().timeZoneOffset.inMinutes);
+    final hh = int.parse(shifted.substring(0, 2));
+    final mm = int.parse(shifted.substring(3, 5));
+    return TimeOfDay(hour: hh, minute: mm);
   }
 
   /// A stored UTC "HH:MM" as the local 24-hour string to show. Falls back to
@@ -61,6 +68,15 @@ class AutoSaveScheduleTime {
     final local = toLocalTimeOfDay(utcHhmm);
     if (local == null) return (utcHhmm ?? '').trim();
     return local.format(context);
+  }
+
+  /// Adds [deltaMinutes] to a wall clock, wrapping within the day. A schedule
+  /// is a time of day, so crossing midnight wraps rather than changing a date
+  /// that is not stored anyway.
+  static String _shift(int hour, int minute, int deltaMinutes) {
+    final total = hour * 60 + minute + deltaMinutes;
+    final norm = ((total % 1440) + 1440) % 1440;
+    return _hhmm(norm ~/ 60, norm % 60);
   }
 
   static String _hhmm(int h, int m) =>
