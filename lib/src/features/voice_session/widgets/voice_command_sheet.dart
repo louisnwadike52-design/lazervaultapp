@@ -714,6 +714,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     return VoiceTalkButton(
       mode: _interactionMode,
       capturing: micLive,
+      // Continuous mode routes this tap to the interrupt (see pttBegin), so the
+      // label has to say so while the agent is talking.
+      agentSpeaking: cubit.isAgentSpeaking,
       onBegin: cubit.pttBegin,
       onEnd: cubit.pttEnd,
     );

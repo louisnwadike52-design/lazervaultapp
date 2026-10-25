@@ -2079,7 +2079,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // single gate turns every auto-listen path (greeting, re-arm, agent-end,
     // barge-in) into a no-op unless the user is actively pressing/holding to talk.
     if (isPushToTalk && !_pttActive) return false;
-    if (_agentSpeaking) return _bargeInEnabled;
+    // The recogniser is never live while the agent is audible — see
+    // recogniserMayOpenWhileAgentSpeaks() for why neither platform needs it
+    // and what nothing is lost by closing it.
+    if (_agentSpeaking) return recogniserMayOpenWhileAgentSpeaks();
     return !_awaitingAgentReply;
   }
 
@@ -2169,7 +2172,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// Begin a push-to-talk capture window (hold-down / tap-to-start / double-tap).
   /// Opens the recognizer; the turn is sent when [pttEnd] is called.
   Future<void> pttBegin() async {
-    if (!isPushToTalk) return;
+    if (!isPushToTalk) {
+      // In continuous the talk control is a live INDICATOR, so this used to
+      // return silently. It is still not a capture button — but while the agent
+      // is speaking a tap on it is the only interrupt hands-free has.
+      interruptAgent();
+      return;
+    }
     _pttActive = true;
     // REACHING FOR THE BUTTON *IS* THE INTERRUPTION.
     //
@@ -2756,6 +2765,36 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _publishInterrupt();
     _setUserSpeaking();
     _emitCaptionUpdate();
+  }
+
+  /// Give the mic back to the recogniser after the agent's phase.
+  ///
+  /// On iOS the agent phase holds LiveKit's echo-cancelled mic, so that has to
+  /// be dropped BEFORE the recogniser opens or both are live at once. One place
+  /// does this for both ways a turn can end — the agent finishing, and the user
+  /// cutting it off — because they were drifting apart.
+  void _handBackMicAfterAgentTurn() {
+    if (_hybridAecBargeIn) {
+      _setAecMicPublished(false).whenComplete(_reArmListeningSoon);
+    } else {
+      _reArmListeningSoon();
+    }
+  }
+
+  /// Stop the agent mid-reply, from the UI.
+  ///
+  /// HANDS-FREE HAD NO WAY TO INTERRUPT AT ALL. The gesture modes interrupt
+  /// from the talk button; iOS hands-free relies on the server hearing the user
+  /// over the echo-cancelled mic; Android hands-free had only the open-mic
+  /// acoustic path, which cannot run without an echo canceller and is gone. So
+  /// in continuous mode the mic control — an inert indicator until now — becomes
+  /// the tap that stops the agent.
+  ///
+  /// Safe to call at any time: a tap in silence costs nothing.
+  void interruptAgent() {
+    if (!_agentSpeaking) return;
+    _triggerBargeIn();
+    _handBackMicAfterAgentTurn();
   }
 
   /// Tell the agent to stop speaking immediately (barge-in). The superseding
@@ -3678,13 +3717,16 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
                 // server's interruption detector can hear the user talk over the
                 // agent on clean audio and stop it (true barge-in, no feedback).
                 unawaited(_setAecMicPublished(true));
-              } else if (_bargeInEnabled) {
-                // (Legacy) open-mic acoustic barge-in — off by default (no AEC).
-                Future.delayed(const Duration(milliseconds: 700), () {
-                  if (_agentSpeaking && _listeningPermitted())
-                    startLocalListening();
-                });
               }
+              // The legacy open-mic acoustic barge-in used to live here: a
+              // 700 ms delay and then startLocalListening() while the agent was
+              // still speaking. On Android that runs under the media profile,
+              // which has no echo canceller, so it fed the agent's own sentence
+              // to the recogniser. It is gone rather than guarded: the gesture
+              // modes interrupt from the button (pttBegin -> _triggerBargeIn),
+              // which is both earlier and unambiguous, and hands-free never
+              // enabled it. _listeningPermitted() now refuses the mic for the
+              // whole agent phase, so re-adding a timer here would be inert.
             }
             final text = eventData['text'] as String?;
             // `replace` = this answer supersedes/merges a prior reply whose bubble
@@ -3752,11 +3794,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               _echoGuard.noteAgentStoppedSpeaking(DateTime.now());
               _cancelAgentReplyWatchdog();
               _awaitingAgentReply = false;
-              if (_hybridAecBargeIn) {
-                _setAecMicPublished(false).whenComplete(_reArmListeningSoon);
-              } else {
-                _reArmListeningSoon();
-              }
+              _handBackMicAfterAgentTurn();
             }
           }
           break;

@@ -44,8 +44,16 @@ class VoiceTalkMode {
 
   /// The instruction shown ON the control, in the imperative, describing the
   /// gesture that starts a recording right now.
-  static String action(String mode, {required bool capturing}) {
-    if (mode == continuous) return capturing ? 'Listening' : 'Hands-free';
+  static String action(String mode,
+      {required bool capturing, bool agentSpeaking = false}) {
+    if (mode == continuous) {
+      // Hands-free has no talk gesture, so this control is an indicator — with
+      // one exception. While the agent is speaking, a tap stops it, and that is
+      // the ONLY interrupt hands-free has. An indicator that reads "Hands-free"
+      // tells nobody that, so it names the action while the action exists.
+      if (agentSpeaking) return 'Tap to stop';
+      return capturing ? 'Listening' : 'Hands-free';
+    }
     if (capturing) {
       // While capturing, the useful instruction is how to STOP — which differs
       // per mode and is the half people never discover.
@@ -115,6 +123,7 @@ class VoiceTalkButton extends StatefulWidget {
   const VoiceTalkButton({
     super.key,
     required this.mode,
+    this.agentSpeaking = false,
     required this.capturing,
     required this.onBegin,
     required this.onEnd,
@@ -125,6 +134,10 @@ class VoiceTalkButton extends StatefulWidget {
   });
 
   final String mode;
+
+  /// Drives the "Tap to stop" label in continuous mode, where a tap on this
+  /// control is the hands-free interrupt.
+  final bool agentSpeaking;
   final bool capturing;
   final VoidCallback onBegin;
   final VoidCallback onEnd;
@@ -191,7 +204,8 @@ class _VoiceTalkButtonState extends State<VoiceTalkButton>
   Widget build(BuildContext context) {
     final colour = widget.capturing ? widget.activeColor : widget.accent;
     final label =
-        VoiceTalkMode.action(widget.mode, capturing: widget.capturing);
+        VoiceTalkMode.action(widget.mode,
+            capturing: widget.capturing, agentSpeaking: widget.agentSpeaking);
 
     final core = AnimatedContainer(
       duration: const Duration(milliseconds: 150),
