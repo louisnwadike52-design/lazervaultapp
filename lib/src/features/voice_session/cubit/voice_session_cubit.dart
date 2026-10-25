@@ -9,6 +9,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as get_pkg;
 import 'package:http/http.dart' as http;
 import 'package:livekit_client/livekit_client.dart';
+// ignore: implementation_imports — onConfigureNativeAudio is the documented
+// override point for the native audio session but is not exported publicly.
+import 'package:livekit_client/src/track/audio_management.dart';
+// ignore: implementation_imports — NativeAudioConfiguration lives beside it.
+import 'package:livekit_client/src/support/native_audio.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
@@ -740,8 +745,24 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // Both remain admin-tunable per market via the /voice/session/start
   // overrides below, which is the right place to trade latency against being
   // cut off for a given language and speech rate.
-  static int get _turnSilenceDefaultMs => _isIOS ? 4000 : 3200;
-  static int get _graceDefaultMs => _isIOS ? 2800 : 2000;
+  // RAISED 2026-10-25 (4000/3200 + 2800/2000 -> 5500/5000 + 3500/3000).
+  //
+  // The reported symptom is still "it sends before I have finished". These are
+  // the windows that decide it, and the cost of being too generous is latency
+  // while the cost of being too tight is a sentence cut in half and an agent
+  // answering the wrong question. A user mid-thought pauses longer than a user
+  // reading aloud, and Nigerian English speech rates vary widely, so the floor
+  // should sit where the slowest ordinary pause still lands inside it.
+  //
+  // Android gains proportionally more than iOS: its recognizer restart is the
+  // slower of the two, so a mid-sentence pause plus a re-arm needs the larger
+  // grace to avoid losing the continuation.
+  //
+  // Still admin-overridable per market via voice_turn_silence_ms and
+  // voice_end_of_turn_grace_ms, which remain the right place to trade latency
+  // against being cut off for a given language and speech rate.
+  static int get _turnSilenceDefaultMs => _isIOS ? 5500 : 5000;
+  static int get _graceDefaultMs => _isIOS ? 3500 : 3000;
 
   /// Server overrides for the two endpointing windows, from
   /// `/voice/session/start`. Null until the session reports them, and null
@@ -1722,6 +1743,41 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     //  • autoGainControl keeps a soft/low voice audible.
     // Server-side LiveKit Krisp BVC (background-voice cancellation) layers on
     // top of this whenever audio flows to server STT (livekit input mode).
+    // PIN THE iOS AUDIO CATEGORY FOR THE WHOLE SESSION.
+    //
+    // LiveKit recomputes the native audio configuration from its TRACK STATE
+    // on every track change (lib/src/track/audio_management.dart):
+    //
+    //     none       -> soloAmbient
+    //     remoteOnly -> playback
+    //     otherwise  -> playAndRecordSpeaker
+    //
+    // So the category is rewritten as the agent's audio track comes and goes,
+    // and every rewrite is an audio ROUTE CHANGE. That is the reported
+    // "constant volume up and down": iOS shows the volume HUD because the
+    // volume buttons change meaning between the media and call contexts, and
+    // the categories differ in output gain, so the agent audibly ramps.
+    //
+    // iOS ONLY, and deliberately so: both of LiveKit's call sites for this
+    // hook are guarded by PlatformType.iOS. Android configures its audio mode
+    // once in NativeAudioManagement.start() and never consults this, so this
+    // changes nothing there — any volume symptom reported on Android has a
+    // different cause and is NOT addressed by this.
+    //
+    // On iOS the hybrid barge-in publish happened to hold the category still
+    // during the agent's turn; outside that window nothing did. Pinning one
+    // configuration removes the cause rather than compensating for it, and
+    // keeps Apple's voice-processing I/O unit (hardware AEC) engaged
+    // continuously — which is also what stops the agent's own voice leaking
+    // into the recognizer.
+    //
+    // onConfigureNativeAudio is a documented override point ("it's possible to
+    // set custom function here"), but lives under src/ rather than the public
+    // barrel, hence the implementation imports. A LiveKit upgrade that moves it
+    // fails at COMPILE time, not silently at runtime.
+    onConfigureNativeAudio =
+        (_) async => NativeAudioConfiguration.playAndRecordSpeaker;
+
     _room = Room(
       roomOptions: const RoomOptions(
         defaultAudioCaptureOptions: AudioCaptureOptions(
