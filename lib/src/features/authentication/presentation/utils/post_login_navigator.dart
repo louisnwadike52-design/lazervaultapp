@@ -4,6 +4,7 @@ import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/utils/kyc_completion.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/signup_resume.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_login_prompt.dart';
 
 /// THE ONE CALL EVERY SUCCESSFUL LOGIN MAKES.
 ///
@@ -25,6 +26,13 @@ import 'package:lazervault/src/features/authentication/presentation/utils/signup
 /// Always `offAllNamed`: the credential screens behind this must not stay on
 /// the stack, or a back gesture returns to a login the user has already passed.
 void goAfterLogin(User user, {bool fromForgotPasscode = false}) {
+  // A NEW SESSION STARTS HERE, so the once-per-login verification prompt is
+  // armed again. Placed in the shared navigator rather than at each login
+  // screen for the same reason everything else is: six places to remember is
+  // six places to forget, and forgetting would mean someone who skipped once
+  // is never asked again.
+  KycLoginPrompt.resetForNewSession();
+
   final route = resolvePostLoginRoute(
     step: user.currentSignupStep,
     status: user.signupStatus,

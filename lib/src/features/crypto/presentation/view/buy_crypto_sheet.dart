@@ -25,6 +25,7 @@ import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pbgrpc.dart' show QuidaxAssetNetwork;
 import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
 
 /// Streamlined BUY bottom sheet — the mirror of [SellCryptoSheet].
 ///
@@ -32,11 +33,17 @@ import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 /// The user enters an amount in fiat OR crypto (toggle), the live rate drives
 /// the conversion, and Buy runs the same [runSwapFlow] pipeline (quote → PIN →
 /// async live receipt) as the sell. Pays from the user's local-currency wallet.
+/// Gated on verification BEFORE the sheet opens — see ensureCryptoTradeAllowed.
+/// Gating the ENTRY FUNCTION rather than each call site is what makes this
+/// cover every way in (the detail screen, the all-assets list, deep links)
+/// without the gate having to be remembered at each of them.
 Future<void> showBuyCryptoSheet(
   BuildContext context, {
   required Crypto crypto,
   CryptoCubit? cubit,
-}) {
+}) async {
+  if (!await ensureCryptoTradeAllowed(context, operation: 'buy crypto')) return;
+  if (!context.mounted) return;
   final CryptoCubit c = cubit ?? context.read<CryptoCubit>();
   return showModalBottomSheet(
     context: context,

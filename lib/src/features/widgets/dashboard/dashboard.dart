@@ -43,6 +43,8 @@ import 'package:lazervault/src/features/widgets/dashboard/dashboard_refresh_sign
 import 'package:get/get.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/dashboard/active_account_scope.dart';
+import 'package:lazervault/core/utils/kyc_completion.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_login_prompt.dart';
 part 'dashboard_widgets.dart';
 
 class Dashboard extends StatefulWidget {
@@ -105,9 +107,30 @@ class _DashboardState extends State<Dashboard> {
       // to say, the broadcast stands down for this session.
       final reportedSpecificChange =
           await _announceAccountNumberChanges(walkthroughUserId);
-      if (!mounted || reportedSpecificChange) return;
-      AccountUpdateAnnouncementService.instance
-          .maybeShow(context, userId: walkthroughUserId);
+      if (!mounted) return;
+      if (!reportedSpecificChange) {
+        await AccountUpdateAnnouncementService.instance
+            .maybeShow(context, userId: walkthroughUserId);
+      }
+
+      // Identity verification, LAST in the same chain and for the same reason
+      // the two above coordinate: it must never land on top of another modal.
+      //
+      // Only reachable when the platform does NOT require verification — when
+      // it does, the post-login router sends an unverified user into the
+      // verification flow and they never arrive at this dashboard. The two read
+      // the same gate, so they cannot both fire.
+      if (!mounted) return;
+      final u = context.read<AuthenticationCubit>().currentProfile?.user;
+      if (u != null) {
+        await KycLoginPrompt.maybeShow(
+          context,
+          gate: KycLoginGate.forHolder(
+            kycStatus: u.kycStatus,
+            kycTier: u.kycTier,
+          ),
+        );
+      }
     });
   }
 

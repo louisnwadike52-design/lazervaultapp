@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/widgets/verification_decorations.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_state.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
 part 'phone_verification_screen_widgets.dart';
 
 class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
@@ -526,6 +527,13 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                           message:
                               'We sent a 6-digit code via SMS to verify your phone number. Standard message rates may apply.',
                         ),
+                        SizedBox(height: 16.h),
+                        // Only renders on a RESUMED signup — see
+                        // SignupSwitchAccountCta. Invisible on a first run, and
+                        // on the Settings entry (fromSettings), where there is
+                        // no signup to leave.
+                        if (!widget.fromSettings)
+                          const SignupSwitchAccountCta(bottomPadding: 8),
                         SizedBox(height: 32.h),
                       ],
                     ),

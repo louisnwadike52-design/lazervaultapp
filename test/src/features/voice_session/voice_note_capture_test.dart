@@ -68,9 +68,8 @@ void main() {
       // It draws the live captions, so the user still sees words appear. Its
       // dispatch is already disabled in a gesture mode, so the two do not race to
       // submit the turn.
-      final begin = source.indexOf('Future<void> pttBegin() async {');
-      expect(begin, greaterThan(-1));
-      final body = source.substring(begin, begin + 2000);
+      final body = _methodBody(source, 'Future<void> pttBegin() async {');
+      expect(body, isNotEmpty, reason: 'pttBegin not found in the cubit');
       expect(body, contains('_noteCapture!.start()'));
       expect(body, contains('await startLocalListening();'));
     });
@@ -91,9 +90,8 @@ void main() {
     });
 
     test('every failure returns null rather than throwing into the turn', () {
-      final idx = source.indexOf('Future<String?> _transcribeTurnClip(');
-      expect(idx, greaterThan(-1));
-      final body = source.substring(idx, idx + 2200);
+      final body = _methodBody(source, 'Future<String?> _transcribeTurnClip(');
+      expect(body, isNotEmpty, reason: '_transcribeTurnClip not found');
       expect(body, contains('} catch (e) {'));
       expect(body, contains('return null;'));
       // And the clip is deleted either way — it has done its job.
@@ -123,4 +121,33 @@ void main() {
           reason: 'size and mime are enforced before Whisper sees the clip');
     });
   });
+}
+
+/// The body of a top-level method, from its signature to its closing brace.
+///
+/// Replaces the fixed-size `substring(start, start + 2000)` these assertions
+/// used to take. That window silently stopped covering the end of `pttBegin`
+/// the moment a comment was added to it — the call it was checking for was
+/// still right there in the source, two lines past the cut. A source assertion
+/// that fails because the function grew is a test that punishes explaining
+/// yourself, so it reads to the actual closing brace instead.
+///
+/// Brace counting is adequate here because these are real Dart method bodies
+/// whose braces balance; it is not a parser and does not need to be.
+String _methodBody(String source, String signature) {
+  final start = source.indexOf(signature);
+  if (start < 0) return '';
+  var depth = 0;
+  var seenOpen = false;
+  for (var i = start; i < source.length; i++) {
+    final c = source[i];
+    if (c == '{') {
+      depth++;
+      seenOpen = true;
+    } else if (c == '}') {
+      depth--;
+      if (seenOpen && depth == 0) return source.substring(start, i + 1);
+    }
+  }
+  return source.substring(start);
 }

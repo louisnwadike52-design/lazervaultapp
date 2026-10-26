@@ -19,13 +19,40 @@ import '../../../../core/grpc/crypto_grpc_client.dart';
 /// On an eligibility-lookup failure we DO NOT block: the backend gate remains
 /// the authoritative backstop, so a transient outage never wrongly locks a
 /// verified user out of trading.
+/// A short-lived memo of the last eligibility answer.
+///
+/// The gate moved from two submit-time checks to every money CTA on the crypto
+/// surface, so a user tapping through Buy → back → Swap would otherwise make
+/// three round trips in as many seconds and wait on each one.
+///
+/// Only a POSITIVE answer is cached. Caching a refusal would leave someone who
+/// has just verified still locked out for the rest of the window, which is the
+/// worst moment to tell them no — whereas re-asking after a refusal costs one
+/// call on a path the user is about to be stopped on anyway.
+({DateTime at, bool canTrade})? _eligibilityMemo;
+
+const Duration _eligibilityTtl = Duration(minutes: 2);
+
+/// Drop the memo. Called after any flow that can CHANGE eligibility, so a
+/// freshly verified user is not held back by a stale yes/no.
+void invalidateCryptoEligibility() => _eligibilityMemo = null;
+
 Future<bool> ensureCryptoTradeAllowed(
   BuildContext context, {
   String operation = 'trade crypto',
 }) async {
+  final memo = _eligibilityMemo;
+  if (memo != null &&
+      memo.canTrade &&
+      DateTime.now().difference(memo.at) < _eligibilityTtl) {
+    return true;
+  }
   try {
     final el = await GetIt.I<CryptoGrpcClient>().getCryptoEligibility();
-    if (el.canTrade) return true;
+    if (el.canTrade) {
+      _eligibilityMemo = (at: DateTime.now(), canTrade: true);
+      return true;
+    }
     if (!context.mounted) return false;
     await showModalBottomSheet(
       context: context,
@@ -88,6 +115,9 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
     // Route to identity verification, then re-check on return so the banner
     // disappears the moment the user reaches the required tier.
     await Get.toNamed(AppRoutes.kycBVNVerification);
+    // The memo may hold a pre-verification answer; the whole point of coming
+    // back from here is that it has changed.
+    invalidateCryptoEligibility();
     await _check();
   }
 

@@ -20,6 +20,7 @@ import 'package:lazervault/src/generated/crypto.pb.dart' as cpb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'asset_network_badge.dart';
 import 'crypto_shimmer_loading.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
 
 // AssetWalletSheet — bottom-sheet view of a single asset's wallet.
 // Renders:
@@ -37,6 +38,12 @@ import 'crypto_shimmer_loading.dart';
 // Idempotent on the server side: EnsureWalletAddress just returns the
 // existing address if one's already minted.
 
+/// Gated on verification before the sheet opens.
+///
+/// This one is a DEPOSIT surface, not just a view: the sheet mints and shows a
+/// receive address. Handing someone a deposit address for an unverified account
+/// invites an inbound transfer we then cannot credit cleanly, which is a worse
+/// outcome than not showing it.
 Future<void> showAssetWalletSheet(
   BuildContext context, {
   required String cryptoSymbol,
@@ -53,7 +60,11 @@ Future<void> showAssetWalletSheet(
   // appropriate context (browse vs sell-only entry mode, BLoC scope,
   // etc.). The sheet stays decoupled from routing.
   VoidCallback? onViewDetails,
-}) {
+}) async {
+  if (!await ensureCryptoTradeAllowed(context, operation: 'use your crypto wallet')) {
+    return;
+  }
+  if (!context.mounted) return;
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,

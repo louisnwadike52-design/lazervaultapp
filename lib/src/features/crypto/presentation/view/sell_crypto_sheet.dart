@@ -25,6 +25,7 @@ import '../widgets/crypto_flow_guidance.dart';
 import 'swap_flow_dispatcher.dart';
 import '../../domain/trade_precision.dart';
 import 'package:lazervault/src/features/crypto/domain/trade_amounts.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
 
 /// Streamlined SELL bottom sheet.
 ///
@@ -35,12 +36,17 @@ import 'package:lazervault/src/features/crypto/domain/trade_amounts.dart';
 /// exact same [runSwapFlow] pipeline as the full sell screen: live quote →
 /// transaction PIN → outcome. Keeps the sheet decoupled from the broken
 /// holdings-picker path.
+/// Gated on verification before the sheet opens — see showBuyCryptoSheet.
 Future<void> showSellCryptoSheet(
   BuildContext context, {
   required Crypto crypto,
   CryptoHolding? holding,
   CryptoCubit? cubit,
-}) {
+}) async {
+  if (!await ensureCryptoTradeAllowed(context, operation: 'sell crypto')) {
+    return;
+  }
+  if (!context.mounted) return;
   final CryptoCubit c = cubit ?? context.read<CryptoCubit>();
   return showModalBottomSheet(
     context: context,

@@ -653,7 +653,25 @@ class _CryptoScreenState extends State<CryptoScreen>
 
   Widget _buildQuickActionButton(String label, IconData icon, Color color) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
+        // EVERY money CTA on this row asks first.
+        //
+        // The gate used to sit at the END of the send and swap flows, at
+        // submit. So an unverified user picked an asset, typed an amount,
+        // reviewed a quote and entered their PIN before being told they could
+        // not do this — having done all the work the refusal makes pointless.
+        //
+        // Asking here costs one cached eligibility read and refuses at the
+        // first tap instead of the last. The submit-time checks stay where they
+        // are: this is the courtesy, those are the enforcement, and the backend
+        // gate behind them both is the one that actually decides.
+        if (!await ensureCryptoTradeAllowed(context,
+            operation: label.toLowerCase() == 'swap'
+                ? 'swap crypto'
+                : '${label.toLowerCase()} crypto')) {
+          return;
+        }
+        if (!mounted) return;
         final cryptoCubit = context.read<CryptoCubit>();
         switch (label) {
           case 'Buy':

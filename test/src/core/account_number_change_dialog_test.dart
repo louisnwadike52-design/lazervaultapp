@@ -87,9 +87,35 @@ void main() {
     });
 
     test('the broadcast is skipped when the specific one showed', () {
-      expect(
-          source, contains('if (!mounted || reportedSpecificChange) return;'),
+      // There are THREE modals in this callback now — the per-user account
+      // change, the broadcast announcement, and the identity-verification
+      // prompt — so pinning one exact line of source no longer describes the
+      // invariant. What must hold is that the broadcast is CONDITIONAL on the
+      // specific one not having shown.
+      expect(source, contains('reportedSpecificChange'),
+          reason: 'the broadcast must know whether the specific one showed');
+      expect(source, contains('if (!reportedSpecificChange) {'),
           reason: 'without this both fire and the modals stack');
+    });
+
+    test('every modal in the chain is awaited before the next is offered', () {
+      // The coordination only works if each modal is awaited. A forgotten
+      // `await` lets the next one open on top of the one still on screen,
+      // which is the exact failure the ordering above exists to prevent.
+      expect(source, contains('await AccountUpdateAnnouncementService.instance'),
+          reason: 'the broadcast must be awaited, or the KYC prompt stacks on it');
+      expect(source, contains('await KycLoginPrompt.maybeShow('),
+          reason: 'the verification prompt must be awaited like the others');
+    });
+
+    test('identity verification is offered LAST', () {
+      // It is the only one of the three that can route the user somewhere
+      // else, so it must not pre-empt the two that merely inform.
+      final broadcast = source.indexOf('AccountUpdateAnnouncementService.instance');
+      final kyc = source.indexOf('KycLoginPrompt.maybeShow(');
+      expect(kyc, greaterThan(-1));
+      expect(broadcast, lessThan(kyc),
+          reason: 'the informational modals speak before the one that navigates');
     });
 
     test('the callback awaits, or the guard cannot work', () {

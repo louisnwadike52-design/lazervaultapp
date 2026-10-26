@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
 
 class PasscodeSetupScreen extends StatefulWidget {
   const PasscodeSetupScreen({super.key});
@@ -273,6 +274,10 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                               child: LazerVaultLoader.tiny(),
                             ),
                           SizedBox(height: 24.h),
+                          // Only renders on a RESUMED signup — see
+                          // SignupSwitchAccountCta. On a first run it is an
+                          // invisible SizedBox.
+                          const SignupSwitchAccountCta(bottomPadding: 8),
                         ],
                       ),
                     ),
