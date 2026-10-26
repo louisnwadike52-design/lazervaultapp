@@ -29,9 +29,16 @@ class SpendingLimitsTab extends StatelessWidget {
   /// `CountryConfigs.<country>.dailyLimits[tier]` table (already used by
   /// signup + KYC screens) → use that as the displayed limit.
   ///
-  /// Defaults to `KycLevel.standard` (Tier 2) because that's the typical
-  /// state for a user who's past initial signup. The User entity does
-  /// not currently expose `kycTier`; when it does, branch on that here.
+  /// Reads the holder's REAL tier. It used to hard-code
+  /// `KycLevel.standard` (Tier 2) with a TODO, because the User entity did not
+  /// carry `kyc_tier` — so an unverified Tier-1 holder was shown Tier-2
+  /// limits, which is a wrong number on the one screen whose entire job is to
+  /// state the right one. The proto always carried the field; nothing mapped
+  /// it. It does now (see User.kycTier), so this branches on it.
+  ///
+  /// An unreadable tier falls back to Tier 1, the baseline every account
+  /// starts on — understating a limit is a smaller error than overstating one,
+  /// which invites a transfer that will be refused.
   ///
   /// Returns `(daily, monthly)` baseline pair, or `(null, null)` if we
   /// can't determine country.
@@ -43,10 +50,11 @@ class SpendingLimitsTab extends StatelessWidget {
       if (countryCode == null || countryCode.isEmpty) return (null, null);
       final country = CountryConfigs.getByCode(countryCode);
       if (country == null) return (null, null);
-      // TODO: thread real kycTier through User entity once auth-service
-      // exposes it on LoginResponse.data.user — default to standard for
-      // now (most post-signup users are Tier 2).
-      const tier = KycLevel.standard;
+      final tier = switch (profile.user.kycTier) {
+        >= 3 => KycLevel.advanced,
+        2 => KycLevel.standard,
+        _ => KycLevel.basic,
+      };
       final raw = country.dailyLimits[tier]?.toDouble();
       // 0 (or negative) = Unlimited (Tier 3), matching the backend's
       // shared/kyctiers convention — surface it as "no cap" (null), never as a
@@ -54,8 +62,14 @@ class SpendingLimitsTab extends StatelessWidget {
       final daily = (raw == null || raw <= 0) ? null : raw;
       // Monthly heuristic: 4× daily for basic, 8× for standard, 20× for
       // advanced — matches the typical regulator spread. Replace when
-      // CountryConfigs exposes an explicit monthly map.
-      const multiplier = 8.0; // standard tier
+      // CountryConfigs exposes an explicit monthly map. This was pinned at the
+      // standard 8× alongside the hard-coded tier above, so a Tier-1 holder
+      // was shown a monthly figure derived from someone else's tier.
+      final multiplier = switch (tier) {
+        KycLevel.basic => 4.0,
+        KycLevel.standard => 8.0,
+        KycLevel.advanced => 20.0,
+      };
       final monthly = daily != null ? daily * multiplier : null;
       return (daily, monthly);
     } catch (_) {

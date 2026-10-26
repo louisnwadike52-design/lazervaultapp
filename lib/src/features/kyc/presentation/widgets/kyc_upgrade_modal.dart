@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/kyc_completion.dart';
 
 /// Modal bottom sheet shown when a financial operation is blocked by KYC tier limits.
 ///
@@ -29,7 +30,15 @@ class KYCUpgradeModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final inReview = kycStatus == 'pending_review';
+    // Shared predicate, not an inline compare. This recognised exactly one of
+    // the wordings the backend can send, so a holder whose documents were
+    // already with us saw "verify now" and was invited to submit them twice.
+    //
+    // currentTier is passed too: a holder can reach a verified tier while the
+    // status still reads pending, and the pair resolves that consistently
+    // everywhere rather than each surface guessing.
+    final inReview = resolveKycState(status: kycStatus, tier: currentTier) ==
+        KycState.inReview;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),

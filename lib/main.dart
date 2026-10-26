@@ -63,6 +63,7 @@ import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/src/core/services/deep_link_service.dart';
 import 'dart:async';
 import 'package:lazervault/core/services/chat_theme_preference.dart';
+import 'package:lazervault/core/utils/kyc_completion.dart';
 part 'main_widgets.dart';
 
 Future<void> _checkPermissions() async {
@@ -324,6 +325,9 @@ void main() {
     // The admin-side refresh that bulk-updates flags via
     // `FeatureFlags.applyRemoteSnapshot` rides on top of this baseline.
     await FeatureFlags.init();
+    // The KYC mirror shares FeatureFlags' store and must be readable on the
+    // first frame, for the same reason: the dashboard consults it synchronously.
+    await KycSnapshot.init();
     // Hydrate admin-toggled flags from the endpoint registry's cached snapshot
     // (same /internal/voice-agents/settings poll that feeds the URL cache). On a
     // brand-new install the keys aren't cached yet, so flags hold their safe

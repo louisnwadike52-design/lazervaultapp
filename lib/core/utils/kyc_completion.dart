@@ -25,10 +25,30 @@
 /// happens: [KycState.inReview] blocks nothing and prompts nobody.
 library;
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:lazervault/core/config/feature_flags.dart';
 
 /// How far along a holder's identity verification is.
 enum KycState {
+  /// WE DO NOT KNOW. Neither field was populated at all.
+  ///
+  /// Distinct from [unverified], and the distinction is load-bearing. The
+  /// server gives every real account a `kyc_status`, defaulted to
+  /// `'not_started'` in the users table — so a genuinely unverified holder
+  /// arrives carrying that string and resolves to [unverified] correctly.
+  /// Both fields EMPTY therefore does not mean "not verified"; it means the
+  /// payload never carried them.
+  ///
+  /// That happens: `UserModel.fromProto` maps the `common` proto, which has no
+  /// KYC fields at all, and it is what builds the profile behind BIOMETRIC and
+  /// VOICE login. Folding this into [unverified] made every Face ID unlock
+  /// prompt a fully verified user to go and verify — on the app's most-used
+  /// daily path, telling people the app had forgotten something it had not.
+  ///
+  /// Prompts nobody and blocks nobody. Absence of evidence is not evidence.
+  unknown,
+
   /// Never started, or started and thrown away. The only state that prompts.
   unverified,
 
@@ -42,18 +62,14 @@ enum KycState {
   /// Done. No gate, no prompt, anywhere.
   verified;
 
-  /// True when a KYC-requiring service should let this holder through.
-  ///
-  /// [inReview] is deliberately NOT included. The holder has done their part,
-  /// but a virtual account issued against an uncleared check is the exact thing
-  /// the check exists to prevent — so services stay closed while telling the
-  /// user it is us they are waiting on, not them.
-  bool get allowsKycRequiredService => this == KycState.verified;
-
   /// True when the holder should be asked to verify.
   ///
-  /// [inReview] is excluded for the reason above, and [verified] obviously.
-  bool get shouldPrompt => this == KycState.unverified || this == KycState.rejected;
+  /// [inReview] is excluded — that holder has done their part and is waiting on
+  /// us, so walking them back into the form invites a second submission of
+  /// documents already with us. [unknown] is excluded because we have nothing
+  /// to base the ask on. [verified] obviously.
+  bool get shouldPrompt =>
+      this == KycState.unverified || this == KycState.rejected;
 }
 
 /// The tier a holder must reach to count as verified.
@@ -80,7 +96,14 @@ KycState resolveKycState({String? status, int? tier}) {
   final t = tier ?? 0;
   if (t >= kMinVerifiedKycTier) return KycState.verified;
 
-  switch ((status ?? '').trim().toLowerCase()) {
+  final s = (status ?? '').trim().toLowerCase();
+
+  // Nothing to go on at all: no usable tier AND no status. See [KycState.unknown]
+  // — a real account always carries a status, so this is an unpopulated payload
+  // rather than an unverified person.
+  if (t <= 0 && s.isEmpty) return KycState.unknown;
+
+  switch (s) {
     case 'approved':
     case 'verified':
     case 'completed':
@@ -95,9 +118,86 @@ KycState resolveKycState({String? status, int? tier}) {
     case 'declined':
       return KycState.rejected;
     default:
-      // not_started, empty, or anything we do not recognise.
+      // 'not_started', or a value added server-side that we do not recognise.
+      // Both mean a real account that has not got there yet.
       return KycState.unverified;
   }
+}
+
+/// THE LAST KYC STATE A FULL LOGIN SAW.
+///
+/// # WHY A MIRROR IS NEEDED AT ALL
+///
+/// Credential logins — passcode, email, phone, 2FA, step-up, social — all carry
+/// `kyc_tier` and `kyc_status` on the auth `User` proto, so the gate can read
+/// them straight off the response. BIOMETRIC and VOICE login do not: they
+/// rebuild the profile from ProfileCubit, whose user comes through
+/// `UserModel.fromProto` and the `common` proto, which has no KYC fields.
+///
+/// Face ID is the dominant daily unlock for anyone who has opted into it. With
+/// nothing to read, [KycState.unknown] correctly stops the app nagging a
+/// verified user — but it also means the once-per-login prompt would never fire
+/// on the path most people actually use, which is most of the feature gone.
+///
+/// So every login that DOES carry the fields records them, and a login that
+/// does not falls back to what the last one saw.
+///
+/// # STALENESS IS ACCEPTABLE HERE, AND ONLY HERE
+///
+/// The mirror can lag: verify on a second device and this one still holds the
+/// old answer until its next full login. The cost of that is one dismissible
+/// prompt shown to someone who has already verified — mildly annoying, and
+/// self-correcting.
+///
+/// It is NOT used for the hard gate. [KycLoginGate.forHolder] only consults the
+/// mirror for the PROMPT; a stale mirror must never be able to refuse someone
+/// the dashboard, which is why the blocking path reads live fields only.
+class KycSnapshot {
+  KycSnapshot._();
+
+  static const String _tierKey = 'kyc_snapshot_tier';
+  static const String _statusKey = 'kyc_snapshot_status';
+
+  static SharedPreferences? _prefs;
+
+  /// Load the mirror. Call once at startup, alongside FeatureFlags.init.
+  static Future<void> init() async {
+    try {
+      _prefs = await SharedPreferences.getInstance();
+    } catch (_) {
+      // A prompt is never worth failing startup for.
+    }
+  }
+
+  /// Record what a login actually saw.
+  ///
+  /// Ignores an empty reading rather than storing it: a biometric login must
+  /// not erase what the last credential login knew, which is the whole point.
+  static Future<void> remember({int? tier, String? status}) async {
+    final t = tier ?? 0;
+    final s = (status ?? '').trim();
+    if (t <= 0 && s.isEmpty) return;
+    try {
+      final prefs = _prefs ?? await SharedPreferences.getInstance();
+      _prefs = prefs;
+      await prefs.setInt(_tierKey, t);
+      await prefs.setString(_statusKey, s);
+    } catch (_) {/* best effort */}
+  }
+
+  /// Forget it. Called on logout and user switch, so the next person on this
+  /// device is never judged by the last person's verification.
+  static Future<void> clear() async {
+    try {
+      final prefs = _prefs ?? await SharedPreferences.getInstance();
+      _prefs = prefs;
+      await prefs.remove(_tierKey);
+      await prefs.remove(_statusKey);
+    } catch (_) {/* best effort */}
+  }
+
+  static int get tier => _prefs?.getInt(_tierKey) ?? 0;
+  static String get status => _prefs?.getString(_statusKey) ?? '';
 }
 
 /// The KYC inputs the post-login router needs, as ONE value.
@@ -108,7 +208,11 @@ KycState resolveKycState({String? status, int? tier}) {
 /// never fires. The router asks for one required value instead, so a surface
 /// either answers the question or does not compile.
 class KycLoginGate {
-  const KycLoginGate({required this.state, required this.isRequired});
+  const KycLoginGate({
+    required this.state,
+    required this.isRequired,
+    this.fromMirror = false,
+  });
 
   /// How far this holder has got.
   final KycState state;
@@ -117,15 +221,38 @@ class KycLoginGate {
   /// (`kyc_required_on_signup`, admin-tunable).
   final bool isRequired;
 
+  /// True when [state] came from [KycSnapshot] rather than from this login's
+  /// own payload. Such a reading may be stale, so it is allowed to prompt but
+  /// never to block — see [blocksDashboard].
+  final bool fromMirror;
+
   /// Build from the two fields every auth response carries, reading the live
   /// admin setting for the requirement.
   ///
   /// Takes the raw fields rather than a `User` so this stays in core and does
   /// not reach into the authentication feature.
   factory KycLoginGate.forHolder({String? kycStatus, int? kycTier}) {
+    var state = resolveKycState(status: kycStatus, tier: kycTier);
+
+    // The payload carried nothing — biometric or voice login. Fall back to what
+    // the last credential login recorded. See [KycSnapshot].
+    //
+    // Only ever consulted when the live fields are ABSENT, so a present value
+    // always wins and the mirror can never contradict the server.
+    if (state == KycState.unknown) {
+      state = resolveKycState(
+        status: KycSnapshot.status,
+        tier: KycSnapshot.tier,
+      );
+    }
+
     return KycLoginGate(
-      state: resolveKycState(status: kycStatus, tier: kycTier),
+      state: state,
       isRequired: FeatureFlags.isKycRequired,
+      // A mirrored reading must not be able to refuse someone the dashboard.
+      // It is good enough to ASK with and not good enough to BLOCK on.
+      fromMirror: resolveKycState(status: kycStatus, tier: kycTier) ==
+          KycState.unknown,
     );
   }
 
@@ -139,11 +266,13 @@ class KycLoginGate {
   /// Requires BOTH an admin who asked for it and a holder who has not done it.
   /// With the setting off this is always false and verification is asked for by
   /// the dismissible prompt instead.
-  bool get blocksDashboard => isRequired && state.shouldPrompt;
+  bool get blocksDashboard =>
+      isRequired && state.shouldPrompt && !fromMirror;
 
   /// True when the dismissible once-per-login prompt should be shown.
   ///
   /// The complement of [blocksDashboard] among holders who need to verify: if
   /// the hard gate is on, the user never reaches a dashboard to be prompted on.
-  bool get shouldPromptOnDashboard => !isRequired && state.shouldPrompt;
+  bool get shouldPromptOnDashboard =>
+      !blocksDashboard && state.shouldPrompt;
 }

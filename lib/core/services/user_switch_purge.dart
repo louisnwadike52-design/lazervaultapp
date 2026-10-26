@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/pending_actions/presentation/cubit/pendi
 import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_count_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
+import 'package:lazervault/core/utils/kyc_completion.dart';
 
 /// Per-user state that must not outlive the user it belongs to.
 ///
@@ -251,6 +252,14 @@ Future<void> purgeStaleUserCache(FlutterSecureStorage storage) async {
     if (serviceLocator.isRegistered<SecureStorageService>()) {
       await serviceLocator<SecureStorageService>().clearBiometricSession();
     }
+  } catch (_) {/* best-effort */}
+
+  // The KYC mirror is the PRIOR user's verification state. Left behind, the
+  // next person on this device is judged by it — a verified predecessor would
+  // suppress the new user's prompt entirely, and an unverified one would nag
+  // someone who has verified. Neither is recoverable without a full login.
+  try {
+    await KycSnapshot.clear();
   } catch (_) {/* best-effort */}
 
   // 2. SWR API cache (per-user profile/accounts/tier/limits/balances).

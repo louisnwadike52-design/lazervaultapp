@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 
 import 'package:lazervault/core/config/feature_flags.dart';
@@ -32,6 +34,18 @@ void goAfterLogin(User user, {bool fromForgotPasscode = false}) {
   // six places to forget, and forgetting would mean someone who skipped once
   // is never asked again.
   KycLoginPrompt.resetForNewSession();
+
+  // Record what THIS login saw, when it saw anything. Biometric and voice
+  // logins carry no KYC fields (see KycSnapshot) and deliberately do not
+  // overwrite — remember() ignores an empty reading, so the last credential
+  // login's answer survives.
+  //
+  // Fire-and-forget: routing must not wait on a preferences write, and a
+  // failed write only costs a prompt that does not fire.
+  unawaited(KycSnapshot.remember(
+    tier: user.kycTier,
+    status: user.kycStatus,
+  ));
 
   final route = resolvePostLoginRoute(
     step: user.currentSignupStep,

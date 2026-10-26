@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_upgrade_modal.dart';
+import 'package:lazervault/core/utils/kyc_completion.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 
 /// Proactive KYC gate for crypto money flows. Returns true when the user may
@@ -124,7 +125,14 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
   @override
   Widget build(BuildContext context) {
     if (!_loaded || !_blocked) return const SizedBox.shrink();
-    final inReview = _kycStatus == 'pending_review';
+    // Resolved through the shared predicate, not an inline string compare.
+    // This read `_kycStatus == 'pending_review'` and so recognised exactly one
+    // of the several wordings the backend can send ('pending', 'in_review',
+    // 'processing'), silently showing "verify now" to someone whose documents
+    // were already with us — and inviting a second submission of them.
+    final inReview =
+        resolveKycState(status: _kycStatus, tier: _currentTier) ==
+            KycState.inReview;
     const accent = Color(0xFFFB923C);
     return Container(
       margin: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
