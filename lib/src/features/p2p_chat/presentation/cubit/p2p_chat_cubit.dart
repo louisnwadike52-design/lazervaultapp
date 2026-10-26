@@ -57,6 +57,65 @@ class P2PChatCubit extends Cubit<P2PChatState> {
   StreamSubscription? _editedSubscription;
   StreamSubscription? _reactionSubscription;
   String? _conversationId;
+
+  /// The conversation this cubit is bound to, if it has been resolved yet.
+  /// The safety actions need it and must not fire against a null id.
+  String? get conversationId => _conversationId;
+
+  // ── Safety: block and report ──
+  //
+  // App Store Review Guideline 1.2 requires an app carrying user-generated
+  // content to let people report offensive content and block abusive users.
+  // Both are enforced SERVER-side — blocking only in the app would hide the
+  // messages from the person who asked not to receive them while still
+  // delivering them.
+  //
+  // Each returns whether it succeeded so the caller can confirm or apologise;
+  // the underlying error is logged, never shown, per the house rule that users
+  // see a generic message while the detail goes to the logs.
+
+  /// Block the other participant. Returns false if it could not be done.
+  Future<bool> blockPeer({String? reason}) async {
+    final id = _conversationId;
+    if (id == null) return false;
+    try {
+      await _repository.blockParticipant(id, reason: reason);
+      return true;
+    } catch (e) {
+      debugPrint('P2PChatCubit: block failed: $e');
+      return false;
+    }
+  }
+
+  /// Lift a block this user placed. Returns false if it could not be done.
+  Future<bool> unblockPeer() async {
+    final id = _conversationId;
+    if (id == null) return false;
+    try {
+      await _repository.unblockParticipant(id);
+      return true;
+    } catch (e) {
+      debugPrint('P2PChatCubit: unblock failed: $e');
+      return false;
+    }
+  }
+
+  /// Report the other participant, optionally citing one message.
+  ///
+  /// The server acknowledges even when it cannot file the alert, so a false
+  /// here means the request did not reach it at all.
+  Future<bool> reportPeer({String? messageId, String? reason}) async {
+    final id = _conversationId;
+    if (id == null) return false;
+    try {
+      await _repository.reportConversation(id,
+          messageId: messageId, reason: reason);
+      return true;
+    } catch (e) {
+      debugPrint('P2PChatCubit: report failed: $e');
+      return false;
+    }
+  }
   String? _otherUserId;
   String _otherUserName = '';
   int _currentPage = 1;

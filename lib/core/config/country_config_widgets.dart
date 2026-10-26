@@ -261,8 +261,26 @@ class CountryConfig {
     return dailyLimits[level] ?? dailyLimits[KycLevel.basic]!;
   }
 
+  /// Countries a NEW ACCOUNT can be opened from.
+  ///
+  /// Deliberately NARROWER than [isActive]. isActive means "the app does
+  /// something with this country" — international transfers, intl data, airtime
+  /// and currency exchange all legitimately list the UK, US, Ghana, Kenya and
+  /// South Africa, and gating those off would break real features. Signing UP,
+  /// though, is a regulatory question rather than a product one: onboarding runs
+  /// on BVN/NIN, which exist only in Nigeria, and the licensed partners behind
+  /// the accounts are licensed there.
+  ///
+  /// So the two were the same getter and should not have been. Every signup,
+  /// login, forgot-passcode and KYC surface reads this; the other features keep
+  /// reading [isActive] and are untouched.
+  ///
+  /// Adding a market later is a one-line change here.
+  static const Set<String> signupCountryCodes = {'NG'};
+
   /// Check if country is available for signup
-  bool get isAvailableForSignup => isActive;
+  bool get isAvailableForSignup =>
+      isActive && signupCountryCodes.contains(code);
 }
 
 /// Helper class for document-specific operations

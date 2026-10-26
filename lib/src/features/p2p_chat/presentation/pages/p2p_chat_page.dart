@@ -28,6 +28,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_cubit.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_chat_safety_menu.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_state.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_chat_input_bar.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_text_bubble.dart';
@@ -374,6 +375,18 @@ class _P2PChatPageState extends State<P2PChatPage>
           iconSize: 16,
         ),
         SizedBox(width: 6.w),
+        // Report / Block. Required by App Store Review Guideline 1.2 for any
+        // app carrying user-generated content, and this chat carries text and
+        // images between users. Both are enforced server-side.
+        P2pChatSafetyMenu(
+          cubit: context.read<P2PChatCubit>(),
+          peerName: _otherUserName,
+          // A block ends the conversation for both sides, so staying on a
+          // thread that can no longer send or receive would just look broken.
+          onBlocked: () {
+            if (mounted) Navigator.of(context).maybePop();
+          },
+        ),
         ServiceVoiceButton(
           serviceName: 'p2p_chat',
           conversationId: _conversationIdOrNull(),

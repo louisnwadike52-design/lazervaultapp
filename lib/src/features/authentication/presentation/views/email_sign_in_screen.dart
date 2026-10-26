@@ -809,7 +809,13 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
 
   void _openCountryPicker() {
     FocusScope.of(context).unfocus();
-    final countries = CountryConfigs.activeCountries;
+    // Signup surfaces list SIGNUP countries, not every active one. This was the
+    // only auth screen reading activeCountries directly, so it still offered the
+    // UK, US, Ghana, Kenya and South Africa while the phone, login and
+    // forgot-passcode pickers had already been filtered.
+    final countries = CountryConfigs.activeCountries
+        .where((c) => c.isAvailableForSignup)
+        .toList();
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,

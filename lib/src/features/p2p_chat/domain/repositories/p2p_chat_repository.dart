@@ -25,6 +25,13 @@ abstract class P2PChatRepository {
   // deleteConversationForMe hides it from this user's lists only (DB row stays).
   Future<void> setArchived(String conversationId, bool archived);
   Future<void> deleteConversationForMe(String conversationId);
+  // User-driven moderation. Blocking is enforced SERVER-side and symmetrically:
+  // once either side blocks, neither can send. Reporting files into the same
+  // admin alert queue the keyword filter uses.
+  Future<void> blockParticipant(String conversationId, {String? reason});
+  Future<void> unblockParticipant(String conversationId);
+  Future<void> reportConversation(String conversationId,
+      {String? messageId, String? reason});
   Future<List<Map<String, dynamic>>> searchUsers(String query);
   Future<List<P2PMessageEntity>> getMessages(String conversationId,
       {int page = 1, int limit = 50});

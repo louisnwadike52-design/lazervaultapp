@@ -796,7 +796,12 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     // Get active signup countries. PH/CA are isActive:false in CountryConfigs
     // (exchange-international-only, no Klasha wallet/VA), so they're excluded
     // here automatically.
-    final activeCountries = CountryConfigs.activeCountries;
+    // Signup lists SIGNUP countries only — see CountryConfig
+    // .isAvailableForSignup. The name is kept so the build below reads the
+    // same, but the contents are now filtered.
+    final activeCountries = CountryConfigs.activeCountries
+        .where((c) => c.isAvailableForSignup)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

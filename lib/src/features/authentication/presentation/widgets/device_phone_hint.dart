@@ -55,11 +55,16 @@ class DevicePhoneHint {
     final bare = hadPlus ? digits.substring(1) : digits;
     if (bare.isEmpty) return null;
 
+    // Both callers of this hint are the signup and login phone screens, where
+    // only signup countries can be CHOSEN. Resolving against every active
+    // country would prefill a dial code (+44 on a UK handset, say) that the
+    // picker cannot then offer — the field would show a country the user is
+    // unable to select or change away from.
     // 1) International: longest dial-code prefix match against the active
     // countries so e.g. +234… resolves to NG and +1… to the right NANP entry.
     CountryConfig? best;
     var bestLen = 0;
-    for (final c in CountryConfigs.activeCountries) {
+    for (final c in _selectableCountries) {
       final dial = c.dialingCode.replaceAll('+', '');
       if (dial.isNotEmpty && bare.startsWith(dial) && dial.length > bestLen) {
         best = c;
@@ -100,10 +105,16 @@ class DevicePhoneHint {
           ? national.substring(1)
           : national;
 
+  /// The countries this hint may resolve to: signup-available only.
+  static List<CountryConfig> get _selectableCountries => CountryConfigs
+      .activeCountries
+      .where((c) => c.isAvailableForSignup)
+      .toList();
+
   /// Resolve an ISO country code to its config, falling back to the first
-  /// active country. Returns null only when there are no active countries.
+  /// SIGNUP country. Returns null only when there are none.
   static CountryConfig? _countryFor(String? code) {
-    final list = CountryConfigs.activeCountries;
+    final list = _selectableCountries;
     if (list.isEmpty) return null;
     if (code != null && code.trim().isNotEmpty) {
       for (final c in list) {

@@ -91,6 +91,27 @@ class P2PChatRepositoryImpl implements P2PChatRepository {
   }
 
   @override
+  Future<void> blockParticipant(String conversationId, {String? reason}) async {
+    final token = await _getToken();
+    return _remoteDatasource.blockParticipant(conversationId, token,
+        reason: reason);
+  }
+
+  @override
+  Future<void> unblockParticipant(String conversationId) async {
+    final token = await _getToken();
+    return _remoteDatasource.unblockParticipant(conversationId, token);
+  }
+
+  @override
+  Future<void> reportConversation(String conversationId,
+      {String? messageId, String? reason}) async {
+    final token = await _getToken();
+    return _remoteDatasource.reportConversation(conversationId, token,
+        messageId: messageId, reason: reason);
+  }
+
+  @override
   Future<void> deleteConversationForMe(String conversationId) async {
     final token = await _getToken();
     return _remoteDatasource.deleteConversationForMe(conversationId, token);

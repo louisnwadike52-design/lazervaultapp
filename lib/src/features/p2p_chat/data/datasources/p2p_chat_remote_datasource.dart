@@ -274,6 +274,73 @@ class P2PChatRemoteDatasource {
     }
   }
 
+  /// Block the other participant of this conversation.
+  ///
+  /// Enforcement is server-side and SYMMETRIC — once either side has blocked,
+  /// neither can send. Hiding the thread in the app alone would be theatre.
+  Future<void> blockParticipant(
+      String conversationId, String accessToken, {String? reason}) async {
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/conversations/$conversationId/block'),
+          headers: _headers(accessToken),
+          body: jsonEncode({'reason': reason ?? ''}),
+        )
+        .timeout(_timeout);
+
+    _checkAuth(response);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to block');
+    }
+  }
+
+  /// Lift a block this user placed.
+  Future<void> unblockParticipant(
+      String conversationId, String accessToken) async {
+    final response = await _client
+        .delete(
+          Uri.parse('$_baseUrl/conversations/$conversationId/block'),
+          headers: _headers(accessToken),
+        )
+        .timeout(_timeout);
+
+    _checkAuth(response);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to unblock');
+    }
+  }
+
+  /// Report the other participant, optionally citing one message.
+  ///
+  /// The server answers 200 even when it could not file the alert: somebody who
+  /// has just reported something upsetting must not be told it failed. So this
+  /// only throws on transport or auth failure.
+  Future<void> reportConversation(
+    String conversationId,
+    String accessToken, {
+    String? messageId,
+    String? reason,
+  }) async {
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/conversations/$conversationId/report'),
+          headers: _headers(accessToken),
+          body: jsonEncode({
+            if (messageId != null) 'message_id': messageId,
+            'reason': reason ?? '',
+          }),
+        )
+        .timeout(_timeout);
+
+    _checkAuth(response);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to report');
+    }
+  }
+
   /// Per-user "delete": hides the conversation from this user's lists only. The
   /// conversation + messages + the other user's view remain in the DB.
   Future<void> deleteConversationForMe(
