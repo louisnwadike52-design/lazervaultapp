@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/post_login_navigator.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
-import 'package:lazervault/src/features/authentication/presentation/utils/signup_resume.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -103,16 +103,7 @@ class _TwoFactorVerificationScreenState
           context.read<ProfileCubit>().getUserProfile();
         } catch (_) {/* ProfileCubit not in scope — dashboard will load it */}
         if (profile != null) {
-          final u = profile.user;
-          final route = resolvePostLoginRoute(
-            step: u.currentSignupStep,
-            status: u.signupStatus,
-            email: u.email,
-            phone: u.phoneNumber,
-            hasPasscode: u.hasPasscode,
-            hasTransactionPin: u.hasTransactionPin,
-          );
-          Get.offAllNamed(route.name, arguments: route.args);
+          goAfterLogin(profile.user);
         } else {
           Get.offAllNamed(AppRoutes.dashboard);
         }

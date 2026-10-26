@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
-import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/post_login_navigator.dart';
 import 'package:lazervault/core/widgets/passcode_dots.dart';
 import 'package:lazervault/core/widgets/passcode_keypad.dart';
 import 'package:lazervault/core/widgets/shake_widget.dart';
@@ -89,7 +89,9 @@ class _EmailPasscodeLoginScreenState extends State<EmailPasscodeLoginScreen> {
       listener: (context, state) {
         if (state is AuthenticationSuccess) {
           context.read<ProfileCubit>().getUserProfile();
-          Get.offAllNamed(AppRoutes.dashboard);
+          // Same gates as every other login surface — this one used to skip
+          // resumption entirely and land on the dashboard.
+          goAfterLogin(state.profile.user);
         } else if (state is AuthenticationError) {
           Haptics.error();
           _shakeKey.currentState?.shake();

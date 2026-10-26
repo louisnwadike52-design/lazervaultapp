@@ -10,6 +10,7 @@ import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/server_status_service.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/post_login_navigator.dart';
 import 'package:lazervault/core/widgets/passcode_dots.dart';
 import 'package:lazervault/core/widgets/passcode_keypad.dart';
 import 'package:lazervault/core/widgets/shake_widget.dart';
@@ -248,7 +249,9 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
           // user; the cubit already persisted the new stored_phone/name cache.
           context.read<AuthenticationCubit>().hydrateProfile(state.profile);
           context.read<ProfileCubit>().getUserProfile();
-          Get.offAllNamed(AppRoutes.dashboard);
+          // Same gates as every other login surface — this one used to skip
+          // resumption entirely and land on the dashboard.
+          goAfterLogin(state.profile.user);
         } else if (state is PhonePasscodeFailure) {
           setState(() => _entered = '');
           // Self-lock / failed-login lockout → blocking countdown modal.

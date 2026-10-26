@@ -305,6 +305,27 @@ class FeatureFlags {
   // change until an admin flips it. Mirrored from system_settings via the same
   // internal endpoint + GetAuthenticationConfig.
   static const String emailVerificationRequired = 'email_verification_required';
+
+  /// Whether identity verification (KYC) is a REQUIRED step, admin-tunable.
+  ///
+  /// This single switch decides which of two shapes the product takes, and it
+  /// is read in both the signup flow and the post-login router so the two can
+  /// never disagree:
+  ///
+  ///   ON  — KYC is a step of onboarding like any other. An account that has
+  ///         not completed it resumes INTO verification on every login and
+  ///         there is no skip. Services that need KYC are simply unreachable
+  ///         because the dashboard is.
+  ///   OFF — the dashboard is reachable immediately. Verification is asked for
+  ///         once per login as a dismissible prompt, and the individual
+  ///         services that genuinely require it keep their own gates.
+  ///
+  /// Named `_on_signup` because that is where it was first asked for, but it
+  /// governs every entry point — a user who signed up while it was off and
+  /// comes back after an admin turns it on is gated on their next login, which
+  /// is the point of it being a platform setting rather than a signup-time
+  /// snapshot.
+  static const String kycRequiredOnSignup = 'kyc_required_on_signup';
   static const String phoneVerificationRequired = 'phone_verification_required';
   static const String socialLoginEnabledKey = 'social_login_enabled';
   static const String googleLoginEnabledKey = 'google_login_enabled';
@@ -541,6 +562,7 @@ class FeatureFlags {
       voiceAfricanLanguagesEnabled,
       emailVerificationRequired,
       phoneVerificationRequired,
+      kycRequiredOnSignup,
       autoBiometricLoginEnabled,
       appUpdateEnabledKey,
       crowdfundDonationAlertsVisible,
@@ -1987,6 +2009,26 @@ class FeatureFlags {
   /// Whether onboarding phone verification is required (admin toggle).
   static bool get isPhoneVerificationRequired {
     return _prefs?.getBool(phoneVerificationRequired) ?? false;
+  }
+
+  /// Whether identity verification is REQUIRED (admin toggle). See
+  /// [kycRequiredOnSignup] for what each state means.
+  ///
+  /// Defaults to FALSE, which is the opposite choice from
+  /// [isEmailVerificationRequired] and for a reason worth keeping: this default
+  /// is what a phone uses before it has ever reached the server, and when it is
+  /// wrong the two flags fail in opposite directions. A missing
+  /// email-verification value hides a SKIP BUTTON — erring towards required
+  /// costs a verified user nothing. A missing value here would REFUSE THE
+  /// DASHBOARD to everyone whose verification we cannot currently read, turning
+  /// one unreachable config endpoint into a platform-wide lockout of every
+  /// unverified account.
+  ///
+  /// So an unreadable config falls back to asking rather than blocking, and the
+  /// live admin value — which arrives within one settings poll — is what
+  /// actually enforces. Synchronous; call after [init].
+  static bool get isKycRequired {
+    return _prefs?.getBool(kycRequiredOnSignup) ?? false;
   }
 
   /// Whether to auto-fire the biometric OS prompt on the passcode lock screen for

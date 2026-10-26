@@ -41,6 +41,21 @@ class User extends Equatable {
   /// platform default on subsequent logins when set.
   final String? preferredLoginMethod;
 
+  /// The CBN KYC tier this holder has earned: 1 basic, 2 BVN-verified,
+  /// 3 BVN+NIN+liveness. Mirrors `users.kyc_tier`, the authoritative value
+  /// (see `microservices/shared/kyctiers`). 0 means the field was absent.
+  final int kycTier;
+
+  /// State of the holder's verification ATTEMPT — `not_started`,
+  /// `pending_review`, `approved`, `rejected`. Mirrors `users.kyc_status`.
+  ///
+  /// Carried ALONGSIDE [kycTier] rather than collapsed into one value because
+  /// they answer different questions and the gates need both: the tier says
+  /// what the holder may do, the status says whether they are waiting on us.
+  /// Resolve the pair with `resolveKycState` in core/utils/kyc_completion.dart
+  /// — never read either field directly in a gate.
+  final String? kycStatus;
+
   /// Two-factor authentication state (mirrors users.two_factor_enabled /
   /// two_factor_method on the backend). Surfaced so Settings reflects the
   /// current 2FA state without an extra round-trip.
@@ -83,6 +98,8 @@ class User extends Equatable {
     this.preferredLoginMethod,
     this.twoFactorEnabled = false,
     this.twoFactorMethod,
+    this.kycTier = 0,
+    this.kycStatus,
     this.dateOfBirth,
     this.address = PostalAddress.empty,
   });
@@ -113,6 +130,8 @@ class User extends Equatable {
     preferredLoginMethod: null,
     twoFactorEnabled: false,
     twoFactorMethod: null,
+    kycTier: 0,
+    kycStatus: null,
     dateOfBirth: null,
     address: PostalAddress.empty,
   );
@@ -151,6 +170,8 @@ class User extends Equatable {
     String? preferredLoginMethod,
     bool? twoFactorEnabled,
     String? twoFactorMethod,
+    int? kycTier,
+    String? kycStatus,
     String? dateOfBirth,
     PostalAddress? address,
   }) {
@@ -181,6 +202,8 @@ class User extends Equatable {
       preferredLoginMethod: preferredLoginMethod ?? this.preferredLoginMethod,
       twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
       twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
+      kycTier: kycTier ?? this.kycTier,
+      kycStatus: kycStatus ?? this.kycStatus,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       address: address ?? this.address,
     );
@@ -212,6 +235,8 @@ class User extends Equatable {
         preferredLoginMethod,
         twoFactorEnabled,
         twoFactorMethod,
+        kycTier,
+        kycStatus,
         dateOfBirth,
         address,
       ];

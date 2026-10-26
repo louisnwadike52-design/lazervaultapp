@@ -43,17 +43,31 @@ class LifestyleViewModePrefs {
 
   static const _key = 'lifestyle_view_mode';
 
+  /// The layout someone sees before they have chosen one: GRID.
+  ///
+  /// Banners were the original default and they do not survive the hub
+  /// growing. One entry per screenful means the later entries are below the
+  /// fold on arrival — present, but not discoverable by anyone who does not
+  /// think to scroll a screen that looks finished. Grid shows roughly three
+  /// times as many in the same space while keeping each entry's colour, so the
+  /// hub reads as a set of choices rather than a single promotion.
+  ///
+  /// Only the DEFAULT moved. A stored preference still wins, including a
+  /// stored `banner` — someone who picked banners keeps them, because the
+  /// whole point of persisting the choice is that it is theirs.
+  static const LifestyleViewMode _default = LifestyleViewMode.grid;
+
   static Future<LifestyleViewMode> load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final stored = prefs.getString(_key);
-      if (stored == null) return LifestyleViewMode.banner;
+      if (stored == null) return _default;
       return LifestyleViewMode.values.firstWhere(
         (m) => m.name == stored,
-        orElse: () => LifestyleViewMode.banner,
+        orElse: () => _default,
       );
     } catch (_) {
-      return LifestyleViewMode.banner;
+      return _default;
     }
   }
 

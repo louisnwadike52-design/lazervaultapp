@@ -10,6 +10,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/server_status_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/post_login_navigator.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -468,7 +469,11 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
           try {
             context.read<ProfileCubit>().getUserProfile();
           } catch (_) {/* dashboard loads it */}
-          Get.offAllNamed(AppRoutes.dashboard);
+          // Was an unconditional jump to the dashboard. Passing a step-up OTP
+          // is still a login, so it owes the same gates as any other: an
+          // unverified email, an unfinished signup, a never-set transaction
+          // PIN and now identity verification were all walked past here.
+          goAfterLogin(state.profile.user);
         } else if (state is AuthenticationError) {
           _handleFailure(state.message, code: state.code);
         } else if (state is AuthenticationFailure) {

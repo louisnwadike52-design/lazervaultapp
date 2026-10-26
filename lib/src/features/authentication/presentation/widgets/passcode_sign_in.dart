@@ -8,7 +8,6 @@ import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/login_flow_resolver.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
-import 'package:lazervault/src/features/authentication/presentation/utils/signup_resume.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/login_otp_screen.dart';
@@ -37,6 +36,7 @@ import 'dart:io' show Platform;
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/post_login_navigator.dart';
 
 class PasscodeSignIn extends StatefulWidget {
   const PasscodeSignIn({super.key});
@@ -993,39 +993,12 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
           // dashboard — robust to quitting mid-onboarding / reinstalling, since
           // it does not depend on local signup-draft state. Same logic the email
           // sign-in uses, so resumption is identical on both login surfaces.
-          final resume = signupResumeRoute(
-            user.currentSignupStep,
-            user.signupStatus,
-            email: user.email,
-            phone: user.phoneNumber,
-            hasPasscode: user.hasPasscode,
-            hasTransactionPin: user.hasTransactionPin,
-          );
-          if (resume != null) {
-            Get.offAllNamed(resume.name, arguments: resume.args);
-          } else if (FeatureFlags.isPhoneVerificationRequired &&
-              (user.phoneNumber?.isNotEmpty ?? false) &&
-              !user.verified) {
-            // Re-verification gate: a user who onboarded while phone verification
-            // was off (admin later turned it on) is guided to verify before the
-            // dashboard. Email is gated server-side at login, so success implies a
-            // verified (or not-required) email already.
-            Get.offAllNamed(AppRoutes.phoneVerification, arguments: {
-              'phoneNumber': user.phoneNumber,
-              'isRequired': true,
-              'nextRoute': AppRoutes.dashboard,
-            });
-          } else if (!user.hasTransactionPin) {
-            // Backend says this user never finished transaction-PIN setup —
-            // resume the (skippable) PIN flow before the dashboard, mirroring
-            // the KYC onboarding gate. `fromLoginFlow` makes Skip/Done route
-            // forward to the dashboard (and if a PIN actually exists, the setup
-            // screen detects it and proceeds straight through).
-            Get.offAllNamed(AppRoutes.transactionPinSetup,
-                arguments: {'fromLoginFlow': true});
-          } else {
-            Get.offAllNamed(AppRoutes.dashboard);
-          }
+          // One router for every auth surface. The branches that used to live
+          // here — backend resume, the phone re-verification gate, the
+          // transaction-PIN gate — are all in resolvePostLoginRoute now, along
+          // with the identity-verification gate this screen never had. See
+          // post_login_navigator.dart for why the inputs travel together too.
+          goAfterLogin(user);
         } else if (state is AuthenticationFailure) {
           // A social sign-in (Google/Apple) failed. The cubit already surfaced
           // the error snackbar; re-arm the keypad so the lock screen returns

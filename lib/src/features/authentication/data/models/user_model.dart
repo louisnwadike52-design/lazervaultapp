@@ -44,6 +44,8 @@ class UserModel extends User {
     super.preferredLoginMethod,
     super.twoFactorEnabled = false,
     super.twoFactorMethod,
+    super.kycTier = 0,
+    super.kycStatus,
     super.dateOfBirth,
     super.address,
   });
@@ -140,6 +142,12 @@ class UserModel extends User {
           ? user.preferredLoginMethod
           : null,
       dateOfBirth: user.dateOfBirth.isNotEmpty ? user.dateOfBirth : null,
+      // Identity verification, straight off the proto. Every auth response
+      // carries these (auth-service userToProto sets them for login, 2FA,
+      // social and GetMe alike), so no gate needs a round-trip to learn
+      // whether this holder is verified.
+      kycTier: user.kycTier,
+      kycStatus: user.kycStatus.isNotEmpty ? user.kycStatus : null,
       address: PostalAddress(
         line1: user.addressLine1,
         line2: user.addressLine2,
@@ -152,6 +160,21 @@ class UserModel extends User {
   }
 
   /// Fills [role]/[roles] from JWT when the API user payload omits them.
+  ///
+  /// Uses [copyWith] rather than rebuilding the model field by field, and that
+  /// is the whole point of this shape. The hand-written constructor call it
+  /// replaced listed the fields it knew about, so every field added to the
+  /// model after it was written was silently dropped on the way through —
+  /// reset to its default, not carried.
+  ///
+  /// It had already happened: `twoFactorEnabled` and `twoFactorMethod` were
+  /// missing, so for any account whose login response omitted roles — exactly
+  /// the case this method exists to handle — a 2FA-enrolled user came out of it
+  /// reading as 2FA-off, and Settings showed two-factor disabled for someone
+  /// who had it on. The KYC fields would have been the next two to go the same
+  /// way, which is what prompted looking.
+  ///
+  /// With copyWith, a field not named here keeps its value by construction.
   UserModel withRolesFromAccessToken(String accessToken) {
     final claims = decodeJwtPayload(accessToken);
     final jwtRoles = rolesFromJwtClaims(claims);
@@ -159,31 +182,12 @@ class UserModel extends User {
     final needRoles = roles == null || roles!.isEmpty;
     final needRole = role == null || role!.isEmpty;
     if (!needRoles && !needRole) return this;
-    return UserModel(
-      id: id,
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      phoneNumber: phoneNumber,
-      username: username,
+    return copyWith(
       role: needRole && jwtRole != null ? jwtRole : role,
       roles: needRoles && jwtRoles != null ? jwtRoles : roles,
-      verified: verified,
-      isEmailVerified: isEmailVerified,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      language: language,
-      currency: currency,
-      country: country,
-      profilePicture: profilePicture,
-      signupStatus: signupStatus,
-      currentSignupStep: currentSignupStep,
-      hasPasscode: hasPasscode,
-      hasTransactionPin: hasTransactionPin,
-      hasPassword: hasPassword,
-      preferredLoginMethod: preferredLoginMethod,
-      dateOfBirth: dateOfBirth,
-      address: address,
+      // profilePicture is a sentinel slot in copyWith: omitting it KEEPS the
+      // current value, which is what is wanted. Passing it explicitly would
+      // clear a null-valued picture, and passing `null` means "remove it".
     );
   }
 
@@ -215,6 +219,8 @@ class UserModel extends User {
     String? preferredLoginMethod,
     bool? twoFactorEnabled,
     String? twoFactorMethod,
+    int? kycTier,
+    String? kycStatus,
     String? dateOfBirth,
     PostalAddress? address,
   }) {
@@ -245,6 +251,8 @@ class UserModel extends User {
         preferredLoginMethod: preferredLoginMethod ?? this.preferredLoginMethod,
         twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
         twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
+        kycTier: kycTier ?? this.kycTier,
+        kycStatus: kycStatus ?? this.kycStatus,
         dateOfBirth: dateOfBirth ?? this.dateOfBirth,
         address: address ?? this.address);
   }

@@ -1,4 +1,5 @@
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/kyc_completion.dart';
 
 /// Backend-authoritative onboarding resume routing.
 ///
@@ -121,13 +122,41 @@ String _postVerifyRoute({
   return null;
 }
 
-/// Full post-login destination used by EVERY successful-auth surface — the
-/// email/password sign-in, the passcode lock screen, AND the 2FA verification
-/// screen — so a 2FA login lands in exactly the same place a non-2FA login
-/// would: resume onboarding when the backend says signup is incomplete, else
-/// the passcode / transaction-PIN setup gates, else the dashboard. This closes
-/// the gap where 2FA success jumped straight to the dashboard past an
-/// incomplete signup or a not-yet-set passcode/PIN.
+/// THE post-login destination. Every successful-auth surface routes through it.
+///
+/// "Every" is now literally true and was not before. There were SIX surfaces
+/// that could end in an authenticated session — email/password sign-in, the
+/// passcode lock screen, email+passcode, phone+passcode, the 2FA verification
+/// screen and the step-up OTP screen — and they routed three different ways:
+///
+///   * 2FA called this function;
+///   * email sign-in and the lock screen each had their OWN hand-written tail,
+///     which had already drifted (only the lock screen re-gated phone
+///     verification; only email sign-in handled forgot-passcode);
+///   * email+passcode, phone+passcode and the step-up OTP screen called
+///     `Get.offAllNamed(dashboard)` unconditionally, skipping resumption
+///     ENTIRELY — so logging in through a step-up OTP, or on a phone+passcode
+///     account, walked past an unverified email, an unfinished signup and a
+///     never-set transaction PIN straight onto the dashboard.
+///
+/// Three copies of a routing rule is three places for a gate to be missing
+/// from, which is exactly what had happened. One function now, and a gate
+/// added here is a gate on every way into the app.
+///
+/// ## Order, and why
+///
+///   1. forgot-passcode reset — the user is here to set a passcode, nothing else
+///   2. backend-authoritative signup resume (`users.current_signup_step`)
+///   3. no passcode → set one; it is the credential everything else assumes
+///   4. phone re-verification, when an admin has turned it on
+///   5. no transaction PIN → set one
+///   6. identity verification, when the platform requires it
+///   7. dashboard
+///
+/// KYC is LAST because it is the heaviest step and the one most likely to be
+/// abandoned halfway. Asking for it before the PIN would mean a user who gives
+/// up on verification has no working transaction PIN either, and comes back to
+/// two unfinished things instead of one.
 ({String name, Map<String, dynamic>? args}) resolvePostLoginRoute({
   required String? step,
   required String? status,
@@ -136,6 +165,18 @@ String _postVerifyRoute({
   required bool hasPasscode,
   required bool hasTransactionPin,
   bool fromForgotPasscode = false,
+  /// Identity verification state + whether the platform requires it.
+  ///
+  /// REQUIRED, and one value rather than two optionals, so a surface cannot
+  /// supply half of it and silently lose the gate. Pass [KycLoginGate.none] to
+  /// mean "not gating on this here".
+  required KycLoginGate kyc,
+  /// Phone re-verification, for an account that onboarded while the admin
+  /// setting was off and comes back after it was turned on. Previously this
+  /// lived only in the passcode lock screen's private tail, so the same user
+  /// logging in by email was never asked.
+  bool phoneVerificationRequired = false,
+  bool phoneVerified = true,
 }) {
   if (fromForgotPasscode) {
     return (
@@ -147,26 +188,69 @@ String _postVerifyRoute({
       },
     );
   }
+
   final resume = signupResumeRoute(step, status,
       email: email,
       phone: phone,
       hasPasscode: hasPasscode,
       hasTransactionPin: hasTransactionPin);
   if (resume != null) return (name: resume.name, args: resume.args);
-  if (hasPasscode) {
-    if (!hasTransactionPin) {
-      return (
-        name: AppRoutes.transactionPinSetup,
-        args: <String, dynamic>{'fromLoginFlow': true},
-      );
-    }
-    return (name: AppRoutes.dashboard, args: null);
+
+  if (!hasPasscode) {
+    return (
+      name: AppRoutes.passcodeSetup,
+      args: <String, dynamic>{
+        'fromLoginFlow': true,
+        'hasTransactionPin': hasTransactionPin,
+      },
+    );
   }
-  return (
-    name: AppRoutes.passcodeSetup,
-    args: <String, dynamic>{
-      'fromLoginFlow': true,
-      'hasTransactionPin': hasTransactionPin,
-    },
-  );
+
+  // Phone re-verification gate. Only fires when an admin has turned the
+  // requirement on AND the account actually has a number to verify — with no
+  // phone on file there is nothing to send a code to, and blocking would
+  // strand the user with no way forward.
+  if (phoneVerificationRequired && !phoneVerified && (phone?.isNotEmpty ?? false)) {
+    return (
+      name: AppRoutes.phoneVerification,
+      args: <String, dynamic>{
+        'phoneNumber': phone,
+        'isRequired': true,
+        'nextRoute': AppRoutes.dashboard,
+      },
+    );
+  }
+
+  if (!hasTransactionPin) {
+    return (
+      name: AppRoutes.transactionPinSetup,
+      args: <String, dynamic>{'fromLoginFlow': true},
+    );
+  }
+
+  // Identity verification as a resumption step.
+  //
+  // This is what "users always have to complete KYC" means in routing terms:
+  // with the admin setting ON, an unverified account resumes INTO verification
+  // on every login, exactly like any other unfinished onboarding step, and
+  // there is no skip. With it OFF this never fires and the dashboard shows the
+  // dismissible prompt instead — one setting, two coherent products, and the
+  // two cannot disagree because both read the same gate.
+  //
+  // `inReview` does not land here: that holder has done their part and would
+  // otherwise be walked back into a form they already submitted. See KycState.
+  if (kyc.blocksDashboard) {
+    return (
+      name: AppRoutes.kycBVNVerification,
+      args: <String, dynamic>{
+        'fromSignup': false,
+        // Tells the screen to hide its skip affordance. The platform requires
+        // this, so offering a way past it would be a lie.
+        'isRequired': true,
+        'nextRoute': AppRoutes.dashboard,
+      },
+    );
+  }
+
+  return (name: AppRoutes.dashboard, args: null);
 }

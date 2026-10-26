@@ -281,6 +281,13 @@ class EndpointRegistry {
     // to decide whether the verify-email/phone step is skippable.
     'email_verification_required',
     'phone_verification_required',
+    // Whether identity verification is a required step (bool). THE LINK IN THIS
+    // CHAIN THAT HAS BROKEN THREE TIMES: the snapshot the app polls is built
+    // only from the keys in this set, so an admin can save this toggle, the
+    // gateway can serve it and FeatureFlags can hydrate it, and the value still
+    // never reaches a phone if it is missing here. Pinned by
+    // test/core/feature_flag_chain_is_complete_test.dart.
+    'kyc_required_on_signup',
     // App auto-update (store version check). Per-platform latest/min build
     // numbers + store URLs + master toggle + release notes. Cached here so the
     // version check is instant + offline-safe; AppUpdateService reads them via

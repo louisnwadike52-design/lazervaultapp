@@ -27,7 +27,11 @@ class NewLifestyleScreen extends StatefulWidget {
 }
 
 class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
-  LifestyleViewMode _viewMode = LifestyleViewMode.banner;
+  // Matches LifestyleViewModePrefs' default. This is what the FIRST FRAME
+  // renders, before the stored preference has been read off disk — so if the
+  // two disagree, every visit opens on one layout and visibly snaps to the
+  // other.
+  LifestyleViewMode _viewMode = LifestyleViewMode.grid;
 
   @override
   void initState() {

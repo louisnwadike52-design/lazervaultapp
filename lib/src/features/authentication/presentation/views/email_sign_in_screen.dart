@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/data/app_data.dart';
-import 'package:lazervault/src/features/authentication/presentation/utils/signup_resume.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -31,6 +30,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/session_login_completer.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/voice_login_sheet.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/post_login_navigator.dart';
 
 class EmailSignInScreen extends StatefulWidget {
   const EmailSignInScreen({super.key});
@@ -442,59 +442,21 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                   // Load user profile after successful authentication
                   context.read<ProfileCubit>().getUserProfile();
 
-                  if (fromForgotPasscode) {
-                    // Go to passcode setup when resetting — pass hasTransactionPin
-                    // so user isn't routed to TX PIN setup if they already have one
-                    Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {
-                      'fromLoginFlow': true,
-                      'hasTransactionPin': profile.user.hasTransactionPin,
-                      'fromForgotPasscode': true,
-                    });
-                    break;
-                  }
-
-                  // Resume from any incomplete signup step — the backend
-                  // is source of truth (users.current_signup_step + users.
-                  // signup_status). If the user logged in mid-signup
-                  // (e.g. they signed up, didn't verify their phone, and
-                  // came back days later), drop them at the right resume
-                  // route instead of the dashboard. `null` / empty / the
-                  // "complete" status means signup is done → fall through
-                  // to the usual dashboard-or-passcode-setup branch.
-                  final resumeRoute = signupResumeRoute(
-                    profile.user.currentSignupStep,
-                    profile.user.signupStatus,
-                    email: profile.user.email,
-                    phone: profile.user.phoneNumber,
-                    hasPasscode: profile.user.hasPasscode,
-                    hasTransactionPin: profile.user.hasTransactionPin,
-                  );
-                  if (resumeRoute != null) {
-                    Get.offAllNamed(resumeRoute.name,
-                        arguments: resumeRoute.args);
-                    break;
-                  }
-
-                  // Backend is source of truth — use login response data
+                  // Persist the login method BEFORE routing: the boot router
+                  // reads it to decide which login screen a returning user
+                  // sees, and goAfterLogin replaces the whole stack.
                   if (profile.user.hasPasscode) {
-                    // Passcode already set — persist login method.
                     await _storage.write(
                         key: 'login_method', value: 'passcode');
-                    if (!profile.user.hasTransactionPin) {
-                      // No transaction PIN yet — resume the (skippable) PIN setup
-                      // before the dashboard, mirroring the KYC onboarding gate.
-                      Get.offAllNamed(AppRoutes.transactionPinSetup,
-                          arguments: {'fromLoginFlow': true});
-                    } else {
-                      Get.offAllNamed(AppRoutes.dashboard);
-                    }
-                  } else {
-                    // No passcode — route to setup, pass hasTransactionPin for downstream
-                    Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {
-                      'fromLoginFlow': true,
-                      'hasTransactionPin': profile.user.hasTransactionPin,
-                    });
                   }
+
+                  // One router for every auth surface. This screen used to
+                  // carry its own copy of the tail, which had already drifted
+                  // from the lock screen's: only that one re-gated phone
+                  // verification, so the same account was asked here and not
+                  // there. See post_login_navigator.dart.
+                  goAfterLogin(profile.user,
+                      fromForgotPasscode: fromForgotPasscode);
                   break;
                 case AuthenticationFailure(message: final msg):
                   // Self-lock / failed-login lockout: show the blocking countdown
