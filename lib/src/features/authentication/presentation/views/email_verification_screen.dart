@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -426,11 +427,21 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                         // to skip to, so it's hidden. Also hidden on PROD builds:
                         // email verification is mandatory in production, so the
                         // "Skip for now" escape hatch is dev/staging only.
+                        // The environment check already hid this in
+                        // production; the admin flag is added so ONE setting
+                        // governs skippability everywhere, rather than this
+                        // screen following a different rule from the signup one.
                         if (!widget.fromSettings &&
-                            !currentAppEnvironment.isProduction)
+                            !currentAppEnvironment.isProduction &&
+                            !FeatureFlags.isEmailVerificationRequired)
                           SizedBox(height: 12.h),
+                        // The environment check already hid this in
+                        // production; the admin flag is added so ONE setting
+                        // governs skippability everywhere, rather than this
+                        // screen following a different rule from the signup one.
                         if (!widget.fromSettings &&
-                            !currentAppEnvironment.isProduction)
+                            !currentAppEnvironment.isProduction &&
+                            !FeatureFlags.isEmailVerificationRequired)
                           Center(
                             child: TextButton(
                               onPressed: _skipVerification,

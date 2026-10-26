@@ -105,6 +105,28 @@ class SignupStateService {
     }
   }
 
+  /// TRUE when THIS launch resumed a signup that was already in progress.
+  ///
+  /// Not persisted and deliberately so: it describes this run of the app, not
+  /// the account. `has_incomplete_signup` cannot answer the question, because
+  /// it is also true while somebody is partway through signing up for the first
+  /// time — it is set as each step completes. Asking it would put a "sign in as
+  /// someone else" exit on the first-run flow, inviting people to abandon a
+  /// signup they were in the middle of.
+  ///
+  /// Set by main.dart at the single point where a resume route is chosen.
+  static bool wasResumedThisLaunch = false;
+
+  /// Abandon the in-progress signup so a different person can sign in.
+  ///
+  /// Clears the draft only. Nothing server-side is touched: the half-finished
+  /// account still exists and its owner can come back to it by signing up with
+  /// the same number — this device simply stops resuming into it.
+  Future<void> abandonForAccountSwitch() async {
+    wasResumedThisLaunch = false;
+    await clearDraft();
+  }
+
   /// Clear signup draft from local storage
   /// Called on successful signup completion or when user abandons signup
   Future<void> clearDraft() async {

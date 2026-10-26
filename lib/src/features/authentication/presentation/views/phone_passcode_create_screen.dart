@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -139,6 +140,9 @@ class _PhonePasscodeCreateScreenState extends State<PhonePasscodeCreateScreen> {
           onBackspace: _onBackspace,
         ),
         SizedBox(height: 20.h),
+        // Only renders when THIS launch resumed an in-progress signup, so the
+        // first-run flow never offers a way to abandon itself.
+        const SignupSwitchAccountCta(),
       ],
     );
   }

@@ -14,7 +14,8 @@ import 'endpoint_registry.dart';
 /// account number changes when the banking rail behind the wallet switches).
 ///
 /// Admin-authored via the `announce_va_migration` system-settings key (JSON:
-/// {"version": 1, "title": "...", "body": "...", "cta": "..."}), fetched from
+/// {"version": 1, "expires_at": "2026-11-30T00:00:00Z", "title": "...",
+/// "body": "...", "cta": "..."}), fetched from
 /// the same no-auth internal settings endpoint the dashboard adverts / help
 /// config use. Never throws — an unreachable backend or malformed value
 /// simply shows nothing. The admin publishes the announcement AFTER a
@@ -87,7 +88,7 @@ class AccountUpdateAnnouncementService {
               break;
             }
           }
-          _announcement = _parse(raw);
+          _announcement = parseAnnouncement(raw);
           _fetchedAt = DateTime.now();
         }
       }
@@ -95,7 +96,10 @@ class AccountUpdateAnnouncementService {
     return _announcement;
   }
 
-  AccountUpdateAnnouncement? _parse(String? raw) {
+  /// Exposed so the expiry rule — the thing that stops a forgotten
+  /// announcement nagging forever — can be tested without a network.
+  @visibleForTesting
+  AccountUpdateAnnouncement? parseAnnouncement(String? raw) {
     if (raw == null || raw.trim().isEmpty) return null;
     try {
       final decoded = jsonDecode(raw);
@@ -105,6 +109,33 @@ class AccountUpdateAnnouncementService {
           ? versionRaw
           : int.tryParse('${versionRaw ?? ''}') ?? 0;
       if (version <= 0) return null;
+
+      // AN ANNOUNCEMENT MUST EXPIRE, AND A MISSING EXPIRY MEANS EXPIRED.
+      //
+      // This is a BROADCAST: it has no audience filter, so it reaches everyone
+      // who has not yet acknowledged it — including users whose account never
+      // moved, and people who signed up long after the migration it describes.
+      // Telling a brand-new customer that their account details have changed is
+      // alarming and false.
+      //
+      // Reported 2026-10-26: `announce_va_migration` was still published at
+      // version 1 from a migration batch that had long finished, so the modal
+      // kept appearing with nothing behind it. The admin is meant to retire it;
+      // nothing made them, and nothing noticed.
+      //
+      // Failing CLOSED on a missing expires_at is the point. An announcement
+      // somebody forgets to retire now stands itself down instead of nagging
+      // forever, and the only way to keep one running is to say until when.
+      //
+      // The per-user AccountNumberChangeWatcher is unaffected: it fires only
+      // for an account whose number actually changed and shows the real values,
+      // which is why the dashboard gives it priority over this.
+      final expiresRaw = (decoded['expires_at'] ?? '').toString().trim();
+      if (expiresRaw.isEmpty) return null;
+      final expiresAt = DateTime.tryParse(expiresRaw);
+      if (expiresAt == null || !DateTime.now().toUtc().isBefore(expiresAt.toUtc())) {
+        return null;
+      }
       return AccountUpdateAnnouncement(
         version: version,
         title: (decoded['title'] ?? '').toString().trim().isNotEmpty

@@ -16,6 +16,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/login_flow_resolver.dart';
+import 'package:lazervault/core/services/signup_state_service.dart';
 // FreshInstallGuard intentionally disabled (see call site below); re-enable the
 // import + the clearIfBuildChanged() call together if a stale-state regression returns.
 // import 'package:lazervault/core/services/fresh_install_guard.dart';
@@ -610,6 +611,9 @@ Future<String> _determineInitialRoute() async {
               currentSignupStep == 'phone_otp');
       if (hasRealDraft) {
         print('📲 Resuming in-progress phone signup at $currentSignupStep');
+        // Mark the launch as a RESUME so the signup screens can offer a way
+        // out to a different account. First-run signup must not show it.
+        SignupStateService.wasResumedThisLaunch = true;
         final phoneRoute =
             await _getRouteForPhoneSignupStep(storage, currentSignupStep);
         if (phoneRoute != null) return phoneRoute;

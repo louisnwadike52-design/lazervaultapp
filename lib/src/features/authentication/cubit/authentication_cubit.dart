@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/utils/auth_error_copy.dart';
 import 'package:lazervault/src/features/family_account/presentation/utils/family_archive_session.dart';
 
 import 'package:dartz/dartz.dart' hide State;
@@ -3043,7 +3044,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             'reason': failure.message,
           });
           if (_handleUnknownCachedIdentifier(failure.message)) return;
-          _showErrorSnackbar('Login Failed', failure.message);
+          // Never the raw failure: it carries backend codes like
+          // "email_not_verified: ..." straight to the user. The mapper also
+          // knows when the screen we route to already says this better, in
+          // which case a banner would only cover it.
+          final copy = authErrorCopy(failure.message);
+          if (!copy.suppressBanner) {
+            _showErrorSnackbar(copy.title, copy.message);
+          }
           emit(PasscodeLoginInProgress(
             enteredPasscode: '',
             isAuthenticating: false,
@@ -3103,7 +3111,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           return;
         }
         if (_handleUnknownCachedIdentifier(failure.message)) return;
-        _showErrorSnackbar('Login Failed', failure.message);
+        // Never the raw failure: it carries backend codes like
+        // "email_not_verified: ..." straight to the user. The mapper also
+        // knows when the screen we route to already says this better, in
+        // which case a banner would only cover it.
+        final copy = authErrorCopy(failure.message);
+        if (!copy.suppressBanner) {
+          _showErrorSnackbar(copy.title, copy.message);
+        }
         emit(PasscodeLoginInProgress(
           enteredPasscode: '',
           isAuthenticating: false,
