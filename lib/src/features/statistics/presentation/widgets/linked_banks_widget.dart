@@ -115,11 +115,11 @@ class LinkedBanksWidget extends StatelessWidget {
         // surface as a styled modal with a "Manage banks" CTA (delete-to-add),
         // never a toast. Nothing was charged (both checked before any fee).
         if (state is OpenBankingError && state.operation == 'linkAccount') {
-          if (state.errorCode == kLinkLimitReachedCode) {
-            showLinkLimitReachedDialog(context, state.message);
-          } else if (state.errorCode == kLinkingCapacityCode) {
-            showLinkingCapacityDialog(context);
-          }
+          handleBankLinkFailure(
+            context,
+            errorCode: state.errorCode,
+            message: state.message,
+          );
         }
 
         // BalanceRefreshed used to surface a "Balance updated" snackbar,

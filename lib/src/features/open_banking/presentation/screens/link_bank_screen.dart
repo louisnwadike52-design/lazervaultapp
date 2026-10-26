@@ -336,19 +336,25 @@ class _LinkBankScreenState extends State<LinkBankScreen> with BankLinkFeeMixin {
             // CTAs, not a red snackbar. Landing here means the link was rejected,
             // so pop back to the linked-banks list once dismissed (don't strand
             // the user on the dead Mono webview).
-            if (state.errorCode == kLinkLimitReachedCode) {
-              showLinkLimitReachedDialog(context, state.message)
-                  .then((_) => _exit(false));
-            } else if (state.errorCode == kLinkingCapacityCode) {
-              showLinkingCapacityDialog(context).then((_) => _exit(false));
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
+            // One dispatcher for every link-failure code — see
+            // handleBankLinkFailure. Each of the three screens that can start a
+            // link used to branch over the codes itself, so a new code had to
+            // be added in three places.
+            handleBankLinkFailure(
+              context,
+              errorCode: state.errorCode,
+              message: state.message,
+              onDismissed: () => _exit(false),
+            ).then((handled) {
+              if (!handled && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            });
           } else if (state is ServiceUnavailable ||
               state is OpenBankingOffline) {
             // Banking / Mono backend unreachable → themed "temporarily

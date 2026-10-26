@@ -1406,11 +1406,11 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                   // Nothing was charged (both checked before any fee). Clear the
                   // pending side so the next link attempt isn't misrouted.
                   setState(() => _pendingLinkIsSource = null);
-                  if (state.errorCode == kLinkLimitReachedCode) {
-                    showLinkLimitReachedDialog(context, state.message);
-                  } else if (state.errorCode == kLinkingCapacityCode) {
-                    showLinkingCapacityDialog(context);
-                  }
+                  handleBankLinkFailure(
+                    context,
+                    errorCode: state.errorCode,
+                    message: state.message,
+                  );
                 }
               },
             ),

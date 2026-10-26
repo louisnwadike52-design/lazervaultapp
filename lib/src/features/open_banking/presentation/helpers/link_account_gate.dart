@@ -36,6 +36,22 @@ const String kLinkLimitReachedCode = 'LINK_LIMIT_REACHED';
 /// per-user cap and NOT the user's fault. Matches banking-service.
 const String kLinkingCapacityCode = 'LINKING_CAPACITY_EXHAUSTED';
 
+/// Backend codes for a link refused because the account could not be shown to
+/// belong to this user. Matches banking-service linked_account_ownership.go.
+///
+/// Linking somebody else's bank is not a mistake to retry past — a direct-debit
+/// mandate on it would pull money from an account its real owner never agreed
+/// to hand over — so these are shown as a dead end with no "try again", unlike
+/// every other link failure.
+const String kBankNotYoursCode = 'BANK_ACCOUNT_NOT_YOURS';
+const String kBankNameMismatchCode = 'BANK_ACCOUNT_NAME_MISMATCH';
+const String kBankUnverifiableCode = 'BANK_ACCOUNT_UNVERIFIABLE';
+
+/// Backend code when the user has no verified identity to check a bank account
+/// against. Routes to verification rather than refusing outright, because this
+/// one IS resolvable by the user.
+const String kBankLinkKycRequiredCode = 'KYC_REQUIRED';
+
 /// Returns true when [accountType] denotes the user's PERSONAL account — the
 /// only account type where open-banking bank-linking is offered.
 ///
@@ -598,4 +614,239 @@ Future<void> showLinkingCapacityDialog(BuildContext context) {
       ),
     ),
   );
+}
+
+/// Modal for a link refused on ownership grounds.
+///
+/// Deliberately offers no retry. The other link failures are transient — a cap
+/// to free up, capacity to wait for — and this one is not: the same account
+/// will be refused again, and inviting another attempt sends the user back
+/// through the whole bank-login flow to be told the same thing.
+///
+/// The copy is the backend's, and the backend's copy never names what was found
+/// on the account. If the person linking is NOT the owner, echoing back the
+/// name or BVN would tell them whose account they just probed.
+Future<void> showBankNotYoursDialog(BuildContext context, String message) {
+  const warn = Color(0xFFF87171);
+  final text = message.trim().isNotEmpty
+      ? message.trim()
+      : 'This bank account is not in your name. You can only link accounts '
+          'that belong to you.';
+  return showDialog(
+    context: context,
+    barrierColor: Colors.black.withValues(alpha: 0.6),
+    builder: (dialogCtx) => Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 18.h),
+        decoration: BoxDecoration(
+          color: _kCard,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: warn.withValues(alpha: 0.35)),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 24,
+                offset: const Offset(0, 10)),
+          ],
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 52.w,
+            height: 52.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: warn.withValues(alpha: 0.16),
+            ),
+            child: Icon(Icons.gpp_maybe_rounded, color: warn, size: 26.sp),
+          ),
+          SizedBox(height: 14.h),
+          Text("We couldn't confirm this account is yours",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w800)),
+          SizedBox(height: 8.h),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.72),
+                fontSize: 12.5.sp,
+                height: 1.4),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'We check the name on a bank account against your verified '
+            'details before linking it. If you believe this is wrong, contact '
+            'support and we will look into it.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 11.5.sp,
+                height: 1.4),
+          ),
+          SizedBox(height: 18.h),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _kBrand,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 13.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+                elevation: 0,
+              ),
+              child: Text('OK',
+                  style: TextStyle(
+                      fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ]),
+      ),
+    ),
+  );
+}
+
+/// Modal for a link blocked because the user has not verified their identity.
+///
+/// Unlike the ownership refusal this IS resolvable by the user, so it routes
+/// them to verification instead of dead-ending.
+Future<void> showBankLinkNeedsKycDialog(BuildContext context, String message) {
+  const accent = Color(0xFFFB923C);
+  final text = message.trim().isNotEmpty
+      ? message.trim()
+      : 'Please verify your identity before linking a bank account.';
+  return showDialog(
+    context: context,
+    barrierColor: Colors.black.withValues(alpha: 0.6),
+    builder: (dialogCtx) => Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 18.h),
+        decoration: BoxDecoration(
+          color: _kCard,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: accent.withValues(alpha: 0.35)),
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 52.w,
+            height: 52.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accent.withValues(alpha: 0.16),
+            ),
+            child: Icon(Icons.verified_user_outlined, color: accent, size: 26.sp),
+          ),
+          SizedBox(height: 14.h),
+          Text('Verify your identity first',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w800)),
+          SizedBox(height: 8.h),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.72),
+                fontSize: 12.5.sp,
+                height: 1.4),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'We check that a bank account is in your name before linking it, '
+            'so we need your verified details first.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 11.5.sp,
+                height: 1.4),
+          ),
+          SizedBox(height: 18.h),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogCtx).pop();
+                Get.toNamed(AppRoutes.kycBVNVerification);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _kBrand,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 13.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+                elevation: 0,
+              ),
+              child: Text('Verify now',
+                  style: TextStyle(
+                      fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white.withValues(alpha: 0.7),
+                padding: EdgeInsets.symmetric(vertical: 11.h),
+              ),
+              child: Text('Not now',
+                  style: TextStyle(
+                      fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ]),
+      ),
+    ),
+  );
+}
+
+/// ONE dispatcher for every bank-link failure code.
+///
+/// The three screens that can start a link each had their own if/else over the
+/// codes, so a new code had to be added in three places and was added in none —
+/// which is how an ownership refusal would otherwise have surfaced as a raw
+/// backend string in a snackbar.
+///
+/// Returns true when the failure was shown as a dedicated modal, so the caller
+/// can skip its generic error handling. [onDismissed] runs after the modal
+/// closes, for screens that must pop a now-dead link view.
+Future<bool> handleBankLinkFailure(
+  BuildContext context, {
+  required String? errorCode,
+  required String message,
+  VoidCallback? onDismissed,
+}) async {
+  final code = (errorCode ?? '').trim().toUpperCase();
+  Future<void>? shown;
+  switch (code) {
+    case kLinkLimitReachedCode:
+      shown = showLinkLimitReachedDialog(context, message);
+      break;
+    case kLinkingCapacityCode:
+      shown = showLinkingCapacityDialog(context);
+      break;
+    case kBankNotYoursCode:
+    case kBankNameMismatchCode:
+    case kBankUnverifiableCode:
+      shown = showBankNotYoursDialog(context, message);
+      break;
+    case kBankLinkKycRequiredCode:
+      shown = showBankLinkNeedsKycDialog(context, message);
+      break;
+  }
+  if (shown == null) return false;
+  await shown;
+  onDismissed?.call();
+  return true;
 }
