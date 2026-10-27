@@ -675,8 +675,19 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
                               ],
                             ),
                             SizedBox(height: 30.h),
-                            // Skip button (only on the initial PIN-entry step)
-                            if (!_isConfirmMode && !_isCreating)
+                            // Skip button. ONBOARDING AND LOGIN-RESUME CANNOT
+                            // SKIP: the transaction PIN is what authorises
+                            // money, and every step of the resumption chain is
+                            // now compulsory except the phone OTP (which needs
+                            // an SMS we cannot guarantee). It survives only
+                            // where the screen was PUSHED from somewhere the
+                            // user can return to — Settings, or a flow that
+                            // asked for a PIN mid-way — where backing out is
+                            // already possible and a skip is just the same
+                            // exit spelled differently.
+                            if (_returnToCaller &&
+                                !_isConfirmMode &&
+                                !_isCreating)
                               TextButton(
                                 onPressed: _skipPinSetup,
                                 child: Text(

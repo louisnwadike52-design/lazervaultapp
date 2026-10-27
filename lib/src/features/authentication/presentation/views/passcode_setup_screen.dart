@@ -37,18 +37,11 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
   bool get _fromForgotPasscode =>
       (Get.arguments as Map<String, dynamic>?)?['fromForgotPasscode'] == true;
 
-  /// Set by [resolvePostLoginRoute] for a PROVIDER-LINKED (Google/Apple)
-  /// account: it has no password and no passcode, because the provider link
-  /// is its credential, so a passcode is an offer and must be declinable.
-  /// Without it every social login lands here with no skip and no way past.
-  bool get _allowSkipOverride =>
-      (Get.arguments as Map<String, dynamic>?)?['allowSkip'] == true;
-
-  /// "Skip for now" belongs to first-run signup — and to the one login-flow
-  /// case where the passcode is an offer rather than the credential. See the
-  /// button and [_allowSkipOverride].
-  bool get _allowSkip =>
-      _allowSkipOverride || (!_fromLoginFlow && !_fromForgotPasscode);
+  /// "Skip for now" belongs to FIRST-RUN SIGNUP only. Reached from a login —
+  /// a returning account without a passcode, a social sign-in that has never
+  /// set one, or a forgot-passcode reset — the passcode is a required step of
+  /// the resumption chain, so there is nothing to skip to.
+  bool get _allowSkip => !_fromLoginFlow && !_fromForgotPasscode;
 
   @override
   void initState() {
@@ -106,26 +99,7 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
           }
         }
         if (state is AuthenticationSuccess) {
-          if (_skipped && (_fromLoginFlow || _fromForgotPasscode)) {
-            // DECLINED from inside a login, which only a provider-linked
-            // account can do (see _allowSkipOverride). Hand the same user back
-            // to the one post-login router with the passcode gate suppressed
-            // for this pass: it decides what is still outstanding from the
-            // account's real state — the transaction PIN (still required: a
-            // PIN guards money however you sign in), phone, identity, then the
-            // dashboard. Jumping straight at PIN setup here would both strand
-            // a holder who already HAS a PIN and skip every gate after it.
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                goAfterLogin(state.profile.user,
-                    passcodeDeclined: true,
-                    // The skip was only offered because the resolver judged
-                    // this account social; say so rather than re-deriving it
-                    // from a user the response may not have stamped.
-                    isSocial: true);
-              }
-            });
-          } else if (_skipped) {
+          if (_skipped) {
             // Skip passcode, continue to transaction PIN setup
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {

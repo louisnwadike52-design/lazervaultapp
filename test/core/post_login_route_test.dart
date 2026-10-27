@@ -465,18 +465,18 @@ void main() {
   });
 
   // A GOOGLE/APPLE ACCOUNT HAS NO CREDENTIAL OF ITS OWN.
+  // EVERY RESUMPTION STEP IS COMPULSORY EXCEPT THE PHONE OTP.
   //
-  // `fromLoginFlow` hides "Skip for now" on the passcode screen, which is
-  // right for email and phone accounts — the passcode IS their login
-  // credential. A social account has no password and no passcode because the
-  // provider link is the credential, so a passcode is an OFFER; a no-skip
-  // offer is a dead end, and every social login landed on it.
-  group('resolvePostLoginRoute — the passcode is an offer to a social account',
+  // The passcode is what the app lock, the biometric unlock and every quick
+  // login use, so a login that reaches this gate must set one — including a
+  // social (Google/Apple) sign-in, whose provider link gets them in but
+  // leaves the app with no local credential. Setting it needs nothing
+  // external: six digits, twice. Only the phone OTP stays skippable, because
+  // it needs an SMS we cannot guarantee arrives.
+  group('resolvePostLoginRoute — the passcode is compulsory for every account',
       () {
     ({String name, Map<String, dynamic>? args}) run({
       required bool hasPasscode,
-      required bool isSocial,
-      bool passcodeDeclined = false,
       bool hasTransactionPin = true,
     }) =>
         resolvePostLoginRoute(
@@ -486,78 +486,70 @@ void main() {
           hasPasscode: hasPasscode,
           hasTransactionPin: hasTransactionPin,
           kyc: KycLoginGate.none,
-          isSocial: isSocial,
-          passcodeDeclined: passcodeDeclined,
         );
 
-    test('social + no passcode → passcode setup WITH the skip flag', () {
-      final r = run(hasPasscode: false, isSocial: true);
-      expect(r.name, AppRoutes.passcodeSetup);
-      expect(r.args?['fromLoginFlow'], true);
-      expect(r.args?['allowSkip'], true);
-    });
-
-    test('NON-social + no passcode → no skip flag at all', () {
-      final r = run(hasPasscode: false, isSocial: false);
+    test('no passcode → passcode setup, and never a skip flag', () {
+      final r = run(hasPasscode: false);
       expect(r.name, AppRoutes.passcodeSetup);
       expect(r.args?['fromLoginFlow'], true);
       expect(r.args!.containsKey('allowSkip'), isFalse,
-          reason: 'the key must be ABSENT, so the screen\'s existing no-skip '
-              'rule for the login flow is untouched for everyone else');
+          reason: 'the screen hides its skip on fromLoginFlow; nothing may '
+              'hand it a way back');
     });
 
-    test('social + a passcode already set → entirely unchanged', () {
-      expect(run(hasPasscode: true, isSocial: true).name, AppRoutes.dashboard);
-      expect(
-        run(hasPasscode: true, isSocial: true, hasTransactionPin: false).name,
-        AppRoutes.transactionPinSetup,
-      );
+    test('a passcode already set is never asked for again', () {
+      expect(run(hasPasscode: true).name, AppRoutes.dashboard);
+      expect(run(hasPasscode: true, hasTransactionPin: false).name,
+          AppRoutes.transactionPinSetup);
     });
 
-    test('declining lands on the PIN gate, then the dashboard', () {
-      // A PIN is required to move money however you signed in, so the gate
-      // after the declined passcode is unchanged.
-      final pin = run(
-          hasPasscode: false,
-          isSocial: true,
-          passcodeDeclined: true,
-          hasTransactionPin: false);
-      expect(pin.name, AppRoutes.transactionPinSetup);
-      expect(pin.args?['fromLoginFlow'], true);
-
-      // And with a PIN already set, straight through — never back to the
-      // screen they just declined.
-      final done =
-          run(hasPasscode: false, isSocial: true, passcodeDeclined: true);
-      expect(done.name, AppRoutes.dashboard);
-    });
-
-    test('declining is ignored for a NON-social account', () {
-      // No other account is shown a way to decline; a future caller passing
-      // the flag for one must not get past the credential gate.
-      final r =
-          run(hasPasscode: false, isSocial: false, passcodeDeclined: true);
-      expect(r.name, AppRoutes.passcodeSetup);
-    });
-
-    test('the chained next-route carries the social verdict', () {
-      // The phone screen's hand-off is this resolver re-run. Losing isSocial
-      // there would strand a social holder one screen later instead.
-      final r = resolvePostLoginRoute(
+    test('the phone OTP is the only skippable step in the chain', () {
+      // Phone: skippable when the admin has not made it mandatory.
+      final phone = resolvePostLoginRoute(
         step: null,
         status: 'complete',
         email: 'a@b.com',
         phone: '+2348012345678',
-        hasPasscode: false,
+        hasPasscode: true,
         hasTransactionPin: true,
         phoneVerified: false,
+        phoneVerificationRequired: false,
         kyc: KycLoginGate.none,
-        isSocial: true,
-        passcodeDeclined: true,
       );
-      expect(r.name, AppRoutes.phoneVerification);
-      expect(r.args?['nextRoute'], AppRoutes.dashboard,
-          reason: 'the passcode must stay declined through the hand-off');
+      expect(phone.name, AppRoutes.phoneVerification);
+      expect(phone.args?['isRequired'], false,
+          reason: 'the screen shows its skip when the admin does not require '
+              'verification');
+
+      // Email, PIN and identity: no skip affordance is ever passed.
+      final email = resolvePostLoginRoute(
+        step: null,
+        status: 'complete',
+        email: 'a@b.com',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        isEmailVerified: false,
+        emailVerificationRequired: true,
+        kyc: KycLoginGate.none,
+      );
+      expect(email.name, AppRoutes.emailVerification);
+      expect(email.args?['isRequired'], true);
+
+      final pin = run(hasPasscode: true, hasTransactionPin: false);
+      expect(pin.args!.containsKey('allowSkip'), isFalse);
+
+      final kyc = resolvePostLoginRoute(
+        step: null,
+        status: 'complete',
+        email: 'a@b.com',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        kyc: const KycLoginGate(state: KycState.unverified, isRequired: true),
+      );
+      expect(kyc.name, AppRoutes.kycBVNVerification);
+      expect(kyc.args, isNull,
+          reason: 'the verification screen enforces its own stricter rule and '
+              'reads no argument from here');
     });
   });
 

@@ -468,28 +468,13 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                         key: 'login_method', value: 'passcode');
                   }
 
-                  // THIS screen hosts the Google/Apple buttons as well as
-                  // email+password, and a social sign-in writes
-                  // `login_method = 'social'` before the session is saved. Read
-                  // it as the fallback for `auth_type`, which older backends do
-                  // not stamp: without either signal a social account looks
-                  // like any other passwordless one and the resolver would send
-                  // it to a passcode screen with no skip and no way past.
-                  final storedMethod =
-                      (await _storage.read(key: 'login_method'))
-                          ?.toLowerCase()
-                          .trim();
-                  if (!mounted) break;
-
                   // One router for every auth surface. This screen used to
                   // carry its own copy of the tail, which had already drifted
                   // from the lock screen's: only that one re-gated phone
                   // verification, so the same account was asked here and not
                   // there. See post_login_navigator.dart.
                   goAfterLogin(profile.user,
-                      fromForgotPasscode: fromForgotPasscode,
-                      isSocial: profile.user.isSocialAccount ||
-                          storedMethod == 'social');
+                      fromForgotPasscode: fromForgotPasscode);
                   break;
                 case AuthenticationFailure(message: final msg):
                   // Self-lock / failed-login lockout: show the blocking countdown
