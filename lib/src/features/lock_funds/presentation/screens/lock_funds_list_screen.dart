@@ -16,6 +16,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
+import '../cubit/lock_funds_page_store.dart';
 import '../cubit/lock_funds_state.dart';
 import '../cubit/create_lock_cubit.dart';
 import 'create_lock_carousel.dart';
@@ -320,8 +321,9 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                           // re-render). The full-screen loader is ONLY for the very
                           // first load, when there is nothing to show yet.
                           if (state is LockFundsLoading) {
-                            return _lastLoaded != null
-                                ? _buildLocksView(_lastLoaded!)
+                            final remembered = _remembered();
+                            return remembered != null
+                                ? _paintLocks(remembered)
                                 : _buildLoadingState();
                           }
 
@@ -329,8 +331,9 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                             // Keep stale data visible on a refresh failure — the
                             // listener already surfaces the error snackbar. Only
                             // show the full error screen if we never loaded.
-                            return _lastLoaded != null
-                                ? _buildLocksView(_lastLoaded!)
+                            final remembered = _remembered();
+                            return remembered != null
+                                ? _paintLocks(remembered)
                                 : _buildErrorState(state.message);
                           }
 
@@ -346,8 +349,9 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                           // back from a detail re-renders the list in place
                           // and refreshes underneath, instead of tearing the
                           // page down to a full-screen reload.
-                          return _lastLoaded != null
-                              ? _buildLocksView(_lastLoaded!)
+                          final remembered = _remembered();
+                          return remembered != null
+                              ? _paintLocks(remembered)
                               : _buildLoadingState();
                         },
                       ),
@@ -433,6 +437,23 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
       ),
     );
   }
+
+  /// The last answer we can honestly paint while no fresh [LockFundsLoaded]
+  /// is in hand: what this screen held, else what [LockFundsPageStore]
+  /// remembered across opens (so a re-entry paints the list on its first
+  /// frame, before the cubit's post-frame load has even started).
+  LockFundsLoaded? _remembered() {
+    if (_lastLoaded != null) return _lastLoaded;
+    final uid = context.read<LockFundsCubit>().currentUserId ??
+        context.read<AuthenticationCubit>().userId ??
+        '';
+    return LockFundsPageStore.peek(userId: uid);
+  }
+
+  /// A remembered result paints exactly as a fresh one does: the welcome
+  /// screen for an empty list, the list otherwise.
+  Widget _paintLocks(LockFundsLoaded loaded) =>
+      loaded.lockFunds.isEmpty ? _buildEmptyState() : _buildLocksView(loaded);
 
   Widget _buildLocksView(LockFundsLoaded state) {
     final filtered = _filterStatus == null

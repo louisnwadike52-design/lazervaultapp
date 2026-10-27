@@ -82,6 +82,70 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
           List<UnifiedTransaction> ledger, List<UnifiedTransaction> external) =>
       mergeExternalTransfers(ledger, external);
 
+  /// Page one of the local SQLite cache for the active (user, account), as
+  /// the same stale-subset response [fetchAllTransactions] serves on a hit —
+  /// or null on a miss, an empty cache, a filter the cache cannot answer, or
+  /// any cache error. Reading it never touches the network.
+  Future<TransactionListResponse?> _cachedPageOne({
+    required String scopedKey,
+    required int limit,
+    TransactionFilters? filters,
+  }) async {
+    // A search query is applied locally afterwards; filters the cache cannot
+    // answer (dates, amounts, counterparty) bypass it.
+    if (_shouldBypassCache(filters)) return null;
+    try {
+      final cached = await cacheDataSource.getCachedTransactions(
+        userId: scopedKey,
+        limit: limit,
+      );
+      if (cached.isEmpty) return null;
+      // Apply local search filter to cached results
+      var cachedResults = cached;
+      if (filters?.searchQuery?.isNotEmpty == true) {
+        final query = filters!.searchQuery!.toLowerCase();
+        cachedResults = cached
+            .where((tx) =>
+                tx.title.toLowerCase().contains(query) ||
+                tx.description?.toLowerCase().contains(query) == true ||
+                tx.counterpartyName?.toLowerCase().contains(query) == true ||
+                tx.transactionReference?.toLowerCase().contains(query) ==
+                    true ||
+                tx.formattedAmount.toLowerCase().contains(query))
+            .toList();
+      }
+      return TransactionListResponse(
+        transactions: cachedResults,
+        hasMore: false,
+        currentPage: 1,
+        totalPages: 1,
+        nextCursor: null,
+        // Stale subset (no external-transfer merge, capped hasMore) —
+        // the cubit follows up with a background network refresh.
+        fromCache: true,
+      );
+    } catch (e) {
+      // Cache miss or error, continue to network
+      return null;
+    }
+  }
+
+  @override
+  Future<TransactionListResponse?> peekCachedAllTransactions({
+    int limit = 20,
+    TransactionFilters? filters,
+  }) async {
+    final accountId = accountManager.activeAccountId;
+    if (accountId == null) return null;
+    final userId = await storage.read(key: 'user_id');
+    if (userId == null) return null;
+    return _cachedPageOne(
+      scopedKey: _accountScopedKey(userId, accountId),
+      limit: limit,
+      filters: filters,
+    );
+  }
+
   @override
   Future<TransactionListResponse> fetchAllTransactions({
     int page = 1,
@@ -99,46 +163,17 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       // Cache is scoped per (user, account) so selecting the Family & Friends
       // card doesn't surface the personal account's cached transactions, and
       // vice-versa. The cache table keys on user_id, so we pass a composite key.
+      // Try cache first (but skip if search query is present — apply locally after).
+      // Cache is scoped per (user, account) so selecting the Family & Friends
+      // card doesn't surface the personal account's cached transactions, and
+      // vice-versa. The cache table keys on user_id, so we pass a composite key.
       final userId = await storage.read(key: 'user_id');
       final scopedKey =
           userId != null ? _accountScopedKey(userId, accountId) : null;
-      if (page == 1 && scopedKey != null && !_shouldBypassCache(filters)) {
-        try {
-          final cached = await cacheDataSource.getCachedTransactions(
-            userId: scopedKey,
-            limit: limit,
-          );
-
-          if (cached.isNotEmpty) {
-            // Apply local search filter to cached results
-            var cachedResults = cached;
-            if (filters?.searchQuery?.isNotEmpty == true) {
-              final query = filters!.searchQuery!.toLowerCase();
-              cachedResults = cached
-                  .where((tx) =>
-                      tx.title.toLowerCase().contains(query) ||
-                      tx.description?.toLowerCase().contains(query) == true ||
-                      tx.counterpartyName?.toLowerCase().contains(query) ==
-                          true ||
-                      tx.transactionReference?.toLowerCase().contains(query) ==
-                          true ||
-                      tx.formattedAmount.toLowerCase().contains(query))
-                  .toList();
-            }
-            return TransactionListResponse(
-              transactions: cachedResults,
-              hasMore: false,
-              currentPage: page,
-              totalPages: 1,
-              nextCursor: null,
-              // Stale subset (no external-transfer merge, capped hasMore) —
-              // the cubit follows up with a background network refresh.
-              fromCache: true,
-            );
-          }
-        } catch (e) {
-          // Cache miss or error, continue to network
-        }
+      if (page == 1 && scopedKey != null) {
+        final cached = await _cachedPageOne(
+            scopedKey: scopedKey, limit: limit, filters: filters);
+        if (cached != null) return cached;
       }
 
       // Map filters to accounts-service parameters

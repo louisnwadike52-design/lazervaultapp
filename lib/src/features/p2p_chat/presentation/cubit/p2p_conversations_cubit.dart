@@ -4,10 +4,14 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/features/p2p_chat/domain/entities/connection_birthday_entity.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_conversation_entity.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_page_store.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_state.dart';
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
+
+part 'p2p_conversations_cubit_load.dart';
 
 class P2PConversationsCubit extends Cubit<P2PConversationsState> {
   /// Drop the signed-out user's conversation list.
@@ -17,6 +21,7 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
   /// unread counts — until a refetch replaces them. Of everything a singleton
   /// can leak, a conversation list is among the most plainly private.
   void clearOnLogout() {
+    P2PConversationsPageStore.clear();
     if (!isClosed) emit(P2PConversationsInitial());
   }
 
@@ -60,6 +65,18 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
   // root cause of the unread badge reverting to its old value after opening a chat.
   int _loadSeq = 0;
 
+  /// Loads currently between their first fetch and their final emit. A
+  /// realtime "connection accepted" nudge that lands meanwhile is queued
+  /// ([_nudgeAfterLoad]) instead of starting a nested load that would bump
+  /// [_loadSeq] and make the in-flight one drop its own result.
+  int _loadsInFlight = 0;
+  bool _nudgeAfterLoad = false;
+
+  /// True while THIS cubit is (re)connecting the realtime socket. The server
+  /// re-fires `connection_accepted` on connect; that echo must not trigger a
+  /// reload of the list the connect is running alongside.
+  bool _connectingRealtime = false;
+
   /// Set by P2PChatCubit on open/close so a live message for the conversation
   /// the user is already viewing doesn't double-bump the badge (that chat marks
   /// it read itself).
@@ -90,10 +107,17 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
     // A newly accepted/created connection should refresh the requests badge.
     _acceptSub = ws.connectionAcceptedStream.listen((_) {
       // Don't kick a nested load during the cold load — loadConversations()
-      // reconnects the WS via _syncSession, which re-fires this stream; a nested
-      // reload would bump _loadSeq and make the in-flight cold load drop itself
-      // (seq check) WITHOUT ever emitting Loaded → the list spins forever.
+      // reconnects the WS via _connectRealtime, which re-fires this stream; a
+      // nested reload would bump _loadSeq and make the in-flight cold load drop
+      // itself (seq check) WITHOUT ever emitting Loaded → the list spins forever.
       if (state is P2PConversationsLoading) return;
+      if (_connectingRealtime) return; // our own reconnect's echo
+      if (_loadsInFlight > 0) {
+        // The list may already be painted from the store while a load runs;
+        // let that load finish, then refresh once behind it.
+        _nudgeAfterLoad = true;
+        return;
+      }
       loadConversations(silent: true);
     });
     // Peer typing → show "typing…" on that conversation's row in the list.
@@ -126,51 +150,57 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
     typingConversations.value = Set<String>.unmodifiable(_typingConvIds);
   }
 
-  /// Re-sync to the CURRENT session before a load. This cubit is a lazy
-  /// singleton that survives logout, and the shared WS `connect()` early-returns
-  /// when already connected — so after logout→login as a DIFFERENT user we must
-  /// (a) refresh the signed-in user id (else the self-conversation filter and
-  /// the "my own echo" guard use the previous user's id) and (b) reconnect the
-  /// realtime WS with the CURRENT token (logout disconnects it, so this rebinds
-  /// it to the new user instead of leaking the previous user's events).
-  Future<void> _syncSession() async {
+  /// Re-sync the signed-in user id before a load. This cubit is a lazy
+  /// singleton that survives logout, so after logout→login as a DIFFERENT
+  /// user the self-conversation filter and the "my own echo" guard would
+  /// otherwise keep using the previous user's id. Local secure-storage read:
+  /// fast, and it decides which user's remembered page may be painted.
+  Future<void> _refreshCurrentUserId() async {
     try {
       final uid = await _secureStorage?.getUserId();
       if (uid != null && uid.isNotEmpty) _currentUserId = uid;
     } catch (_) {}
+  }
+
+  /// Reconnect the realtime WS as the CURRENT user (logout disconnects it, and
+  /// the shared `connect()` early-returns when already connected — so this
+  /// rebinds it to the new user instead of leaking the previous user's events).
+  ///
+  /// BOUNDED, never fatal, and never on the list's critical path.
+  ///
+  /// This was a bare `await ws.connect(token)` BEFORE the list fetches: the
+  /// conversation list could not even start loading until a REALTIME socket
+  /// finished handshaking. On a weak connection — or any time the socket
+  /// stalls rather than fails — the whole screen sat there and ended as
+  /// "Request timed out. Try again.", even though the list itself is a plain
+  /// HTTP GET that answers in milliseconds.
+  ///
+  /// Realtime is an enhancement: it makes the list update live. The list does
+  /// not need it to EXIST. So it now runs ALONGSIDE the fetches, capped at a
+  /// few seconds — a user with no socket sees their conversations and simply
+  /// has to pull to refresh, instead of seeing nothing at all.
+  Future<void> _connectRealtime() async {
     final ws = _wsService;
-    if (ws != null && !ws.isConnected) {
-      try {
-        final token = await _secureStorage?.getAccessToken();
-        if (token != null && token.isNotEmpty) {
-          // BOUNDED, and never fatal to the load.
-          //
-          // This was a bare `await ws.connect(token)` on the critical path of
-          // the screen's first load: the conversation list could not render
-          // until a REALTIME socket finished handshaking. On a weak connection
-          // — or any time the socket stalls rather than fails — the whole
-          // screen sat there and ended as "Request timed out. Try again.",
-          // even though the list itself is a plain HTTP GET that answers in
-          // milliseconds.
-          //
-          // Realtime is an enhancement: it makes the list update live. The
-          // list does not need it to EXIST. So cap the wait and carry on —
-          // a user with no socket sees their conversations and simply has to
-          // pull to refresh, instead of seeing nothing at all.
-          await ws.connect(token).timeout(
-            const Duration(seconds: 4),
-            onTimeout: () {
-              debugPrint('[p2p] realtime connect timed out — '
-                  'loading conversations over HTTP anyway');
-            },
-          );
-        }
-      } catch (e) {
-        // Same reasoning: a socket that refuses must not take the list with
-        // it. Logged rather than swallowed silently, because a permanently
-        // failing socket is worth seeing in the logs.
-        debugPrint('[p2p] realtime connect failed: $e — list still loading');
+    if (ws == null || ws.isConnected) return;
+    _connectingRealtime = true;
+    try {
+      final token = await _secureStorage?.getAccessToken();
+      if (token != null && token.isNotEmpty) {
+        await ws.connect(token).timeout(
+          const Duration(seconds: 4),
+          onTimeout: () {
+            debugPrint('[p2p] realtime connect timed out — '
+                'conversations loaded over HTTP anyway');
+          },
+        );
       }
+    } catch (e) {
+      // A socket that refuses must not take the list with it. Logged rather
+      // than swallowed silently, because a permanently failing socket is
+      // worth seeing in the logs.
+      debugPrint('[p2p] realtime connect failed: $e — list still loading');
+    } finally {
+      _connectingRealtime = false;
     }
   }
 
@@ -252,133 +282,124 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
 
   /// Load the conversations list + unread badge.
   ///
+  /// Paints what the app already knows FIRST (the current Loaded state, else
+  /// the remembered page from [P2PConversationsPageStore] — which survives a
+  /// cold start), then fetches the three lists IN PARALLEL and re-paints each
+  /// the moment it arrives. The spinner is reserved for a genuine first load
+  /// with nothing remembered.
+  ///
   /// [silent]: when the list is already loaded (a refresh — return-from-chat,
   /// badge tap, realtime nudge) do NOT flash the full-screen loading state;
   /// keep the current data on screen and swap it in place once the fetch
-  /// completes. Only the very first (cold) load shows the spinner.
+  /// completes.
   Future<void> loadConversations({bool silent = false}) async {
     final seq = ++_loadSeq;
-    // Re-bind to the current session first (refresh user id + reconnect the
-    // realtime WS as the current user). Done up-front so it still runs even if
-    // every fetch below fails, and so the self-filter uses the right id.
-    await _syncSession();
-    // Keep the current list visible on refreshes — only blank to a spinner on
-    // the first cold load.
-    if (!silent && state is! P2PConversationsLoaded) {
-      _safeEmit(P2PConversationsLoading());
-    }
-
-    // Fetch all three independently so partial failure doesn't lose everything
-    List conversations = [];
-    List requests = [];
-    int unread = 0;
-    int failCount = 0;
-    String? lastError;
-
+    _loadsInFlight++;
     try {
-      // Use listConversations (all conversations) instead of listConnections (accepted only)
-      // so pending outgoing connections also appear in the list
-      conversations = await _repository.listConversations();
-    } catch (e) {
-      failCount++;
-      lastError = _classifyError(e);
-      debugPrint('P2PConversationsCubit: listConversations failed: $e');
-    }
+      await _refreshCurrentUserId();
+      final me = _currentUserId ?? '';
 
-    try {
-      requests = await _repository.listIncomingRequests();
-    } catch (e) {
-      failCount++;
-      lastError = _classifyError(e);
-      debugPrint('P2PConversationsCubit: listIncomingRequests failed: $e');
-    }
-
-    try {
-      unread = await _repository.getUnreadCount();
-    } catch (e) {
-      debugPrint('P2PConversationsCubit: getUnreadCount failed: $e');
-    }
-
-    // Drop this response if a newer loadConversations() has since started —
-    // prevents a stale count (read before markRead committed) from winning.
-    if (seq != _loadSeq) return;
-
-    // If both data calls failed, show error
-    if (failCount >= 2) {
-      _safeEmit(P2PConversationsError(
-        message: lastError ?? 'Failed to load connections',
-      ));
-      return;
-    }
-
-    var convos = conversations.cast<P2PConversationEntity>();
-    var total = unread;
-
-    // Drop nonsensical SELF-conversations (participant1 == participant2 — e.g. a
-    // self-transfer that spawned a P2P conversation). Opening a chat with
-    // yourself is blocked, so their unread could NEVER be cleared from the UI and
-    // would pin a phantom badge forever. Exclude them from the list AND subtract
-    // their unread from the aggregate so the badge stays truthful.
-    final me = _currentUserId;
-    if (me != null && me.isNotEmpty) {
-      final selfUnread = convos
-          .where((c) => c.otherUserId.trim().isEmpty || c.otherUserId == me)
-          .fold<int>(0, (s, c) => s + c.unreadCount);
-      if (selfUnread > 0) total = (total - selfUnread).clamp(0, 1 << 30);
-      convos = convos
-          .where((c) => c.otherUserId.trim().isNotEmpty && c.otherUserId != me)
-          .toList();
-    }
-
-    // Apply any pending reads (conversations opened before this list existed):
-    // zero their per-tile unread and discount them from the server total so a
-    // just-read conversation never flashes its old count.
-    if (_pendingReads.isNotEmpty) {
-      convos = convos.map((c) {
-        if (_pendingReads.contains(c.id) && c.unreadCount > 0) {
-          total = (total - c.unreadCount).clamp(0, 1 << 30);
-          return c.copyWith(unreadCount: 0);
+      // 1. Paint the remembered page when nothing is on screen yet.
+      if (state is! P2PConversationsLoaded && me.isNotEmpty) {
+        final cached = await P2PConversationsPageStore.hydrate(me);
+        if (seq != _loadSeq) return;
+        if (cached != null && state is! P2PConversationsLoaded) {
+          _safeEmit(_composeLoaded(cached.conversations, cached.requests,
+              unread: null, commitPendingReads: false));
         }
-        return c;
-      }).toList();
-      // Drop pending entries that are no longer unread server-side (reconciled).
-      _pendingReads.removeWhere(
-          (id) => !convos.any((c) => c.id == id && c.unreadCount > 0));
-    }
+      }
+      if (!silent && state is! P2PConversationsLoaded) {
+        _safeEmit(P2PConversationsLoading());
+      }
 
-    _safeEmit(P2PConversationsLoaded(
-      conversations: convos,
-      incomingRequests: requests.cast(),
-      totalUnread: total,
-      requestCount: requests.length,
-    ));
+      // 2. Fetch all three independently AND concurrently; the realtime
+      // (re)connect runs alongside and never gates a paint.
+      final realtime = _connectRealtime();
+      List<P2PConversationEntity>? conversations;
+      List<P2PConversationEntity>? requests;
+      int? unread;
+      String? lastError;
 
-    // Upcoming connection birthdays resolve DOB per connection server-side, so
-    // load them AFTER the list is on screen and merge them in when ready —
-    // best-effort, never blocking or breaking the connections list.
-    _loadUpcomingBirthdays(seq);
-  }
+      // Use listConversations (all conversations) instead of listConnections
+      // (accepted only) so pending outgoing connections also appear.
+      // Future.sync: a repository that throws synchronously must land in
+      // the same catchError as one whose Future fails.
+      final convF =
+          Future.sync(() => _repository.listConversations()).then((rows) {
+        conversations = rows.cast<P2PConversationEntity>();
+        _emitPartial(seq,
+            conversations: conversations, requests: requests, unread: unread);
+      }).catchError((Object e) {
+        lastError = _classifyError(e);
+        debugPrint('P2PConversationsCubit: listConversations failed: $e');
+      });
+      final reqF =
+          Future.sync(() => _repository.listIncomingRequests()).then((rows) {
+        requests = rows.cast<P2PConversationEntity>();
+        _emitPartial(seq,
+            conversations: conversations, requests: requests, unread: unread);
+      }).catchError((Object e) {
+        lastError = _classifyError(e);
+        debugPrint('P2PConversationsCubit: listIncomingRequests failed: $e');
+      });
+      final unreadF = Future.sync(() => _repository.getUnreadCount()).then((n) {
+        unread = n;
+      }).catchError((Object e) {
+        debugPrint('P2PConversationsCubit: getUnreadCount failed: $e');
+      });
+      await Future.wait([convF, reqF, unreadF]);
 
-  Future<void> _loadUpcomingBirthdays(int seq) async {
-    List birthdays;
-    try {
-      // Surface a connection's birthday starting 7 days before the date (not the
-      // 60-day default) so the Birthdays tab stays timely and uncluttered.
-      birthdays = await _repository.listConnectionBirthdays(withinDays: 7);
-    } catch (e) {
-      debugPrint('P2PConversationsCubit: listConnectionBirthdays failed: $e');
-      return;
-    }
-    if (seq != _loadSeq || birthdays.isEmpty) return;
-    final s = state;
-    if (s is P2PConversationsLoaded) {
-      _safeEmit(P2PConversationsLoaded(
-        conversations: s.conversations,
-        incomingRequests: s.incomingRequests,
-        totalUnread: s.totalUnread,
-        requestCount: s.requestCount,
-        upcomingBirthdays: birthdays.cast(),
+      // Drop this response if a newer loadConversations() has since started —
+      // prevents a stale count (read before markRead committed) from winning.
+      if (seq != _loadSeq) return;
+
+      final shown = state;
+      final current = shown is P2PConversationsLoaded ? shown : null;
+
+      // Both data calls failed: an error screen only when there is nothing
+      // on screen to keep. A background refresh that fails leaves the list
+      // the user is looking at exactly as it is.
+      if (conversations == null && requests == null) {
+        if (current == null) {
+          _safeEmit(P2PConversationsError(
+            message: lastError ?? 'Failed to load connections',
+          ));
+        } else {
+          debugPrint('P2PConversationsCubit: refresh failed, keeping shown '
+              'list (${lastError ?? 'unknown'})');
+        }
+        return;
+      }
+
+      // Remember what the server said (raw rows) for the next open.
+      if (me.isNotEmpty) {
+        if (conversations != null) {
+          P2PConversationsPageStore.conversations
+              .put(conversations!, userId: me);
+        }
+        if (requests != null) {
+          P2PConversationsPageStore.incomingRequests.put(requests!, userId: me);
+        }
+      }
+
+      _safeEmit(_composeLoaded(
+        conversations ?? current?.conversations ?? const [],
+        requests ?? current?.incomingRequests ?? const [],
+        unread: unread,
+        commitPendingReads: true,
       ));
+
+      // Upcoming connection birthdays resolve DOB per connection server-side,
+      // so load them AFTER the list is on screen and merge them in when ready
+      // — best-effort, never blocking or breaking the connections list.
+      _loadUpcomingBirthdays(seq);
+      await realtime;
+    } finally {
+      _loadsInFlight--;
+      if (_nudgeAfterLoad && _loadsInFlight == 0) {
+        _nudgeAfterLoad = false;
+        loadConversations(silent: true);
+      }
     }
   }
 
@@ -488,23 +509,6 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
       if (previousState is P2PConversationsLoaded) _safeEmit(previousState);
       _safeEmit(P2PConversationsError(message: 'Failed to delete chat'));
     }
-  }
-
-  String _classifyError(Object e) {
-    if (e is HttpException && e.message == 'Unauthorized') {
-      return 'Session expired. Please log in again.';
-    }
-    if (e.toString().contains('Not authenticated')) {
-      return 'Not authenticated. Please log in.';
-    }
-    if (e.toString().contains('SocketException') ||
-        e.toString().contains('Connection refused')) {
-      return 'Cannot reach chat server. Check your connection.';
-    }
-    if (e.toString().contains('TimeoutException')) {
-      return 'Request timed out. Try again.';
-    }
-    return 'Failed to load connections';
   }
 
   void _safeEmit(P2PConversationsState newState) {

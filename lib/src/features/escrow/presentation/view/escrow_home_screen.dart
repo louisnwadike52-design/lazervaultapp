@@ -5,10 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/cache/session_user_id.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import '../cubit/escrow_cubit.dart';
+import '../cubit/escrow_session_store.dart';
 import '../widgets/escrow_shimmer.dart';
 import '../widgets/escrow_empty_state.dart';
 import '../widgets/escrow_direction_chooser.dart';
@@ -59,8 +61,16 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   @override
   void initState() {
     super.initState();
+    // Paint the offers a previous open stored for this user; the fetch in
+    // _reload still runs and replaces them.
+    final remembered = escrowActiveOffersStore.peek(userId: _sessionUserId);
+    if (remembered != null) _activeOffers = remembered;
     WidgetsBinding.instance.addPostFrameCallback((_) => _reload());
   }
+
+  /// Store stamp for the offers strip: the signed-in user, read without a
+  /// BuildContext so initState can use it before the first frame.
+  String get _sessionUserId => SessionUserId.current();
 
   void _reload() {
     context
@@ -83,13 +93,18 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
           .repository
           .listMyOffers(status: '', role: '');
       if (!mounted) return;
+      final active =
+          offers.where((o) => o.isOpen || o.isAwaitingFunding).toList();
+      escrowActiveOffersStore.put(active, userId: _sessionUserId);
       setState(() {
-        _activeOffers =
-            offers.where((o) => o.isOpen || o.isAwaitingFunding).toList();
+        _activeOffers = active;
         _offersFetchFailed = false;
       });
     } catch (_) {
       if (!mounted) return;
+      // A failed refresh behind painted offers keeps them on screen; the
+      // retry affordance is for a strip with nothing to show.
+      if (_activeOffers.isNotEmpty) return;
       setState(() => _offersFetchFailed = true);
     }
   }

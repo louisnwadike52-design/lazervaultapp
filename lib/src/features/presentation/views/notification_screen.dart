@@ -14,10 +14,13 @@ import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/notifications/data/notifications_remote_datasource.dart';
 import 'package:lazervault/src/features/notifications/presentation/cubit/notification_badge_cubit.dart';
+import 'package:lazervault/src/features/presentation/views/notification_feed_store.dart';
 import 'package:lazervault/src/features/widgets/notifications_builder.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+
+part 'notification_screen_widgets.dart';
 
 /// Maps a backend notification `type` to the AppService whose icon the
 /// NotificationsBuilder renders. Defaults to a transfer icon for unknown types.
@@ -59,7 +62,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
   late final NotificationsRemoteDataSource _ds;
   final ScrollController _scrollController = ScrollController();
 
-  bool _loading = true; // first-page / full-screen load
+  bool _loading = true; // first-page / full-screen load — ONLY with no rows
+  bool _refreshing = false; // page one is being re-fetched behind shown rows
   bool _loadingMore = false; // appending a subsequent page
   bool _hasMore = true; // server has more pages to fetch
   String? _error;
@@ -82,6 +86,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
   // (once) so the bell badge clears and stays cleared across later refreshes.
   bool _viewedMarked = false;
 
+  /// Whose feed this is. The store refuses another user's page, so a stale
+  /// stamp can only ever cost a spinner, never show someone else's rows.
+  late final String _userId = NotificationFeedStore.currentUserId();
+
   @override
   void initState() {
     super.initState();
@@ -91,7 +99,38 @@ class _NotificationScreenState extends State<NotificationScreen> {
       localeManager: serviceLocator<LocaleManager>(),
     );
     _scrollController.addListener(_onScroll);
-    _load();
+    _paintThenLoad();
+  }
+
+  /// PAINT WHAT WE ALREADY KNOW, THEN REFRESH BEHIND IT.
+  ///
+  /// The remembered page one (this user's) is seeded into the list before
+  /// the network is asked, so a re-open — and a cold start, via the disk
+  /// mirror — shows the feed at once. `_load` then refreshes page one in the
+  /// background: with rows on screen it leaves them in place until the fresh
+  /// page lands, and only a feed with nothing to show gets the loader.
+  Future<void> _paintThenLoad() async {
+    final store = NotificationFeedStore.page1;
+    final cached =
+        store.peek(userId: _userId) ?? await store.hydrate(userId: _userId);
+    if (!mounted) return;
+    if (cached != null && cached.isNotEmpty) {
+      // The RAW page was stored, so the offset math is the same as after a
+      // fetch; hidden types are dropped by _appendPage exactly as on fetch.
+      _seedPage(cached);
+      setState(() => _loading = false);
+    }
+    await _load();
+  }
+
+  /// Replace the list with [page] as page one. Shared by the seed and the
+  /// fetch so the two can never disagree about what "page one shown" means.
+  void _seedPage(List<AppNotification> page) {
+    _hasMore = true;
+    _seenIds.clear();
+    _all.clear();
+    _rawOffset = page.length;
+    _appendPage(page);
   }
 
   @override
@@ -112,25 +151,39 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   /// Full (re)load from the top — used by initState, pull-to-refresh, and after
   /// "mark all as read". Resets pagination state.
+  ///
+  /// With rows already on screen (remembered page, or a previous fetch) they
+  /// STAY on screen while page one is re-fetched: no loader, and a failed
+  /// refresh leaves them untouched. The list is reset only when the fresh
+  /// page lands, so a row whose read state changed updates in place.
   Future<void> _load() async {
     // Invalidate any in-flight load-more so its page can't land on the reset list.
     final gen = ++_loadGeneration;
+    final hasRows = _all.isNotEmpty;
     setState(() {
-      _loading = true;
+      _loading = !hasRows;
+      _refreshing = hasRows;
       _loadingMore = false;
       _error = null;
     });
-    _rawOffset = 0;
-    _hasMore = true;
-    _seenIds.clear();
-    _all.clear();
+    if (!hasRows) {
+      _rawOffset = 0;
+      _hasMore = true;
+      _seenIds.clear();
+      _all.clear();
+    }
     try {
       final res = await _ds.getNotifications(limit: _pageSize, offset: 0);
       if (!mounted || gen != _loadGeneration) return;
-      _rawOffset = res.notifications.length;
-      _appendPage(res.notifications);
+      _seedPage(res.notifications);
       _hasMore = _rawOffset < res.total && res.notifications.isNotEmpty;
-      setState(() => _loading = false);
+      // Remember the RAW page for the next open; an empty feed is remembered
+      // too, so "no notifications" also paints instantly.
+      NotificationFeedStore.page1.put(res.notifications, userId: _userId);
+      setState(() {
+        _loading = false;
+        _refreshing = false;
+      });
       _maybeAutoFill();
       // First successful view → persist read-state + clear the bell badge. Done
       // once (not on every pull-to-refresh) to avoid redundant server writes.
@@ -141,15 +194,29 @@ class _NotificationScreenState extends State<NotificationScreen> {
     } catch (e) {
       if (!mounted || gen != _loadGeneration) return;
       setState(() {
-        _error = 'Could not load notifications. Pull to retry.';
+        // Rows on screen outrank an error screen: a failed background refresh
+        // keeps what the user can already read. The error surface is only
+        // for a feed that has nothing to show.
+        if (_all.isEmpty) {
+          _error = 'Could not load notifications. Pull to retry.';
+        }
         _loading = false;
+        _refreshing = false;
       });
     }
   }
 
   /// Append the next page when the user scrolls near the bottom.
   Future<void> _loadMore() async {
-    if (_loadingMore || _loading || !_hasMore || _error != null) return;
+    // Not while page one is being replaced: a page two fetched against the
+    // remembered offset would land on a list that is about to be reset.
+    if (_loadingMore ||
+        _loading ||
+        _refreshing ||
+        !_hasMore ||
+        _error != null) {
+      return;
+    }
     final gen = _loadGeneration;
     setState(() => _loadingMore = true);
     try {
@@ -289,56 +356,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       // notification — we must paint our own surface, or the dark app canvas
       // shows through behind this screen's light design.
       backgroundColor: widget.embedded ? Colors.transparent : Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'Notifications',
-          style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-            color: Colors.black87,
-          ),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: Color.fromARGB(255, 78, 3, 208),
-            size: 20.sp,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          // Chat only. The voice button was removed: a notifications list is a
-          // reading surface, and three header controls on it crowded out the
-          // one that matters.
-          //
-          // Service name is lowercase to match DIRECT_ROUTES['notifications']
-          // and the per-service feature-flag slug, so the icon's visibility
-          // flag and its routing key cannot disagree.
-          MicroserviceChatIcon(
-            serviceName: 'notifications',
-            sourceContext: 'notifications',
-            icon: Icons.chat_bubble_outline,
-            iconColor: const Color.fromARGB(255, 78, 3, 208),
-          ),
-          SizedBox(width: 4.w),
-          IconButton(
-            tooltip: 'Notification settings',
-            icon: Icon(
-              Icons.settings_outlined,
-              color: const Color.fromARGB(255, 78, 3, 208),
-              size: 24.sp,
-            ),
-            // Was an empty callback with a `// Handle notification settings`
-            // comment — a control that looked live and did nothing. The
-            // preferences live in the settings screen's
-            // "Notifications & Display" section.
-            onPressed: () => Get.toNamed(AppRoutes.profileSettings),
-          ),
-          SizedBox(width: 8.w),
-        ],
-      ),
+      appBar: _notificationsAppBar(context),
       body: _buildBody(),
     );
   }
@@ -435,101 +453,5 @@ class _NotificationScreenState extends State<NotificationScreen> {
       );
     }
     return const SizedBox.shrink();
-  }
-
-  Widget _buildSectionHeader({
-    required String title,
-    required String actionText,
-    required VoidCallback onActionTap,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-              letterSpacing: 0.5,
-            ),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor:
-                  Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-              foregroundColor: Color.fromARGB(255, 78, 3, 208),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              textStyle: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            onPressed: onActionTap,
-            child: Text(actionText),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotificationsList(List<NotificationService> notificationsList) {
-    if (notificationsList.isEmpty) {
-      return Container(
-        padding: EdgeInsets.all(32.w),
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: Colors.grey[200]!,
-            width: 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              Icons.notifications_none_outlined,
-              size: 48.sp,
-              color: Colors.grey[400],
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'No notifications',
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'All caught up! Check back later for updates.',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.grey[500],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
-        ),
-      ),
-      child: NotificationsBuilder(notifications: notificationsList),
-    );
   }
 }

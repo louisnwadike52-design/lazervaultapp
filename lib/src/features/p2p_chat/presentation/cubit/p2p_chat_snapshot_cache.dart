@@ -1,4 +1,6 @@
+import 'package:lazervault/core/cache/session_page_store.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_state.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_thread_store.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 
 /// Process-lifetime cache of the Financial-Connections saved-contacts list, so
@@ -9,12 +11,24 @@ import 'package:lazervault/src/features/recipients/data/models/recipient_model.d
 List<RecipientModel> p2pSavedContactsCache = [];
 bool p2pSavedContactsCacheLoaded = false;
 
+/// Disk mirror of [p2pSavedContactsCache], per user, so the FIRST open after
+/// a launch paints the saved-contacts rail too (the process cache above is
+/// empty then). Cleared with every other SessionPageStore on a user switch.
+final SessionPageStore<RecipientModel> p2pSavedContactsStore =
+    SessionPageStore<RecipientModel>(
+  'p2p_saved_contacts',
+  toJson: (r) => r.toJson(),
+  fromJson: RecipientModel.fromJson,
+);
+
 /// Wipe all in-memory P2P caches. MUST be called on logout / session clear so no
 /// P2P data (conversation snapshots, saved contacts) leaks across users.
 void clearAllP2PCaches() {
   P2PChatSnapshotCache.instance.clear();
+  P2PChatThreadStore.clear();
   p2pSavedContactsCache = [];
   p2pSavedContactsCacheLoaded = false;
+  p2pSavedContactsStore.clear();
 }
 
 /// In-memory cache of the last loaded conversation state, keyed by the peer's

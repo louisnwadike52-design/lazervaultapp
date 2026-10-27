@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/cache/session_user_id.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/add_recipient_usecase.dart';
@@ -7,6 +8,7 @@ import 'package:lazervault/src/features/recipients/domain/usecases/get_recipient
 import 'package:lazervault/src/features/recipients/domain/usecases/toggle_favorite_usecase.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/update_alias_usecase.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/delete_recipient_usecase.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_page_store.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 
 class PaginatedRecipientsResult {
@@ -92,9 +94,6 @@ class RecipientCubit extends Cubit<RecipientState> {
     _lastCurrency = currency;
     _lastFavoritesOnly = favoritesOnly;
 
-    // Cancel any existing subscription
-    await _cacheSubscription?.cancel();
-
     // Note: SWR cache was bypassed for paginated queries (added
     // complexity outweighed the win). The page-1 cache key derivation
     // lived here previously; it's removed since nothing reads it.
@@ -103,12 +102,42 @@ class RecipientCubit extends Cubit<RecipientState> {
     // current list on screen while the new page loads — the RefreshIndicator
     // spinner already signals progress, so blanking to a full loader would
     // just make the list flicker empty. Initial loads and filter/account
-    // switches (forceRefresh=false) still show the loading state, so stale
-    // data from a different view is never shown.
+    // switches (forceRefresh=false) show the loading state unless THIS exact
+    // view's page one is remembered (below), so stale data from a different
+    // view is never shown.
     final keepCurrentWhileLoading = forceRefresh && state is RecipientLoaded;
+    // Paint the remembered page one for THIS view (same user, same
+    // country/currency/favourites key) instead of a loader, and refresh
+    // behind it. The list's freshness still comes from the fetch below on
+    // every call — nothing here decides whether to fetch, only what the user
+    // looks at while it runs. A different view's rows can never be painted:
+    // the scope key is the same key the fetch is parameterised on.
+    final userId = SessionUserId.current();
+    final scope = recipientsPageScope(
+      countryCode: countryCode,
+      currency: currency,
+      favoritesOnly: favoritesOnly,
+    );
+    var paintedCached = keepCurrentWhileLoading;
     if (!keepCurrentWhileLoading) {
-      emit(RecipientLoading());
+      final cached = recipientsPageStore.peek(userId: userId, scope: scope) ??
+          await recipientsPageStore.hydrate(userId: userId, scope: scope);
+      if (isClosed || seq != _loadSeq) return;
+      if (cached != null) {
+        paintedCached = true;
+        // No load-more until the fresh page lands, so a scroll during the
+        // refresh cannot append page 2 onto a page 1 about to be replaced.
+        _hasMore = false;
+        emit(RecipientLoaded(cached, isRevalidating: true, hasMore: false));
+      } else {
+        emit(RecipientLoading());
+      }
     }
+    // Cancel any existing subscription. After the paint above on purpose:
+    // the first `await` in this method is what lets the screen's first frame
+    // build, and that frame should already hold the remembered page.
+    await _cacheSubscription?.cancel();
+    if (isClosed || seq != _loadSeq) return;
     try {
       final result = await _fetchRecipientsPaginated(
         accessToken: accessToken,
@@ -124,6 +153,7 @@ class RecipientCubit extends Cubit<RecipientState> {
       _hasMore = result.hasMore && result.recipients.length >= _pageSize;
       _totalItems = result.totalItems;
       _totalPages = result.totalPages;
+      recipientsPageStore.put(result.recipients, userId: userId, scope: scope);
 
       emit(RecipientLoaded(
         result.recipients,
@@ -138,7 +168,11 @@ class RecipientCubit extends Cubit<RecipientState> {
       // failure during rapid re-navigation: if we already had recipients, keep
       // them (a background re-fetch hiccup shouldn't blow away the list). Only a
       // cold first load with no prior data surfaces the error state.
-      if (priorState is RecipientLoaded) {
+      final shown = state;
+      if (paintedCached && shown is RecipientLoaded) {
+        // The remembered page is on screen; a failed refresh keeps it there.
+        emit(shown.copyWith(isRevalidating: false));
+      } else if (priorState is RecipientLoaded) {
         emit(priorState);
       } else {
         emit(RecipientError(e.toString()));

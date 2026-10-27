@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/p2p_chat/data/services/p2p_chat_media_up
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_snapshot_cache.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_thread_store.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_state.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
@@ -116,6 +117,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       return false;
     }
   }
+
   String? _otherUserId;
   String _otherUserName = '';
   int _currentPage = 1;
@@ -219,7 +221,20 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       _currentPage = 1;
       emit(cachedSnapshot);
     } else {
-      emit(P2PChatLoading());
+      // COLD OPEN (first time since launch): the process snapshot is empty,
+      // but the last page of this thread is mirrored on disk per (user,
+      // peer). Paint it now; the fetch below replaces it in place. Only a
+      // thread never opened on this device shows the loading state.
+      final disk =
+          await P2PChatThreadStore.hydrate(_currentUserId, otherUserId);
+      if (isClosed) return;
+      if (disk != null) {
+        _conversationId = disk.conversationId;
+        _currentPage = 1;
+        emit(disk);
+      } else {
+        emit(P2PChatLoading());
+      }
     }
 
     try {
@@ -430,9 +445,19 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       );
       emit(loaded);
       // Cache the freshly-loaded state so the next open of this peer paints
-      // instantly instead of cold-reloading.
+      // instantly instead of cold-reloading — in memory for this process,
+      // on disk for the next launch.
       P2PChatSnapshotCache.instance.put(otherUserId, loaded);
+      P2PChatThreadStore.put(_currentUserId, otherUserId, loaded);
     } catch (e) {
+      // A refresh that fails behind an already-painted thread (memory or
+      // disk snapshot) must not replace the messages with an error screen:
+      // the live WS and the next open still reconcile. Only a cold open with
+      // nothing painted reports the failure.
+      if (state is P2PChatLoaded) {
+        debugPrint('P2PChatCubit: refresh behind snapshot failed: $e');
+        return;
+      }
       final errorMsg = e.toString();
       if (errorMsg.contains('Unauthorized') || errorMsg.contains('401')) {
         emit(P2PChatError(message: 'Session expired. Please log in again.'));
@@ -1407,6 +1432,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
     final s = state;
     if (s is P2PChatLoaded && (_otherUserId?.isNotEmpty ?? false)) {
       P2PChatSnapshotCache.instance.put(_otherUserId!, s);
+      P2PChatThreadStore.put(_currentUserId, _otherUserId!, s);
     }
     // No conversation is open anymore → live messages resume bumping the badge.
     try {

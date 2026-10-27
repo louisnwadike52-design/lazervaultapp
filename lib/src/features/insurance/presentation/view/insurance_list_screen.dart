@@ -36,10 +36,14 @@ class _InsuranceListScreenState extends State<InsuranceListScreen>
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  // Scroll-paging for the hub: page one paints, the next page is asked for
+  // at 80% of the extent (same threshold as the All Policies screen).
+  final ScrollController _hubScroll = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _hubScroll.addListener(_onHubScroll);
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -80,9 +84,28 @@ class _InsuranceListScreenState extends State<InsuranceListScreen>
 
   @override
   void dispose() {
+    _hubScroll
+      ..removeListener(_onHubScroll)
+      ..dispose();
     _fadeController.dispose();
     _slideController.dispose();
     super.dispose();
+  }
+
+  /// Ask for the next page of policies once the hub is 80% scrolled, exactly
+  /// as insurance_all_policies_screen does — so the hub loads one page at a
+  /// time instead of everything. No-op when there is no next page or one is
+  /// already in flight.
+  void _onHubScroll() {
+    if (!_hubScroll.hasClients) return;
+    final pos = _hubScroll.position;
+    if (pos.maxScrollExtent <= 0) return;
+    if (pos.pixels < pos.maxScrollExtent * 0.8) return;
+    final cubit = context.read<InsuranceCubit>();
+    final s = cubit.state;
+    if (s is InsurancesLoaded && s.hasMore && !s.isLoadingMore) {
+      cubit.loadMoreInsurances();
+    }
   }
 
   @override
@@ -325,6 +348,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen>
       backgroundColor: const Color(0xFF1F1F1F),
       color: const Color.fromARGB(255, 78, 3, 208),
       child: SingleChildScrollView(
+        controller: _hubScroll,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(

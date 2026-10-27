@@ -4,6 +4,7 @@ import '../../domain/entities/family_account_entities.dart';
 import '../../domain/repositories/family_account_repository.dart'
     show MemberAllocationEntry;
 import '../../domain/usecases/family_account_usecases.dart';
+import 'family_account_page_stores.dart';
 import 'family_account_state.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 
@@ -60,20 +61,38 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
 
   // Get all family accounts
   Future<void> loadFamilyAccounts({String? statusFilter}) async {
-    emit(FamilyAccountLoading());
+    // Paint what we already know, INSTANTLY. Rows already on screen stay
+    // there (silent refresh); a fresh cubit paints the remembered overview;
+    // only a genuinely first load on this device shows the loader.
+    if (state is! FamilyAccountsLoaded) {
+      final cached =
+          FamilyAccountPageStores.peekOverview(statusFilter: statusFilter);
+      if (cached != null) {
+        emit(_overviewLoaded(cached));
+      } else {
+        emit(FamilyAccountLoading());
+      }
+    }
     final result = await getFamilyAccounts(
         GetFamilyAccountsParams(statusFilter: statusFilter));
     result.fold(
       (failure) =>
           emit(FamilyAccountError(sanitizeUserFacingError(failure.message))),
-      (overview) => emit(FamilyAccountsLoaded(
+      (overview) {
+        FamilyAccountPageStores.rememberOverview(overview,
+            statusFilter: statusFilter);
+        emit(_overviewLoaded(overview));
+      },
+    );
+  }
+
+  FamilyAccountsLoaded _overviewLoaded(FamilyAccountsOverview overview) =>
+      FamilyAccountsLoaded(
         overview.accounts,
         totalCount: overview.accounts.length,
         maxFamilyAccounts: overview.maxFamilyAccounts,
         createdCount: overview.createdCount,
-      )),
-    );
-  }
+      );
 
   // Get specific family account
   Future<void> loadFamilyAccount(String familyId) async {
@@ -306,12 +325,24 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
 
   // Get pending invitations
   Future<void> loadPendingInvitations() async {
-    emit(FamilyAccountLoading());
+    // Same shape as loadFamilyAccounts: paint the remembered invitations at
+    // once, show the loader only when there is nothing to paint.
+    if (state is! PendingInvitationsLoaded) {
+      final cached = FamilyAccountPageStores.peekInvitations();
+      if (cached != null) {
+        emit(PendingInvitationsLoaded(cached));
+      } else {
+        emit(FamilyAccountLoading());
+      }
+    }
     final result = await getPendingInvitations(NoParams());
     result.fold(
       (failure) =>
           emit(FamilyAccountError(sanitizeUserFacingError(failure.message))),
-      (invitations) => emit(PendingInvitationsLoaded(invitations)),
+      (invitations) {
+        FamilyAccountPageStores.rememberInvitations(invitations);
+        emit(PendingInvitationsLoaded(invitations));
+      },
     );
   }
 

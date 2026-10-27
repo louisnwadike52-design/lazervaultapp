@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:lazervault/core/cache/session_page_user.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
+import 'package:lazervault/src/features/settings/presentation/view/security_center_page_store.dart';
 
 /// Security center — Login Activity. A chronological feed of recent sign-ins
 /// (successes and failures) for the account, from the backend login_history.
@@ -62,9 +64,22 @@ class _LoginActivityScreenState extends State<LoginActivityScreen> {
   }
 
   /// First page / pull-to-refresh: resets the list.
+  ///
+  /// Paints the remembered first page for this user (memory, else disk)
+  /// before the network answers, so the spinner shows only when nothing is
+  /// remembered. A refresh that fails behind painted rows keeps them.
   Future<void> _load() async {
+    final uid = sessionPageUserId();
+    if (_items.isEmpty && uid.isNotEmpty) {
+      final cached =
+          await SecurityCenterPageStore.loginActivity.hydrate(userId: uid);
+      if (!mounted) return;
+      if (cached != null && cached.isNotEmpty && _items.isEmpty) {
+        _items = List.of(cached);
+      }
+    }
     setState(() {
-      _loading = true;
+      _loading = _items.isEmpty;
       _error = null;
       _hasMore = true;
     });
@@ -73,12 +88,15 @@ class _LoginActivityScreenState extends State<LoginActivityScreen> {
     result.fold(
       (failure) => setState(() {
         _loading = false;
-        _error = 'Could not load activity. Pull to retry.';
+        if (_items.isEmpty) _error = 'Could not load activity. Pull to retry.';
       }),
       (items) => setState(() {
         _loading = false;
         _items = List.of(items);
         _hasMore = items.length >= _pageSize;
+        if (uid.isNotEmpty) {
+          SecurityCenterPageStore.loginActivity.put(items, userId: uid);
+        }
       }),
     );
   }

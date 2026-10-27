@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
+import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_page_stores.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/family_account/data/datasources/family_slots_data_source.dart';
@@ -42,7 +43,25 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
+    _seedFromRemembered();
     _loadData();
+  }
+
+  /// Paint the last answer on the FIRST frame. The cubits are factories and
+  /// these rows are screen-local, so every open used to start empty behind a
+  /// loader. Seeded here rather than from the listeners because _loadData's
+  /// first (remembered) emit lands before the listeners below are mounted.
+  /// Copied, not aliased: the invitations list is mutated in place on accept
+  /// and decline, and the stores hand out unmodifiable views.
+  void _seedFromRemembered() {
+    final overview = FamilyAccountPageStores.peekOverview();
+    if (overview != null) {
+      _allAccounts = List.of(overview.accounts);
+      _maxFamilyAccounts = overview.maxFamilyAccounts;
+      _createdCount = overview.createdCount;
+    }
+    final invitations = FamilyAccountPageStores.peekInvitations();
+    if (invitations != null) _pendingInvitations = List.of(invitations);
   }
 
   @override

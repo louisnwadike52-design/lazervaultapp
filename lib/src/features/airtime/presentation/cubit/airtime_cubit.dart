@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
 import '../../../../../core/cache/cache_config.dart';
@@ -10,6 +12,7 @@ import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/repositories/airtime_repository.dart';
+import 'airtime_history_page_store.dart';
 import 'airtime_state.dart';
 
 class AirtimeCubit extends Cubit<AirtimeState> {
@@ -42,10 +45,23 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     }
   }
 
+  /// How long a cache HIT may take to arrive before we concede the spinner.
+  /// A memory hit lands in a microtask and a disk hit in a few ms; only a
+  /// genuine miss (network fetch) outlives this, so the spinner frame that
+  /// used to precede every hit is gone.
+  static const Duration _providersLoadingGrace = Duration(milliseconds: 150);
+
   Future<void> _loadProvidersWithCache(String countryCode) async {
+    var delivered = false;
+    // Emit Loading only if the first SWR result is not a (prompt) cache hit,
+    // and never over providers already on screen for this country.
+    final loadingGuard = Timer(_providersLoadingGrace, () {
+      if (delivered || isClosed) return;
+      if (_hasProvidersFor(countryCode)) return;
+      emit(AirtimeNetworkProvidersLoading());
+    });
     try {
       if (isClosed) return;
-      emit(AirtimeNetworkProvidersLoading());
 
       await for (final result in _cacheManager!.get<List<NetworkProvider>>(
         key: 'airtime_providers:$countryCode',
@@ -57,6 +73,8 @@ class AirtimeCubit extends Cubit<AirtimeState> {
             .map((j) => NetworkProvider.fromJson(j as Map<String, dynamic>))
             .toList(),
       )) {
+        delivered = true;
+        loadingGuard.cancel();
         if (isClosed) return;
         if (result.hasData) {
           emit(AirtimeNetworkProvidersLoaded(
@@ -65,6 +83,8 @@ class AirtimeCubit extends Cubit<AirtimeState> {
             isStale: result.isStale,
           ));
         } else if (result.hasError) {
+          // A revalidate that fails behind painted providers keeps them.
+          if (_hasProvidersFor(countryCode)) continue;
           emit(AirtimeNetworkProvidersError(
             message: _friendlyErrorMessage(result.error),
           ));
@@ -72,16 +92,26 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       }
     } catch (e) {
       if (isClosed) return;
+      if (_hasProvidersFor(countryCode)) return;
       emit(AirtimeNetworkProvidersError(
         message: _friendlyErrorMessage(e),
       ));
+    } finally {
+      loadingGuard.cancel();
     }
+  }
+
+  bool _hasProvidersFor(String countryCode) {
+    final s = state;
+    return s is AirtimeNetworkProvidersLoaded && s.countryCode == countryCode;
   }
 
   Future<void> _loadProvidersDirect(String countryCode) async {
     try {
       if (isClosed) return;
-      emit(AirtimeNetworkProvidersLoading());
+      if (!_hasProvidersFor(countryCode)) {
+        emit(AirtimeNetworkProvidersLoading());
+      }
       final providers = await repository.getNetworkProviders(countryCode);
       if (isClosed) return;
       emit(AirtimeNetworkProvidersLoaded(
@@ -337,21 +367,45 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     }
   }
 
-  // Load transaction history
+  // Load transaction history.
+  //
+  // Paints the remembered page for this user first (survives the cubit and
+  // the process), then fetches history + statistics concurrently and swaps
+  // them in. The loading strip shows only when nothing is remembered, and a
+  // refresh that fails behind painted rows leaves them on screen.
   Future<void> loadTransactionHistory(String userId) async {
+    var painted = false;
     try {
       if (isClosed) return;
-      emit(AirtimeTransactionHistoryLoading());
-      final transactions = await repository.getTransactionHistory(userId);
-      final statistics = await repository.getAirtimeStatistics(userId);
+      final cached = await AirtimeHistoryPageStore.hydrate(userId);
+      if (isClosed) return;
+      if (cached != null) {
+        painted = true;
+        emit(AirtimeTransactionHistoryLoaded(
+          transactions: cached.transactions,
+          statistics: cached.statistics,
+        ));
+      } else {
+        emit(AirtimeTransactionHistoryLoading());
+      }
+      final transactionsF = repository.getTransactionHistory(userId);
+      final statisticsF = repository.getAirtimeStatistics(userId);
+      final transactions = await transactionsF;
+      final statistics = await statisticsF;
 
       if (isClosed) return;
+      AirtimeHistoryPageStore.put(userId,
+          transactions: transactions, statistics: statistics);
       emit(AirtimeTransactionHistoryLoaded(
         transactions: transactions,
         statistics: statistics,
       ));
     } catch (e) {
       if (isClosed) return;
+      if (painted) {
+        debugPrint('AirtimeCubit: history refresh failed, keeping shown: $e');
+        return;
+      }
       emit(AirtimeError(message: _friendlyErrorMessage(e)));
     }
   }

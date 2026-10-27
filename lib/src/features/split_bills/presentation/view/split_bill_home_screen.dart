@@ -11,6 +11,7 @@ import '../cubit/split_bill_state.dart';
 import '../../domain/entities/split_bill_entity.dart';
 import '../widgets/split_bill_card.dart';
 import '../widgets/split_bill_shimmer.dart';
+import 'split_bill_session_store.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -37,10 +38,19 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
   // from the cache, and load each tab only once (pull-to-refresh updates it).
   // A tab keeps showing its cached list across state changes, so it never
   // blinks; the shimmer appears only on the very first load (cache still null).
+  //
+  // Seeded from the per-user session stores on mount, so a RE-OPEN of this
+  // screen paints the last lists at once; the load each tab fires on its
+  // first show (tracked by _incomingFetched/_createdFetched, not by the cache
+  // being null) then refreshes the painted list in the background.
   List<SplitBillEntity>? _incomingBills;
   List<SplitBillEntity>? _createdBills;
   String? _incomingError;
   String? _createdError;
+  // Load-once-per-tab guards for THIS screen instance. The Incoming load is
+  // fired by the BlocProvider that creates the cubit, so it starts true.
+  bool _incomingFetched = true;
+  bool _createdFetched = false;
 
   String? get _currentUserId => context.read<AuthenticationCubit>().userId;
 
@@ -49,6 +59,9 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
+    final uid = _currentUserId ?? '';
+    _incomingBills = incomingSplitBillsStore.peek(userId: uid);
+    _createdBills = createdSplitBillsStore.peek(userId: uid);
   }
 
   @override
@@ -65,11 +78,13 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
     // from the local cache (pull-to-refresh refreshes it). This removes the
     // reload-on-every-swipe that caused the flicker.
     if (_tabController.index == 0) {
-      if (_incomingBills == null) {
+      if (!_incomingFetched) {
+        _incomingFetched = true;
         context.read<SplitBillCubit>().loadIncomingBills();
       }
     } else {
-      if (_createdBills == null) {
+      if (!_createdFetched) {
+        _createdFetched = true;
         context.read<SplitBillCubit>().loadCreatedBills();
       }
     }
@@ -129,11 +144,19 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
             // Fold list results into the per-tab caches. The tabs render from
             // these caches (not the live state), so a load never blanks a tab.
             if (state is IncomingSplitBillsLoaded) {
+              if (state.page == 1) {
+                incomingSplitBillsStore.put(state.bills,
+                    userId: _currentUserId ?? '');
+              }
               setState(() {
                 _incomingBills = state.bills;
                 _incomingError = null;
               });
             } else if (state is CreatedSplitBillsLoaded) {
+              if (state.page == 1) {
+                createdSplitBillsStore.put(state.bills,
+                    userId: _currentUserId ?? '');
+              }
               setState(() {
                 _createdBills = state.bills;
                 _createdError = null;
@@ -444,6 +467,7 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
     await Get.toNamed(AppRoutes.createSplitBill);
     if (!mounted) return;
     setState(() => _createdBills = null);
+    _createdFetched = true;
     await context.read<SplitBillCubit>().loadCreatedBills();
     if (mounted && _currentTab == 0) {
       // The user was on Incoming; refresh it too so both lists are current

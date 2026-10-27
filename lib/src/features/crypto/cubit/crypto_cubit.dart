@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/cache/session_page_user.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../core/services/injection_container.dart';
@@ -8,6 +9,7 @@ import '../domain/entities/crypto_entity.dart';
 import '../domain/entities/global_market_data.dart';
 import '../domain/repositories/crypto_repository.dart';
 import '../presentation/utils/crypto_error_messages.dart';
+import 'crypto_assets_page_store.dart';
 import 'crypto_state.dart';
 
 class CryptoCubit extends Cubit<CryptoState> {
@@ -33,12 +35,15 @@ class CryptoCubit extends Cubit<CryptoState> {
   /// snapshot. STATIC so it survives across CryptoCubit instances (the cubit
   /// is a DI factory — a fresh one is built on every navigation). On re-entry
   /// we paint this instantly, then revalidate in the background, instead of
-  /// flashing the full-screen shimmer every single time. Bounded by a short
-  /// TTL so we never show materially stale holdings/prices (and a logout→login
-  /// within the window still self-corrects on the immediate revalidate pass).
+  /// flashing the full-screen shimmer every single time.
+  ///
+  /// There is NO TTL on painting: a snapshot is always better than a shimmer,
+  /// and the revalidate pass that follows lands within seconds. What does
+  /// gate it is the USER STAMP — a snapshot taken for one person is never
+  /// painted for another, however the cubit was torn down in between.
   static CryptosLoaded? _cachedSnapshot;
   static DateTime? _cachedAt;
-  static const Duration _snapshotTtl = Duration(seconds: 90);
+  static String _cachedUserId = '';
 
   CryptoCubit({required this.repository}) : super(CryptoInitial());
 
@@ -51,6 +56,7 @@ class CryptoCubit extends Cubit<CryptoState> {
     if (next is CryptosLoaded) {
       _cachedSnapshot = next;
       _cachedAt = DateTime.now();
+      _cachedUserId = sessionPageUserId();
     }
   }
 
@@ -59,22 +65,71 @@ class CryptoCubit extends Cubit<CryptoState> {
   static void invalidateSnapshot() {
     _cachedSnapshot = null;
     _cachedAt = null;
+    _cachedUserId = '';
   }
 
+  /// When the painted snapshot was taken, or null when there is none. Lets a
+  /// "last updated" affordance stay honest while the revalidate is in flight.
+  static DateTime? get snapshotTakenAt => _cachedAt;
+
   Future<void> loadCryptos() async {
-    // SWR fast path: if we have a recent snapshot, paint it immediately and
-    // refresh quietly underneath (no shimmer). Bounded by _snapshotTtl.
+    if (isClosed) return;
+    final uid = sessionPageUserId();
+    // SWR fast path: paint the last snapshot immediately (however old — the
+    // revalidate below corrects it in place) and refresh quietly underneath.
     final cached = _cachedSnapshot;
-    final cachedAt = _cachedAt;
-    if (cached != null &&
-        cachedAt != null &&
-        DateTime.now().difference(cachedAt) < _snapshotTtl) {
-      if (isClosed) return;
+    if (cached != null && _cachedUserId == uid) {
       emit(cached);
       unawaited(_revalidate());
       return;
     }
+    // Cold start: nothing in this process, but the asset list is mirrored on
+    // disk per user. Paint last-known prices, then run the exact same phases
+    // a first load runs — only the full-screen shimmer is skipped.
+    final mirrored = uid.isEmpty
+        ? null
+        : await CryptoAssetsPageStore.store.hydrate(userId: uid);
+    if (isClosed) return;
+    if (mirrored != null && mirrored.isNotEmpty) {
+      emit(_phaseAState(mirrored));
+      // Phase B exactly as a first load runs it, concurrently with the asset
+      // revalidation — no section waits on the price refresh.
+      unawaited(_revalidateAssets());
+      unawaited(_loadStatistics());
+      unawaited(_loadAuthedSections());
+      unawaited(_revealTopMovers());
+      return;
+    }
     await _initialLoad();
+  }
+
+  /// The Phase-A landing state for [assets]: the tradable list plus movers
+  /// derived from it, every auxiliary section in its own loading state.
+  CryptosLoaded _phaseAState(List<Crypto> assets) {
+    // Movers = the tradable assets sorted by 24h change (client-side; no
+    // extra call, and never shows a coin we can't trade).
+    final movers = List<Crypto>.from(assets)
+      ..sort((a, b) =>
+          b.priceChangePercentage24h.compareTo(a.priceChangePercentage24h));
+    return CryptosLoaded(
+      cryptos: assets,
+      supportedAssets: assets,
+      topCryptos: movers,
+      trendingCryptos: movers.take(10).toList(),
+      portfolioLoading: true,
+      statsLoading: true,
+      watchlistLoading: true,
+      transactionsLoading: true,
+      priceAlertsLoading: true,
+      autoOrdersLoading: true,
+      topMoversLoading: true,
+    );
+  }
+
+  /// Remember the live asset list for the next cold start.
+  void _mirrorAssets(List<Crypto> assets) {
+    final uid = sessionPageUserId();
+    if (uid.isNotEmpty) CryptoAssetsPageStore.store.put(assets, userId: uid);
   }
 
   /// Full first-load path: shimmer → asset list → lazy sections.
@@ -99,27 +154,10 @@ class CryptoCubit extends Cubit<CryptoState> {
         return;
       }
       if (isClosed) return;
+      _mirrorAssets(assets);
 
-      // Movers = the tradable assets sorted by 24h change (client-side; no
-      // extra call, and never shows a coin we can't trade).
-      final movers = List<Crypto>.from(assets)
-        ..sort((a, b) =>
-            b.priceChangePercentage24h.compareTo(a.priceChangePercentage24h));
-
-      emit(CryptosLoaded(
-        cryptos: assets,
-        supportedAssets: assets,
-        topCryptos: movers,
-        trendingCryptos: movers.take(10).toList(),
-        // Every auxiliary section starts in its own loading state.
-        portfolioLoading: true,
-        statsLoading: true,
-        watchlistLoading: true,
-        transactionsLoading: true,
-        priceAlertsLoading: true,
-        autoOrdersLoading: true,
-        topMoversLoading: true,
-      ));
+      // Every auxiliary section starts in its own loading state.
+      emit(_phaseAState(assets));
 
       // ── PHASE B (lazy, independent, non-blocking) ───────────────────────
       unawaited(_loadStatistics());
@@ -138,9 +176,19 @@ class CryptoCubit extends Cubit<CryptoState> {
   /// flipping any loading flag (the cached snapshot is already on screen), so
   /// data updates in place with no shimmer. Runs after an instant cache paint.
   Future<void> _revalidate() async {
+    await _revalidateAssets();
+    // Refresh the auxiliary sections quietly (their loading flags stay false).
+    unawaited(_loadStatistics());
+    unawaited(_loadAuthedSections());
+  }
+
+  /// Refresh ONLY the asset list in place (prices, movers), keeping whatever
+  /// is painted on a transient failure.
+  Future<void> _revalidateAssets() async {
     try {
       final assets = await repository.getSupportedAssets();
       if (isClosed) return;
+      _mirrorAssets(assets);
       final s = state;
       if (s is CryptosLoaded) {
         final movers = List<Crypto>.from(assets)
@@ -156,9 +204,6 @@ class CryptoCubit extends Cubit<CryptoState> {
     } catch (_) {
       // Keep the cached asset list on a transient failure.
     }
-    // Refresh the auxiliary sections quietly (their loading flags stay false).
-    unawaited(_loadStatistics());
-    unawaited(_loadAuthedSections());
   }
 
   /// Reveal the Top Movers section shortly after the initial frame so the

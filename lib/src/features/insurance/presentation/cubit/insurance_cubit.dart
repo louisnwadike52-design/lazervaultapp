@@ -9,6 +9,7 @@ import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../../domain/entities/mycover_management_entities.dart';
 import '../../domain/repositories/insurance_repository.dart';
+import 'insurance_hub_page_store.dart';
 import 'insurance_state.dart';
 
 class InsuranceCubit extends Cubit<InsuranceState> {
@@ -130,7 +131,17 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       }
       if (_isLoadingInsurances) return;
       _isLoadingInsurances = true;
-      emit(InsuranceLoading());
+      // Paint what we already know, INSTANTLY. A list already on screen stays
+      // there (silent refresh); a fresh cubit paints the remembered page one;
+      // only a genuinely first load on this device shows the loader.
+      if (state is! InsurancesLoaded) {
+        final cached = InsuranceHubPageStore.peek(currentUserId);
+        if (cached != null) {
+          emit(cached);
+        } else {
+          emit(InsuranceLoading());
+        }
+      }
       _insurancesLoadGeneration++;
       final myGeneration = _insurancesLoadGeneration;
 
@@ -163,7 +174,7 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       final statistics = await statisticsFuture;
       if (isClosed) return;
 
-      emit(InsurancesLoaded(
+      final loaded = InsurancesLoaded(
         insurances: page.insurances,
         recentPayments: recentPayments.take(5).toList(),
         overduePayments: overduePayments,
@@ -171,9 +182,16 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         hasMore: page.hasMore,
         currentPage: 1,
         isLoadingMore: false,
-      ));
+      );
+      InsuranceHubPageStore.remember(loaded, userId: currentUserId);
+      emit(loaded);
     } catch (e) {
       if (isClosed) return;
+      // A background refresh that fails must not replace shown policies with
+      // an error screen; the list on screen is still the last good answer.
+      if (state is InsurancesLoaded) {
+        return;
+      }
       emit(InsuranceError(_friendlyError(
           e, 'Failed to load insurance policies. Please try again.')));
     } finally {

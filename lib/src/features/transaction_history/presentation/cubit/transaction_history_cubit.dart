@@ -33,6 +33,15 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
     // current list on screen and update it in place when the fetch returns, so
     // the section re-renders WITHOUT flashing a loading skeleton.
     if (!(background && state is TransactionHistoryLoaded)) {
+      // The repository keeps page one in SQLite (5 min, per user+account).
+      // Paint that page NOW instead of a loader and converge to the network
+      // in the background — the same revalidation a cache hit always ran,
+      // just without the spinner in front of it. The spinner is only for an
+      // empty cache.
+      if (await _paintCachedPageOne(filters)) {
+        unawaited(refreshTransactions(background: true));
+        return;
+      }
       emit(const TransactionHistoryLoading());
     }
 
@@ -95,6 +104,41 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
         errorCode: 'LOAD_ALL_FAILED',
       ));
     }
+  }
+
+  /// Emit the locally cached page one as a Loaded state, if there is one.
+  /// Returns false (emitting nothing) on an empty cache or any cache error.
+  /// Statistics are left as they were: they arrive with the refresh that
+  /// follows, as they did before, rather than holding up the paint.
+  Future<bool> _paintCachedPageOne(TransactionFilters? filters) async {
+    TransactionListResponse? cached;
+    try {
+      cached = await repository.peekCachedAllTransactions(
+        limit: _pageSize,
+        filters: filters,
+      );
+    } catch (_) {
+      return false;
+    }
+    if (isClosed || cached == null || cached.transactions.isEmpty) {
+      return false;
+    }
+    final previous = state;
+    _currentPage = 1;
+    _nextCursor = cached.nextCursor;
+    _activeFilters = filters;
+    _cachedTransactions = cached.transactions;
+    _serviceType = null;
+    emit(TransactionHistoryLoaded(
+      transactions: cached.transactions,
+      hasMore: cached.hasMore,
+      currentPage: cached.currentPage,
+      totalPages: cached.totalPages,
+      activeFilters: filters,
+      statistics:
+          previous is TransactionHistoryLoaded ? previous.statistics : null,
+    ));
+    return true;
   }
 
   /// Load transactions for a specific service type

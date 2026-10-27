@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:lazervault/src/features/group_account/presentation/cubit/group_invitations_page_store.dart';
 import 'package:flutter/widgets.dart' show Rect;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -2302,23 +2303,46 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   /// the Invites tab on group_account_list_screen + a badge counter
   /// elsewhere. Statuses param defaults to [pending] so the tab only
   /// shows live invites; pass null/[] for the full history.
+  ///
+  /// Paints the remembered answer for this user (memory, else disk) before
+  /// the network one — the same head start the groups list gets from its
+  /// page cache — so the Invites tab and its badge are right on first paint
+  /// instead of after the round-trip. A fetch that fails behind painted
+  /// invitations keeps them; the error state is for a cold miss only.
   Future<void> loadMyInvitations({
     List<GroupInvitationStatus>? statuses,
     int limit = 50,
   }) async {
     if (isClosed) return;
     if (listMyInvitations == null) return;
+    final wanted = statuses ?? [GroupInvitationStatus.pending];
+    final uid = currentUserId ?? '';
+    final scope = GroupInvitationsPageStore.scope(wanted, limit);
+    var painted = false;
+    if (uid.isNotEmpty) {
+      final cached = await GroupInvitationsPageStore.store
+          .hydrate(userId: uid, scope: scope);
+      if (isClosed) return;
+      if (cached != null) {
+        painted = true;
+        emit(GroupAccountMyInvitationsLoaded(cached));
+      }
+    }
     try {
       final list = await listMyInvitations!(ListMyInvitationsParams(
-        statuses: statuses ?? [GroupInvitationStatus.pending],
+        statuses: wanted,
         limit: limit,
       ));
       if (isClosed) return;
+      if (uid.isNotEmpty) {
+        GroupInvitationsPageStore.store.put(list, userId: uid, scope: scope);
+      }
       emit(GroupAccountMyInvitationsLoaded(list));
     } catch (e) {
       if (isClosed) return;
       AppLogger.error('group-funds: load your invitations failed',
           error: e, flow: 'group_accounts');
+      if (painted) return;
       emit(GroupAccountError(
           friendlyError(e, context: 'load your invitations')));
     }

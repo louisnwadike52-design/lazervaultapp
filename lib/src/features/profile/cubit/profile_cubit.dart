@@ -37,9 +37,20 @@ class ProfileCubit extends Cubit<ProfileState> {
         _currencySyncService = currencySyncService,
         super(const ProfileInitial());
 
-  Future<void> getUserProfile() async {
+  /// Fetch the profile.
+  ///
+  /// [silent] — when the cubit ALREADY holds a `ProfileLoaded`, skip the
+  /// `ProfileLoading` emission so every builder keyed on `state is
+  /// ProfileLoaded` keeps painting the current profile while the fresh one is
+  /// in flight. The screens that open this cubit's data (settings, my
+  /// account, the dashboard header) have rows to show; blanking them for a
+  /// background refresh is what made Settings open on a full-screen loader
+  /// every time. The very first load (nothing held yet) still emits Loading.
+  Future<void> getUserProfile({bool silent = false}) async {
     if (isClosed) return;
-    emit(const ProfileLoading());
+    if (!(silent && state is ProfileLoaded)) {
+      emit(const ProfileLoading());
+    }
     final result = await _repository.getUserProfile();
 
     if (isClosed) return;

@@ -9,6 +9,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/cache/session_page_user.dart';
 import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -73,7 +74,23 @@ class _FinancialConnectionsScreenState
     // re-entry); the fetch below reconciles them silently.
     _savedContacts = List<RecipientModel>.from(p2pSavedContactsCache);
     context.read<P2PConversationsCubit>().loadConversations();
+    _hydrateSavedContacts();
     _loadSavedContacts();
+  }
+
+  /// Cold start only: the process cache is empty, so paint the last saved
+  /// contacts from disk while [_loadSavedContacts] fetches the live list.
+  Future<void> _hydrateSavedContacts() async {
+    if (p2pSavedContactsCacheLoaded) return;
+    final uid = sessionPageUserId();
+    if (uid.isEmpty) return;
+    final cached = await p2pSavedContactsStore.hydrate(userId: uid);
+    if (!mounted || cached == null || cached.isEmpty) return;
+    if (p2pSavedContactsCacheLoaded) return; // the fetch beat us to it
+    setState(() {
+      _savedContacts = List<RecipientModel>.from(cached);
+      _contactsLoading = false;
+    });
   }
 
   @override
@@ -160,6 +177,8 @@ class _FinancialConnectionsScreenState
           // Refresh the process-lifetime cache so the next entry is instant.
           p2pSavedContactsCache = deduped;
           p2pSavedContactsCacheLoaded = true;
+          final uid = sessionPageUserId();
+          if (uid.isNotEmpty) p2pSavedContactsStore.put(deduped, userId: uid);
           // Skip the rebuild entirely when nothing changed (the common case on a
           // warm re-entry from a chat/image viewer). A no-op setState would
           // rebuild the whole screen and re-fade the "pill" avatars — the

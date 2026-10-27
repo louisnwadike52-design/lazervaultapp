@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/cache/session_user_id.dart';
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
 import '../../domain/entities/escrow_offer_entity.dart';
 import '../../domain/repositories/escrow_repository.dart';
+import 'escrow_session_store.dart';
 
 part 'escrow_state.dart';
 
@@ -66,12 +68,34 @@ class EscrowCubit extends Cubit<EscrowState> {
     int page = 1,
   }) async {
     // A page change keeps the current list visible and flags it loading; a
-    // first load has nothing to keep, so it shows the shimmer.
+    // first load paints the page one a previous open stored for this user
+    // and (role, status), or the shimmer when there is none.
     final current = state;
+    final scope = escrowDealsScope(role, status);
+    // The store stamp is the signed-in user; the cubit's own id (resolved
+    // from the gRPC session below) is used once known so the two agree.
+    final sessionUid =
+        _currentUserId.isNotEmpty ? _currentUserId : SessionUserId.current();
+    var paintedCached = false;
     if (current is EscrowDealsLoaded && page != current.page) {
       emit(current.copyWith(pageLoading: true));
     } else {
-      emit(const EscrowLoading());
+      final cached = page == 1
+          ? escrowDealsPageStore
+              .peek(userId: sessionUid, scope: scope)
+              ?.firstOrNull
+          : null;
+      if (cached != null) {
+        paintedCached = true;
+        emit(EscrowDealsLoaded(
+          cached.items,
+          sessionUid,
+          page: cached.page,
+          totalPages: cached.totalPages,
+        ));
+      } else {
+        emit(const EscrowLoading());
+      }
     }
     try {
       final uid = await _userId();
@@ -89,6 +113,9 @@ class EscrowCubit extends Cubit<EscrowState> {
       _prefetched = null;
       _prefetchKey = null;
 
+      if (result.page == 1) {
+        escrowDealsPageStore.put([result], userId: uid, scope: scope);
+      }
       emit(EscrowDealsLoaded(
         result.items,
         uid,
@@ -117,6 +144,8 @@ class EscrowCubit extends Cubit<EscrowState> {
         }));
       }
     } catch (e) {
+      // A failed refresh behind a painted page keeps the page on screen.
+      if (paintedCached) return;
       emit(EscrowError(_clean(e)));
     }
   }

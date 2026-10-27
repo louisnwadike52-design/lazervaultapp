@@ -4,6 +4,7 @@ import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../../domain/repositories/lock_funds_repository.dart';
 import '../../data/lock_funds_error.dart';
+import 'lock_funds_page_store.dart';
 import 'lock_funds_state.dart';
 
 class LockFundsCubit extends Cubit<LockFundsState> {
@@ -50,22 +51,43 @@ class LockFundsCubit extends Cubit<LockFundsState> {
     return super.close();
   }
 
+  /// The status filter the current [LockFundsLoaded] was fetched for, so a
+  /// load for a DIFFERENT filter still shows its own loading state instead of
+  /// silently refreshing under the wrong list.
+  String _loadedScope = '';
+
   Future<void> loadLockFunds({LockStatus? status}) async {
     try {
       if (isClosed) return;
-      emit(const LockFundsLoading());
+      final userId = currentUserId ?? '';
+      final scope = LockFundsPageStore.scopeFor(status);
+      // Paint what we already know, INSTANTLY. A list already on screen for
+      // this filter stays there (silent refresh — WS events, returning from a
+      // detail); a fresh cubit paints the remembered list + statistics; only
+      // a genuinely first load on this device shows the loader.
+      if (state is! LockFundsLoaded || _loadedScope != scope) {
+        final cached = LockFundsPageStore.peek(userId: userId, status: status);
+        if (cached != null) {
+          _loadedScope = scope;
+          emit(cached);
+        } else {
+          emit(const LockFundsLoading());
+        }
+      }
 
       final lockFunds = await _repository.getLockFunds(status: status);
       if (isClosed) return;
       final statistics = await _repository.getStatistics();
       if (isClosed) return;
 
-      final stats = {
-        'totalLockedAmount': statistics.totalLockedAmount,
-        'totalAccruedInterest': statistics.totalAccruedInterest,
-        'activeLocksCount': statistics.activeLocksCount,
-        'totalCount': statistics.totalCount,
-      };
+      final stats = LockFundsPageStore.statisticsMap(statistics);
+      LockFundsPageStore.remember(
+        userId: userId,
+        status: status,
+        lockFunds: lockFunds,
+        stats: statistics,
+      );
+      _loadedScope = scope;
 
       emit(LockFundsLoaded(
         lockFunds: lockFunds,

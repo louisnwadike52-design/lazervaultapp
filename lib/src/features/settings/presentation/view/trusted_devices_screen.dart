@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:lazervault/core/cache/session_page_user.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
+import 'package:lazervault/src/features/settings/presentation/view/security_center_page_store.dart';
 
 /// Security center — Trusted Devices. Lists every device the user has logged in
 /// from (backend device registry) and lets them revoke any device, which ends
@@ -36,9 +38,30 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
     _load();
   }
 
+  /// Current device first, then most-recent login.
+  static List<TrustedDevice> _sorted(List<TrustedDevice> devices) =>
+      [...devices]..sort((a, b) {
+          if (a.isCurrent != b.isCurrent) return a.isCurrent ? -1 : 1;
+          final at = a.lastLoginAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final bt = b.lastLoginAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+          return bt.compareTo(at);
+        });
+
+  /// Paints the remembered list for this user (memory, else disk) before
+  /// the network answers, so the spinner shows only when nothing is
+  /// remembered. A refresh that fails behind painted rows keeps them.
   Future<void> _load() async {
+    final uid = sessionPageUserId();
+    if (_devices.isEmpty && uid.isNotEmpty) {
+      final cached =
+          await SecurityCenterPageStore.trustedDevices.hydrate(userId: uid);
+      if (!mounted) return;
+      if (cached != null && cached.isNotEmpty && _devices.isEmpty) {
+        _devices = _sorted(cached);
+      }
+    }
     setState(() {
-      _loading = true;
+      _loading = _devices.isEmpty;
       _error = null;
     });
     final result = await _repo.listDevices();
@@ -46,18 +69,14 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
     result.fold(
       (failure) => setState(() {
         _loading = false;
-        _error = 'Could not load devices. Pull to retry.';
+        if (_devices.isEmpty) _error = 'Could not load devices. Pull to retry.';
       }),
       (devices) => setState(() {
         _loading = false;
-        // Current device first, then most-recent login.
-        final sorted = [...devices]..sort((a, b) {
-            if (a.isCurrent != b.isCurrent) return a.isCurrent ? -1 : 1;
-            final at = a.lastLoginAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final bt = b.lastLoginAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-            return bt.compareTo(at);
-          });
-        _devices = sorted;
+        _devices = _sorted(devices);
+        if (uid.isNotEmpty) {
+          SecurityCenterPageStore.trustedDevices.put(_devices, userId: uid);
+        }
       }),
     );
   }

@@ -46,4 +46,15 @@ abstract class TransactionHistoryRepository {
 
   /// Get cached transactions
   Future<List<UnifiedTransaction>> getCachedTransactions();
+
+  /// Page one of the LOCAL cache for the active account, exactly as
+  /// [fetchAllTransactions] would serve it on a cache hit (`fromCache: true`),
+  /// or null when there is nothing cached. Never touches the network. Lets a
+  /// cubit paint the remembered page before deciding whether to show a
+  /// loader. Default: no cache.
+  Future<TransactionListResponse?> peekCachedAllTransactions({
+    int limit = 20,
+    TransactionFilters? filters,
+  }) async =>
+      null;
 }

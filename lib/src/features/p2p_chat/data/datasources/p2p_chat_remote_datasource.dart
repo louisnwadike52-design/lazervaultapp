@@ -278,8 +278,8 @@ class P2PChatRemoteDatasource {
   ///
   /// Enforcement is server-side and SYMMETRIC — once either side has blocked,
   /// neither can send. Hiding the thread in the app alone would be theatre.
-  Future<void> blockParticipant(
-      String conversationId, String accessToken, {String? reason}) async {
+  Future<void> blockParticipant(String conversationId, String accessToken,
+      {String? reason}) async {
     final response = await _client
         .post(
           Uri.parse('$_baseUrl/conversations/$conversationId/block'),

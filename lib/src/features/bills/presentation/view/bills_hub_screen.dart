@@ -1,19 +1,17 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
-import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/service_unavailable_modal.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/src/core/network/grpc_client.dart';
+import 'package:lazervault/src/features/bills/presentation/view/bill_services_catalogue_store.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
-import 'package:lazervault/src/generated/utility-payments.pb.dart' as pb;
+
+part 'bills_hub_screen_tiles.dart';
 
 class BillsHubScreen extends StatefulWidget {
   const BillsHubScreen({super.key});
@@ -22,152 +20,106 @@ class BillsHubScreen extends StatefulWidget {
   State<BillsHubScreen> createState() => _BillsHubScreenState();
 }
 
-class _BillsHubScreenState extends State<BillsHubScreen> {
-  // Static tile registry — the type→(icon, route, copy) map is a client
-  // concern and never comes from the backend. `type` matches the bill-service
-  // catalogue's type string (see GetBillServices); `defaultVisible` is the
-  // tile's visibility when the catalogue can't be consulted (fetch error /
-  // timeout) or when the catalogue doesn't govern this type at all.
+class _BillsHubScreenState extends State<BillsHubScreen>
+    with WidgetsBindingObserver {
+  // THE MENU IS PAINTED FROM WHAT WE ALREADY KNOW, THEN REFRESHED BEHIND IT.
   //
-  // The catalogue only governs: electricity, airtime, data, cable_tv,
-  // internet, water, education. ePIN and betting are NOT in the catalogue, so
-  // they are always shown (defaultVisible = true) regardless of the response.
-  // THE SHIPPED PRODUCT IS AIRTIME, DATA, ELECTRICITY AND CABLE TV.
-  //
-  // Only those four default visible. Internet, Water, Education, ePIN and
-  // betting are built but not launched, so they appear ONLY when the
-  // catalogue explicitly reports them enabled — a fetch failure or timeout
-  // must not re-surface an unlaunched product, which is what a `true` default
-  // did.
-  //
-  // ePIN and betting additionally had no catalogue entry at all, so
-  // _catalogueAllows fell through to this default and showed them
-  // unconditionally with no admin toggle able to reach them. They are now in
-  // billServiceCatalogue (utility-payments-service) with DefaultEnabled
-  // false, so `service_epin_enabled` / `service_betting_enabled` govern them
-  // like every other type.
-  static const List<_BillType> _allTiles = [
-    _BillType(
-      type: 'airtime',
-      icon: Icons.phone_android,
-      title: 'Airtime',
-      description: 'Top up any network',
-      route: AppRoutes.airtime,
-    ),
-    _BillType(
-      type: 'data',
-      icon: Icons.wifi,
-      title: 'Data Bundles',
-      description: 'MTN, Airtel, Glo, 9mobile',
-      route: AppRoutes.dataBundlesHome,
-    ),
-    _BillType(
-      type: 'electricity',
-      icon: Icons.electric_bolt,
-      title: 'Electricity',
-      description: 'Prepaid & postpaid bills',
-      route: AppRoutes.electricityBillHome,
-    ),
-    _BillType(
-      type: 'cable_tv',
-      icon: Icons.tv,
-      title: 'Cable TV',
-      description: 'DStv, GOtv, Startimes',
-      route: AppRoutes.cableTVHome,
-    ),
-    _BillType(
-      type: 'internet',
-      icon: Icons.router,
-      title: 'Internet',
-      description: 'Smile, Spectranet & more',
-      route: AppRoutes.internetBillHome,
-      defaultVisible: false,
-    ),
-    _BillType(
-      type: 'water',
-      icon: Icons.water_drop,
-      title: 'Water Bill',
-      description: 'Water corporation bills',
-      route: AppRoutes.waterBillHome,
-      defaultVisible: false,
-    ),
-    _BillType(
-      type: 'education',
-      icon: Icons.school,
-      title: 'Education PINs',
-      description: 'WAEC, NECO & JAMB PINs',
-      route: AppRoutes.educationHome,
-      defaultVisible: false,
-    ),
-    _BillType(
-      type: 'epin',
-      icon: Icons.confirmation_number,
-      title: 'Recharge card printing',
-      description: 'Generate airtime PINs',
-      route: AppRoutes.epinHome,
-      defaultVisible: false,
-    ),
-    _BillType(
-      type: 'betting',
-      icon: Icons.sports_soccer,
-      title: 'Fund betting account',
-      description: 'Top up your betting wallet',
-      route: AppRoutes.bettingHome,
-      defaultVisible: false,
-    ),
-  ];
+  // The catalogue lives in [BillServicesCatalogue.store] (user-stamped,
+  // country-scoped, mirrored to disk). On open: paint the remembered page at
+  // once, fetch in the background, `put` the result — the grid listens to the
+  // store's revision and repaints ITSELF, not the scaffold, so a tile an
+  // admin toggled updates in place with no spinner over the others. The
+  // spinner is reserved for a first open with nothing remembered at all.
 
-  bool _loading = true;
-  // Effective-enabled state keyed by bill type, populated from GetBillServices.
-  // Empty + `_hasCatalogue == false` means we could not reach the service and
-  // must fall back to each tile's defaultVisible.
-  Map<String, bool> _enabledByType = const {};
-  bool _hasCatalogue = false;
+  /// Who/where this open is for. Resolved once; the store refuses another
+  /// user's page anyway, so a mid-screen switch cannot paint the wrong menu.
+  late final String _userId = BillServicesCatalogue.currentUserId();
+  late final String _scope = BillServicesCatalogue.currentScope();
+
+  /// True only while the FIRST fetch (nothing cached) is in flight.
+  bool _loading = false;
+
+  /// A fetch is already running — a resume while one is in flight must not
+  /// start a second.
+  bool _refreshing = false;
+
+  /// The latest answer for THIS open when the store could not remember it
+  /// (no signed-in user id — `put` is then a no-op). Null means "no
+  /// catalogue": every tile falls back to its defaultVisible, as before.
+  List<BillServiceEntry>? _unstored;
 
   @override
   void initState() {
     super.initState();
-    _loadServices();
+    WidgetsBinding.instance.addObserver(this);
+    _paintThenRefresh();
   }
 
-  Future<void> _loadServices() async {
-    try {
-      // Utility payments rides the commerce gRPC client (same instance the
-      // data-bundle / betting datasources use for GetDataPlans etc.).
-      final client =
-          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient');
-      final options = await client.callOptions;
-      final resp = await client.utilityPaymentsClient
-          .getBillServices(pb.GetBillServicesRequest(), options: options)
-          .timeout(const Duration(seconds: 8));
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
-      final map = <String, bool>{
-        for (final s in resp.services) s.type: s.enabled,
-      };
+  /// An app that stays open must still learn about an admin toggle: refresh
+  /// quietly whenever it comes back to the foreground.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshInBackground();
+  }
+
+  Future<void> _paintThenRefresh() async {
+    final store = BillServicesCatalogue.store;
+    var cached = store.peek(userId: _userId, scope: _scope);
+    if (cached == null) {
+      // Cold start: the disk mirror, if any. Nothing to paint until it
+      // answers, which is synchronous-fast — well before any network reply.
+      cached = await store.hydrate(userId: _userId, scope: _scope);
       if (!mounted) return;
-      setState(() {
-        _enabledByType = map;
-        _hasCatalogue = true;
-        _loading = false;
-      });
+    }
+    if (cached == null) {
+      // GENUINELY nothing remembered: this is the one case that may block.
+      setState(() => _loading = true);
+    }
+    // Either way the fresh answer is fetched; with rows on screen it lands
+    // through the store's revision and repaints only the grid.
+    await _refreshInBackground();
+  }
+
+  Future<void> _refreshInBackground() async {
+    if (_refreshing) return;
+    _refreshing = true;
+    try {
+      final fresh = await BillServicesCatalogue.refresh(
+        userId: _userId,
+        scope: _scope,
+      );
+      if (!mounted) return;
+      // Only reached when the store could not stamp it (empty user id); a
+      // stored page repaints the grid via the store's revision instead.
+      if (_userId.isEmpty || _loading) {
+        setState(() {
+          _unstored = fresh;
+          _loading = false;
+        });
+      }
     } catch (_) {
-      // Never blank the hub: on any error/timeout, fall back to the default
-      // tile set (every tile's defaultVisible).
+      // Never blank the hub. With a remembered page on screen a failed
+      // refresh changes nothing; with none, fall back to the default tile
+      // set (every tile's defaultVisible) exactly as before.
       if (!mounted) return;
-      setState(() {
-        _enabledByType = const {};
-        _hasCatalogue = false;
-        _loading = false;
-      });
+      if (_loading) setState(() => _loading = false);
+    } finally {
+      _refreshing = false;
     }
   }
 
-  // A tile is visible when the catalogue reports its type enabled. Types the
-  // catalogue doesn't govern (ePIN, betting) — and the whole grid when the
-  // catalogue is unavailable — fall back to defaultVisible.
-  bool _catalogueAllows(_BillType b) {
-    if (_hasCatalogue) {
-      final enabled = _enabledByType[b.type];
+  /// A tile is visible when the catalogue reports its type enabled. Types the
+  /// catalogue doesn't govern (ePIN, betting) — and the whole grid when the
+  /// catalogue is unavailable — fall back to defaultVisible.
+  static bool _catalogueAllows(Map<String, bool>? enabledByType, _BillType b) {
+    if (enabledByType != null) {
+      final enabled = enabledByType[b.type];
       if (enabled != null) return enabled;
     }
     return b.defaultVisible;
@@ -194,21 +146,6 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Repaint when a fresh admin snapshot lands, so a type switched off
-    // reaches this screen within one poll instead of at next launch. The flags
-    // themselves are still read synchronously — nothing here awaits a network
-    // call.
-    return ValueListenableBuilder<int>(
-      valueListenable: FeatureFlags.revision,
-      builder: (context, _, __) => _buildHub(context),
-    );
-  }
-
-  Widget _buildHub(BuildContext context) {
-    // Everything the RAIL can serve. The admin gate then decides which of
-    // these are offered and which explain themselves.
-    final bills = _allTiles.where(_catalogueAllows).toList();
-
     return PopScope(
       // OS/Android back button routes to the dashboard, matching the
       // AppBar back button. Without this the system back would pop the
@@ -279,87 +216,23 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeaderCard(),
+                  _billsHubHeaderCard(),
                   SizedBox(height: 16.h),
-                  if (_loading)
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 48.h),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            InvoiceThemeColors.primaryPurple,
-                          ),
-                        ),
-                      ),
-                    )
-                  // EVERY tile gone. Possible two ways: the catalogue reports
-                  // nothing enabled, or an admin has switched every type off.
-                  // Either way a bare screen reads as a broken app, so say
-                  // what is happening instead of rendering an empty grid.
-                  else if (bills.isEmpty)
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40.h),
-                      child: Column(
-                        children: [
-                          Icon(Icons.receipt_long_outlined,
-                              size: 44.sp, color: const Color(0xFF4B5563)),
-                          SizedBox(height: 12.h),
-                          Text(
-                            'Bill payments are not available right now',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(height: 6.h),
-                          Text(
-                            'Please check back shortly.',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontSize: 12.sp,
-                              color: const Color(0xFF9CA3AF),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12.w,
-                        mainAxisSpacing: 12.h,
-                        // Compact tiles so bill types fit on screen at a glance.
-                        childAspectRatio: 1.18,
-                      ),
-                      itemCount: bills.length,
-                      itemBuilder: (context, index) {
-                        final b = bills[index];
-                        final enabled = FeatureFlags.gateAllowed(_gate(b));
-                        return _BillTile(
-                          icon: b.icon,
-                          title: b.title,
-                          description: b.description,
-                          enabled: enabled,
-                          onTap: () {
-                            if (!enabled) {
-                              showServiceUnavailableModal(
-                                context,
-                                serviceName: b.title,
-                                message: FeatureFlags.gateMessage(_gate(b)),
-                              );
-                              return;
-                            }
-                            Get.toNamed(b.route);
-                          },
-                        );
-                      },
+                  // ONLY the menu repaints when the catalogue or an admin
+                  // gate changes — the header, app bar and entrance animation
+                  // above are untouched by a background refresh.
+                  ValueListenableBuilder<int>(
+                    valueListenable: BillServicesCatalogue.store.revision,
+                    builder: (context, _, __) => ValueListenableBuilder<int>(
+                      // Repaint when a fresh admin snapshot lands, so a type
+                      // switched off reaches this screen within one poll
+                      // instead of at next launch. The flags themselves are
+                      // still read synchronously — nothing here awaits a
+                      // network call.
+                      valueListenable: FeatureFlags.revision,
+                      builder: (context, _, __) => _buildMenu(context),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -369,207 +242,98 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
     );
   }
 
-  Widget _buildHeaderCard() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            InvoiceThemeColors.primaryPurple,
-            InvoiceThemeColors.primaryPurple.withValues(alpha: 0.8),
+  Widget _buildMenu(BuildContext context) {
+    if (_loading) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 48.h),
+        child: Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            valueColor: const AlwaysStoppedAnimation<Color>(
+              InvoiceThemeColors.primaryPurple,
+            ),
+          ),
+        ),
+      );
+    }
+    // The remembered page wins; the un-storable answer for this open is the
+    // fallback; null is "catalogue unavailable".
+    final catalogue =
+        BillServicesCatalogue.store.peek(userId: _userId, scope: _scope) ??
+            _unstored;
+    final enabledByType =
+        catalogue == null ? null : billServicesEnabledByType(catalogue);
+    // Everything the RAIL can serve. The admin gate then decides which of
+    // these are offered and which explain themselves.
+    final bills =
+        _allTiles.where((b) => _catalogueAllows(enabledByType, b)).toList();
+
+    // EVERY tile gone. Possible two ways: the catalogue reports nothing
+    // enabled, or an admin has switched every type off. Either way a bare
+    // screen reads as a broken app, so say what is happening instead of
+    // rendering an empty grid.
+    if (bills.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 40.h),
+        child: Column(
+          children: [
+            Icon(Icons.receipt_long_outlined,
+                size: 44.sp, color: const Color(0xFF4B5563)),
+            SizedBox(height: 12.h),
+            Text(
+              'Bill payments are not available right now',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'Please check back shortly.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: const Color(0xFF9CA3AF),
+              ),
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+      );
+    }
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12.w,
+        mainAxisSpacing: 12.h,
+        // Compact tiles so bill types fit on screen at a glance.
+        childAspectRatio: 1.18,
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 50.w,
-            height: 50.w,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.receipt_long,
-              color: Colors.white,
-              size: 24.sp,
-            ),
-          ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Pay any bill, any time',
-                  style: GoogleFonts.inter(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Fast, secure & reliable bill payments',
-                  style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BillType {
-  /// Bill-service catalogue type string (matches GetBillServices `type`).
-  final String type;
-  final IconData icon;
-  final String title;
-  final String description;
-  final String route;
-
-  /// Visibility when the catalogue can't be consulted (fetch error/timeout)
-  /// or doesn't govern this type. Only the four launched types default to
-  /// shown; everything built-but-unlaunched defaults hidden.
-  final bool defaultVisible;
-
-  const _BillType({
-    required this.type,
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.route,
-    this.defaultVisible = true,
-  });
-}
-
-class _BillTile extends StatefulWidget {
-  final IconData icon;
-  final String title;
-  final String description;
-  final VoidCallback onTap;
-
-  /// False when an admin has switched this bill type off.
-  ///
-  /// The tile stays in the grid and stays TAPPABLE — tapping opens the
-  /// explanation. A control that disappears during an outage looks like a bug
-  /// and costs a support ticket; one that is dimmed and says why does not.
-  final bool enabled;
-
-  const _BillTile({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.onTap,
-    this.enabled = true,
-  });
-
-  @override
-  State<_BillTile> createState() => _BillTileState();
-}
-
-class _BillTileState extends State<_BillTile> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onTap,
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) => setState(() => _pressed = false),
-      onTapCancel: () => setState(() => _pressed = false),
-      child: Opacity(
-        opacity: widget.enabled ? 1.0 : 0.45,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
-          decoration: BoxDecoration(
-            color: InvoiceThemeColors.secondaryBackground,
-            borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(
-              color: _pressed
-                  ? InvoiceThemeColors.primaryPurple
-                  : InvoiceThemeColors.borderColor,
-              width: _pressed ? 2 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: _pressed
-                    ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
-                    : Colors.black.withValues(alpha: 0.1),
-                blurRadius: _pressed ? 15 : 8,
-                offset: _pressed ? const Offset(0, 6) : const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 44.w,
-                height: 44.w,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
-                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Icon(
-                    widget.icon,
-                    size: 22.sp,
-                    color: InvoiceThemeColors.primaryPurple,
-                  ),
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                widget.title,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 3.h),
-              Text(
-                widget.description,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  fontSize: 10.sp,
-                  color: InvoiceThemeColors.textGray400,
-                  height: 1.25,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      itemCount: bills.length,
+      itemBuilder: (context, index) {
+        final b = bills[index];
+        final enabled = FeatureFlags.gateAllowed(_gate(b));
+        return _BillTile(
+          icon: b.icon,
+          title: b.title,
+          description: b.description,
+          enabled: enabled,
+          onTap: () {
+            if (!enabled) {
+              showServiceUnavailableModal(
+                context,
+                serviceName: b.title,
+                message: FeatureFlags.gateMessage(_gate(b)),
+              );
+              return;
+            }
+            Get.toNamed(b.route);
+          },
+        );
+      },
     );
   }
 }

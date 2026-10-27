@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/cache/session_user_id.dart';
 import '../../domain/entities/data_purchase_entity.dart';
 import '../../domain/repositories/data_bundles_repository.dart';
+import 'data_bundles_session_store.dart';
 import 'data_bundles_state.dart';
 
 class DataBundlesCubit extends Cubit<DataBundlesState> {
@@ -18,16 +20,31 @@ class DataBundlesCubit extends Cubit<DataBundlesState> {
   /// view that consumes [DataPurchaseHistoryLoaded].
   Future<void> loadDataPurchaseHistory({int limit = 50, int offset = 0}) async {
     if (isClosed) return;
-    emit(DataPurchaseHistoryLoading());
+    // Paint the page the last instance stored for this user (first page only)
+    // and refresh behind it; the loader is for a user with nothing stored.
+    final userId = SessionUserId.current();
+    final isFirstPage = offset == 0;
+    final cached = isFirstPage ? dataPurchasesStore.peek(userId: userId) : null;
+    if (cached != null) {
+      cachedPurchases = cached;
+      emit(DataPurchaseHistoryLoaded(purchases: cached, isStale: true));
+    } else {
+      emit(DataPurchaseHistoryLoading());
+    }
     final result = await repository.getPurchaseHistory(
       limit: limit,
       offset: offset,
     );
     if (isClosed) return;
     result.fold(
-      (failure) => emit(DataPurchaseHistoryError(message: failure.message)),
+      (failure) {
+        // A failed refresh behind a painted list keeps the list.
+        if (cached != null) return;
+        emit(DataPurchaseHistoryError(message: failure.message));
+      },
       (purchases) {
         cachedPurchases = purchases;
+        if (isFirstPage) dataPurchasesStore.put(purchases, userId: userId);
         emit(DataPurchaseHistoryLoaded(
           purchases: purchases,
           isStale: false,
@@ -38,14 +55,28 @@ class DataBundlesCubit extends Cubit<DataBundlesState> {
 
   Future<void> getDataPlans({required String network}) async {
     if (isClosed) return;
-    emit(DataBundlesLoading());
+    // The catalogue for this network, if a previous open fetched it, paints
+    // at once; the fetch still runs and replaces it.
+    final userId = SessionUserId.current();
+    final cached = dataPlansStore.peek(userId: userId, scope: network);
+    if (cached != null) {
+      emit(DataPlansLoaded(plans: cached));
+    } else {
+      emit(DataBundlesLoading());
+    }
 
     final result = await repository.getDataPlans(network: network);
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(DataBundlesError(message: failure.message)),
-      (plans) => emit(DataPlansLoaded(plans: plans)),
+      (failure) {
+        if (cached != null) return; // keep the painted catalogue
+        emit(DataBundlesError(message: failure.message));
+      },
+      (plans) {
+        dataPlansStore.put(plans, userId: userId, scope: network);
+        emit(DataPlansLoaded(plans: plans));
+      },
     );
   }
 

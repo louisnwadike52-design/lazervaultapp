@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/account_summaries_store.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
@@ -94,14 +95,22 @@ class _CardSettingsViewState extends State<_CardSettingsView> {
         },
         child: BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
           builder: (context, state) {
-            if (state is AccountCardsSummaryLoading) {
+            // While the (factory) summary cubit refetches, paint the account
+            // rows every other screen already has — the loader is for a
+            // first fetch with nothing known, and the error view for a
+            // failure with nothing to keep.
+            final known = AccountSummariesStore.rows(
+                forUserId: context.read<AuthenticationCubit>().userId);
+            if (state is AccountCardsSummaryLoading && known.isEmpty) {
               return Center(
                 child: LazerVaultLoader.small(),
               );
-            } else if (state is AccountCardsSummaryError) {
+            } else if (state is AccountCardsSummaryError && known.isEmpty) {
               return _buildErrorView(state.message);
-            } else if (state is AccountCardsSummaryLoaded) {
-              final accounts = state.accountSummaries;
+            } else if (state is AccountCardsSummaryLoaded || known.isNotEmpty) {
+              final accounts = state is AccountCardsSummaryLoaded
+                  ? state.accountSummaries
+                  : known;
 
               if (accounts.isEmpty) {
                 return _buildEmptyView();

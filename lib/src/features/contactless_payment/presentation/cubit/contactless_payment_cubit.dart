@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/cache/session_page_user.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
 import '../../services/contactless_websocket_service.dart';
 import 'contactless_payment_state.dart';
+import 'contactless_payments_page_store.dart';
 
 /// Health of the realtime WS overlay. Receiver screen reads this to
 /// decide its polling cadence — `connecting`/`connected` ⇒ 3s normal,
@@ -498,14 +500,33 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
   }
 
   /// Get my contactless payments (transactions I've made or received)
+  ///
+  /// Paints the remembered answer for this user and query shape first (the
+  /// landing's quick stats + recent strip, the history list), then fetches
+  /// behind it. Loading shows only when nothing is remembered; a refresh
+  /// that fails behind painted rows keeps them.
   Future<void> getMyContactlessPayments({
     int limit = 20,
     int offset = 0,
     String? roleFilter,
   }) async {
+    var painted = false;
+    final uid = sessionPageUserId();
+    final scope = ContactlessPaymentsPageStore.scope(
+        limit: limit, offset: offset, roleFilter: roleFilter);
     try {
       if (isClosed) return;
-      emit(ContactlessPaymentLoading());
+      final cached = await ContactlessPaymentsPageStore.hydrate(uid, scope);
+      if (isClosed) return;
+      if (cached != null) {
+        painted = true;
+        emit(ContactlessPaymentsLoaded(
+          transactions: cached.transactions,
+          total: cached.total,
+        ));
+      } else {
+        emit(ContactlessPaymentLoading());
+      }
 
       final result =
           await _retryWithBackoff(() => repository.getMyContactlessPayments(
@@ -515,11 +536,18 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
               ));
 
       if (isClosed) return;
+      ContactlessPaymentsPageStore.put(uid, scope,
+          transactions: result.transactions, total: result.total);
       emit(ContactlessPaymentsLoaded(
         transactions: result.transactions,
         total: result.total,
       ));
     } catch (e) {
+      if (painted) {
+        debugPrint(
+            'ContactlessPaymentCubit: payments refresh failed, keeping shown: $e');
+        return;
+      }
       _emitError(e);
     }
   }

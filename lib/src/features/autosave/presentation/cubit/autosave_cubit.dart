@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/cache/session_user_id.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
 import 'package:lazervault/src/features/autosave/domain/usecases/create_autosave_rule_usecase.dart';
@@ -9,6 +10,7 @@ import 'package:lazervault/src/features/autosave/domain/usecases/get_autosave_tr
 import 'package:lazervault/src/features/autosave/domain/usecases/toggle_autosave_rule_usecase.dart';
 import 'package:lazervault/src/features/autosave/domain/usecases/trigger_autosave_usecase.dart';
 import 'package:lazervault/src/features/autosave/domain/usecases/update_autosave_rule_usecase.dart';
+import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_rules_session_store.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
 
 class AutoSaveCubit extends Cubit<AutoSaveState> {
@@ -378,12 +380,40 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     }
 
     if (isClosed) return;
-    emit(AutoSaveRulesLoadingState(cachedRules: _cachedRules));
 
     _currentFilter = filter;
     _currentSearch = searchQuery;
     _currentSort = sort ?? _currentSort;
     _currentOffset = 0;
+
+    // This cubit is a factory, so a fresh instance has nothing to show while
+    // the fetch runs. Adopt the page the LAST instance stored for this user
+    // and scope and paint it; the fetch below still runs, as it always did,
+    // and replaces it. `_lastFetch` is deliberately NOT adopted: the 5-minute
+    // short-circuit above stays an in-instance affair, so an open always
+    // refreshes. A non-empty page paints through the screen's existing
+    // "warm refresh" branch; an empty page paints as the Loaded empty state
+    // ("no rules yet" is a real answer).
+    final userId = SessionUserId.current();
+    final scope = autoSaveRulesScope(
+        filter: _currentFilter, search: _currentSearch, sort: _currentSort);
+    var paintedCached = false;
+    if (_cachedRules.isEmpty && !forceRefresh) {
+      final snapshot =
+          autoSaveRulesStore.peek(userId: userId, scope: scope)?.firstOrNull;
+      if (snapshot != null) {
+        _cachedRules = List<AutoSaveRuleEntity>.from(snapshot.rules);
+        _cachedStatistics = snapshot.statistics;
+        _hasMore = snapshot.hasMore;
+        _totalCount = snapshot.totalCount;
+        paintedCached = true;
+      }
+    }
+    if (paintedCached && _cachedRules.isEmpty) {
+      _emitFilteredAndSorted(filter, searchQuery, sort);
+    } else {
+      emit(AutoSaveRulesLoadingState(cachedRules: _cachedRules));
+    }
 
     // Fetch first page + stats in parallel. Stats failure is
     // non-fatal — the analytics card hides itself when stats are
@@ -402,8 +432,17 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     final rulesResult = results[0];
     final statsResult = results[1];
 
+    if (isClosed) return;
     rulesResult.fold(
-      (failure) => emit(AutoSaveError(failure.message)),
+      (failure) {
+        // A failed refresh behind a painted page keeps the page on screen;
+        // only a load with nothing to show surfaces the error state.
+        if (paintedCached) {
+          _emitFilteredAndSorted(filter, searchQuery, sort);
+        } else {
+          emit(AutoSaveError(failure.message));
+        }
+      },
       (data) {
         final page = data as AutoSavePagedResult;
         // List<E>.from forces the runtime element type to E so the
@@ -423,6 +462,32 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
 
         _emitFilteredAndSorted(filter, searchQuery, sort);
       },
+    );
+  }
+
+  /// Store page one (plus stats and paging flags) for the next instance.
+  /// Runs from [_emitFilteredAndSorted], so it covers a fresh page one AND
+  /// the in-place mutations (toggle, delete, bulk) that re-emit through it —
+  /// a re-open never paints a rule the user just removed. Only once this
+  /// instance has fetched (`_lastFetch` set: a painted snapshot is not
+  /// re-stored) and only while page one is all we hold (`_currentOffset`
+  /// zero: an appended list is no longer "page one").
+  void _rememberPageOne() {
+    if (_currentOffset != 0 || _lastFetch == null) return;
+    final userId = SessionUserId.current();
+    final scope = autoSaveRulesScope(
+        filter: _currentFilter, search: _currentSearch, sort: _currentSort);
+    autoSaveRulesStore.put(
+      [
+        AutoSaveRulesSnapshot(
+          rules: List<AutoSaveRuleEntity>.from(_cachedRules),
+          statistics: _cachedStatistics,
+          hasMore: _hasMore,
+          totalCount: _totalCount,
+        ),
+      ],
+      userId: userId,
+      scope: scope,
     );
   }
 
@@ -523,6 +588,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     );
 
     if (isClosed) return;
+    _rememberPageOne();
     emit(AutoSaveRulesLoadedState(
       rules: ordered,
       accountNames: _accountNamesCache,

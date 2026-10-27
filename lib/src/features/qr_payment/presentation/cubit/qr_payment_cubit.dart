@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/cache/session_page_user.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/qr_payment_entity.dart';
 import '../../domain/entities/qr_transaction_entity.dart';
 import '../../domain/repositories/qr_payment_repository.dart';
 import '../../services/qr_pay_websocket_service.dart';
 import 'qr_payment_state.dart';
+import 'qr_recent_activity_store.dart';
 
 /// Health of the realtime WS overlay. Mirrors `ContactlessWsHealth` —
 /// generator screen reads this to decide its polling cadence
@@ -257,9 +259,31 @@ class QRPaymentCubit extends Cubit<QRPaymentState> {
     );
   }
 
+  /// Landing data: last-3 codes + last-3 payments.
+  ///
+  /// Paints what is already known FIRST — the current Loaded state (a
+  /// return from a sub-screen, pull-to-refresh) or the remembered page for
+  /// this user (a fresh factory cubit, or a cold start) — and fetches behind
+  /// it. The section loader shows only when nothing is known yet, and a
+  /// fetch that fails keeps whichever list was on screen.
   Future<void> getRecentActivity() async {
     if (isClosed) return;
-    emit(QRPaymentLoading());
+    final uid = sessionPageUserId();
+    final shown = state;
+    var current = shown is QRRecentActivityLoaded ? shown : null;
+    if (current == null) {
+      final cached = await QRRecentActivityStore.hydrate(uid);
+      if (isClosed) return;
+      if (cached != null) {
+        current = QRRecentActivityLoaded(
+          recentQRCodes: cached.codes,
+          recentPayments: cached.payments,
+        );
+        emit(current);
+      } else {
+        emit(QRPaymentLoading());
+      }
+    }
 
     final results = await Future.wait([
       repository.getMyGeneratedQRCodes(limit: 3),
@@ -272,9 +296,26 @@ class QRPaymentCubit extends Cubit<QRPaymentState> {
     final paymentsResult =
         results[1] as Either<Failure, List<QRTransactionEntity>>;
 
+    final codes = qrCodesResult.fold(
+      (_) => current?.recentQRCodes ?? <QRPaymentEntity>[],
+      (rows) {
+        if (uid.isNotEmpty) QRRecentActivityStore.codes.put(rows, userId: uid);
+        return rows;
+      },
+    );
+    final payments = paymentsResult.fold(
+      (_) => current?.recentPayments ?? <QRTransactionEntity>[],
+      (rows) {
+        if (uid.isNotEmpty) {
+          QRRecentActivityStore.payments.put(rows, userId: uid);
+        }
+        return rows;
+      },
+    );
+
     emit(QRRecentActivityLoaded(
-      recentQRCodes: qrCodesResult.getOrElse(() => []),
-      recentPayments: paymentsResult.getOrElse(() => []),
+      recentQRCodes: codes,
+      recentPayments: payments,
     ));
   }
 

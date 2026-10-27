@@ -218,9 +218,21 @@ class _SettingsViewState extends State<_SettingsView> {
     // or absent after it opened, which looks like the setting is broken rather
     // than remotely controlled.
     FeatureFlags.revision.addListener(_onFeatureGatesChanged);
+    // PAINT WHAT WE ALREADY KNOW. The global ProfileCubit (main.dart) keeps
+    // its ProfileLoaded across screen opens, but `_lastGood` was only ever set
+    // by the listener — which does not fire for the state a BlocConsumer is
+    // first built with. So every re-entry saw `_lastGood == null`, the silent
+    // refresh below emitted nothing paintable, and the screen opened on the
+    // full-screen loader over a profile it had shown seconds ago. Seed the
+    // fallback from the cubit's CURRENT state before the first build; the
+    // loader is now reserved for the very first load on this device.
+    final current = context.read<ProfileCubit>().state;
+    if (current is ProfileLoaded) _lastGood = current;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<ProfileCubit>().getUserProfile();
+      // Background refresh: with a profile already held, no ProfileLoading
+      // is emitted, so neither this screen nor any other builder blinks.
+      context.read<ProfileCubit>().getUserProfile(silent: true);
     });
     HelpConfigService.instance.ensure().then((cfg) {
       if (mounted) setState(() => _helpConfig = cfg);
@@ -415,7 +427,8 @@ class _SettingsViewState extends State<_SettingsView> {
     return RefreshIndicator(
       color: _kAccent,
       onRefresh: () async {
-        await context.read<ProfileCubit>().getUserProfile();
+        // The RefreshIndicator is the progress surface here; the rows stay.
+        await context.read<ProfileCubit>().getUserProfile(silent: true);
         await _loadSignupFlow();
       },
       child: SingleChildScrollView(
