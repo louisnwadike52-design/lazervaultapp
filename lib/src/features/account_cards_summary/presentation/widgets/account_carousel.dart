@@ -259,10 +259,11 @@ class _AccountCarouselState extends State<AccountCarousel> {
       currencySymbol: currencySymbol,
       fontSize: fontSize,
       color: Colors.white,
+      // A real balance change rolls for two seconds, starting at once, from
+      // whatever the card is showing to the latest confirmed value.
       duration:
-          _panicRolling ? _kPanicRollDuration : const Duration(seconds: 3),
-      startDelay:
-          _panicRolling ? Duration.zero : const Duration(milliseconds: 500),
+          _panicRolling ? _kPanicRollDuration : const Duration(seconds: 2),
+      startDelay: Duration.zero,
       enableSound: _panic.soundEnabled,
       enableVibration: _panic.vibrationEnabled,
       // Panic decoy shows instantly (no roll/countdown).

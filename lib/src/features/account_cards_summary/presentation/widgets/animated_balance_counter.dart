@@ -48,10 +48,8 @@ class AnimatedBalanceCounter extends StatefulWidget {
     required this.balance,
     required this.currencySymbol,
     this.style,
-    this.duration =
-        const Duration(seconds: 3), // 3 seconds for visible animation
-    this.startDelay = const Duration(
-        milliseconds: 500), // Small delay so user sees dashboard first
+    this.duration = const Duration(seconds: 2),
+    this.startDelay = Duration.zero,
     this.curve = Curves.easeOutCubic,
     this.enableSound = false,
   });
@@ -265,6 +263,12 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
   bool _isAnimating = false;
   AudioPlayer? _sfx;
   Timer? _vibrationTimer;
+  // ONE pending start and ONE pending end. A change that lands while a roll
+  // is pending or in flight replaces the target instead of queueing behind
+  // it, so the counter rolls from whatever it is showing straight to the
+  // latest value — never through the intermediate ones.
+  Timer? _startTimer;
+  Timer? _endTimer;
 
   Future<void> _playMoneySound() async {
     try {
@@ -311,6 +315,8 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
     if (oldWidget.identity != widget.identity) {
       // A different account under the same widget: show its figure, now.
       // Anything in flight for the previous account is abandoned.
+      _startTimer?.cancel();
+      _endTimer?.cancel();
       _vibrationTimer?.cancel();
       setState(() {
         _isAnimating = false;
@@ -337,42 +343,50 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
       _previousBalance = _displayBalance;
       _isIncreasing = widget.balance > _previousBalance;
 
-      // Delay the animation start so user sees the dashboard first
-      Future.delayed(widget.startDelay, () {
-        if (mounted) {
-          setState(() {
-            _isAnimating = true;
-            _displayBalance = widget.balance;
-          });
+      // Replace any pending roll rather than queue behind it. The callback
+      // reads widget.balance WHEN IT FIRES, so three changes inside the delay
+      // produce one roll to the third value, not three rolls in sequence; and
+      // a change during a roll retargets the counter from where it is.
+      _startTimer?.cancel();
+      _startTimer = Timer(widget.startDelay, () {
+        if (!mounted) return;
+        final target = widget.balance;
+        setState(() {
+          _isAnimating = true;
+          _isIncreasing = target > _displayBalance;
+          _displayBalance = target;
+        });
 
-          // Pulse animation at the start
-          _pulseController.forward(from: 0);
+        // Pulse animation at the start
+        _pulseController.forward(from: 0);
 
-          // Money-counting sound only on a CREDIT (rolling up), when enabled.
-          if (widget.enableSound && _isIncreasing) {
-            _playMoneySound();
-          }
-          // Vibration accompanies ANY animated balance change, when enabled.
-          if (widget.enableVibration) {
-            _vibrationTimer?.cancel();
-            _vibrationTimer = _runAnimationVibration(widget.duration);
-          }
-
-          // Reset animating flag after animation completes
-          Future.delayed(widget.duration, () {
-            if (mounted) {
-              setState(() {
-                _isAnimating = false;
-              });
-            }
-          });
+        // Money-counting sound only on a CREDIT (rolling up), when enabled.
+        if (widget.enableSound && _isIncreasing) {
+          _playMoneySound();
         }
+        // Vibration accompanies ANY animated balance change, when enabled.
+        if (widget.enableVibration) {
+          _vibrationTimer?.cancel();
+          _vibrationTimer = _runAnimationVibration(widget.duration);
+        }
+
+        // The animating flag clears when the LATEST roll ends.
+        _endTimer?.cancel();
+        _endTimer = Timer(widget.duration, () {
+          if (mounted) {
+            setState(() {
+              _isAnimating = false;
+            });
+          }
+        });
       });
     }
   }
 
   @override
   void dispose() {
+    _startTimer?.cancel();
+    _endTimer?.cancel();
     _pulseController.dispose();
     _sfx?.dispose();
     _vibrationTimer?.cancel();
