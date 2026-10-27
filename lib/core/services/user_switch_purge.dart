@@ -1,5 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'package:lazervault/core/cache/session_page_store.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
@@ -75,6 +76,10 @@ const List<String> kPerUserStorageKeys = [
   // How long the app may sit idle before signing you out. One person's session
   // policy must not govern the next person's session on a shared device.
   'inactivity_timeout_seconds',
+  // The last login's routing facts (passcode, PIN, verification, KYC). A
+  // biometric unlock opens on these without asking the backend, so they must
+  // never be the previous person's.
+  'login_facts_v1',
   // A HALF-FINISHED SIGNUP is the previous person's too. The boot router
   // resumes a local draft BEFORE it looks at who is logged in, so a device
   // where A started signing up and B then logged in would reopen into A's
@@ -197,6 +202,11 @@ void _purgeSessionScopedSingletons() {
   // purpose — but it is the single most dangerous thing to carry across a
   // switch: it is what the money sheets resolve a FUNDING SOURCE from.
   safely(AccountSummariesStore.clear);
+
+  // Every remembered first page (recipients, bills catalogue, notifications,
+  // policies…). Each store is user-stamped and would refuse the new person
+  // anyway; clearing is belt and braces, and frees the memory.
+  safely(SessionPageStore.clearAll);
 
   safely(() {
     if (serviceLocator.isRegistered<MandateCubit>()) {

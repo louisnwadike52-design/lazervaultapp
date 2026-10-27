@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/services/login_facts_store.dart';
 import 'package:lazervault/core/utils/kyc_completion.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/signup_resume.dart';
@@ -66,6 +67,22 @@ void goAfterLogin(
     tier: user.kycTier,
     status: user.kycStatus,
   ));
+
+  // Write down what this login knows, so the NEXT biometric or voice unlock
+  // can open on it without a round trip. See LoginFactsStore. Fire-and-forget
+  // for the same reason as the snapshot above.
+  //
+  // Only when the user LOOKS like a backend answer. A session unlock whose
+  // backend lookups all failed arrives here carrying fail-safe defaults over a
+  // profile-proto user — no signup status, no KYC status — and writing those
+  // down would turn one outage into a month of "has a PIN".
+  if (user.signupStatus != null || user.kycStatus != null) {
+    unawaited(LoginFactsStore.record(
+      user.hasPasscode || passcodeJustSet
+          ? user.copyWith(hasPasscode: true)
+          : user,
+    ));
+  }
 
   final route = resolvePostLoginRoute(
     step: user.currentSignupStep,

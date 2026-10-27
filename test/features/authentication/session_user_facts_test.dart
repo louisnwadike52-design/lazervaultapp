@@ -2,9 +2,12 @@
 // the PROFILE proto, which has no passcode, PIN, verification or KYC fields.
 // enrichSessionUser is what stops that user reading as "no passcode, no PIN"
 // — which is what opened "Set Up Passcode" on every Face ID unlock.
+import 'dart:async';
+
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/core/services/login_facts_store.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/session_user_facts.dart';
 
@@ -120,5 +123,104 @@ void main() {
     );
     expect(u.hasPasscode, isTrue);
     expect(u.kycTier, 0, reason: 'GetMe timed out; nothing was laid over');
+  });
+
+  group('cached facts first, backend in the background', () {
+    LoginFacts facts() => LoginFacts.fromUser(_authUser());
+
+    test('a record for this user is applied at once, before GetMe answers',
+        () async {
+      final never = Completer<Either<Failure, User>>();
+      final writes = <User>[];
+      final u = await enrichSessionUser(
+        _profileUser(),
+        fetchMe: () => never.future, // the backend has not answered
+        fetchHasPin: () async => true,
+        readPasscodeMirror: () async => null,
+        readFacts: (_) async => facts(),
+        writeFacts: (user, {hasTransactionPin}) async => writes.add(user),
+      );
+      expect(u.hasPasscode, isTrue);
+      expect(u.kycTier, 3);
+      expect(u.signupStatus, 'complete');
+      expect(writes, isEmpty, reason: 'nothing live has arrived yet');
+    });
+
+    test('the background refresh replaces the record when GetMe answers',
+        () async {
+      final writes = <User>[];
+      await enrichSessionUser(
+        _profileUser(),
+        fetchMe: () async => Right(_authUser().copyWith(kycTier: 2)),
+        fetchHasPin: () async => false,
+        readPasscodeMirror: () async => null,
+        readFacts: (_) async => facts(),
+        writeFacts: (user, {hasTransactionPin}) async => writes
+            .add(user.copyWith(hasTransactionPin: hasTransactionPin ?? true)),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(writes, hasLength(1));
+      expect(writes.single.kycTier, 2);
+      expect(writes.single.hasTransactionPin, isFalse);
+    });
+
+    test('a record for ANOTHER user is not applied (store returns null)',
+        () async {
+      final u = await enrichSessionUser(
+        _profileUser(),
+        fetchMe: () async => Right(_authUser()),
+        fetchHasPin: () async => true,
+        readPasscodeMirror: () async => null,
+        readFacts: (_) async => null,
+        writeFacts: (user, {hasTransactionPin}) async {},
+      );
+      expect(u.kycTier, 3, reason: 'came from the live GetMe, awaited');
+    });
+
+    test('no record → the live answer is recorded for next time', () async {
+      final writes = <User>[];
+      await enrichSessionUser(
+        _profileUser(),
+        fetchMe: () async => Right(_authUser()),
+        fetchHasPin: () async => true,
+        readPasscodeMirror: () async => null,
+        readFacts: (_) async => null,
+        writeFacts: (user, {hasTransactionPin}) async => writes.add(user),
+      );
+      expect(writes, hasLength(1));
+    });
+
+    test('a failed live lookup is never recorded', () async {
+      final writes = <User>[];
+      await enrichSessionUser(
+        _profileUser(),
+        fetchMe: () async =>
+            Left(ServerFailure(message: 'down', statusCode: 503)),
+        fetchHasPin: () async => true,
+        readPasscodeMirror: () async => 'true',
+        readFacts: (_) async => null,
+        writeFacts: (user, {hasTransactionPin}) async => writes.add(user),
+      );
+      expect(writes, isEmpty);
+    });
+
+    test('refreshInBackground:false skips the backend entirely on a hit',
+        () async {
+      var calls = 0;
+      await enrichSessionUser(
+        _profileUser(),
+        fetchMe: () async {
+          calls++;
+          return Right(_authUser());
+        },
+        fetchHasPin: () async => true,
+        readPasscodeMirror: () async => null,
+        readFacts: (_) async => facts(),
+        writeFacts: (user, {hasTransactionPin}) async {},
+        refreshInBackground: false,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(calls, 0);
+    });
   });
 }

@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/login_facts_store.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -23,10 +24,20 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 /// no passcode to set one, sent the app's daily Face ID users to "Set Up
 /// Passcode" for the passcode they had just chosen not to type.
 ///
-/// The auth service already answers all of it in one call: `GetMe` returns
-/// the same `User` proto a credential login does, plus `has_passcode`. The
-/// transaction PIN lives in its own service and has its own check. So this
-/// asks both, in parallel, and lays the answers over the profile user.
+/// ## Cached first, backend second
+///
+/// The facts the backend gave at the LAST login are kept in
+/// [LoginFactsStore]. When a record exists for this user it is applied at
+/// once and the unlock proceeds — no round trip stands between a proven
+/// biometric and the dashboard. The auth service (`GetMe`) and the PIN
+/// service are then asked in the background and the record is replaced with
+/// their answer, so the NEXT unlock is judged by today's facts. That is the
+/// same shape every list screen in the app is moving to: paint what you know,
+/// refresh behind it.
+///
+/// With no record — first unlock after install, a record for another user,
+/// or one older than [LoginFactsStore.maxAge] — the backend is awaited, as it
+/// was before, and its answer is recorded.
 ///
 /// ## How it fails
 ///
@@ -36,36 +47,79 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 /// If the PIN check cannot be reached the PIN is treated as present. Each gate
 /// this can wrongly skip is skippable, self-correcting on the next credential
 /// login, and detected again by the setup screen it leads to — whereas gating
-/// on a value we never read is exactly the defect being removed. Phone and
-/// email verification are only ever read from a live `GetMe`; absent that
-/// they stay as the profile reported them, which is "verified" for both.
+/// on a value we never read is exactly the defect being removed.
 Future<User> enrichSessionUser(
   User base, {
   Future<Either<Failure, User>> Function()? fetchMe,
   Future<bool> Function()? fetchHasPin,
   Future<String?> Function()? readPasscodeMirror,
+  Future<LoginFacts?> Function(String userId)? readFacts,
+  Future<void> Function(User user, {bool? hasTransactionPin})? writeFacts,
   Duration timeout = const Duration(seconds: 8),
+
+  /// Set false to skip the background refresh (tests, or a caller that will
+  /// do its own credential login shortly).
+  bool refreshInBackground = true,
 }) async {
   fetchMe ??= () => serviceLocator<IAuthRepository>().getMe();
   fetchHasPin ??= () => serviceLocator<ITransactionPinService>()
       .checkUserHasPin(forceRefresh: true);
   readPasscodeMirror ??=
       () => serviceLocator<FlutterSecureStorage>().read(key: 'has_passcode');
+  readFacts ??= LoginFactsStore.read;
+  writeFacts ??= LoginFactsStore.record;
 
+  // FOREGROUND: the last recorded answer, if it is this user's.
+  final cached = await _guard(() => readFacts!(base.id));
+  if (cached is LoginFacts) {
+    if (refreshInBackground) {
+      unawaited(_refreshFacts(
+        base,
+        fetchMe: fetchMe,
+        fetchHasPin: fetchHasPin,
+        readPasscodeMirror: readPasscodeMirror,
+        writeFacts: writeFacts,
+        timeout: timeout,
+      ));
+    }
+    return cached.applyTo(base);
+  }
+
+  // No usable record: ask now, and remember the answer for next time.
+  return _refreshFacts(
+    base,
+    fetchMe: fetchMe,
+    fetchHasPin: fetchHasPin,
+    readPasscodeMirror: readPasscodeMirror,
+    writeFacts: writeFacts,
+    timeout: timeout,
+  );
+}
+
+Future<User> _refreshFacts(
+  User base, {
+  required Future<Either<Failure, User>> Function() fetchMe,
+  required Future<bool> Function() fetchHasPin,
+  required Future<String?> Function() readPasscodeMirror,
+  required Future<void> Function(User user, {bool? hasTransactionPin})
+      writeFacts,
+  required Duration timeout,
+}) async {
   final results = await Future.wait<Object?>([
-    _guard(() => fetchMe!().timeout(timeout)),
-    _guard(() => fetchHasPin!().timeout(timeout)),
-    _guard(() => readPasscodeMirror!()),
+    _guard(() => fetchMe().timeout(timeout)),
+    _guard(() => fetchHasPin().timeout(timeout)),
+    _guard(readPasscodeMirror),
   ]);
 
   final me = results[0] is Either<Failure, User>
       ? (results[0] as Either<Failure, User>).fold((_) => null, (u) => u)
       : null;
-  final hasPin = results[1] is bool ? results[1] as bool : true;
+  final pinAnswered = results[1] is bool;
+  final hasPin = pinAnswered ? results[1] as bool : true;
   final mirror = results[2] is String ? results[2] as String : null;
 
   if (me != null) {
-    return base.copyWith(
+    final enriched = base.copyWith(
       hasPasscode: me.hasPasscode,
       hasPassword: me.hasPassword,
       hasTransactionPin: hasPin,
@@ -78,6 +132,11 @@ Future<User> enrichSessionUser(
       kycTier: me.kycTier,
       kycStatus: me.kycStatus,
     );
+    // Only a LIVE answer is worth remembering. Recording the fail-safe
+    // defaults below would turn one outage into a month of "has a PIN".
+    await _guard(() =>
+        writeFacts(enriched, hasTransactionPin: pinAnswered ? hasPin : null));
+    return enriched;
   }
 
   // GetMe unavailable: the mirror decides the passcode; absence means present.
