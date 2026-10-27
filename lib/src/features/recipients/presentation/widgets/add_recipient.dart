@@ -1163,15 +1163,21 @@ class _AddRecipientState extends State<AddRecipient>
   /// Show the username search bottom sheet, then confirmation sheet
   /// After confirming, proceed directly to the payment/amount screen
   void _showUsernameSearchSheet() async {
-    final selectedUser = await UsernameSearchBottomSheet.show(context);
+    // The account-number lookup runs while the search sheet is still up, with
+    // the tapped row spinning, so a slow link shows progress instead of a
+    // still screen between the tap and the confirmation sheet. Same lookup,
+    // same best-effort contract: a failed lookup falls back to the @handle.
+    // A sheet dismissed mid-lookup resolves null, so nothing below runs late.
+    String? accountNumber;
+    final selectedUser = await UsernameSearchBottomSheet.show(
+      context,
+      prepareSelection: (user) async {
+        accountNumber = await _fetchRecipientAccountNumber(user.userId);
+        return true;
+      },
+    );
     if (!mounted) return;
     if (selectedUser == null) return;
-
-    // Fetch the recipient's personal account number
-    final accountNumber =
-        await _fetchRecipientAccountNumber(selectedUser.userId);
-
-    if (!mounted) return;
 
     // Show confirmation bottom sheet
     bool confirmed = false;

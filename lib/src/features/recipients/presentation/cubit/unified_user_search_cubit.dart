@@ -71,6 +71,12 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
   /// serviceLocator instance can be scoped per-sheet on open.
   bool internalOnly;
 
+  /// Sequence token for in-flight requests. Bumped by every new search, by a
+  /// clear/reset and by close, so a response that lands late can never
+  /// overwrite a newer query's results (or emit on a closed cubit), even when
+  /// the user types back to the same text the stale request was for.
+  int _searchSeq = 0;
+
   UnifiedUserSearchCubit(this._repo, {this.internalOnly = false})
       : super(const UnifiedUserSearchState());
 
@@ -79,6 +85,7 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
     final normalized = normalizeLazerVaultUserSearchQuery(raw);
     if (normalized.length < 2) {
       _debouncer.cancel();
+      _searchSeq++;
       emit(const UnifiedUserSearchState()); // clear back to initial
       return;
     }
@@ -86,6 +93,7 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
   }
 
   Future<void> _runSearch(String query) async {
+    final seq = ++_searchSeq;
     emit(state.copyWith(
       status: UnifiedSearchStatus.loading,
       query: query,
@@ -103,7 +111,7 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
         if (seen.add(r.dedupeKey)) merged.add(r);
       }
       // Guard against a stale response for a query the user already changed.
-      if (state.query != query) return;
+      if (seq != _searchSeq) return;
       emit(state.copyWith(
         status: UnifiedSearchStatus.success,
         results: merged,
@@ -112,7 +120,7 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
         nextOffset: page.nextOffset,
       ));
     } catch (e) {
-      if (state.query != query) return;
+      if (seq != _searchSeq) return;
       emit(state.copyWith(
         status: UnifiedSearchStatus.error,
         error: 'Couldn’t search right now. Please try again.',
@@ -129,11 +137,12 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
     }
     final query = state.query;
     final offset = state.nextOffset;
+    final seq = _searchSeq; // paging belongs to the current query only
     emit(state.copyWith(status: UnifiedSearchStatus.loadingMore));
     try {
       final page = await _repo.search(query,
           limit: _pageSize, offset: offset, internalOnly: internalOnly);
-      if (state.query != query) return; // query changed mid-flight
+      if (seq != _searchSeq) return; // query changed or cleared mid-flight
       final seen = state.results.map((r) => r.dedupeKey).toSet();
       final appended = <UnifiedSearchResult>[...state.results];
       // load-more only paginates the GLOBAL directory (local is page-0 only).
@@ -147,7 +156,7 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
         nextOffset: page.nextOffset,
       ));
     } catch (_) {
-      if (state.query != query) return;
+      if (seq != _searchSeq) return;
       // keep existing results; just stop the spinner.
       emit(state.copyWith(status: UnifiedSearchStatus.success));
     }
@@ -155,12 +164,14 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
 
   void reset() {
     _debouncer.cancel();
+    _searchSeq++;
     emit(const UnifiedUserSearchState());
   }
 
   @override
   Future<void> close() {
     _debouncer.cancel();
+    _searchSeq++;
     return super.close();
   }
 }

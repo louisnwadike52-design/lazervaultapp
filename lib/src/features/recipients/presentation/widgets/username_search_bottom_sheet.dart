@@ -20,14 +20,22 @@ class UsernameSearchBottomSheet {
   /// invoice payer, add-recipient by @handle) — none of them can act on a saved
   /// EXTERNAL bank recipient, so those are dropped server-side. A caller that
   /// genuinely needs external recipients can pass false.
+  ///
+  /// [prepareSelection] is the shared sheet's pre-navigation hook (the tapped
+  /// row spins while it runs; the sheet closes only on true), handed the
+  /// already-adapted entity so callers keep working in their own type.
   static Future<UserSearchResultEntity?> show(
     BuildContext context, {
     bool internalOnly = true,
+    Future<bool> Function(UserSearchResultEntity user)? prepareSelection,
   }) async {
     final picked = await UnifiedUserSearchSheet.show(
       context,
       title: 'Find recipient',
       internalOnly: internalOnly,
+      prepareSelection: prepareSelection == null
+          ? null
+          : (r) => prepareSelection(r.toUserSearchResultEntity()),
     );
     return picked?.toUserSearchResultEntity();
   }

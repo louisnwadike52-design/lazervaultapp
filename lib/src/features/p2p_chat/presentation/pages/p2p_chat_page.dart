@@ -1756,20 +1756,39 @@ class _P2PChatPageState extends State<P2PChatPage>
   /// getOrCreateConversation inside the cubit.
   Future<void> _forwardMessage(P2PMessageEntity message) async {
     final cubit = context.read<P2PChatCubit>();
-    final picked = await UnifiedUserSearchSheet.show(
+    // The forward runs while the picker is still up, with the tapped row
+    // spinning, so a slow link shows progress instead of a still screen. The
+    // sheet closes once it settles and the snackbar reports the outcome. A
+    // sheet swiped away mid-flight cannot un-send the forward, so the outcome
+    // is still reported when it lands rather than inviting a second attempt.
+    String? targetName;
+    Completer<int>? sent;
+    await UnifiedUserSearchSheet.show(
       context,
       title: 'Forward to',
       subtitle: 'Choose who to forward this message to',
       internalOnly: true,
+      prepareSelection: (picked) async {
+        if (picked.userId.isEmpty) return false;
+        targetName = picked.displayName;
+        final completer = sent = Completer<int>();
+        try {
+          completer.complete(
+              await cubit.forwardMessages([picked.userId], [message]));
+        } catch (_) {
+          completer.complete(0);
+        }
+        return true;
+      },
     );
-    if (picked == null || picked.userId.isEmpty) return;
-    if (!mounted) return;
-    final count = await cubit.forwardMessages([picked.userId], [message]);
+    final outcome = sent;
+    if (outcome == null) return; // dismissed before any row was tapped
+    final count = await outcome.future;
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(count > 0
-            ? 'Forwarded to ${picked.displayName}'
+            ? 'Forwarded to $targetName'
             : 'Could not forward the message.'),
       ),
     );

@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/contacts/domain/usecases/find_lazervault
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/fullscreen_image_viewer.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/unified_user_search_cubit.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/user_search_selection_guard.dart';
 import 'package:lazervault/core/utilities/invite_link.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_code_usecase.dart';
 part 'unified_user_search_sheet_widgets.dart';
@@ -58,6 +59,15 @@ class UnifiedUserSearchSheet extends StatefulWidget {
   final String? initialQuery;
   final ValueChanged<UnifiedSearchResult> onSelected;
 
+  /// Pre-navigation work the caller needs done BEFORE the sheet closes.
+  ///
+  /// When set, a tap on a row keeps the sheet open with that row showing a
+  /// spinner (other rows ignore taps) while this runs. Return true to close
+  /// the sheet with the result; return false (or throw) to keep it open with
+  /// the row back to normal, having shown your own error surface. Without it
+  /// a tap closes the sheet immediately, as before.
+  final Future<bool> Function(UnifiedSearchResult result)? prepareSelection;
+
   /// Who this flow may pick. See [RecipientPickerMode].
   final RecipientPickerMode mode;
 
@@ -77,6 +87,7 @@ class UnifiedUserSearchSheet extends StatefulWidget {
     this.initialQuery,
     this.mode = RecipientPickerMode.anyone,
     this.internalOnly = false,
+    this.prepareSelection,
   });
 
   /// Opens the sheet and resolves to the picked result (null if dismissed).
@@ -85,6 +96,11 @@ class UnifiedUserSearchSheet extends StatefulWidget {
   /// sheet stays a FIXED height and the keyboard OVERLAYS it — rather than
   /// GetX's bottom-sheet route lifting the whole sheet up the screen. The pick
   /// pops the modal route with the value, resolving this future directly.
+  ///
+  /// [prepareSelection] runs backend work the next screen needs while the
+  /// tapped row shows a spinner; the sheet closes (and this resolves non-null)
+  /// only once it returns true. A sheet dismissed mid-flight resolves null, so
+  /// a caller that only navigates on a non-null result never navigates late.
   static Future<UnifiedSearchResult?> show(
     BuildContext context, {
     String title = 'Find recipient',
@@ -92,6 +108,7 @@ class UnifiedUserSearchSheet extends StatefulWidget {
     String? initialQuery,
     RecipientPickerMode mode = RecipientPickerMode.anyone,
     bool internalOnly = false,
+    Future<bool> Function(UnifiedSearchResult result)? prepareSelection,
   }) {
     return showModalBottomSheet<UnifiedSearchResult>(
       context: context,
@@ -105,6 +122,7 @@ class UnifiedUserSearchSheet extends StatefulWidget {
         initialQuery: initialQuery,
         mode: mode,
         internalOnly: internalOnly,
+        prepareSelection: prepareSelection,
         onSelected: (r) => Navigator.pop(sheetCtx, r),
       ),
     );
@@ -126,6 +144,11 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
   // are visible before scrolling. Flipped in [_onQueryChanged]; reset when the
   // query is cleared or the mode toggles.
   bool _hasQuery = false;
+
+  // Which row is doing its pre-navigation work (see
+  // [UnifiedUserSearchSheet.prepareSelection]). Cancelled on dispose so a
+  // result landing after a swipe-away can never pop a sheet that is gone.
+  final SelectionGuard _pickGuard = SelectionGuard();
 
   static const _brand = Color(0xFF4E03D0);
   static const _green = Color(0xFF10B981);
@@ -172,8 +195,31 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     _scroll.dispose();
     _controller.dispose();
     _focus.dispose();
+    _pickGuard.cancel();
     _cubit.close();
     super.dispose();
+  }
+
+  /// A row was tapped. Without [UnifiedUserSearchSheet.prepareSelection] the
+  /// pick completes at once. With it, the row goes busy while the caller's
+  /// work runs and the pick completes only on success, only if this sheet is
+  /// still mounted, and only once; a tap while busy is ignored.
+  Future<void> _pick(UnifiedSearchResult r) async {
+    if (_pickGuard.isBusy) return;
+    final prepare = widget.prepareSelection;
+    if (prepare == null) {
+      widget.onSelected(r);
+      return;
+    }
+    final outcome = await _pickGuard.run(
+      key: r.dedupeKey,
+      work: () => prepare(r),
+      isAlive: () => mounted,
+      onChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
+    if (outcome == SelectionOutcome.complete) widget.onSelected(r);
   }
 
   @override
@@ -553,7 +599,7 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
 
   Widget _resultTile(UnifiedSearchResult r) {
     return InkWell(
-      onTap: () => widget.onSelected(r),
+      onTap: _pickGuard.isBusy ? null : () => _pick(r),
       borderRadius: BorderRadius.circular(12.r),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 4.w),
@@ -598,7 +644,11 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, size: 20.w, color: Colors.grey[350]),
+            _rowTrailing(
+              busy: _pickGuard.isBusyFor(r.dedupeKey),
+              idle: Icon(Icons.chevron_right,
+                  size: 20.w, color: Colors.grey[350]),
+            ),
           ],
         ),
       ),
@@ -1017,10 +1067,11 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
 
   Widget _contactTile(_ContactRow row) {
     final isUser = row.isLazervaultUser;
+    final result = isUser ? _matchToResult(row.match!, row.contact) : null;
     return InkWell(
-      onTap: () => isUser
-          ? widget.onSelected(_matchToResult(row.match!, row.contact))
-          : _inviteContact(row.contact),
+      onTap: _pickGuard.isBusy
+          ? null
+          : () => result != null ? _pick(result) : _inviteContact(row.contact),
       borderRadius: BorderRadius.circular(12.r),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 4.w),
@@ -1058,7 +1109,10 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
               ),
             ),
             SizedBox(width: 8.w),
-            isUser ? _onLazervaultBadge() : _inviteBadge(),
+            _rowTrailing(
+              busy: result != null && _pickGuard.isBusyFor(result.dedupeKey),
+              idle: isUser ? _onLazervaultBadge() : _inviteBadge(),
+            ),
           ],
         ),
       ),
