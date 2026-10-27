@@ -15,6 +15,8 @@ import 'package:lazervault/src/features/authentication/data/models/profile_model
 import 'package:lazervault/src/features/authentication/data/models/session_model.dart';
 import 'package:lazervault/src/features/authentication/data/models/user_model.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/profile_entity.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/user.dart'
+    as domain;
 import 'package:lazervault/src/features/authentication/domain/entities/phone_verification_entity.dart';
 import 'package:lazervault/src/features/authentication/data/models/phone_verification_model.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/two_factor_entity.dart';
@@ -1641,6 +1643,39 @@ class AuthRepositoryImpl implements IAuthRepository {
         message: 'An unexpected error occurred during logout.',
         statusCode: 500,
       ));
+    }
+  }
+
+  @override
+  @override
+  Future<Either<Failure, domain.User>> getMe() async {
+    try {
+      final response = await _authServiceClient.getMe(
+        auth_req_resp.GetMeRequest(),
+        options: await _callOptionsHelper
+            .withAuth(CallOptions(timeout: const Duration(seconds: 8))),
+      );
+      if (!response.hasUser()) {
+        return Left(ServerFailure(
+            message: 'No user in GetMe response.', statusCode: 500));
+      }
+      // Same construction as a credential login: the auth proto, with the
+      // response-level flags the proto itself does not carry copied on.
+      return Right(UserModel.fromAuthProto(response.user).copyWith(
+        hasPasscode: response.hasPasscode,
+        hasPassword: response.hasPassword,
+        preferredLoginMethod: response.preferredLoginMethod.isNotEmpty
+            ? response.preferredLoginMethod
+            : null,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not load your account.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+          message: 'Could not load your account.', statusCode: 500));
     }
   }
 

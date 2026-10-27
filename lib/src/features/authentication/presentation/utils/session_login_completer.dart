@@ -7,6 +7,7 @@ import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/profile_entity.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/session_entity.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/session_user_facts.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 
@@ -78,9 +79,16 @@ mixin SessionLoginCompleter<T extends StatefulWidget> on State<T> {
       final rt = await _sessionStorage.read(key: 'refresh_token') ?? '';
       if (!mounted) return SessionLoginOutcome.network;
 
+      // The profile proto has no passcode / PIN / verification / KYC facts.
+      // Handing it to the router as-is reads as "no passcode, no PIN" and
+      // opens "Set Up Passcode" on every Face ID unlock. Fill them in from
+      // the auth service first — see enrichSessionUser for how it fails.
+      final user = await enrichSessionUser(pState.user);
+      if (!mounted) return SessionLoginOutcome.network;
+
       final now = DateTime.now();
       final profile = ProfileEntity(
-        user: pState.user,
+        user: user,
         session: SessionEntity(
           id: pState.user.id,
           userId: pState.user.id,

@@ -20,6 +20,7 @@ class EmailVerificationScreen extends StatelessWidget {
   // transaction-PIN setup after the optional email step. Null = unchanged
   // email-flow behaviour.
   final String? nextRoute;
+  final Map<String, dynamic>? nextRouteArgs;
   // When true, the screen was launched from Settings (not onboarding): it
   // requests a fresh code on load and, on success, returns to Settings instead
   // of routing into the signup/passcode-setup chain. Skip is hidden.
@@ -32,6 +33,7 @@ class EmailVerificationScreen extends StatelessWidget {
     this.isRequired = true,
     this.secondaryPhone,
     this.nextRoute,
+    this.nextRouteArgs,
     this.fromSettings = false,
   });
 
@@ -44,6 +46,7 @@ class EmailVerificationScreen extends StatelessWidget {
     bool required = isRequired;
     String? secondaryPhoneArg = secondaryPhone;
     String? nextRouteArg = nextRoute;
+    Map<String, dynamic>? nextRouteArgsArg = nextRouteArgs;
 
     // Handle Map arguments - check for general Map type to handle both
     // Map<String, dynamic> and Map<String, Object> from route arguments
@@ -54,6 +57,10 @@ class EmailVerificationScreen extends StatelessWidget {
       required = mapArgs['isRequired'] as bool? ?? required;
       secondaryPhoneArg = mapArgs['secondaryPhone']?.toString();
       nextRouteArg = mapArgs['nextRoute']?.toString() ?? nextRouteArg;
+      if (mapArgs['nextRouteArgs'] is Map) {
+        nextRouteArgsArg =
+            Map<String, dynamic>.from(mapArgs['nextRouteArgs'] as Map);
+      }
     } else if (args is String) {
       // Simple string argument (email only)
       emailArg = args;
@@ -66,6 +73,7 @@ class EmailVerificationScreen extends StatelessWidget {
       isRequired: required,
       secondaryPhone: secondaryPhoneArg,
       nextRoute: nextRouteArg,
+      nextRouteArgs: nextRouteArgsArg,
       fromSettings: fromSettings,
     );
   }
@@ -77,6 +85,7 @@ class _EmailOtpVerificationView extends StatefulWidget {
   final bool isRequired;
   final String? secondaryPhone;
   final String? nextRoute;
+  final Map<String, dynamic>? nextRouteArgs;
   final bool fromSettings;
 
   const _EmailOtpVerificationView({
@@ -85,6 +94,7 @@ class _EmailOtpVerificationView extends StatefulWidget {
     required this.isRequired,
     this.secondaryPhone,
     this.nextRoute,
+    this.nextRouteArgs,
     this.fromSettings = false,
   });
 

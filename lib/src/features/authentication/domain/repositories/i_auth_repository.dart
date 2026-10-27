@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import '../entities/profile_entity.dart';
+import '../entities/user.dart';
 import '../entities/phone_verification_entity.dart';
 import '../entities/two_factor_entity.dart';
 import '../usecases/sign_up_usecase.dart';
@@ -267,6 +268,17 @@ abstract class IAuthRepository {
   Future<Either<Failure, ProfileEntity>> validateToken({
     required String accessToken,
   });
+
+  /// The authenticated user as the AUTH service knows them — the same `User`
+  /// proto every credential login returns, plus `has_passcode`,
+  /// `has_password` and `preferred_login_method`.
+  ///
+  /// This is what a login that did not go through a credential RPC (Face ID,
+  /// fingerprint, voice) must call before routing: the profile proto those
+  /// paths otherwise build the user from carries none of the facts the
+  /// post-login router gates on. Does NOT carry `has_transaction_pin`; see
+  /// `enrichSessionUser` for where that comes from.
+  Future<Either<Failure, User>> getMe();
 
   /// Revoke the current session on the backend (invalidates the server-side
   /// session / refresh token) so the JWT can't be replayed after logout. Best

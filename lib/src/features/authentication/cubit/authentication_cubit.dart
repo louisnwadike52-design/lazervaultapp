@@ -27,6 +27,7 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/user_switch_purge.dart';
 import 'package:lazervault/core/services/login_flow_resolver.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/utils/kyc_completion.dart';
 import 'package:lazervault/core/services/remote_log_sink.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/notifications/notification_navigator.dart';
@@ -2851,7 +2852,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         await _signupStateService?.markSignupComplete();
 
         // Flag KYC onboarding as pending for new signups
-        await _storage.write(key: 'kyc_onboarding_pending', value: 'true');
+        await _flagKycOnboardingIfNeeded();
 
         // Create default stablecoin wallets in background
         _triggerBackgroundWalletCreation();
@@ -2868,6 +2869,27 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     );
   }
 
+  /// Write `kyc_onboarding_pending` only for a holder who has verification
+  /// still to do.
+  ///
+  /// The passcode-setup screen is reached by first-run signup AND by a login
+  /// whose account has no passcode (or a forgot-passcode reset). The flag used
+  /// to be written on every completion regardless, and it is what the boot
+  /// router, the PIN-setup screen and the BVN screen all read as "take this
+  /// person to verification". So a Tier-3 holder who set a passcode from a
+  /// login was marched to a screen that told them they were verified.
+  ///
+  /// A brand-new signup carries `not_started` and is flagged as before. Only a
+  /// holder the auth response already shows as verified, or in review, is
+  /// not — "unknown" (no fields on this profile) still flags, so nothing a
+  /// new account relied on changes.
+  Future<void> _flagKycOnboardingIfNeeded() async {
+    final u = _currentProfile?.user;
+    final state = resolveKycState(status: u?.kycStatus, tier: u?.kycTier);
+    if (state == KycState.verified || state == KycState.inReview) return;
+    await _storage.write(key: 'kyc_onboarding_pending', value: 'true');
+  }
+
   void _triggerBackgroundWalletCreation() {
     // No-op: LazerVault is a distributor — crypto custody is managed by Quidax.
     // User sub-accounts are created on-demand when they first buy/sell crypto.
@@ -2881,7 +2903,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // SKIPS passcode setup is still a new signup that must be offered KYC on
     // reaching the dashboard (previously only the register branch set this, so
     // passcode-skippers silently missed the onboarding KYC gate).
-    await _storage.write(key: 'kyc_onboarding_pending', value: 'true');
+    await _flagKycOnboardingIfNeeded();
 
     // Create default stablecoin wallets in background
     _triggerBackgroundWalletCreation();

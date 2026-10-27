@@ -25,9 +25,29 @@ import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_login_promp
 /// There is one here instead. A gate added to the resolver reaches every way
 /// into the app the moment this function passes it.
 ///
+/// ## The user must carry the facts
+///
+/// The resolver gates on `hasPasscode`, `hasTransactionPin`, `verified`
+/// (phone), `isEmailVerified` and the KYC fields. A credential login carries
+/// all of them on the auth proto. A biometric or voice unlock rebuilds the user
+/// from the PROFILE proto, which carries none — every one of those defaults to
+/// false, and false means "go and set one up". That is how a Face ID unlock
+/// came to open on "Set Up Passcode" for someone who had typed their passcode
+/// that morning. Those paths must enrich the user first; see
+/// `SessionLoginCompleter` and `enrichSessionUser`.
+///
 /// Always `offAllNamed`: the credential screens behind this must not stay on
 /// the stack, or a back gesture returns to a login the user has already passed.
-void goAfterLogin(User user, {bool fromForgotPasscode = false}) {
+void goAfterLogin(
+  User user, {
+  bool fromForgotPasscode = false,
+
+  /// True when this call follows the passcode-setup screen completing INSIDE
+  /// the login flow. The `User` in hand predates that write, so its
+  /// `hasPasscode` is still false; without this the resolver would send the
+  /// person straight back to the screen they just finished.
+  bool passcodeJustSet = false,
+}) {
   // A NEW SESSION STARTS HERE, so the once-per-login verification prompt is
   // armed again. Placed in the shared navigator rather than at each login
   // screen for the same reason everything else is: six places to remember is
@@ -52,7 +72,7 @@ void goAfterLogin(User user, {bool fromForgotPasscode = false}) {
     status: user.signupStatus,
     email: user.email,
     phone: user.phoneNumber,
-    hasPasscode: user.hasPasscode,
+    hasPasscode: user.hasPasscode || passcodeJustSet,
     hasTransactionPin: user.hasTransactionPin,
     fromForgotPasscode: fromForgotPasscode,
     // Reads the live admin setting, so turning verification on or off in the
@@ -65,6 +85,8 @@ void goAfterLogin(User user, {bool fromForgotPasscode = false}) {
     // `User.verified` mirrors the proto's phone_verified (see
     // UserModel.fromAuthProto) — not a general "is this account verified".
     phoneVerified: user.verified,
+    emailVerificationRequired: FeatureFlags.isEmailVerificationRequired,
+    isEmailVerified: user.isEmailVerified,
   );
   Get.offAllNamed(route.name, arguments: route.args);
 }

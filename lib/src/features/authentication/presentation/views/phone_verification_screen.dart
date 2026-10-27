@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
@@ -156,7 +157,10 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
     // A caller-supplied nextRoute (re-verification gate / phone-flow chaining)
     // takes priority over the default onboarding chain.
     if (widget.nextRoute != null && widget.nextRoute!.isNotEmpty) {
-      Get.offAllNamed(widget.nextRoute!);
+      // The args travel with the route: a passcode-setup or PIN-setup
+      // destination needs its `fromLoginFlow` to know it is NOT first-run
+      // signup (no skip, no local draft written).
+      Get.offAllNamed(widget.nextRoute!, arguments: widget.nextRouteArgs);
       return;
     }
     // Check if there's secondary email verification needed
@@ -179,6 +183,13 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
       Get.offAllNamed(AppRoutes.passcodeSetup);
     }
   }
+
+  /// Whether "Skip for now" is offered. The admin toggle decides. The screen
+  /// is still SHOWN to an unverified number when the toggle is off — the
+  /// toggle governs skippability, not visibility — so a holder who deferred
+  /// the SMS at signup is reminded on each login until it is done.
+  bool get _allowSkip =>
+      !widget.fromSettings && !FeatureFlags.isPhoneVerificationRequired;
 
   void _skipVerification() {
     // Phone verification is always skippable during onboarding — the user can
@@ -486,9 +497,13 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                           ],
                         ),
 
-                        // Skip CTA — onboarding only; hidden when from Settings.
-                        if (!widget.fromSettings) SizedBox(height: 12.h),
-                        if (!widget.fromSettings)
+                        // Skip CTA — onboarding only; hidden when from
+                        // Settings, and hidden when the admin has made phone
+                        // verification mandatory. One setting governs
+                        // skippability everywhere the screen appears (signup,
+                        // the post-login gate), mirroring the email screen.
+                        if (_allowSkip) SizedBox(height: 12.h),
+                        if (_allowSkip)
                           Center(
                             child: TextButton(
                               onPressed: _skipVerification,

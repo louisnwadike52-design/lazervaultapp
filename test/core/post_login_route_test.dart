@@ -1,17 +1,23 @@
 // Validates the shared post-login routing that ALL SIX successful-auth surfaces
 // use — email/password sign-in, the passcode lock screen, email+passcode,
-// phone+passcode, 2FA verification and the step-up OTP screen — so a login
-// converges on the SAME destination however it was performed: resume onboarding
-// when incomplete, else the passcode / phone / transaction-PIN / identity gates,
-// else the dashboard.
+// phone+passcode, 2FA verification and the step-up OTP screen — plus the
+// biometric and voice unlocks that funnel through the same navigator.
 //
-// Three of those surfaces used to call `Get.offAllNamed(dashboard)` directly
-// and skip every gate; two more carried their own drifted copies of the tail.
-// These tests are what stops that happening again.
+// The rule under test: every gate reads the FACT it exists to change
+// (has_passcode, phone_verified, email_verified, has_transaction_pin, the KYC
+// fields), never the signup step label. The label put a Tier-3 holder into a
+// "You're Verified" screen and a passcode holder into "Set Up Passcode" on
+// every login; these tests are what stops that happening again.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/kyc_completion.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/signup_resume.dart';
+
+const _required = KycLoginGate(state: KycState.unverified, isRequired: true);
+const _notRequired =
+    KycLoginGate(state: KycState.unverified, isRequired: false);
+const _verifiedRequired =
+    KycLoginGate(state: KycState.verified, isRequired: true);
 
 void main() {
   group('resolvePostLoginRoute — completed signup gates', () {
@@ -41,7 +47,8 @@ void main() {
       expect(r.args?['fromLoginFlow'], true);
     });
 
-    test('NO passcode → passcode setup', () {
+    test('NO passcode → passcode setup, flagged as the login flow (no skip)',
+        () {
       final r = resolvePostLoginRoute(
         step: null,
         status: 'complete',
@@ -69,111 +76,209 @@ void main() {
     });
   });
 
-  group('resolvePostLoginRoute — onboarding resume takes precedence', () {
-    test('incomplete: email_verify → email verification (with args)', () {
-      final r = resolvePostLoginRoute(
-        step: 'email_verify',
-        status: 'incomplete',
-        email: 'a@b.com',
-        phone: '+2348012345678',
-        hasPasscode: false,
-        hasTransactionPin: false,
-        kyc: KycLoginGate.none,
-      );
-      expect(r.name, AppRoutes.emailVerification);
-      expect(r.args?['email'], 'a@b.com');
-      expect(r.args?['isRequired'], true);
-    });
-
-    test('incomplete: phone_verify WITH phone → phone verification', () {
-      final r = resolvePostLoginRoute(
-        step: 'phone_verify',
-        status: 'incomplete',
-        email: 'a@b.com',
-        phone: '+2348012345678',
-        hasPasscode: false,
-        hasTransactionPin: false,
-        kyc: KycLoginGate.none,
-      );
-      expect(r.name, AppRoutes.phoneVerification);
-      expect(r.args?['phoneNumber'], '+2348012345678');
-    });
-
-    test('incomplete: phone_verify WITHOUT phone → defensive passcode setup',
+  group('resolvePostLoginRoute — the step label never outranks the fact', () {
+    test(
+        'step=passcode_setup but the account HAS a passcode → not passcode setup',
         () {
+      // The reported bug: "Set Up Passcode" on every login for someone who
+      // types their passcode daily.
       final r = resolvePostLoginRoute(
-        step: 'phone_verify',
-        status: 'incomplete',
+        step: 'passcode_setup',
+        status: 'identity_verified', // regressed by the old tracker
         email: 'a@b.com',
-        phone: null,
-        hasPasscode: false,
-        hasTransactionPin: false,
-        kyc: KycLoginGate.none,
-      );
-      expect(r.name, AppRoutes.passcodeSetup);
-    });
-
-    test('incomplete: identity_verify → KYC BVN verification', () {
-      final r = resolvePostLoginRoute(
-        step: 'identity_verify',
-        status: 'incomplete',
-        email: 'a@b.com',
+        phone: '+2348012345678',
         hasPasscode: true,
         hasTransactionPin: true,
         kyc: KycLoginGate.none,
+      );
+      expect(r.name, AppRoutes.dashboard);
+    });
+
+    test('step=account_created but the account HAS a passcode → dashboard', () {
+      final r = resolvePostLoginRoute(
+        step: 'account_created',
+        status: 'created',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        kyc: KycLoginGate.none,
+      );
+      expect(r.name, AppRoutes.dashboard);
+    });
+
+    test('step=identity_verify but the holder IS verified → dashboard', () {
+      // The other reported bug: routed into verification, greeted with
+      // "You're Verified".
+      final r = resolvePostLoginRoute(
+        step: 'identity_verify',
+        status: 'phone_verified',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        kyc: _verifiedRequired,
+      );
+      expect(r.name, AppRoutes.dashboard);
+    });
+
+    test('step=identity_verify, unverified, admin requires → verification', () {
+      final r = resolvePostLoginRoute(
+        step: 'identity_verify',
+        status: 'phone_verified',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        kyc: _required,
       );
       expect(r.name, AppRoutes.kycBVNVerification);
     });
 
-    test('incomplete: passcode_setup → passcode setup', () {
-      final r = resolvePostLoginRoute(
-        step: 'passcode_setup',
-        status: 'incomplete',
-        email: 'a@b.com',
-        hasPasscode: false,
-        hasTransactionPin: false,
-        kyc: KycLoginGate.none,
-      );
-      expect(r.name, AppRoutes.passcodeSetup);
-    });
-
-    test('incomplete: account_created → passcode setup', () {
-      final r = resolvePostLoginRoute(
-        step: 'account_created',
-        status: 'incomplete',
-        email: 'a@b.com',
-        hasPasscode: false,
-        hasTransactionPin: false,
-        kyc: KycLoginGate.none,
-      );
-      expect(r.name, AppRoutes.passcodeSetup);
-    });
-
     test(
-        'CRITICAL: incomplete onboarding beats the passcode/PIN gates '
-        '(2FA success must NOT skip resume even for a full account)', () {
-      // A user with a passcode+PIN but an incomplete signup step must still
-      // resume onboarding — this is exactly what the 2FA screen was skipping.
+        'step=identity_verify, unverified, admin does NOT require → dashboard '
+        '(the dismissible prompt asks)', () {
       final r = resolvePostLoginRoute(
-        step: 'email_verify',
-        status: 'incomplete',
+        step: 'identity_verify',
+        status: 'phone_verified',
         email: 'a@b.com',
         phone: '+2348012345678',
         hasPasscode: true,
         hasTransactionPin: true,
-        kyc: KycLoginGate.none,
+        kyc: _notRequired,
       );
-      expect(r.name, AppRoutes.emailVerification);
-      expect(r.name, isNot(AppRoutes.dashboard));
+      expect(r.name, AppRoutes.dashboard);
     });
 
-    test('status=complete overrides a stale step → gates, not resume', () {
+    test('step=phone_verify but the phone IS verified → not the phone screen',
+        () {
+      final r = resolvePostLoginRoute(
+        step: 'phone_verify',
+        status: 'email_verified',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        phoneVerified: true,
+        kyc: KycLoginGate.none,
+      );
+      expect(r.name, AppRoutes.dashboard);
+    });
+
+    test('step=email_verify but the email IS verified → not the email screen',
+        () {
+      final r = resolvePostLoginRoute(
+        step: 'email_verify',
+        status: 'created',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        isEmailVerified: true,
+        kyc: KycLoginGate.none,
+      );
+      expect(r.name, AppRoutes.dashboard);
+    });
+
+    test('status=complete with a stale step → gates, not resume', () {
       final r = resolvePostLoginRoute(
         step: 'email_verify', // stale
         status: 'complete',
         email: 'a@b.com',
         hasPasscode: true,
         hasTransactionPin: true,
+        kyc: KycLoginGate.none,
+      );
+      expect(r.name, AppRoutes.dashboard);
+    });
+  });
+
+  group('resolvePostLoginRoute — genuinely unfinished signup', () {
+    test('no passcode yet → passcode setup first, whatever the step says', () {
+      for (final step in [
+        'passcode_setup',
+        'account_created',
+        'phone_verify'
+      ]) {
+        final r = resolvePostLoginRoute(
+          step: step,
+          status: 'created',
+          email: 'a@b.com',
+          phone: step == 'phone_verify' ? null : '+2348012345678',
+          hasPasscode: false,
+          hasTransactionPin: false,
+          kyc: KycLoginGate.none,
+        );
+        expect(r.name, AppRoutes.passcodeSetup, reason: step);
+        expect(r.args?['fromLoginFlow'], true, reason: step);
+      }
+    });
+
+    test(
+        'parked at email_verify with an unverified email → email verification, '
+        'even when the admin does not require it, chained onward', () {
+      final r = resolvePostLoginRoute(
+        step: 'email_verify',
+        status: 'created',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        isEmailVerified: false,
+        emailVerificationRequired: false,
+        kyc: KycLoginGate.none,
+      );
+      expect(r.name, AppRoutes.emailVerification);
+      expect(r.args?['email'], 'a@b.com');
+      expect(r.args?['isRequired'], false);
+      expect(r.args?['nextRoute'], AppRoutes.dashboard);
+    });
+
+    test(
+        'CRITICAL: an unverified email beats the passcode/PIN gates when '
+        'required (2FA success must NOT skip it even for a full account)', () {
+      final r = resolvePostLoginRoute(
+        step: null,
+        status: 'complete',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        isEmailVerified: false,
+        emailVerificationRequired: true,
+        kyc: KycLoginGate.none,
+      );
+      expect(r.name, AppRoutes.emailVerification);
+      expect(r.args?['isRequired'], true);
+    });
+
+    test(
+        'an unverified email on an account NOT parked there, not required → '
+        'no email screen', () {
+      final r = resolvePostLoginRoute(
+        step: null,
+        status: 'complete',
+        email: 'a@b.com',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        isEmailVerified: false,
+        emailVerificationRequired: false,
+        kyc: KycLoginGate.none,
+      );
+      expect(r.name, AppRoutes.dashboard);
+    });
+
+    test('a phone-only account (no email) is never asked to verify an email',
+        () {
+      final r = resolvePostLoginRoute(
+        step: 'email_verify',
+        status: 'created',
+        email: '',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        isEmailVerified: false,
+        emailVerificationRequired: true,
         kyc: KycLoginGate.none,
       );
       expect(r.name, AppRoutes.dashboard);
@@ -198,105 +303,118 @@ void main() {
   });
 
   group('resolvePostLoginRoute — identity verification gate', () {
-    ({String name, Map<String, dynamic>? args}) routeFor(KycLoginGate kyc) =>
+    ({String name, Map<String, dynamic>? args}) run(KycLoginGate kyc,
+            {bool hasTransactionPin = true}) =>
         resolvePostLoginRoute(
           step: null,
           status: 'complete',
           email: 'a@b.com',
           hasPasscode: true,
-          hasTransactionPin: true,
+          hasTransactionPin: hasTransactionPin,
           kyc: kyc,
         );
 
     test('required + unverified → verification', () {
-      final r = routeFor(const KycLoginGate(
-          state: KycState.unverified, isRequired: true));
+      final r = run(_required);
       expect(r.name, AppRoutes.kycBVNVerification);
-      // No args, deliberately. This used to assert `args['isRequired'] == true`
-      // with a comment claiming it hid the screen's skip button. It did not:
-      // the verification screen never reads that key. It reads its own Prove
-      // status and enforces a STRICTER rule — compulsory below Tier 2 wherever
-      // it appears — so the flag was decorative and the assertion was pinning a
-      // promise nothing kept. Covered for real in
-      // test/src/core/kyc_gate_escape_test.dart.
       expect(r.args, isNull);
     });
 
     test('required + REJECTED → verification (they must redo it)', () {
-      final r = routeFor(
-          const KycLoginGate(state: KycState.rejected, isRequired: true));
-      expect(r.name, AppRoutes.kycBVNVerification);
+      expect(
+          run(const KycLoginGate(state: KycState.rejected, isRequired: true))
+              .name,
+          AppRoutes.kycBVNVerification);
     });
 
     test('required + IN REVIEW → dashboard, never back into the form', () {
-      // The holder has submitted and is waiting on us. Routing them into
-      // verification again invites a second submission of the same documents.
-      final r = routeFor(
-          const KycLoginGate(state: KycState.inReview, isRequired: true));
-      expect(r.name, AppRoutes.dashboard);
+      expect(
+          run(const KycLoginGate(state: KycState.inReview, isRequired: true))
+              .name,
+          AppRoutes.dashboard);
     });
 
     test('required + verified → dashboard', () {
-      final r = routeFor(
-          const KycLoginGate(state: KycState.verified, isRequired: true));
-      expect(r.name, AppRoutes.dashboard);
+      expect(run(_verifiedRequired).name, AppRoutes.dashboard);
     });
 
     test('NOT required + unverified → dashboard (the prompt handles it)', () {
-      // With the admin setting off, verification is asked for by the
-      // dismissible once-per-login prompt, not by blocking the dashboard.
-      final gate = const KycLoginGate(
-          state: KycState.unverified, isRequired: false);
-      expect(routeFor(gate).name, AppRoutes.dashboard);
-      expect(gate.shouldPromptOnDashboard, isTrue);
-      expect(gate.blocksDashboard, isFalse);
+      expect(run(_notRequired).name, AppRoutes.dashboard);
+    });
+
+    test('a MIRRORED reading may prompt but never block', () {
+      const mirrored = KycLoginGate(
+          state: KycState.unverified, isRequired: true, fromMirror: true);
+      expect(run(mirrored).name, AppRoutes.dashboard);
+      expect(mirrored.shouldPromptOnDashboard, isTrue);
     });
 
     test('the hard gate and the prompt are never both on', () {
-      // Whatever the inputs, a user is either blocked or prompted — never
-      // both, which would mean a dialog over a screen they cannot leave.
-      for (final required in [true, false]) {
-        for (final state in KycState.values) {
-          final g = KycLoginGate(state: state, isRequired: required);
-          expect(g.blocksDashboard && g.shouldPromptOnDashboard, isFalse,
-              reason: 'state=$state required=$required');
-        }
+      for (final g in [_required, _notRequired, _verifiedRequired]) {
+        expect(g.blocksDashboard && g.shouldPromptOnDashboard, isFalse);
       }
     });
 
     test('verification comes AFTER the transaction PIN', () {
-      // KYC is the heaviest step and the likeliest to be abandoned. Asking
-      // first would leave someone who gives up with no PIN either.
+      final r = run(_required, hasTransactionPin: false);
+      expect(r.name, AppRoutes.transactionPinSetup);
+    });
+
+    test('a missing passcode still outranks verification', () {
       final r = resolvePostLoginRoute(
         step: null,
         status: 'complete',
         email: 'a@b.com',
-        hasPasscode: true,
-        hasTransactionPin: false,
-        kyc: const KycLoginGate(
-            state: KycState.unverified, isRequired: true),
-      );
-      expect(r.name, AppRoutes.transactionPinSetup);
-    });
-
-    test('an unfinished signup still outranks verification', () {
-      final r = resolvePostLoginRoute(
-        step: 'email_verify',
-        status: 'incomplete',
-        email: 'a@b.com',
-        hasPasscode: true,
+        hasPasscode: false,
         hasTransactionPin: true,
-        kyc: const KycLoginGate(
-            state: KycState.unverified, isRequired: true),
+        kyc: _required,
       );
-      expect(r.name, AppRoutes.emailVerification);
+      expect(r.name, AppRoutes.passcodeSetup);
     });
   });
 
-  group('resolvePostLoginRoute — phone re-verification gate', () {
-    test('fires for an account with a number when an admin turned it on', () {
-      // Previously lived only in the passcode lock screen, so the same user
-      // logging in by email was never asked.
+  group('resolvePostLoginRoute — phone verification gate', () {
+    ({String name, Map<String, dynamic>? args}) run({
+      required bool required,
+      String? phone = '+2348012345678',
+      bool hasTransactionPin = true,
+      KycLoginGate kyc = KycLoginGate.none,
+    }) =>
+        resolvePostLoginRoute(
+          step: null,
+          status: 'complete',
+          email: 'a@b.com',
+          phone: phone,
+          hasPasscode: true,
+          hasTransactionPin: hasTransactionPin,
+          phoneVerificationRequired: required,
+          phoneVerified: false,
+          kyc: kyc,
+        );
+
+    test('fires for an unverified number when the admin requires it, no skip',
+        () {
+      final r = run(required: true);
+      expect(r.name, AppRoutes.phoneVerification);
+      expect(r.args?['phoneNumber'], '+2348012345678');
+      expect(r.args?['isRequired'], true);
+      expect(r.args?['codeSent'], false);
+    });
+
+    test(
+        'STILL fires when the admin does not require it — shown, but skippable',
+        () {
+      final r = run(required: false);
+      expect(r.name, AppRoutes.phoneVerification);
+      expect(r.args?['isRequired'], false);
+    });
+
+    test('does NOT strand an account that has no phone to verify', () {
+      expect(run(required: true, phone: null).name, AppRoutes.dashboard);
+      expect(run(required: true, phone: '').name, AppRoutes.dashboard);
+    });
+
+    test('a verified phone is never asked again', () {
       final r = resolvePostLoginRoute(
         step: null,
         status: 'complete',
@@ -304,27 +422,44 @@ void main() {
         phone: '+2348012345678',
         hasPasscode: true,
         hasTransactionPin: true,
-        kyc: KycLoginGate.none,
         phoneVerificationRequired: true,
-        phoneVerified: false,
+        phoneVerified: true,
+        kyc: KycLoginGate.none,
       );
-      expect(r.name, AppRoutes.phoneVerification);
-      expect(r.args?['isRequired'], true);
+      expect(r.name, AppRoutes.dashboard);
     });
 
-    test('does NOT strand an account that has no phone to verify', () {
+    test('hands over to the PIN gate, with its args, once the phone is done',
+        () {
+      final r = run(required: false, hasTransactionPin: false);
+      expect(r.name, AppRoutes.phoneVerification);
+      expect(r.args?['nextRoute'], AppRoutes.transactionPinSetup);
+      expect((r.args?['nextRouteArgs'] as Map?)?['fromLoginFlow'], true);
+    });
+
+    test('hands over to verification when that is what remains', () {
+      final r = run(required: false, kyc: _required);
+      expect(r.args?['nextRoute'], AppRoutes.kycBVNVerification);
+    });
+
+    test('hands over to the dashboard when nothing remains', () {
+      final r = run(required: false);
+      expect(r.args?['nextRoute'], AppRoutes.dashboard);
+      expect(r.args?['nextRouteArgs'], isNull);
+    });
+
+    test('the passcode comes before the phone', () {
       final r = resolvePostLoginRoute(
         step: null,
         status: 'complete',
         email: 'a@b.com',
-        phone: null,
-        hasPasscode: true,
+        phone: '+2348012345678',
+        hasPasscode: false,
         hasTransactionPin: true,
-        kyc: KycLoginGate.none,
-        phoneVerificationRequired: true,
         phoneVerified: false,
+        kyc: KycLoginGate.none,
       );
-      expect(r.name, AppRoutes.dashboard);
+      expect(r.name, AppRoutes.passcodeSetup);
     });
   });
 }

@@ -726,8 +726,19 @@ Future<String> _determineInitialRoute() async {
       final kycOnboardingPending =
           await storage.read(key: 'kyc_onboarding_pending');
       if (kycOnboardingPending == 'true' && hasSkippedKyc != 'true') {
-        print('📋 KYC onboarding pending - showing progressive KYC');
-        return AppRoutes.kycBVNVerification;
+        // The flag says "still to verify"; the last full login's reading says
+        // what is actually true. A verified (or in-review) holder is never
+        // sent to the verification screen on the strength of a stale flag —
+        // the flag is dropped instead, so it cannot fire again.
+        final known = resolveKycState(
+            status: KycSnapshot.status, tier: KycSnapshot.tier);
+        if (known == KycState.verified || known == KycState.inReview) {
+          print('📋 KYC flag stale (${known.name}) - clearing, not routing');
+          await storage.delete(key: 'kyc_onboarding_pending');
+        } else {
+          print('📋 KYC onboarding pending - showing progressive KYC');
+          return AppRoutes.kycBVNVerification;
+        }
       }
 
       // Re-authenticate via the account's OWN canonical flow (default

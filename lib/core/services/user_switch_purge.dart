@@ -75,6 +75,23 @@ const List<String> kPerUserStorageKeys = [
   // How long the app may sit idle before signing you out. One person's session
   // policy must not govern the next person's session on a shared device.
   'inactivity_timeout_seconds',
+  // A HALF-FINISHED SIGNUP is the previous person's too. The boot router
+  // resumes a local draft BEFORE it looks at who is logged in, so a device
+  // where A started signing up and B then logged in would reopen into A's
+  // passcode-creation screen on B's next cold start. Both the email draft
+  // (SignupStateService) and the phone draft (PhonePasscodeCubit) live here;
+  // the phone keys are listed by name because that cubit keeps them private.
+  // Safe for the person who IS signing up: their draft is re-marked by the
+  // step that follows account creation, which runs after this purge.
+  'has_incomplete_signup',
+  'current_signup_step',
+  'onboarding_auth_type',
+  'signup_draft',
+  'phone_signup_phone',
+  'phone_signup_country',
+  'phone_signup_token',
+  'phone_signup_skipped',
+  'phone_signup_ts',
 ];
 
 /// True when [newUserId]/[newEmail] describe someone other than whoever this

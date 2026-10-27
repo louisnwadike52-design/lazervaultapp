@@ -149,7 +149,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
     // email-onboarding chain (the user already has a passcode + verified phone,
     // so continue straight to the next step, e.g. transaction-PIN setup).
     if (widget.nextRoute != null && widget.nextRoute!.isNotEmpty) {
-      Get.offAllNamed(widget.nextRoute!);
+      Get.offAllNamed(widget.nextRoute!, arguments: widget.nextRouteArgs);
       return;
     }
     // Phone is now captured at the bottom of signup page 2 (with country

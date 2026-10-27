@@ -14,6 +14,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/post_login_navigator.dart';
 
 class PasscodeSetupScreen extends StatefulWidget {
   const PasscodeSetupScreen({super.key});
@@ -35,6 +36,9 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
       (Get.arguments as Map<String, dynamic>?)?['hasTransactionPin'] == true;
   bool get _fromForgotPasscode =>
       (Get.arguments as Map<String, dynamic>?)?['fromForgotPasscode'] == true;
+
+  /// "Skip for now" belongs to first-run signup only. See the button.
+  bool get _allowSkip => !_fromLoginFlow && !_fromForgotPasscode;
 
   @override
   void initState() {
@@ -99,11 +103,16 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                 Get.offNamed(AppRoutes.transactionPinSetup);
               }
             });
-          } else if (_fromLoginFlow && _hasTransactionPin) {
-            // Login flow and user already has PIN — go straight to dashboard
+          } else if (_fromLoginFlow || _fromForgotPasscode) {
+            // Reached from a login: the passcode is now set, so hand the
+            // SAME user back to the one post-login router and let it decide
+            // what is still outstanding — phone, PIN, identity — from the
+            // account's actual state. This used to jump to the dashboard when
+            // a PIN existed, or to PIN setup when it did not, and either way
+            // skipped every other gate.
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                Get.offAllNamed(AppRoutes.dashboard);
+                goAfterLogin(state.profile.user, passcodeJustSet: true);
               }
             });
           } else {
@@ -256,8 +265,13 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                             ],
                           ),
                           SizedBox(height: 30.h),
-                          // Skip button (only on first entry)
-                          if (!isConfirmMode && !isRegistering)
+                          // Skip button (only on first entry, and only
+                          // during SIGNUP). Reached from a login — a returning
+                          // account without a passcode, or a forgot-passcode
+                          // reset — the passcode is the thing the person is
+                          // here for and the credential every quick login
+                          // assumes, so there is nothing to skip to.
+                          if (!isConfirmMode && !isRegistering && _allowSkip)
                             TextButton(
                               onPressed: _skipPasscode,
                               child: Text(
