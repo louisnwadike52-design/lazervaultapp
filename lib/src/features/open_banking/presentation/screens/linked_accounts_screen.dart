@@ -11,8 +11,7 @@ import '../../cubit/open_banking_cubit.dart';
 import '../../cubit/open_banking_state.dart';
 import '../../domain/entities/linked_bank_account.dart';
 import '../helpers/account_reauth_helper.dart';
-import '../mixins/linked_balance_refresh_mixin.dart'
-    show linkedBalanceRefreshFailureMessage;
+import '../mixins/linked_balance_refresh_mixin.dart';
 import '../widgets/linked_account_card.dart';
 import '../widgets/link_bank_button.dart';
 import 'link_bank_screen.dart';
@@ -42,7 +41,7 @@ class LinkedAccountsScreen extends StatefulWidget {
 }
 
 class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
-    with TransactionPinMixin {
+    with TransactionPinMixin, LinkedBalanceRefreshMixin {
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -238,57 +237,14 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
         ? await _getAccessToken()
         : widget.accessToken;
     if (userId.isEmpty || accessToken.isEmpty || !mounted) return;
-    final cubit = context.read<OpenBankingCubit>();
-
-    // COST-CONFIRMED refresh: a live Mono read is billed, so quote the fee and,
-    // when it's > 0, show the cost + take a txPIN before charging + reading.
-    final feeKobo = await cubit.quoteRefreshFee(
-      accountId: account.id,
+    // ONE shared, per-account, fee-gated refresh (LinkedBalanceRefreshMixin):
+    // quote → cost-confirm tx-PIN → live read. Launched from the page (the
+    // detail sheet pops itself first), so no host sheet to preserve.
+    await refreshLinkedBalance(
+      context,
+      account,
       userId: userId,
       accessToken: accessToken,
-    );
-    if (!mounted) return;
-    if (feeKobo <= 0) {
-      cubit.refreshBalance(
-        accountId: account.id,
-        userId: userId,
-        accessToken: accessToken,
-        isManual: true,
-      );
-      return;
-    }
-
-    final feeNaira = feeKobo / 100.0;
-    final txnId =
-        'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
-    await validateTransactionPin(
-      context: context,
-      transactionId: txnId,
-      transactionType: 'balance_refresh',
-      // Fee-only charge: a balance refresh has NO base amount, so pass amount 0
-      // and let the sheet render just the ₦fee (not "fee + fee").
-      amount: 0,
-      fee: feeNaira,
-      totalAmount: feeNaira,
-      currency: 'NGN',
-      title: 'Refresh balance',
-      message:
-          'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}. Do this once in a while, your last-known balance is shown otherwise.',
-      successMessage: 'Balance refreshed',
-      // Honest failure: a failed live read shows the sheet's unsuccessful state
-      // with category copy, never a false "balance refreshed".
-      failureMessageBuilder: linkedBalanceRefreshFailureMessage,
-      onPinValidated: (token) async {
-        await cubit.refreshBalance(
-          accountId: account.id,
-          userId: userId,
-          accessToken: accessToken,
-          isManual: true,
-          verificationToken: token,
-          transactionId: txnId,
-          rethrowOnError: true,
-        );
-      },
     );
   }
 
@@ -443,26 +399,37 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
                     itemCount: accounts.length,
                     itemBuilder: (context, index) {
                       final account = accounts[index];
-                      final isRefreshing = refreshingAccountId == account.id;
                       return GestureDetector(
                         onTap: () => _showAccountDetailSheet(account),
                         // Rebuild the card when mandates change so the Direct-Debit
                         // badge stays live (setting-up → active, switch, pause…).
                         child: BlocBuilder<MandateCubit, MandateState>(
                           bloc: serviceLocator<MandateCubit>(),
-                          builder: (context, _) => LinkedAccountCard(
-                            account: account,
-                            isRefreshing: isRefreshing,
-                            onUnlink: () => _onUnlink(account),
-                            onSetDefault: () => _onSetDefault(account),
-                            onReconnect: () =>
-                                startAccountReauthorization(context, account),
-                            onRefreshBalance: isRefreshing
-                                ? null
-                                : () => _onRefreshBalance(account),
-                            mandateBadge: _mandateChip(account),
-                            onManageDirectDebit: () =>
-                                _manageDirectDebit(account),
+                          // The card's spinner covers the WHOLE tap→sheet→read
+                          // span: the cubit's BalanceRefreshing (live read) OR
+                          // the mixin's pending set (fee quote + PIN sheet).
+                          builder: (context, _) =>
+                              ValueListenableBuilder<Set<String>>(
+                            valueListenable: linkedRefreshPending,
+                            builder: (context, pending, _) {
+                              final isRefreshing =
+                                  refreshingAccountId == account.id ||
+                                      pending.contains(account.id);
+                              return LinkedAccountCard(
+                                account: account,
+                                isRefreshing: isRefreshing,
+                                onUnlink: () => _onUnlink(account),
+                                onSetDefault: () => _onSetDefault(account),
+                                onReconnect: () => startAccountReauthorization(
+                                    context, account),
+                                onRefreshBalance: isRefreshing
+                                    ? null
+                                    : () => _onRefreshBalance(account),
+                                mandateBadge: _mandateChip(account),
+                                onManageDirectDebit: () =>
+                                    _manageDirectDebit(account),
+                              );
+                            },
                           ),
                         ),
                       );
@@ -736,42 +703,59 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
                       ),
                     if (!account.isDefault) SizedBox(width: 12.w),
                     Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: account.needsReauthorization
-                            ? null
-                            : () {
-                                Navigator.of(ctx).pop();
-                                _onRefreshBalance(account);
-                              },
-                        icon: Icon(
-                          account.needsReauthorization
-                              ? Icons.link_off_rounded
-                              : Icons.refresh_rounded,
-                          size: 18.sp,
-                        ),
-                        label: Text(
-                          account.needsReauthorization
-                              ? 'Re-link Required'
-                              : 'Refresh Balance',
-                          style: GoogleFonts.inter(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: account.needsReauthorization
-                              ? Colors.orange
-                              : const Color(0xFF10B981),
-                          side: BorderSide(
-                            color: account.needsReauthorization
-                                ? Colors.orange
-                                : const Color(0xFF10B981),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 12.h),
-                        ),
+                      // Sheet is popped BEFORE the refresh starts, so no host
+                      // sheet to preserve; the button only reflects a refresh
+                      // already in flight if the sheet is re-opened meanwhile.
+                      child: ValueListenableBuilder<Set<String>>(
+                        valueListenable: linkedRefreshPending,
+                        builder: (context, pending, _) {
+                          final busy = pending.contains(account.id);
+                          return OutlinedButton.icon(
+                            onPressed: account.needsReauthorization || busy
+                                ? null
+                                : () {
+                                    Navigator.of(ctx).pop();
+                                    _onRefreshBalance(account);
+                                  },
+                            icon: busy
+                                ? SizedBox(
+                                    width: 18.sp,
+                                    height: 18.sp,
+                                    child: const CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xFF10B981)),
+                                  )
+                                : Icon(
+                                    account.needsReauthorization
+                                        ? Icons.link_off_rounded
+                                        : Icons.refresh_rounded,
+                                    size: 18.sp,
+                                  ),
+                            label: Text(
+                              account.needsReauthorization
+                                  ? 'Re-link Required'
+                                  : 'Refresh Balance',
+                              style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: account.needsReauthorization
+                                  ? Colors.orange
+                                  : const Color(0xFF10B981),
+                              side: BorderSide(
+                                color: account.needsReauthorization
+                                    ? Colors.orange
+                                    : const Color(0xFF10B981),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 12.h),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],

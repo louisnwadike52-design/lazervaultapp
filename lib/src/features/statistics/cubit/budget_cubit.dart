@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/src/features/statistics/data/budget_repository.dart';
 import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
+import 'package:lazervault/core/cache/session_page_user.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_page_store.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/widgets/budget_warning_widget.dart';
@@ -31,14 +33,37 @@ class BudgetCubit extends Cubit<BudgetState> {
         _budgetAIService = budgetAIService,
         super(BudgetInitial());
 
-  /// Load budgets with optional filters
+  /// Load budgets with optional filters.
+  ///
+  /// Paints what is already known first — the retained Loaded state, else
+  /// the remembered unfiltered first page for this user — and fetches behind
+  /// it; the loading view is for a cold miss only. A refresh that fails
+  /// behind painted rows keeps them (the error view is for a cold miss too).
   Future<void> loadBudgets({
     pb.BudgetStatus? status,
     pb.ExpenseCategory? category,
     int page = 1,
     int perPage = 20,
   }) async {
-    emit(const BudgetLoading(message: 'Loading budgets...'));
+    final unfilteredFirstPage = page == 1 && status == null && category == null;
+    final uid = sessionPageUserId();
+    var painted = state is BudgetsLoaded;
+    if (!painted && unfilteredFirstPage) {
+      final cached = await BudgetPageStore.hydrate(uid);
+      if (isClosed) return;
+      if (cached != null && state is! BudgetsLoaded) {
+        painted = true;
+        emit(BudgetsLoaded(
+          budgets: cached.budgets,
+          totalBudgetAmount: cached.totalBudgetAmount,
+          totalSpentAmount: cached.totalSpentAmount,
+          isRefreshing: true,
+        ));
+      }
+    }
+    if (!painted) {
+      emit(const BudgetLoading(message: 'Loading budgets...'));
+    }
     try {
       final response = await _budgetRepository.getBudgets(
         page: page,
@@ -46,15 +71,75 @@ class BudgetCubit extends Cubit<BudgetState> {
         status: status,
         category: category,
       );
+      if (isClosed) return;
 
+      if (unfilteredFirstPage) {
+        BudgetPageStore.put(uid,
+            budgets: response.budgets,
+            totalBudgetAmount: response.totalBudgetAmount,
+            totalSpentAmount: response.totalSpentAmount);
+      }
       emit(BudgetsLoaded(
         budgets: response.budgets,
         totalBudgetAmount: response.totalBudgetAmount,
         totalSpentAmount: response.totalSpentAmount,
+        page: page,
+        hasMore: response.hasPagination() && response.pagination.hasNext,
       ));
     } catch (e) {
+      if (isClosed) return;
+      if (state is BudgetsLoaded) {
+        developer.log('Budget refresh failed, keeping shown list',
+            name: 'BudgetCubit', error: e);
+        emit((state as BudgetsLoaded).copyWith(isRefreshing: false));
+        return;
+      }
       emit(
           BudgetError(message: friendlyError(e, context: 'load your budgets')));
+    }
+  }
+
+  /// Append the next page of the unfiltered list on scroll. Guarded so two
+  /// scroll events never fire two requests, and a failed append keeps what
+  /// is on screen and simply stops paging.
+  Future<void> loadMoreBudgets({int perPage = 20}) async {
+    final current = state;
+    if (current is! BudgetsLoaded ||
+        !current.hasMore ||
+        current.isLoadingMore) {
+      return;
+    }
+    final nextPage = current.page + 1;
+    emit(current.copyWith(isLoadingMore: true));
+    try {
+      final response = await _budgetRepository.getBudgets(
+        page: nextPage,
+        perPage: perPage,
+      );
+      if (isClosed) return;
+      final latest = state;
+      if (latest is! BudgetsLoaded) return;
+      final seen = latest.budgets.map((b) => b.id).toSet();
+      final appended = [
+        ...latest.budgets,
+        ...response.budgets.where((b) => seen.add(b.id)),
+      ];
+      emit(latest.copyWith(
+        budgets: appended,
+        totalBudgetAmount: response.totalBudgetAmount,
+        totalSpentAmount: response.totalSpentAmount,
+        page: nextPage,
+        hasMore: response.hasPagination() && response.pagination.hasNext,
+        isLoadingMore: false,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      final latest = state;
+      if (latest is BudgetsLoaded) {
+        developer.log('Budget page append failed',
+            name: 'BudgetCubit', error: e);
+        emit(latest.copyWith(isLoadingMore: false, hasMore: false));
+      }
     }
   }
 

@@ -1,8 +1,27 @@
 part of 'budget_list_screen.dart';
 
 /// Budget List Screen - displays all user budgets
-class BudgetListScreen extends StatelessWidget {
+class BudgetListScreen extends StatefulWidget {
   const BudgetListScreen({super.key});
+
+  @override
+  State<BudgetListScreen> createState() => _BudgetListScreenState();
+}
+
+class _BudgetListScreenState extends State<BudgetListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // The cubit is a lazy singleton: when it still holds the list from the
+    // last visit the builder paints it at once, and this refreshes it
+    // silently behind. (When it holds anything else, the builder's Initial
+    // fall-through triggers the load — unchanged.)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final cubit = serviceLocator<BudgetCubit>();
+      if (cubit.state is BudgetsLoaded) cubit.loadBudgets();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +105,8 @@ class BudgetListView extends StatelessWidget {
                       budgets: state.budgets,
                       totalBudgetAmount: state.totalBudgetAmount,
                       totalSpentAmount: state.totalSpentAmount,
+                      hasMore: state.hasMore,
+                      isLoadingMore: state.isLoadingMore,
                     );
                   }
 
@@ -107,6 +128,16 @@ class BudgetListView extends StatelessWidget {
                     }
                   });
 
+                  // Paint the remembered page for this frame rather than a
+                  // loader; the load above replaces it in place.
+                  final remembered = BudgetPageStore.peek(sessionPageUserId());
+                  if (remembered != null && remembered.budgets.isNotEmpty) {
+                    return _BudgetsListView(
+                      budgets: remembered.budgets,
+                      totalBudgetAmount: remembered.totalBudgetAmount,
+                      totalSpentAmount: remembered.totalSpentAmount,
+                    );
+                  }
                   return const _LoadingView(message: 'Loading budgets...');
                 },
               ),
@@ -127,13 +158,26 @@ class _BudgetsListView extends StatelessWidget {
   final List<pb.BudgetMessage> budgets;
   final double totalBudgetAmount;
   final double totalSpentAmount;
+  final bool hasMore;
+  final bool isLoadingMore;
 
   const _BudgetsListView({
     required this.budgets,
     required this.totalBudgetAmount,
     required this.totalSpentAmount,
+    this.hasMore = false,
+    this.isLoadingMore = false,
     super.key,
   });
+
+  /// Ask for the next page a little before the very bottom.
+  bool _onScroll(BuildContext context, ScrollNotification n) {
+    if (!hasMore || isLoadingMore) return false;
+    if (n.metrics.pixels >= n.metrics.maxScrollExtent - 240) {
+      context.read<BudgetCubit>().loadMoreBudgets();
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,20 +189,28 @@ class _BudgetsListView extends StatelessWidget {
       onRefresh: () => context.read<BudgetCubit>().loadBudgets(),
       color: InvoiceThemeColors.primaryPurple,
       backgroundColor: const Color(0xFF1F1F1F),
-      child: ListView(
-        padding: EdgeInsets.all(16.w),
-        children: [
-          // Summary Card
-          _SummaryCard(
-            totalBudgetAmount: totalBudgetAmount,
-            totalSpentAmount: totalSpentAmount,
-            overallPercentage: overallPercentage,
-          ),
-          SizedBox(height: 24.h),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (n) => _onScroll(context, n),
+        child: ListView(
+          padding: EdgeInsets.all(16.w),
+          children: [
+            // Summary Card
+            _SummaryCard(
+              totalBudgetAmount: totalBudgetAmount,
+              totalSpentAmount: totalSpentAmount,
+              overallPercentage: overallPercentage,
+            ),
+            SizedBox(height: 24.h),
 
-          // Budget List
-          ...budgets.map((budget) => _BudgetCard(budget: budget)),
-        ],
+            // Budget List
+            ...budgets.map((budget) => _BudgetCard(budget: budget)),
+            if (isLoadingMore)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 20.h),
+                child: Center(child: LazerVaultLoader.small()),
+              ),
+          ],
+        ),
       ),
     );
   }

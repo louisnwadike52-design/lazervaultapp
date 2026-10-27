@@ -1934,14 +1934,19 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             final obState = context.read<OpenBankingCubit>().state;
             final isRefreshing =
                 obState is BalanceRefreshing && obState.accountId == account.id;
-            return MoveAccountCard(
-              account: account,
-              isSelected: false,
-              mandate: mandate,
-              isRefreshing: isRefreshing,
-              onRefresh: () => _refreshCardBalance(account),
-              onTap: () => _showAccountDetailSheet(account),
-              onLongPress: () => _showMandateManagement(account, mandate),
+            // The card's spinner spans the WHOLE tap→quote→PIN-sheet→read:
+            // BalanceRefreshing (live read) OR the mixin's pending set.
+            return ValueListenableBuilder<Set<String>>(
+              valueListenable: linkedRefreshPending,
+              builder: (context, pending, _) => MoveAccountCard(
+                account: account,
+                isSelected: false,
+                mandate: mandate,
+                isRefreshing: isRefreshing || pending.contains(account.id),
+                onRefresh: () => _refreshCardBalance(account),
+                onTap: () => _showAccountDetailSheet(account),
+                onLongPress: () => _showMandateManagement(account, mandate),
+              ),
             );
           },
         ),
@@ -2167,37 +2172,56 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                       ),
                     if (!account.isDefault) SizedBox(width: 12.w),
                     Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          // Per-account, fee-gated, tx-PIN-authorised live Mono read
-                          // via the SHARED mixin (mints the verification_token the
-                          // backend requires) — identical to deposit/withdrawal. The
-                          // raw cubit.refreshBalance() call here was missing the
-                          // token → "required field 'verification_token' is missing".
-                          refreshLinkedBalance(
-                            context,
-                            account,
-                            userId: authState.profile.userId,
-                            accessToken: authState.profile.session.accessToken,
+                      // Sheet is popped BEFORE the refresh starts (no host
+                      // sheet to preserve); the button only reflects a refresh
+                      // already in flight if the sheet is re-opened meanwhile.
+                      child: ValueListenableBuilder<Set<String>>(
+                        valueListenable: linkedRefreshPending,
+                        builder: (context, pending, _) {
+                          final busy = pending.contains(account.id);
+                          return OutlinedButton.icon(
+                            onPressed: busy
+                                ? null
+                                : () {
+                                    Navigator.of(ctx).pop();
+                                    // Per-account, fee-gated, tx-PIN-authorised
+                                    // live Mono read via the SHARED mixin (mints
+                                    // the verification_token the backend
+                                    // requires) — identical to deposit/withdrawal.
+                                    refreshLinkedBalance(
+                                      context,
+                                      account,
+                                      userId: authState.profile.userId,
+                                      accessToken:
+                                          authState.profile.session.accessToken,
+                                    );
+                                  },
+                            icon: busy
+                                ? SizedBox(
+                                    width: 18.sp,
+                                    height: 18.sp,
+                                    child: const CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xFF10B981)),
+                                  )
+                                : Icon(Icons.refresh_rounded, size: 18.sp),
+                            label: Text(
+                              'Refresh Balance',
+                              style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF10B981),
+                              side: const BorderSide(color: Color(0xFF10B981)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 12.h),
+                            ),
                           );
                         },
-                        icon: Icon(Icons.refresh_rounded, size: 18.sp),
-                        label: Text(
-                          'Refresh Balance',
-                          style: GoogleFonts.inter(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF10B981),
-                          side: const BorderSide(color: Color(0xFF10B981)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 12.h),
-                        ),
                       ),
                     ),
                   ],

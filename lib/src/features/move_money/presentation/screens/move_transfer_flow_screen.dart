@@ -916,35 +916,55 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     final everFetched = account.balanceUpdatedAt != null;
     final isLive = everFetched &&
         DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3;
-    return GestureDetector(
-      onTap: () => _manualRefreshBalance(account),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Text(
-          everFetched
-              ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
-              : 'Tap to fetch balance',
-          style: GoogleFonts.inter(
-              color: everFetched ? Colors.white : const Color(0xFF3B82F6),
-              fontSize: 12.5.sp,
-              fontWeight: FontWeight.w700),
-        ),
-        SizedBox(width: 5.w),
-        Icon(Icons.refresh,
-            size: 12.sp,
-            color: isLive ? const Color(0xFF10B981) : const Color(0xFF9CA3AF)),
-        if (everFetched) ...[
-          SizedBox(width: 4.w),
-          Flexible(
-            child: Text(
-              linkedBalanceLastUpdatedLabel(account.balanceUpdatedAt),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+    // Between the tap and the cubit's BalanceRefreshing (fee quote + PIN
+    // sheet) the mixin's pending set drives a spinner in the glyph's place.
+    return ValueListenableBuilder<Set<String>>(
+      valueListenable: linkedRefreshPending,
+      builder: (context, pending, _) {
+        final busy = pending.contains(account.id);
+        return GestureDetector(
+          onTap: busy ? null : () => _manualRefreshBalance(account),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Text(
+              everFetched
+                  ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
+                  : 'Tap to fetch balance',
               style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF), fontSize: 9.5.sp),
+                  color: everFetched ? Colors.white : const Color(0xFF3B82F6),
+                  fontSize: 12.5.sp,
+                  fontWeight: FontWeight.w700),
             ),
-          ),
-        ],
-      ]),
+            SizedBox(width: 5.w),
+            busy
+                ? SizedBox(
+                    width: 12.sp,
+                    height: 12.sp,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: isLive
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF9CA3AF)),
+                  )
+                : Icon(Icons.refresh,
+                    size: 12.sp,
+                    color: isLive
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF9CA3AF)),
+            if (everFetched) ...[
+              SizedBox(width: 4.w),
+              Flexible(
+                child: Text(
+                  linkedBalanceLastUpdatedLabel(account.balanceUpdatedAt),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF), fontSize: 9.5.sp),
+                ),
+              ),
+            ],
+          ]),
+        );
+      },
     );
   }
 
@@ -1536,32 +1556,57 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                                   ),
                                   // Inline refresh CTA — re-pulls the live balance
                                   // from the linked bank (Mono) for this account.
-                                  GestureDetector(
-                                    onTap: () {
-                                      // Fee-gated shared refresh (a live Mono balance
-                                      // read is billed) — not a free bypass read.
-                                      if (_sourceAccount == null) return;
-                                      _manualRefreshBalance(_sourceAccount!);
+                                  // Spinner + no tap while the mixin has this
+                                  // account's refresh in flight.
+                                  ValueListenableBuilder<Set<String>>(
+                                    valueListenable: linkedRefreshPending,
+                                    builder: (context, pending, _) {
+                                      final busy = _sourceAccount != null &&
+                                          pending.contains(_sourceAccount!.id);
+                                      return GestureDetector(
+                                        onTap: busy
+                                            ? null
+                                            : () {
+                                                // Fee-gated shared refresh (a live Mono balance
+                                                // read is billed) — not a free bypass read.
+                                                if (_sourceAccount == null) {
+                                                  return;
+                                                }
+                                                _manualRefreshBalance(
+                                                    _sourceAccount!);
+                                              },
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            busy
+                                                ? SizedBox(
+                                                    width: 14.sp,
+                                                    height: 14.sp,
+                                                    child:
+                                                        const CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      color: Color(0xFFFB923C),
+                                                    ),
+                                                  )
+                                                : Icon(
+                                                    Icons.refresh_rounded,
+                                                    color:
+                                                        const Color(0xFFFB923C),
+                                                    size: 14.sp,
+                                                  ),
+                                            SizedBox(width: 3.w),
+                                            Text(
+                                              'Refresh',
+                                              style: GoogleFonts.inter(
+                                                color: const Color(0xFFFB923C),
+                                                fontSize: 11.sp,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
                                     },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.refresh_rounded,
-                                          color: const Color(0xFFFB923C),
-                                          size: 14.sp,
-                                        ),
-                                        SizedBox(width: 3.w),
-                                        Text(
-                                          'Refresh',
-                                          style: GoogleFonts.inter(
-                                            color: const Color(0xFFFB923C),
-                                            fontSize: 11.sp,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
                                   ),
                                 ],
                               ),

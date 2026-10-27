@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/statistics_scope_policy.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
@@ -14,8 +15,7 @@ import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.da
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
-import 'package:lazervault/src/features/open_banking/presentation/mixins/linked_balance_refresh_mixin.dart'
-    show linkedBalanceRefreshFailureMessage;
+import 'package:lazervault/src/features/open_banking/presentation/mixins/linked_balance_refresh_mixin.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_categories.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -161,7 +161,8 @@ class Statistics extends StatefulWidget {
   State<Statistics> createState() => _StatisticsState();
 }
 
-class _StatisticsState extends State<Statistics> with TransactionPinMixin {
+class _StatisticsState extends State<Statistics>
+    with TransactionPinMixin, LinkedBalanceRefreshMixin {
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -223,12 +224,38 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       // leg (banking-service analytics) is included from the start.
       await _initOpenBanking();
       if (!mounted) return;
-      final statsCubit = context.read<StatisticsCubit>()
-        ..userId = _userId
-        ..loadStatistics();
+      final statsCubit = context.read<StatisticsCubit>()..userId = _userId;
+      // Re-entry: the singleton cubit still holds THIS user's figures (the
+      // userId setter wiped them if the user changed). Paint them now — the
+      // chips adopt the scope they were fetched for — and refresh silently
+      // behind. Only a genuinely first load shows the skeleton.
+      final hasFigures = statsCubit.state is StatisticsLoaded;
+      if (hasFigures) _adoptCubitScope(statsCubit);
+      statsCubit.loadStatistics(silent: hasFigures);
       // Wallet list is informational for the selector; a failure leaves the
       // scope at "all wallets" rather than narrowing anything.
       unawaited(statsCubit.loadWallets());
+    });
+  }
+
+  /// The chips (source / banks / wallets / period) are screen-local and reset
+  /// on every mount, while the cubit keeps the scope its held figures answer
+  /// for. Adopt that scope ONCE on mount so instant-painted figures sit under
+  /// the chips that describe them. The build listener still never reverts a
+  /// tap — that is a different, tap-driven path.
+  void _adoptCubitScope(StatisticsCubit cubit) {
+    final source = cubit.source;
+    final period = cubit.currentPeriod;
+    setState(() {
+      if (LocaleGating.aiScopeAllowed('banks') ||
+          source == StatisticsSource.lazervault) {
+        _statsSource = source;
+      }
+      _selectedBankIds = cubit.selectedBankAccountIds.toSet();
+      _selectedWalletIds = cubit.selectedWalletIds.toSet();
+      if (period.isNotEmpty) {
+        selectedPeriod = period[0].toUpperCase() + period.substring(1);
+      }
     });
   }
 
@@ -291,53 +318,14 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   /// live Mono balance read is billed, so we never fire it silently.
   Future<void> _costConfirmedRefresh(LinkedBankAccount account) async {
     if (_userId.isEmpty) return;
-    final cubit = context.read<OpenBankingCubit>();
-    final feeKobo = await cubit.quoteRefreshFee(
-      accountId: account.id,
+    // ONE shared, per-account, fee-gated refresh (LinkedBalanceRefreshMixin).
+    // Launched from the page (the management sheet pops itself first), so no
+    // host sheet to preserve.
+    await refreshLinkedBalance(
+      context,
+      account,
       userId: _userId,
       accessToken: _accessToken,
-    );
-    if (!mounted) return;
-    if (feeKobo <= 0) {
-      cubit.refreshBalance(
-        accountId: account.id,
-        userId: _userId,
-        accessToken: _accessToken,
-        isManual: true,
-      );
-      return;
-    }
-    final feeNaira = feeKobo / 100.0;
-    final txnId =
-        'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
-    await validateTransactionPin(
-      context: context,
-      transactionId: txnId,
-      transactionType: 'balance_refresh',
-      // Fee-only charge: a balance refresh has NO base amount, so pass amount 0
-      // and let the sheet render just the ₦fee (not "fee + fee").
-      amount: 0,
-      fee: feeNaira,
-      totalAmount: feeNaira,
-      currency: 'NGN',
-      title: 'Refresh balance',
-      message:
-          'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}. Your last-known balance is shown otherwise.',
-      successMessage: 'Balance refreshed',
-      // Honest failure: a failed live read shows the sheet's unsuccessful state
-      // with category copy, never a false "balance refreshed".
-      failureMessageBuilder: linkedBalanceRefreshFailureMessage,
-      onPinValidated: (token) async {
-        await cubit.refreshBalance(
-          accountId: account.id,
-          userId: _userId,
-          accessToken: _accessToken,
-          isManual: true,
-          verificationToken: token,
-          transactionId: txnId,
-          rethrowOnError: true,
-        );
-      },
     );
   }
 
@@ -454,14 +442,22 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   }
 
   /// The metric-bearing region (Overview / Insights / Analytics / Category /
-  /// Management). Shows the diagonal dark skeleton on first load AND while a
-  /// source/bank/period change is reloading (isRefreshing), an inline error
-  /// widget on failure, and the real sections once loaded. The header + tabs
-  /// + quick actions above stay mounted throughout.
+  /// Management). Shows the diagonal dark skeleton ONLY when there is nothing
+  /// honest to show for the current scope — first load, or a source / bank /
+  /// wallet / period switch whose figures are not in yet. A same-scope
+  /// refresh (re-entry, pull-to-refresh) keeps the figures on screen under a
+  /// thin progress line. An inline error widget on failure, and the real
+  /// sections once loaded. The header + tabs + quick actions above stay
+  /// mounted throughout.
   Widget _buildStatsContent(StatisticsState state) {
-    final showSkeleton = state is StatisticsInitial ||
-        state is StatisticsLoading ||
-        (state is StatisticsLoaded && state.isRefreshing);
+    final cubit = context.read<StatisticsCubit>();
+    final showSkeleton = statisticsShowSkeleton(
+      state,
+      source: cubit.source,
+      bankAccountIds: cubit.selectedBankAccountIds,
+      walletIds: cubit.selectedWalletIds,
+      period: cubit.currentPeriod,
+    );
     if (showSkeleton) {
       return const StatisticsContentSkeleton();
     }
@@ -480,6 +476,14 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Same-scope refresh in flight: the figures stay, this is the only
+        // sign that fresher ones are on the way.
+        if (state.isRefreshing)
+          LinearProgressIndicator(
+            minHeight: 2,
+            color: InvoiceThemeColors.primaryPurple,
+            backgroundColor: Colors.transparent,
+          ),
         // Metrics below depend on real transaction data. For a BANK-ONLY scope
         // whose data couldn't be read, we already show the notice above and
         // SKIP the metric sections rather than render misleading zeros/scores.
@@ -2492,25 +2496,32 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 ),
                 borderRadius: BorderRadius.circular(16.r),
               ),
-              child: LinkedBanksWidget(
-                linkedAccounts: displayed,
-                userId: _userId,
-                accessToken: _accessToken,
-                // Highlight the single scoped bank when exactly one is selected.
-                selectedAccountId: _selectedBankIds.length == 1
-                    ? _selectedBankIds.first
-                    : null,
-                onBankTap: (account) {
-                  // Tapping a bank opens its management sheet (refresh, set
-                  // default, reconnect, unlink) — filtering is handled by the
-                  // bank pills above, not by tapping the list.
-                  _showBankManagementSheet(account);
-                },
-                // Per-card refresh icon → the SAME fee-gated path (quote fee →
-                // cost-confirm tx-PIN → live Mono read). Never a free direct
-                // read; no silent bulk balance pull here.
-                onRefreshBalance: _costConfirmedRefresh,
-                onRefresh: null,
+              // The per-bank spinner covers the WHOLE tap→sheet→read span:
+              // the mixin's pending set (fee quote + PIN sheet) is passed
+              // down and OR-ed with the cubit's BalanceRefreshing inside.
+              child: ValueListenableBuilder<Set<String>>(
+                valueListenable: linkedRefreshPending,
+                builder: (context, pending, _) => LinkedBanksWidget(
+                  linkedAccounts: displayed,
+                  userId: _userId,
+                  accessToken: _accessToken,
+                  // Highlight the single scoped bank when exactly one is selected.
+                  selectedAccountId: _selectedBankIds.length == 1
+                      ? _selectedBankIds.first
+                      : null,
+                  onBankTap: (account) {
+                    // Tapping a bank opens its management sheet (refresh, set
+                    // default, reconnect, unlink) — filtering is handled by the
+                    // bank pills above, not by tapping the list.
+                    _showBankManagementSheet(account);
+                  },
+                  // Per-card refresh icon → the SAME fee-gated path (quote fee →
+                  // cost-confirm tx-PIN → live Mono read). Never a free direct
+                  // read; no silent bulk balance pull here.
+                  onRefreshBalance: _costConfirmedRefresh,
+                  pendingRefreshAccountIds: pending,
+                  onRefresh: null,
+                ),
               ),
             );
           },

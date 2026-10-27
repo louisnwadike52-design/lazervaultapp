@@ -48,6 +48,11 @@ class LinkedBanksWidget extends StatelessWidget {
   /// refresh icon is hidden.
   final void Function(LinkedBankAccount account)? onRefreshBalance;
 
+  /// Account ids whose refresh is in flight on the PARENT side (fee quote /
+  /// tx-PIN sheet, before the cubit emits BalanceRefreshing). The card shows
+  /// its spinner for these too, so the icon reacts from the first tap.
+  final Set<String> pendingRefreshAccountIds;
+
   const LinkedBanksWidget({
     super.key,
     required this.linkedAccounts,
@@ -57,6 +62,7 @@ class LinkedBanksWidget extends StatelessWidget {
     this.selectedAccountId,
     this.onBankTap,
     this.onRefreshBalance,
+    this.pendingRefreshAccountIds = const <String>{},
   });
 
   @override
@@ -243,7 +249,8 @@ class LinkedBanksWidget extends StatelessWidget {
               child: _BankAccountItem(
                 account: account,
                 isSyncing: isSyncing && syncingAccountId == account.id,
-                isRefreshingBalance: refreshingAccountId == account.id,
+                isRefreshingBalance: refreshingAccountId == account.id ||
+                    pendingRefreshAccountIds.contains(account.id),
                 onRefreshBalance: onRefreshBalance,
                 isSelected: selectedAccountId == account.id,
                 // When the parent supplied a tap handler (budgeting filter

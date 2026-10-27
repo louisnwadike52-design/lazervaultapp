@@ -6,6 +6,7 @@ import '../../../generated/banking.pb.dart' as banking_pb;
 import '../../../../core/utils/debouncer.dart';
 import '../../open_banking/data/datasources/open_banking_grpc_datasource.dart';
 import '../data/financial_analytics_repository.dart';
+import 'statistics_scope_policy.dart';
 import 'statistics_state.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/services/currency_holdings_service.dart';
@@ -79,6 +80,21 @@ class StatisticsCubit extends Cubit<StatisticsState> {
 
   /// Currently selected money source (LazerVault / Bank / both).
   StatisticsSource get source => _source;
+
+  /// The analytics period the cubit is on now (week/month/quarter/year).
+  String get currentPeriod => _currentPeriod;
+
+  /// True when [s] holds figures for the scope the cubit is on NOW — same
+  /// source, bank set, wallet set and period. A re-entry or pull-to-refresh
+  /// keeps such a state on screen; a scope switch does not, because its
+  /// figures answer a different question. See statistics_scope_policy.dart.
+  bool isLoadedForCurrentScope(StatisticsState s) => statisticsLoadedForScope(
+        s,
+        source: _source,
+        bankAccountIds: _selectedBankAccountIds,
+        walletIds: _selectedWalletIds,
+        period: _currentPeriod,
+      );
 
   /// Selected linked-bank scope (empty = all banks).
   List<String> get selectedBankAccountIds => _selectedBankAccountIds;
@@ -362,6 +378,11 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     // re-load for the new scope afterwards if it drifted.
     final loadSource = _source;
     final loadBanks = List<String>.from(_selectedBankAccountIds);
+    // A refresh of the SAME scope (re-entry, pull-to-refresh) has an honest
+    // answer on screen already. If the fetch fails, that answer stays — a
+    // background failure must never replace shown figures with an error
+    // screen. A scope switch has no such answer and still surfaces its error.
+    final keepShownOnFailure = isLoadedForCurrentScope(state);
     try {
       if (isClosed) return;
       // Non-destructive reload: when we already have loaded data (a source /
@@ -575,6 +596,12 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       // Don't surface a stale-scope failure over the current view: if the user
       // already switched away from the scope this load was for, drop it.
       if (_source != loadSource || !_sameBankScope(loadBanks)) {
+        return;
+      }
+      final shown = state;
+      if (keepShownOnFailure && shown is StatisticsLoaded) {
+        // Same-scope refresh failed: keep the figures, stop the indicator.
+        emit(shown.copyWith(isRefreshing: false));
         return;
       }
       emit(StatisticsError(

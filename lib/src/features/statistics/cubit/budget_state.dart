@@ -28,14 +28,56 @@ class BudgetsLoaded extends BudgetState {
   final double totalBudgetAmount;
   final double totalSpentAmount;
 
+  /// Pagination (list screen). [page] is the last page merged into
+  /// [budgets]; [hasMore] is what the server said about the one after it;
+  /// [isLoadingMore] while that next page is in flight (footer spinner).
+  final int page;
+  final bool hasMore;
+  final bool isLoadingMore;
+
+  /// True while the painted rows are the remembered ones and the live page
+  /// is still in flight.
+  final bool isRefreshing;
+
   const BudgetsLoaded({
     required this.budgets,
     required this.totalBudgetAmount,
     required this.totalSpentAmount,
+    this.page = 1,
+    this.hasMore = false,
+    this.isLoadingMore = false,
+    this.isRefreshing = false,
   });
 
+  BudgetsLoaded copyWith({
+    List<pb.BudgetMessage>? budgets,
+    double? totalBudgetAmount,
+    double? totalSpentAmount,
+    int? page,
+    bool? hasMore,
+    bool? isLoadingMore,
+    bool? isRefreshing,
+  }) =>
+      BudgetsLoaded(
+        budgets: budgets ?? this.budgets,
+        totalBudgetAmount: totalBudgetAmount ?? this.totalBudgetAmount,
+        totalSpentAmount: totalSpentAmount ?? this.totalSpentAmount,
+        page: page ?? this.page,
+        hasMore: hasMore ?? this.hasMore,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        isRefreshing: isRefreshing ?? this.isRefreshing,
+      );
+
   @override
-  List<Object?> get props => [budgets, totalBudgetAmount, totalSpentAmount];
+  List<Object?> get props => [
+        budgets,
+        totalBudgetAmount,
+        totalSpentAmount,
+        page,
+        hasMore,
+        isLoadingMore,
+        isRefreshing,
+      ];
 }
 
 /// Budget progress loaded

@@ -1122,30 +1122,38 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   /// bank only (fee-gated tx-PIN sheet), via the shared LinkedBalanceRefreshMixin.
   Widget _cardRefreshButton(LinkedBankAccount a, bool isRefreshing) {
     const accent = Color(0xFF3B82F6);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: isRefreshing ? null : () => _refreshCardBalance(a),
-      child: Tooltip(
-        message: 'Refresh balance',
-        child: Container(
-          width: 30.w,
-          height: 30.w,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: accent.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(9.r),
-            border: Border.all(color: accent.withValues(alpha: 0.42)),
+    // The spinner spans the WHOLE tap→quote→PIN-sheet→read: the cubit's
+    // BalanceRefreshing (live read) OR the mixin's pending set (quote + sheet).
+    return ValueListenableBuilder<Set<String>>(
+      valueListenable: linkedRefreshPending,
+      builder: (context, pending, _) {
+        final busy = isRefreshing || pending.contains(a.id);
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: busy ? null : () => _refreshCardBalance(a),
+          child: Tooltip(
+            message: 'Refresh balance',
+            child: Container(
+              width: 30.w,
+              height: 30.w,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(9.r),
+                border: Border.all(color: accent.withValues(alpha: 0.42)),
+              ),
+              child: busy
+                  ? SizedBox(
+                      width: 13.w,
+                      height: 13.w,
+                      child: const CircularProgressIndicator(
+                          strokeWidth: 2, color: accent),
+                    )
+                  : Icon(Icons.sync_rounded, size: 15.sp, color: accent),
+            ),
           ),
-          child: isRefreshing
-              ? SizedBox(
-                  width: 13.w,
-                  height: 13.w,
-                  child: const CircularProgressIndicator(
-                      strokeWidth: 2, color: accent),
-                )
-              : Icon(Icons.sync_rounded, size: 15.sp, color: accent),
-        ),
-      ),
+        );
+      },
     );
   }
 

@@ -2091,30 +2091,38 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// consumes its own tap so it never fires the card's deposit action.
   Widget _refreshBalanceButton(LinkedBankAccount account, bool isRefreshing) {
     const blue = Color(0xFF3B82F6);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: isRefreshing ? null : () => _refreshSourceBalance(account),
-      child: Tooltip(
-        message: 'Refresh balance',
-        child: Container(
-          width: 34.w,
-          height: 34.w,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: blue.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(10.r),
-            border: Border.all(color: blue.withValues(alpha: 0.42)),
+    // The spinner spans the WHOLE tap→quote→PIN-sheet→read: the cubit's
+    // BalanceRefreshing (live read) OR the mixin's pending set (quote + sheet).
+    return ValueListenableBuilder<Set<String>>(
+      valueListenable: linkedRefreshPending,
+      builder: (context, pending, _) {
+        final busy = isRefreshing || pending.contains(account.id);
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: busy ? null : () => _refreshSourceBalance(account),
+          child: Tooltip(
+            message: 'Refresh balance',
+            child: Container(
+              width: 34.w,
+              height: 34.w,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: blue.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: blue.withValues(alpha: 0.42)),
+              ),
+              child: busy
+                  ? SizedBox(
+                      width: 15.w,
+                      height: 15.w,
+                      child: const CircularProgressIndicator(
+                          strokeWidth: 2, color: blue),
+                    )
+                  : Icon(Icons.sync_rounded, size: 17.sp, color: blue),
+            ),
           ),
-          child: isRefreshing
-              ? SizedBox(
-                  width: 15.w,
-                  height: 15.w,
-                  child: const CircularProgressIndicator(
-                      strokeWidth: 2, color: blue),
-                )
-              : Icon(Icons.sync_rounded, size: 17.sp, color: blue),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -2310,23 +2318,41 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           SizedBox(height: 16.h),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.of(sheetCtx).pop();
-                _refreshSourceBalance(account);
+            // Sheet is popped BEFORE the refresh starts (no host sheet to
+            // preserve); the button only reflects a refresh already in flight
+            // if the sheet is re-opened meanwhile.
+            child: ValueListenableBuilder<Set<String>>(
+              valueListenable: linkedRefreshPending,
+              builder: (context, pending, _) {
+                final busy = pending.contains(account.id);
+                return ElevatedButton.icon(
+                  onPressed: busy
+                      ? null
+                      : () {
+                          Navigator.of(sheetCtx).pop();
+                          _refreshSourceBalance(account);
+                        },
+                  icon: busy
+                      ? SizedBox(
+                          width: 18.sp,
+                          height: 18.sp,
+                          child: const CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : Icon(Icons.sync_rounded, size: 18.sp),
+                  label: Text('Refresh balance',
+                      style: TextStyle(
+                          fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: brand,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 13.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
+                    elevation: 0,
+                  ),
+                );
               },
-              icon: Icon(Icons.sync_rounded, size: 18.sp),
-              label: Text('Refresh balance',
-                  style: TextStyle(
-                      fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: brand,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 13.h),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r)),
-                elevation: 0,
-              ),
             ),
           ),
         ]),
