@@ -42,6 +42,7 @@ import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bil
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
+import 'package:lazervault/core/services/account_summaries_store.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
@@ -579,6 +580,20 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // Wipe in-memory P2P caches (conversation snapshots + saved contacts) so
       // the NEXT user never briefly sees the previous user's chats/contacts.
       clearAllP2PCaches();
+      // The process-wide account rows. Two reasons, at this chokepoint:
+      //
+      //  * They are what the money sheets resolve a FUNDING SOURCE from, and
+      //    they outlive every cubit on purpose. Only the user-switch purge
+      //    cleared them, so a plain logout left them in place.
+      //  * `SessionUserId.current()` — the stamp ~25 first-page stores are
+      //    keyed on — falls back to this store's user id when no profile is
+      //    bound. After a teardown that is the DEPARTING user, so the oracle
+      //    kept naming them; emptying it here makes the fallback return ''
+      //    instead, which every store reads as "no cached paint".
+      //
+      // A same-user re-login loses nothing: the carousel's instant first paint
+      // comes from the per-user SharedPreferences copy, not from here.
+      AccountSummariesStore.clear();
       // Drop the shared P2P realtime socket. It's a lazy singleton connected
       // with THIS user's token; its `connect()` early-returns while connected,
       // so without disconnecting here the next user would keep receiving the

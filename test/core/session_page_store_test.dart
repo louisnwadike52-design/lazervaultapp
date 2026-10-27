@@ -113,6 +113,97 @@ void main() {
     expect(b.peek(userId: 'u1'), isNull);
   });
 
+  test('nothing remembered reads as STALE, so a caller still refreshes', () {
+    // The bills hub gates its app-resume refresh on isStale (a flapping
+    // foreground would otherwise fetch the catalogue once per flap). That is
+    // only safe because "no page at all" is stale: a cold hub must still ask.
+    final s = SessionPageStore<_Row>('t12');
+    expect(s.isStale(userId: 'u1'), isTrue);
+    expect(s.isStale(userId: ''), isTrue);
+    s.put([const _Row('a', 'A')], userId: 'u1');
+    expect(s.isStale(userId: 'u1'), isFalse);
+    // Another user's page is not THIS user's page, so still "go and refresh".
+    expect(s.isStale(userId: 'u2'), isTrue);
+  });
+
+  test('dispose unregisters, so clearAll stops walking a dead store', () {
+    // Stores created PER KEY (one per chat peer) are evicted by their owner.
+    // clear() alone leaves the static registration behind for every key ever
+    // used, and clearAll then walks — and issues a disk delete for — each one.
+    final kept = SessionPageStore<_Row>('t13-kept');
+    final evicted = SessionPageStore<_Row>('t13-evicted');
+    expect(SessionPageStore.registeredCountForTest, 2);
+
+    evicted.put([const _Row('a', 'A')], userId: 'u1');
+    evicted.dispose();
+    expect(evicted.peek(userId: 'u1'), isNull);
+    expect(SessionPageStore.registeredCountForTest, 1);
+
+    // The surviving store is untouched and still cleared by clearAll.
+    kept.put([const _Row('b', 'B')], userId: 'u1');
+    SessionPageStore.clearAll();
+    expect(kept.peek(userId: 'u1'), isNull);
+  });
+
+  group('clear is the last word on disk', () {
+    // These two ran as separate getInstance().then(...) chains and raced: a
+    // put immediately followed by a clear left the FILE behind. On a user
+    // switch that is the difference between the previous person's rows being
+    // DELETED from the device — the purge's whole contract — and their being
+    // kept, merely never painted because the stamp refuses them.
+    Future<String?> diskOf(String name) async =>
+        (await SharedPreferences.getInstance())
+            .getString('session_page_store.$name');
+
+    test('a put immediately followed by a clear leaves nothing', () async {
+      final s = SessionPageStore<_Row>('t14',
+          toJson: (r) => r.toJson(), fromJson: _Row.fromJson);
+      s.put([const _Row('a', 'A')], userId: 'u1');
+      s.clear(); // same microtask turn as the put
+      await s.diskSettled();
+      expect(await diskOf('t14'), isNull);
+    });
+
+    test('a settled put, then a clear, also leaves nothing', () async {
+      final s = SessionPageStore<_Row>('t15',
+          toJson: (r) => r.toJson(), fromJson: _Row.fromJson);
+      s.put([const _Row('a', 'A')], userId: 'u1');
+      await s.diskSettled();
+      expect(await diskOf('t15'), isNotNull);
+      s.clear();
+      await s.diskSettled();
+      expect(await diskOf('t15'), isNull);
+    });
+
+    test('clearAll leaves nothing for any store, however recent the put',
+        () async {
+      final a = SessionPageStore<_Row>('t16a',
+          toJson: (r) => r.toJson(), fromJson: _Row.fromJson);
+      final b = SessionPageStore<_Row>('t16b',
+          toJson: (r) => r.toJson(), fromJson: _Row.fromJson);
+      a.put([const _Row('a', 'A')], userId: 'u1');
+      await a.diskSettled();
+      b.put([const _Row('b', 'B')], userId: 'u1'); // still in flight
+      SessionPageStore.clearAll();
+      await a.diskSettled();
+      await b.diskSettled();
+      expect(await diskOf('t16a'), isNull);
+      expect(await diskOf('t16b'), isNull);
+    });
+
+    test('a put AFTER a clear is a new page and is kept', () async {
+      // The generation guard must drop only writes the clear superseded — a
+      // genuinely later page is this user's current one.
+      final s = SessionPageStore<_Row>('t17',
+          toJson: (r) => r.toJson(), fromJson: _Row.fromJson);
+      s.put([const _Row('a', 'A')], userId: 'u1');
+      s.clear();
+      s.put([const _Row('b', 'B')], userId: 'u1');
+      await s.diskSettled();
+      expect(await diskOf('t17'), contains('"id":"b"'));
+    });
+  });
+
   test('isStale flips after staleAfter', () async {
     final s = SessionPageStore<_Row>('t11',
         staleAfter: const Duration(milliseconds: 10));

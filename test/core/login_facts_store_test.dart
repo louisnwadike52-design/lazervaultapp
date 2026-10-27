@@ -89,6 +89,36 @@ void main() {
     expect(await LoginFactsStore.read('u1'), isNull);
   });
 
+  test('a record from another schema version is refused', () async {
+    // Every bool in a record defaults to FALSE on an absent key, and false is
+    // the gating answer ("no passcode, no PIN, not verified"). So a record
+    // written by a different version of this code cannot be read field by
+    // field — it must be refused, and the unlock asks the backend instead.
+    final other = LoginFacts.fromUser(_user()).toJson()
+      ..['v'] = LoginFacts.version + 1;
+    FlutterSecureStorage.setMockInitialValues({
+      LoginFactsStore.storageKey: jsonEncode(other),
+    });
+    expect(await LoginFactsStore.read('u1'), isNull);
+
+    // Including a record with no version at all (written before the guard).
+    final unversioned = LoginFacts.fromUser(_user()).toJson()..remove('v');
+    FlutterSecureStorage.setMockInitialValues({
+      LoginFactsStore.storageKey: jsonEncode(unversioned),
+    });
+    expect(await LoginFactsStore.read('u1'), isNull);
+  });
+
+  test('authType round-trips, and applyTo keeps a social stamp', () async {
+    // The passcode gate turns on this field: a provider-linked account that
+    // has declined a passcode must not be sent to a no-skip passcode screen
+    // on the cached unlock path.
+    await LoginFactsStore.record(_user().copyWith(authType: 'SOCIAL'));
+    final f = await LoginFactsStore.read('u1');
+    expect(f!.authType, 'SOCIAL');
+    expect(f.applyTo(User.empty).isSocialAccount, isTrue);
+  });
+
   test('garbage in storage reads as nothing, not a crash', () async {
     FlutterSecureStorage.setMockInitialValues({
       LoginFactsStore.storageKey: '{not json',

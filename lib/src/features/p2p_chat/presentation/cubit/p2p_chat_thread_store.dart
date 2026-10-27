@@ -34,7 +34,12 @@ class P2PChatThreadStore {
       return existing;
     }
     while (_stores.length >= _maxPeers) {
-      _stores.remove(_stores.keys.first)?.clear();
+      // `dispose`, not `clear`: a store is created here PER PEER, and
+      // SessionPageStore registers every instance in a static list. Clearing
+      // alone would leave a dead registration behind for every peer the user
+      // has ever opened a chat with, which SessionPageStore.clearAll then
+      // walks on each user switch.
+      _stores.remove(_stores.keys.first)?.dispose();
     }
     return _stores[peerId] = SessionPageStore<Map<String, dynamic>>(
       'p2p_chat_thread.$peerId',
@@ -103,7 +108,7 @@ class P2PChatThreadStore {
   /// Forget every remembered thread (memory and disk).
   static void clear() {
     for (final s in _stores.values) {
-      s.clear();
+      s.dispose(); // see _storeFor: these are per-peer registrations
     }
     _stores.clear();
   }

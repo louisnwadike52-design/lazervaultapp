@@ -83,6 +83,22 @@ class BillServicesCatalogue {
     return '';
   }
 
+  /// Whether an APP RESUME should re-ask for the catalogue.
+  ///
+  /// `AppLifecycleState.resumed` is not once per visit to the app: a
+  /// permission dialog, a share sheet, the app switcher and the notification
+  /// shade each produce an inactive→resumed pair, and Android can fire several
+  /// in a row — so refreshing on every one means a fetch per flap, on a screen
+  /// the user may not even be looking at (the hub keeps its observer while it
+  /// sits under a pushed route). The store's own staleness window is the
+  /// floor; with nothing remembered [SessionPageStore.isStale] is true, so a
+  /// cold hub still refreshes immediately.
+  static bool shouldRefreshOnResume({
+    required String userId,
+    required String scope,
+  }) =>
+      store.isStale(userId: userId, scope: scope);
+
   /// The country the request is made for — a catalogue toggled per country
   /// must not be painted for another.
   static String currentScope() {

@@ -82,6 +82,48 @@ void main() {
     expect(map['cable_tv'], isFalse);
   });
 
+  group('an app resume refreshes, but not once per foreground flap', () {
+    // The hub refreshes on AppLifecycleState.resumed so an admin toggle lands
+    // without a relaunch. But `resumed` fires on every return from a
+    // permission dialog, share sheet or app switcher — several times in a row
+    // on Android — and the hub keeps its observer while it sits under a
+    // pushed route, so an ungated callback is a catalogue fetch per flap.
+    // These read the REAL static store, which is what the screen consults.
+    setUp(BillServicesCatalogue.store.clear);
+
+    test('a cold hub, with nothing remembered, still refreshes at once', () {
+      expect(
+        BillServicesCatalogue.shouldRefreshOnResume(userId: 'u1', scope: 'NG'),
+        isTrue,
+      );
+    });
+
+    test('a page just fetched is not re-fetched on the next resume', () {
+      BillServicesCatalogue.store.put(
+          const [BillServiceEntry(type: 'airtime', enabled: true)],
+          userId: 'u1', scope: 'NG');
+      expect(
+        BillServicesCatalogue.shouldRefreshOnResume(userId: 'u1', scope: 'NG'),
+        isFalse,
+        reason: 'ten foregrounds in a minute must not be ten fetches',
+      );
+    });
+
+    test('a page for another user or country is not THIS page', () {
+      BillServicesCatalogue.store.put(
+          const [BillServiceEntry(type: 'airtime', enabled: true)],
+          userId: 'u1', scope: 'NG');
+      expect(
+        BillServicesCatalogue.shouldRefreshOnResume(userId: 'u2', scope: 'NG'),
+        isTrue,
+      );
+      expect(
+        BillServicesCatalogue.shouldRefreshOnResume(userId: 'u1', scope: 'GH'),
+        isTrue,
+      );
+    });
+  });
+
   test('another user or another country never sees this catalogue', () {
     final store = freshStore();
     store.put(

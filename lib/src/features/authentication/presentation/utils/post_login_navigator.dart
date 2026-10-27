@@ -48,7 +48,22 @@ void goAfterLogin(
   /// `hasPasscode` is still false; without this the resolver would send the
   /// person straight back to the screen they just finished.
   bool passcodeJustSet = false,
+
+  /// True when this call follows the passcode-setup screen being SKIPPED from
+  /// inside the login flow — which only a provider-linked account can do (see
+  /// [resolvePostLoginRoute]). Unlike [passcodeJustSet] it asserts nothing
+  /// about the account: no passcode was created, nothing is recorded, and the
+  /// next login offers it again. It only stops this one routing pass from
+  /// sending the person back to the screen they just declined.
+  bool passcodeDeclined = false,
+
+  /// Override for [User.isSocialAccount] when the caller knows better than
+  /// the response does — a backend that does not yet stamp `auth_type` leaves
+  /// the user looking like any other passwordless account, and the sign-in
+  /// screen has the stored `login_method` to hand.
+  bool? isSocial,
 }) {
+  final social = isSocial ?? user.isSocialAccount;
   // A NEW SESSION STARTS HERE, so the once-per-login verification prompt is
   // armed again. Placed in the shared navigator rather than at each login
   // screen for the same reason everything else is: six places to remember is
@@ -104,6 +119,10 @@ void goAfterLogin(
     phoneVerified: user.verified,
     emailVerificationRequired: FeatureFlags.isEmailVerificationRequired,
     isEmailVerified: user.isEmailVerified,
+    // A Google/Apple account is OFFERED a passcode rather than required to
+    // set one — the provider link is already its credential.
+    isSocial: social,
+    passcodeDeclined: passcodeDeclined,
   );
   Get.offAllNamed(route.name, arguments: route.args);
 }

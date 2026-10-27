@@ -41,6 +41,18 @@ class User extends Equatable {
   /// platform default on subsequent logins when set.
   final String? preferredLoginMethod;
 
+  /// HOW THIS ACCOUNT WAS CREATED, in the backend's own words (`auth_type` on
+  /// the user proto): `EMAIL_PASSWORD` | `PHONE_PASSCODE` | `SOCIAL` | null
+  /// when the response predates the field.
+  ///
+  /// It matters to exactly one question, and that question is a gate: whether
+  /// the account HAS a credential of its own. A `SOCIAL` account has neither a
+  /// password nor a passcode — the Google/Apple link is the credential — so a
+  /// passcode is an offer to it, where for everyone else it is the thing the
+  /// lock screen and every quick login assume. Read it through
+  /// [isSocialAccount], never by string compare at a call site.
+  final String? authType;
+
   /// The CBN KYC tier this holder has earned: 1 basic, 2 BVN-verified,
   /// 3 BVN+NIN+liveness. Mirrors `users.kyc_tier`, the authoritative value
   /// (see `microservices/shared/kyctiers`). 0 means the field was absent.
@@ -96,6 +108,7 @@ class User extends Equatable {
     this.hasTransactionPin = false,
     this.hasPassword = false,
     this.preferredLoginMethod,
+    this.authType,
     this.twoFactorEnabled = false,
     this.twoFactorMethod,
     this.kycTier = 0,
@@ -128,6 +141,7 @@ class User extends Equatable {
     hasTransactionPin: false,
     hasPassword: false,
     preferredLoginMethod: null,
+    authType: null,
     twoFactorEnabled: false,
     twoFactorMethod: null,
     kycTier: 0,
@@ -141,6 +155,21 @@ class User extends Equatable {
 
   /// Convenience getter to determine whether the current user is not empty.
   bool get isNotEmpty => this != User.empty;
+
+  /// A PROVIDER-LINKED account (Google / Apple): the link is the credential,
+  /// so the account has no password and — until it chooses one — no passcode.
+  ///
+  /// Two sources, because they arrive from different places and either is
+  /// enough: [authType] is the backend's own stamp (`auth_type == "SOCIAL"`),
+  /// and [preferredLoginMethod] is the older mirror some responses still carry
+  /// alone. Case-insensitive on both; a response that predates the field
+  /// answers false, which is why `goAfterLogin` also accepts an override from
+  /// a caller that read `login_method` from storage.
+  bool get isSocialAccount {
+    const social = 'social';
+    if ((authType ?? '').toLowerCase().trim() == social) return true;
+    return (preferredLoginMethod ?? '').toLowerCase().trim() == social;
+  }
 
   /// Build a copy with one or more fields replaced. Pass [Object()] in
   /// the [profilePicture] slot to KEEP the existing value; pass `null`
@@ -168,6 +197,7 @@ class User extends Equatable {
     bool? hasTransactionPin,
     bool? hasPassword,
     String? preferredLoginMethod,
+    String? authType,
     bool? twoFactorEnabled,
     String? twoFactorMethod,
     int? kycTier,
@@ -200,6 +230,7 @@ class User extends Equatable {
       hasTransactionPin: hasTransactionPin ?? this.hasTransactionPin,
       hasPassword: hasPassword ?? this.hasPassword,
       preferredLoginMethod: preferredLoginMethod ?? this.preferredLoginMethod,
+      authType: authType ?? this.authType,
       twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
       twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
       kycTier: kycTier ?? this.kycTier,
@@ -233,6 +264,7 @@ class User extends Equatable {
         hasTransactionPin,
         hasPassword,
         preferredLoginMethod,
+        authType,
         twoFactorEnabled,
         twoFactorMethod,
         kycTier,

@@ -12,6 +12,14 @@ import 'package:flutter_test/flutter_test.dart';
 /// connected "register a singleton" to "clear it on a switch", so the gap was
 /// invisible — which is what this test exists to change. It reads the two
 /// files and fails when they disagree.
+String stripComments(String src) {
+  final noBlock = src.replaceAll(RegExp(r'/\*.*?\*/', dotAll: true), '');
+  return noBlock
+      .split('\n')
+      .where((l) => !l.trimLeft().startsWith('//'))
+      .join('\n');
+}
+
 void main() {
   test('every lazy-singleton cubit is purged on a user switch', () {
     final container =
@@ -59,6 +67,40 @@ void main() {
     );
   });
 
+  test('the budget purge drops the emitted LIST, not just the lookup caches',
+      () {
+    // `clearCategoryCache()` empties the service-category maps and leaves the
+    // emitted `BudgetsLoaded` alone. That was harmless while `loadBudgets`
+    // opened with an unconditional `BudgetLoading`; it now PAINTS what the
+    // cubit holds, so a retained state here is the previous user's budget
+    // amounts on the next person's screen until their fetch lands.
+    final purge =
+        File('lib/core/services/user_switch_purge.dart').readAsStringSync();
+    final start = purge.indexOf('isRegistered<BudgetCubit>()');
+    expect(start, greaterThan(-1), reason: 'the BudgetCubit purge moved');
+    final block = purge.substring(start, start + 900);
+    expect(block, contains('.reset()'),
+        reason: 'a user switch must reset BudgetCubit, not only clear its '
+            'category cache — the Budgets list paints the retained state');
+  });
+
+  test('a teardown empties the process-wide account rows', () {
+    // AccountSummariesStore is what the money sheets resolve a FUNDING SOURCE
+    // from, and it is ALSO the fallback `SessionUserId.current()` reads — the
+    // stamp every first-page store is keyed on. Left populated after a
+    // teardown it keeps naming the DEPARTING user, so the stamp stops being a
+    // defence. `_clearSession` is the chokepoint every teardown goes through.
+    final auth =
+        File('lib/src/features/authentication/cubit/authentication_cubit.dart')
+            .readAsStringSync();
+    final start = auth.indexOf('Future<void> _clearSession(');
+    expect(start, greaterThan(-1), reason: '_clearSession moved');
+    final end = auth.indexOf('\n  // --- Main Auth Methods ---', start);
+    final body = auth.substring(start, end > start ? end : auth.length);
+    expect(stripComments(body), contains('AccountSummariesStore.clear()'),
+        reason: 'every session teardown must empty the account rows');
+  });
+
   test('the purge is actually invoked by both switch paths', () {
     final purge =
         File('lib/core/services/user_switch_purge.dart').readAsStringSync();
@@ -73,5 +115,6 @@ void main() {
 }
 
 extension on String {
-  Iterable<Match> allMatches(String input) => RegExp(RegExp.escape(this)).allMatches(input);
+  Iterable<Match> allMatches(String input) =>
+      RegExp(RegExp.escape(this)).allMatches(input);
 }

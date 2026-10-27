@@ -65,7 +65,18 @@ class _BillsHubScreenState extends State<BillsHubScreen>
   /// quietly whenever it comes back to the foreground.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _refreshInBackground();
+    if (state != AppLifecycleState.resumed) return;
+    // `_refreshing` stops two fetches running at once, but not twenty running
+    // in sequence off a flapping foreground. See
+    // BillServicesCatalogue.shouldRefreshOnResume for why that happens and
+    // why the store's staleness window is the right floor.
+    if (!BillServicesCatalogue.shouldRefreshOnResume(
+      userId: _userId,
+      scope: _scope,
+    )) {
+      return;
+    }
+    _refreshInBackground();
   }
 
   Future<void> _paintThenRefresh() async {

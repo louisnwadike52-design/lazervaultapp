@@ -11,6 +11,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/kyc_completion.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/signup_resume.dart';
 
 const _required = KycLoginGate(state: KycState.unverified, isRequired: true);
@@ -460,6 +461,136 @@ void main() {
         kyc: KycLoginGate.none,
       );
       expect(r.name, AppRoutes.passcodeSetup);
+    });
+  });
+
+  // A GOOGLE/APPLE ACCOUNT HAS NO CREDENTIAL OF ITS OWN.
+  //
+  // `fromLoginFlow` hides "Skip for now" on the passcode screen, which is
+  // right for email and phone accounts — the passcode IS their login
+  // credential. A social account has no password and no passcode because the
+  // provider link is the credential, so a passcode is an OFFER; a no-skip
+  // offer is a dead end, and every social login landed on it.
+  group('resolvePostLoginRoute — the passcode is an offer to a social account',
+      () {
+    ({String name, Map<String, dynamic>? args}) run({
+      required bool hasPasscode,
+      required bool isSocial,
+      bool passcodeDeclined = false,
+      bool hasTransactionPin = true,
+    }) =>
+        resolvePostLoginRoute(
+          step: null,
+          status: 'complete',
+          email: 'a@b.com',
+          hasPasscode: hasPasscode,
+          hasTransactionPin: hasTransactionPin,
+          kyc: KycLoginGate.none,
+          isSocial: isSocial,
+          passcodeDeclined: passcodeDeclined,
+        );
+
+    test('social + no passcode → passcode setup WITH the skip flag', () {
+      final r = run(hasPasscode: false, isSocial: true);
+      expect(r.name, AppRoutes.passcodeSetup);
+      expect(r.args?['fromLoginFlow'], true);
+      expect(r.args?['allowSkip'], true);
+    });
+
+    test('NON-social + no passcode → no skip flag at all', () {
+      final r = run(hasPasscode: false, isSocial: false);
+      expect(r.name, AppRoutes.passcodeSetup);
+      expect(r.args?['fromLoginFlow'], true);
+      expect(r.args!.containsKey('allowSkip'), isFalse,
+          reason: 'the key must be ABSENT, so the screen\'s existing no-skip '
+              'rule for the login flow is untouched for everyone else');
+    });
+
+    test('social + a passcode already set → entirely unchanged', () {
+      expect(run(hasPasscode: true, isSocial: true).name, AppRoutes.dashboard);
+      expect(
+        run(hasPasscode: true, isSocial: true, hasTransactionPin: false).name,
+        AppRoutes.transactionPinSetup,
+      );
+    });
+
+    test('declining lands on the PIN gate, then the dashboard', () {
+      // A PIN is required to move money however you signed in, so the gate
+      // after the declined passcode is unchanged.
+      final pin = run(
+          hasPasscode: false,
+          isSocial: true,
+          passcodeDeclined: true,
+          hasTransactionPin: false);
+      expect(pin.name, AppRoutes.transactionPinSetup);
+      expect(pin.args?['fromLoginFlow'], true);
+
+      // And with a PIN already set, straight through — never back to the
+      // screen they just declined.
+      final done =
+          run(hasPasscode: false, isSocial: true, passcodeDeclined: true);
+      expect(done.name, AppRoutes.dashboard);
+    });
+
+    test('declining is ignored for a NON-social account', () {
+      // No other account is shown a way to decline; a future caller passing
+      // the flag for one must not get past the credential gate.
+      final r =
+          run(hasPasscode: false, isSocial: false, passcodeDeclined: true);
+      expect(r.name, AppRoutes.passcodeSetup);
+    });
+
+    test('the chained next-route carries the social verdict', () {
+      // The phone screen's hand-off is this resolver re-run. Losing isSocial
+      // there would strand a social holder one screen later instead.
+      final r = resolvePostLoginRoute(
+        step: null,
+        status: 'complete',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: false,
+        hasTransactionPin: true,
+        phoneVerified: false,
+        kyc: KycLoginGate.none,
+        isSocial: true,
+        passcodeDeclined: true,
+      );
+      expect(r.name, AppRoutes.phoneVerification);
+      expect(r.args?['nextRoute'], AppRoutes.dashboard,
+          reason: 'the passcode must stay declined through the hand-off');
+    });
+  });
+
+  group('User.isSocialAccount', () {
+    User user({String? authType, String? preferred}) => User(
+          id: 'u1',
+          firstName: 'Ada',
+          lastName: 'Obi',
+          email: 'a@b.com',
+          verified: true,
+          isEmailVerified: true,
+          createdAt: DateTime(2026),
+          updatedAt: DateTime(2026),
+          authType: authType,
+          preferredLoginMethod: preferred,
+        );
+
+    test('the backend auth_type stamp decides', () {
+      expect(user(authType: 'SOCIAL').isSocialAccount, isTrue);
+      expect(user(authType: 'social').isSocialAccount, isTrue);
+      expect(user(authType: 'EMAIL_PASSWORD').isSocialAccount, isFalse);
+      expect(user(authType: 'PHONE_PASSCODE').isSocialAccount, isFalse);
+    });
+
+    test('the older preferredLoginMethod mirror also answers', () {
+      expect(user(preferred: 'social').isSocialAccount, isTrue);
+      expect(user(preferred: 'email_password').isSocialAccount, isFalse);
+    });
+
+    test('a response that carries neither answers false', () {
+      // Which is why goAfterLogin accepts an override from a caller that read
+      // `login_method` out of storage.
+      expect(user().isSocialAccount, isFalse);
     });
   });
 }

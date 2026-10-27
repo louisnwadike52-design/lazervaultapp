@@ -26,6 +26,16 @@ class BudgetCubit extends Cubit<BudgetState> {
   /// In-flight requests to deduplicate concurrent loads for the same service
   final Map<String, Future<List<ServiceCategory>>> _pendingLoads = {};
 
+  /// Who the budgets in a retained `BudgetsLoaded` belong to.
+  ///
+  /// THIS CUBIT IS A LAZY SINGLETON, so its state outlives the session that
+  /// filled it, and [loadBudgets] now PAINTS that retained state instead of a
+  /// loader. Without this the next person to sign in on the device would be
+  /// looking at the previous user's budget amounts until the fetch landed —
+  /// the user-switch purge resets the cubit, and this is the half that holds
+  /// when a switch slips past it.
+  String? _loadedUserId;
+
   BudgetCubit({
     required BudgetRepository budgetRepository,
     required BudgetAIService budgetAIService,
@@ -47,6 +57,15 @@ class BudgetCubit extends Cubit<BudgetState> {
   }) async {
     final unfilteredFirstPage = page == 1 && status == null && category == null;
     final uid = sessionPageUserId();
+    // A retained list belonging to SOMEONE ELSE is never painted — it is
+    // dropped, and this load shows the loader as it did before the cubit
+    // learned to paint. An UNKNOWN id ('' — the locator not up yet) is not a
+    // mismatch: it means "don't know", and acting on it would throw away a
+    // good list for the user who is still signed in.
+    if (uid.isNotEmpty && _loadedUserId != null && _loadedUserId != uid) {
+      _loadedUserId = null;
+      if (state is BudgetsLoaded) emit(BudgetInitial());
+    }
     var painted = state is BudgetsLoaded;
     if (!painted && unfilteredFirstPage) {
       final cached = await BudgetPageStore.hydrate(uid);
@@ -79,6 +98,7 @@ class BudgetCubit extends Cubit<BudgetState> {
             totalBudgetAmount: response.totalBudgetAmount,
             totalSpentAmount: response.totalSpentAmount);
       }
+      if (uid.isNotEmpty) _loadedUserId = uid;
       emit(BudgetsLoaded(
         budgets: response.budgets,
         totalBudgetAmount: response.totalBudgetAmount,
@@ -751,6 +771,7 @@ class BudgetCubit extends Cubit<BudgetState> {
 
   /// Reset to initial state
   void reset() {
+    _loadedUserId = null;
     emit(BudgetInitial());
   }
 }

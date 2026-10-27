@@ -159,10 +159,24 @@ class SessionPageStore<T> {
     _storedAt = null;
     revision.value++;
     if (toJson != null) {
-      SharedPreferences.getInstance()
-          .then((p) => p.remove(_diskKey))
-          .catchError((_) => false);
+      // A write this clear supersedes must not land after it — see [_onDisk].
+      _diskGeneration++;
+      _onDisk((p) => p.remove(_diskKey));
     }
+  }
+
+  /// [clear], plus unregister, for a store created PER KEY that is being
+  /// dropped for good.
+  ///
+  /// Most stores are `static final` — one per list, for the life of the
+  /// process — and must never unregister. But a few are created per key (one
+  /// per chat peer, say) and evicted by their owner when a cap is reached;
+  /// dropping such a store from its owner's map alone leaves a dead entry in
+  /// the static registry for every key ever used, which [clearAll] then walks
+  /// (and issues a disk delete for) on every user switch.
+  void dispose() {
+    clear();
+    _registry.remove(this);
   }
 
   /// Forget every store. Called on a user switch so the next person's first
@@ -176,6 +190,38 @@ class SessionPageStore<T> {
 
   String get _diskKey => 'session_page_store.$name';
 
+  /// Bumped by every [clear]. A write issued before the bump is ABANDONED
+  /// rather than allowed to land after the delete — see [_onDisk].
+  int _diskGeneration = 0;
+
+  /// This store's disk operations, run one at a time in the order they were
+  /// issued.
+  ///
+  /// `put` and `clear` are both synchronous to the caller and both finish on
+  /// disk later, and before this they raced: each did its own
+  /// `getInstance().then(...)`, so a `put` immediately followed by a `clear`
+  /// reliably left the FILE in place (measured, not theorised — the removal
+  /// resolved against the cache before the write resolved against the store).
+  /// For a user switch that is the difference between "the previous person's
+  /// recipients and chat threads are deleted from this device" — which is the
+  /// whole contract of the purge — and "they are still there, merely never
+  /// painted because the row stamp refuses them".
+  ///
+  /// Serialising, plus the generation check, makes `clear` the last word
+  /// whichever way round the two calls happen to arrive.
+  Future<void> _diskQueue = Future<void>.value();
+
+  void _onDisk(Future<void> Function(SharedPreferences prefs) op) {
+    _diskQueue = _diskQueue.then((_) async {
+      try {
+        await op(await SharedPreferences.getInstance());
+      } catch (_) {
+        // A mirror that cannot be written (or deleted) costs one spinner, or
+        // one stale file the user stamp already refuses. Never a crash.
+      }
+    });
+  }
+
   void _persist() {
     final encode = toJson;
     if (encode == null) return;
@@ -185,12 +231,24 @@ class SessionPageStore<T> {
       'storedAt': _storedAt!.toIso8601String(),
       'items': _items!.map(encode).toList(),
     });
-    SharedPreferences.getInstance()
-        .then((p) => p.setString(_diskKey, payload))
-        .catchError((_) => false);
+    final generation = _diskGeneration;
+    _onDisk((p) async {
+      // Cleared since this write was issued: the page it describes is gone,
+      // and writing it now would resurrect the file the clear deleted.
+      if (generation != _diskGeneration) return;
+      await p.setString(_diskKey, payload);
+    });
   }
+
+  /// Test hook: wait for this store's pending disk work to settle.
+  @visibleForTesting
+  Future<void> diskSettled() => _diskQueue;
 
   /// Test hook: forget registrations made by earlier tests.
   @visibleForTesting
   static void resetRegistryForTest() => _registry.clear();
+
+  /// Test hook: how many stores [clearAll] would currently walk.
+  @visibleForTesting
+  static int get registeredCountForTest => _registry.length;
 }

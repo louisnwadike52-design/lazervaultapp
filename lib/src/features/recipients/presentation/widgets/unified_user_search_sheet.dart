@@ -150,6 +150,18 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
   // result landing after a swipe-away can never pop a sheet that is gone.
   final SelectionGuard _pickGuard = SelectionGuard();
 
+  // True once a pick has been handed to [UnifiedUserSearchSheet.onSelected].
+  //
+  // `onSelected` POPS this sheet's route, so handing over twice pops twice,
+  // and the second pop takes the caller's own screen with it. On the path with
+  // no `prepareSelection` — 22 of the 24 callers — the busy guard above never
+  // arms, so nothing in THIS file stopped a second hand-off; what stops it
+  // today is Flutter's own `IgnorePointer` over a route in its reverse
+  // transition, which is a guarantee about the framework's animation state
+  // rather than about this sheet. This latch makes "hands over exactly once"
+  // a property of the sheet, on both paths and whatever the route is doing.
+  bool _picked = false;
+
   static const _brand = Color(0xFF4E03D0);
   static const _green = Color(0xFF10B981);
 
@@ -205,9 +217,10 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
   /// work runs and the pick completes only on success, only if this sheet is
   /// still mounted, and only once; a tap while busy is ignored.
   Future<void> _pick(UnifiedSearchResult r) async {
-    if (_pickGuard.isBusy) return;
+    if (_picked || _pickGuard.isBusy) return;
     final prepare = widget.prepareSelection;
     if (prepare == null) {
+      _picked = true;
       widget.onSelected(r);
       return;
     }
@@ -219,7 +232,19 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
         if (mounted) setState(() {});
       },
     );
-    if (outcome == SelectionOutcome.complete) widget.onSelected(r);
+    if (outcome != SelectionOutcome.complete || _picked || !mounted) return;
+    // A `prepareSelection` that NAVIGATES has put a route on top of this
+    // sheet, and `onSelected` pops whatever is current — so it would close
+    // that route instead of the sheet, and the caller's result would never
+    // arrive. No caller does this (the contract is: do the work, return a
+    // bool, let the sheet close itself); the assert is so the next one finds
+    // out in debug rather than in production.
+    assert(
+        ModalRoute.of(context)?.isCurrent ?? true,
+        'prepareSelection must not navigate — the sheet\'s pop would close '
+        'the route it pushed instead of the sheet');
+    _picked = true;
+    widget.onSelected(r);
   }
 
   @override

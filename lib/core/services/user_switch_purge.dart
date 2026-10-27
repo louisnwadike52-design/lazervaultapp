@@ -234,7 +234,17 @@ void _purgeSessionScopedSingletons() {
   });
   safely(() {
     if (serviceLocator.isRegistered<BudgetCubit>()) {
+      // BOTH halves. `clearCategoryCache` drops the service-category lookup
+      // maps and nothing else — it leaves the emitted `BudgetsLoaded` in
+      // place. That used to be harmless, because `loadBudgets` opened with an
+      // unconditional `BudgetLoading`; it no longer does (it paints what the
+      // cubit holds and refreshes behind it), so a retained state here is the
+      // previous user's budget AMOUNTS on the next person's screen until their
+      // fetch lands. `logout()` already calls `reset()`; a switch that never
+      // passes through logout — inactivity teardown, signing straight in as
+      // someone else — gets here instead.
       serviceLocator<BudgetCubit>().clearCategoryCache();
+      serviceLocator<BudgetCubit>().reset();
     }
   });
   safely(() {

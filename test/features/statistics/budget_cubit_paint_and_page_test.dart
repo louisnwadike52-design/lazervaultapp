@@ -112,6 +112,68 @@ void main() {
     await sub.cancel();
   });
 
+  test('a retained list belonging to ANOTHER user is never painted', () async {
+    // BudgetCubit is a lazy SINGLETON, so its state outlives the session that
+    // filled it, and loadBudgets now paints that state instead of a loader.
+    // Without a user check, the next person to sign in on the device would be
+    // looking at the previous user's budget AMOUNTS until their fetch landed.
+    when(() => repo.getBudgets(
+          page: 1,
+          perPage: 20,
+          status: null,
+          category: null,
+        )).thenAnswer((_) async => _page(['u1-budget'], hasNext: false));
+    await cubit.loadBudgets();
+    expect((cubit.state as BudgetsLoaded).budgets.single.id, 'u1-budget');
+
+    // Someone else signs in — no logout, so nothing reset the cubit.
+    sessionPageUserIdOverride = 'u2';
+    final answer = Completer<pb.GetBudgetsResponse>();
+    when(() => repo.getBudgets(
+          page: 1,
+          perPage: 20,
+          status: null,
+          category: null,
+        )).thenAnswer((_) => answer.future);
+
+    final seen = <BudgetState>[];
+    final sub = cubit.stream.listen(seen.add);
+    final load = cubit.loadBudgets();
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(seen.whereType<BudgetsLoaded>(), isEmpty,
+        reason: "u1's budgets must never be painted for u2");
+    expect(cubit.state, isA<BudgetLoading>());
+
+    answer.complete(_page(['u2-budget'], hasNext: false));
+    await load;
+    expect((cubit.state as BudgetsLoaded).budgets.single.id, 'u2-budget');
+    await sub.cancel();
+  });
+
+  test('an UNKNOWN user id keeps the retained list (it is not a mismatch)',
+      () async {
+    when(() => repo.getBudgets(
+          page: 1,
+          perPage: 20,
+          status: null,
+          category: null,
+        )).thenAnswer((_) async => _page(['a'], hasNext: false));
+    await cubit.loadBudgets();
+
+    // '' means "the locator is not up yet", not "a different person" —
+    // acting on it would throw away a good list for the user still signed in.
+    sessionPageUserIdOverride = '';
+    final seen = <BudgetState>[];
+    final sub = cubit.stream.listen(seen.add);
+    await cubit.loadBudgets();
+    await Future<void>.delayed(Duration.zero);
+    expect(seen.whereType<BudgetLoading>(), isEmpty);
+    expect((cubit.state as BudgetsLoaded).budgets.single.id, 'a');
+    await sub.cancel();
+  });
+
   test('loadMoreBudgets appends the next page and stops at the end', () async {
     when(() => repo.getBudgets(
           page: 1,

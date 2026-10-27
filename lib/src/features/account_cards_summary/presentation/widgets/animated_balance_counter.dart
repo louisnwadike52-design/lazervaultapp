@@ -332,6 +332,14 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
       // immediately on login with no "countdown", and prevents a real→decoy
       // roll from counting through (and leaking) the real balance.
       if (!widget.animate) {
+        // Anything already scheduled was scheduled for the REAL balance. A
+        // roll that was pending when panic engaged must not fire over the
+        // decoy: its callback flips `_isAnimating` on (the direction colour),
+        // pulses, and — on what it still reads as a credit — plays the
+        // money-counting sound, all over camouflage. Cancel first, then snap.
+        _startTimer?.cancel();
+        _endTimer?.cancel();
+        _vibrationTimer?.cancel();
         setState(() {
           _isAnimating = false;
           _previousBalance = widget.balance;

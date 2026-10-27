@@ -121,6 +121,16 @@ Future<Future<UnifiedSearchResult?>> _openSheet(
   return shown;
 }
 
+/// Counts route pops so a sheet that hands its pick over twice is visible.
+class _PopCounter extends NavigatorObserver {
+  int pops = 0;
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    pops++;
+    super.didPop(route, previousRoute);
+  }
+}
+
 void main() {
   late _FakeRepo repo;
 
@@ -136,6 +146,83 @@ void main() {
 
   tearDown(() async {
     await GetIt.I.reset();
+  });
+
+  // THE PLAIN PATH POPS THE SHEET, AND ONLY THE SHEET.
+  //
+  // `onSelected` is `Navigator.pop`, so a second hand-off pops a second route
+  // — the CALLER'S screen — and drops the person out of Send Funds. On the
+  // path with no prepareSelection (22 of the 24 callers) the busy guard never
+  // arms, so this pins the outcome from the outside: rapid taps on two rows
+  // leave the caller's route standing and resolve the first pick, once.
+  //
+  // Flutter also ignores pointers over a route in its reverse transition, so
+  // the second tap below is expected to miss — which is why the sheet's own
+  // latch is defence against a change in that behaviour rather than the thing
+  // this test demonstrates.
+  testWidgets('rapid taps with no prepareSelection pop only the sheet',
+      (tester) async {
+    final observer = _PopCounter();
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    late Future<UnifiedSearchResult?> shown;
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(414, 896),
+        builder: (_, __) => MaterialApp(
+          navigatorObservers: [observer],
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => TextButton(
+                // The sheet is opened from a PUSHED route, which is what a
+                // second pop would close.
+                onPressed: () => Navigator.of(ctx).push(
+                  MaterialPageRoute<void>(
+                    builder: (inner) => Scaffold(
+                      body: Center(
+                        child: TextButton(
+                          onPressed: () {
+                            shown = UnifiedUserSearchSheet.show(
+                              inner,
+                              mode: RecipientPickerMode.lazervaultUsers,
+                            );
+                          },
+                          child: const Text('open'),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                child: const Text('push'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('push'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'ad');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
+    expect(find.text('Ada Obi'), findsOneWidget);
+
+    // Two taps inside one frame, before the exit transition has run. The
+    // second is expected not to land (see above) — warnIfMissed is off for
+    // exactly that reason, not to hide a broken finder.
+    await tester.tap(find.text('Ada Obi'));
+    await tester.tap(find.text('Bola Ade'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    expect(observer.pops, 1, reason: 'the sheet pops once, and only the sheet');
+    expect((await shown)?.userId, 'u-ada',
+        reason: 'the FIRST pick wins; the second tap is ignored');
+    expect(find.text('open'), findsOneWidget,
+        reason: "the caller's own screen is still there");
   });
 
   group('UnifiedUserSearchSheet with prepareSelection', () {

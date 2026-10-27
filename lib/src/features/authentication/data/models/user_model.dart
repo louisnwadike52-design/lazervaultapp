@@ -42,6 +42,7 @@ class UserModel extends User {
     super.hasTransactionPin = false,
     super.hasPassword = false,
     super.preferredLoginMethod,
+    super.authType,
     super.twoFactorEnabled = false,
     super.twoFactorMethod,
     super.kycTier = 0,
@@ -141,6 +142,11 @@ class UserModel extends User {
       preferredLoginMethod: user.preferredLoginMethod.isNotEmpty
           ? user.preferredLoginMethod
           : null,
+      // HOW the account was created. Carried because one gate needs it: a
+      // SOCIAL account has no password and no passcode, so passcode setup is
+      // an offer to it rather than the credential step it is for everyone
+      // else. See User.isSocialAccount and resolvePostLoginRoute.
+      authType: user.authType.isNotEmpty ? user.authType : null,
       dateOfBirth: user.dateOfBirth.isNotEmpty ? user.dateOfBirth : null,
       // Identity verification, straight off the proto. Every auth response
       // carries these (auth-service userToProto sets them for login, 2FA,
@@ -217,6 +223,7 @@ class UserModel extends User {
     bool? hasTransactionPin,
     bool? hasPassword,
     String? preferredLoginMethod,
+    String? authType,
     bool? twoFactorEnabled,
     String? twoFactorMethod,
     int? kycTier,
@@ -249,6 +256,7 @@ class UserModel extends User {
         hasTransactionPin: hasTransactionPin ?? this.hasTransactionPin,
         hasPassword: hasPassword ?? this.hasPassword,
         preferredLoginMethod: preferredLoginMethod ?? this.preferredLoginMethod,
+        authType: authType ?? this.authType,
         twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
         twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
         kycTier: kycTier ?? this.kycTier,
@@ -279,6 +287,7 @@ class UserModel extends User {
             hasTransactionPin: map['hasTransactionPin'] as bool? ?? false,
             hasPassword: map['hasPassword'] as bool? ?? false,
             preferredLoginMethod: map['preferredLoginMethod'] as String?,
+            authType: map['authType'] as String?,
             dateOfBirth: map['dateOfBirth'] as String?);
 
   DataMap toMap() => {
@@ -300,6 +309,7 @@ class UserModel extends User {
         "hasTransactionPin": hasTransactionPin,
         "hasPassword": hasPassword,
         "preferredLoginMethod": preferredLoginMethod,
+        "authType": authType,
         "dateOfBirth": dateOfBirth,
       };
 

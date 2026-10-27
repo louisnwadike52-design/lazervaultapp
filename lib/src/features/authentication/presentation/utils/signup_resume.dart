@@ -33,7 +33,10 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
 ///   1. forgot-passcode reset — the user is here to set a passcode, nothing else
 ///   2. email, when it is unverified and either required or the signup is
 ///      parked on it
-///   3. passcode — the credential everything else assumes. NO skip on this path
+///   3. passcode — the credential everything else assumes. NO skip on this
+///      path, with one exception: a provider-linked (Google/Apple) account has
+///      no credential of its own to assume, so it is OFFERED a passcode and
+///      may decline (`isSocial` → `allowSkip`)
 ///   4. phone, when the account has a number it has not verified. Shown whether
 ///      or not the admin requires it; the admin setting decides only whether
 ///      the screen offers "Skip for now"
@@ -82,6 +85,17 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
   /// case.
   bool emailVerificationRequired = false,
   bool isEmailVerified = true,
+
+  /// A PROVIDER-LINKED (Google / Apple) account. The only thing this changes
+  /// is the passcode step: see the gate at 3.
+  bool isSocial = false,
+
+  /// A social account that has just DECLINED the passcode offer, in this
+  /// session. Suppresses the passcode gate for this routing pass only —
+  /// nothing is written, so the next login offers it again. Ignored unless
+  /// [isSocial]: no other account is shown a way to decline, and a future
+  /// caller passing this for one must not get past the credential gate.
+  bool passcodeDeclined = false,
 }) {
   if (fromForgotPasscode) {
     return (
@@ -113,6 +127,8 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
         phoneVerified: phoneDone ?? phoneVerified,
         emailVerificationRequired: emailVerificationRequired,
         isEmailVerified: emailDone ?? isEmailVerified,
+        isSocial: isSocial,
+        passcodeDeclined: passcodeDeclined,
       );
 
   // 2. Email.
@@ -137,12 +153,22 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
   // 3. Passcode. `fromLoginFlow` is what hides the skip: a passcode is the
   // credential the lock screen, biometrics and every quick login assume, and
   // someone who is already signed in has no onboarding to be hurried through.
-  if (!hasPasscode) {
+  //
+  // EXCEPT for a provider-linked account. A Google/Apple holder has no
+  // password and no passcode — the link IS the credential — so for them this
+  // screen is an offer, and a no-skip offer is a dead end: every social login
+  // would land on "Set Up Passcode" with no way past it. `allowSkip` restores
+  // the skip for exactly those accounts, and declining routes on through the
+  // chain below (PIN, phone, identity, dashboard) rather than stopping here.
+  if (!hasPasscode && !(isSocial && passcodeDeclined)) {
     return (
       name: AppRoutes.passcodeSetup,
       args: <String, dynamic>{
         'fromLoginFlow': true,
         'hasTransactionPin': hasTransactionPin,
+        // Absent — not `false` — for everyone else, so the screen's existing
+        // "no skip in the login flow" rule is untouched for them.
+        if (isSocial) 'allowSkip': true,
       },
     );
   }

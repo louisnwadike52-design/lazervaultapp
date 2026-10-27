@@ -75,6 +75,7 @@ Future<User> enrichSessionUser(
     if (refreshInBackground) {
       unawaited(_refreshFacts(
         base,
+        previous: cached,
         fetchMe: fetchMe,
         fetchHasPin: fetchHasPin,
         readPasscodeMirror: readPasscodeMirror,
@@ -88,6 +89,7 @@ Future<User> enrichSessionUser(
   // No usable record: ask now, and remember the answer for next time.
   return _refreshFacts(
     base,
+    previous: null,
     fetchMe: fetchMe,
     fetchHasPin: fetchHasPin,
     readPasscodeMirror: readPasscodeMirror,
@@ -98,6 +100,10 @@ Future<User> enrichSessionUser(
 
 Future<User> _refreshFacts(
   User base, {
+  /// The record this refresh is replacing, when there was one. Used only to
+  /// carry forward a fact the live lookups could not answer — never to decide
+  /// what the caller is shown.
+  required LoginFacts? previous,
   required Future<Either<Failure, User>> Function() fetchMe,
   required Future<bool> Function() fetchHasPin,
   required Future<String?> Function() readPasscodeMirror,
@@ -124,6 +130,10 @@ Future<User> _refreshFacts(
       hasPassword: me.hasPassword,
       hasTransactionPin: hasPin,
       preferredLoginMethod: me.preferredLoginMethod,
+      // The profile proto has no auth_type either, and the passcode gate turns
+      // on it: a provider-linked account that has declined a passcode must not
+      // be sent to a no-skip passcode screen on an unlock.
+      authType: me.authType,
       verified: me.verified,
       isEmailVerified: me.isEmailVerified,
       phoneNumber: me.phoneNumber ?? base.phoneNumber,
@@ -134,8 +144,20 @@ Future<User> _refreshFacts(
     );
     // Only a LIVE answer is worth remembering. Recording the fail-safe
     // defaults below would turn one outage into a month of "has a PIN".
-    await _guard(() =>
-        writeFacts(enriched, hasTransactionPin: pinAnswered ? hasPin : null));
+    //
+    // The PIN needs saying explicitly, because `GetMeResponse` does NOT carry
+    // has_transaction_pin (unlike every credential-login response) — the PIN
+    // service is the only live source for it on this path. So when the PIN
+    // check did not answer, `hasPin` above is the fail-safe `true`, and
+    // passing `null` here would let `LoginFacts.fromUser` fall straight back
+    // to it through `enriched`: exactly the month of "has a PIN" this comment
+    // was written to prevent. Carry the last live answer forward instead, and
+    // when there is none, record NOTHING — the next unlock asks again, which
+    // is cheaper than a wrong gate that lasts until the record expires.
+    final pinToRecord = pinAnswered ? hasPin : previous?.hasTransactionPin;
+    if (pinToRecord != null) {
+      await _guard(() => writeFacts(enriched, hasTransactionPin: pinToRecord));
+    }
     return enriched;
   }
 

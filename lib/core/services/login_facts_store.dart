@@ -45,6 +45,7 @@ class LoginFacts {
     this.currentSignupStep,
     this.kycStatus,
     this.preferredLoginMethod,
+    this.authType,
   });
 
   final String userId;
@@ -60,6 +61,13 @@ class LoginFacts {
   final String? currentSignupStep;
   final String? kycStatus;
   final String? preferredLoginMethod;
+
+  /// How the account was created (`SOCIAL` for a Google/Apple link). Recorded
+  /// because the passcode gate turns on it: without it a biometric unlock of a
+  /// provider-linked account that has declined a passcode is routed to passcode
+  /// setup with no skip — stranded — on the cached path that exists to make
+  /// that unlock instant. See `User.isSocialAccount`.
+  final String? authType;
 
   /// Facts as a login response described them. [hasTransactionPin] is taken
   /// from the user unless the caller knows better (the PIN service's answer).
@@ -77,6 +85,7 @@ class LoginFacts {
         currentSignupStep: u.currentSignupStep,
         kycStatus: u.kycStatus,
         preferredLoginMethod: u.preferredLoginMethod,
+        authType: u.authType,
       );
 
   /// Lay these facts over a user that lacks them (the profile-proto user a
@@ -93,10 +102,18 @@ class LoginFacts {
         kycTier: kycTier,
         kycStatus: kycStatus,
         preferredLoginMethod: preferredLoginMethod,
+        authType: authType ?? base.authType,
       );
 
+  /// Schema version of a stored record. BUMP THIS whenever a fact is added,
+  /// removed or re-meant — [fromJson] refuses any other version, because every
+  /// bool here defaults to `false` on an absent key and `false` is not a
+  /// harmless default: it reads as "no passcode, no PIN, not verified" and
+  /// gates a user who is none of those things, for up to [LoginFactsStore.maxAge].
+  static const int version = 2; // 2 added `authType`
+
   Map<String, dynamic> toJson() => {
-        'v': 1,
+        'v': version,
         'userId': userId,
         'hasPasscode': hasPasscode,
         'hasPassword': hasPassword,
@@ -110,9 +127,15 @@ class LoginFacts {
         'currentSignupStep': currentSignupStep,
         'kycStatus': kycStatus,
         'preferredLoginMethod': preferredLoginMethod,
+        'authType': authType,
       };
 
   static LoginFacts? fromJson(Map<String, dynamic> j) {
+    // A record this code did not write cannot be read field-by-field with any
+    // confidence: a missing bool reads as `false`, which is the GATING answer.
+    // Refuse it and let the unlock ask the backend, as it did before the store
+    // existed. (Covers both an older install's record and a downgrade.)
+    if (((j['v'] as num?)?.toInt() ?? 0) != version) return null;
     final id = j['userId']?.toString() ?? '';
     final at = DateTime.tryParse(j['recordedAt']?.toString() ?? '');
     if (id.isEmpty || at == null) return null;
@@ -130,6 +153,7 @@ class LoginFacts {
       currentSignupStep: j['currentSignupStep'] as String?,
       kycStatus: j['kycStatus'] as String?,
       preferredLoginMethod: j['preferredLoginMethod'] as String?,
+      authType: j['authType'] as String?,
     );
   }
 }
