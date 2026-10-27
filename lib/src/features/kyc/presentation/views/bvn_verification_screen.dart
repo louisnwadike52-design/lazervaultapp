@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,9 +10,11 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../../../core/services/secure_storage_service.dart';
 import '../../../../../core/shared_widgets/app_loading_button.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../../../funds/domain/services/pending_deposit.dart';
 import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../data/services/prove_kyc_http_service.dart';
@@ -1313,6 +1316,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     // Capture the cubit BEFORE any await so we don't touch BuildContext across
     // an async gap (the _deleteFlag await below).
     final auth = context.read<AuthenticationCubit>();
+    _refetchAccountsAfterVerification();
 
     await _deleteFlag('kyc_onboarding_pending');
 
@@ -1371,6 +1375,47 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     } else {
       Get.back(result: true);
     }
+  }
+
+  /// Pull the account summaries again once verification has passed.
+  ///
+  /// Verification is what mints the account NUMBERS: accounts-service hears
+  /// the tier upgrade and provisions a NUBAN per account, about three seconds
+  /// later. The dashboard only refetches when it is re-mounted, and returning
+  /// here with `Get.back` does not re-mount it — so the person who had just
+  /// verified looked at a card with no number until they pulled to refresh or
+  /// relaunched, and reported that their KYC "had not reflected".
+  ///
+  /// Two silent refreshes: one now, one after the provisioning window. Both
+  /// go to the app-wide summaries cubit (provided above the dashboard) so the
+  /// instance the cards listen to is the one that changes. Best-effort.
+  void _refetchAccountsAfterVerification() {
+    AccountCardsSummaryCubit? cubit;
+    String? userId;
+    String? token;
+    try {
+      cubit = context.read<AccountCardsSummaryCubit>();
+      final auth = context.read<AuthenticationCubit>().state;
+      if (auth is AuthenticationSuccess) {
+        userId = auth.profile.user.id;
+        token = auth.profile.session.accessToken;
+      }
+    } catch (_) {
+      return;
+    }
+    if (cubit == null || userId == null || userId.isEmpty) return;
+    final c = cubit;
+    final uid = userId;
+    Future<void> refresh() async {
+      try {
+        if (c.isClosed) return;
+        await c.fetchAccountSummaries(
+            userId: uid, accessToken: token, silent: true, manualRefresh: true);
+      } catch (_) {/* best-effort */}
+    }
+
+    unawaited(refresh());
+    unawaited(Future.delayed(const Duration(seconds: 8), refresh));
   }
 
   /// Back from KYC without verifying. When we were sent here mid-deposit, the

@@ -253,6 +253,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
       );
     }
     return CompactAnimatedBalance(
+      key: ValueKey<String>('acct-balance-${account.id}'),
+      identity: account.id,
       balance: _displayBalance(account),
       currencySymbol: currencySymbol,
       fontSize: fontSize,
@@ -549,7 +551,14 @@ class _AccountCarouselState extends State<AccountCarousel> {
             ),
             itemBuilder: (context, index, realIndex) {
               final account = widget.accountSummaries[index];
-              return _buildAccountCard(context, account);
+              // Keyed to the ACCOUNT: if the list is ever re-ordered, the card
+              // (and its animated balance) moves with its account instead of
+              // the widget at this index being handed a different account's
+              // figure to roll from.
+              return KeyedSubtree(
+                key: ValueKey<String>('acct-card-${account.id}'),
+                child: _buildAccountCard(context, account),
+              );
             },
           ),
           // Page dots only when there is more than one page.

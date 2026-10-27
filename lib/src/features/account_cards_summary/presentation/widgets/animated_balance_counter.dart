@@ -39,8 +39,12 @@ class AnimatedBalanceCounter extends StatefulWidget {
   /// (a credit). Toggled by the user in Security → Panic Balance settings.
   final bool enableSound;
 
+  /// See [CompactAnimatedBalance.identity].
+  final String? identity;
+
   const AnimatedBalanceCounter({
     super.key,
+    this.identity,
     required this.balance,
     required this.currencySymbol,
     this.style,
@@ -100,6 +104,13 @@ class _AnimatedBalanceCounterState extends State<AnimatedBalanceCounter> {
   @override
   void didUpdateWidget(AnimatedBalanceCounter oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.identity != widget.identity) {
+      setState(() {
+        _previousBalance = widget.balance;
+        _displayBalance = widget.balance;
+      });
+      return;
+    }
 
     if (oldWidget.balance != widget.balance) {
       _previousBalance = _displayBalance;
@@ -216,8 +227,17 @@ class CompactAnimatedBalance extends StatefulWidget {
   /// briefly leaks it to someone watching.
   final bool animate;
 
+  /// WHOSE balance this is (an account id). When it changes between builds
+  /// the new value is shown at once — no roll, no delay — because rolling from
+  /// one account's figure to another's reads as the balance being wrong, and
+  /// during the start delay the old account's figure would be sitting under
+  /// the new account's name. Only a value change for the SAME identity is a
+  /// balance change worth animating: a credit or debit the backend confirmed.
+  final String? identity;
+
   const CompactAnimatedBalance({
     super.key,
+    this.identity,
     required this.balance,
     required this.currencySymbol,
     this.fontSize = 28,
@@ -287,6 +307,18 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
   @override
   void didUpdateWidget(CompactAnimatedBalance oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.identity != widget.identity) {
+      // A different account under the same widget: show its figure, now.
+      // Anything in flight for the previous account is abandoned.
+      _vibrationTimer?.cancel();
+      setState(() {
+        _isAnimating = false;
+        _previousBalance = widget.balance;
+        _displayBalance = widget.balance;
+      });
+      return;
+    }
 
     if (oldWidget.balance != widget.balance) {
       // Panic/decoy (or any non-animated) mode: snap instantly — no roll, no

@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/account_summaries_store.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import '../domain/entities/account_summary_entity.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_summary_ordering.dart';
 import '../domain/usecases/get_account_summaries_usecase.dart';
 import '../services/balance_websocket_service.dart';
 import 'account_cards_summary_state.dart';
@@ -278,7 +279,7 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       // back to the plain spinner only when there's nothing to show yet.
       final existing = _currentSummaries.isNotEmpty
           ? _currentSummaries
-          : (await _loadCachedSummaries(userId) ?? const []);
+          : orderForCarousel(await _loadCachedSummaries(userId) ?? const []);
       if (existing.isNotEmpty) {
         _currentSummaries = existing;
         emit(AccountCardsSummaryLoaded(existing, isRefreshing: true));
@@ -293,7 +294,8 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       // from the cached value to the fresh value, so a changed balance animates
       // and an unchanged one just stays put. Only fall back to the spinner when we
       // have nothing cached yet (very first login on this device).
-      final cached = await _loadCachedSummaries(userId);
+      final cachedRaw = await _loadCachedSummaries(userId);
+      final cached = cachedRaw == null ? null : orderForCarousel(cachedRaw);
       if (cached != null && cached.isNotEmpty) {
         _currentSummaries = cached;
         emit(AccountCardsSummaryLoaded(cached));
@@ -329,15 +331,9 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
         ));
       },
       (summaries) {
-        // Sort: family accounts go last in the carousel
-        final sorted = List<AccountSummaryEntity>.from(summaries)
-          ..sort((a, b) {
-            final aIsFamily =
-                a.accountTypeEnum == VirtualAccountType.family ? 1 : 0;
-            final bIsFamily =
-                b.accountTypeEnum == VirtualAccountType.family ? 1 : 0;
-            return aIsFamily.compareTo(bIsFamily);
-          });
+        // One total order for cached and fresh rows alike — see
+        // orderForCarousel for why a stable position per account matters.
+        final sorted = orderForCarousel(summaries);
         _currentSummaries = sorted;
         emit(AccountCardsSummaryLoaded(sorted));
         // Persist the fresh balances so the NEXT login renders instantly from
