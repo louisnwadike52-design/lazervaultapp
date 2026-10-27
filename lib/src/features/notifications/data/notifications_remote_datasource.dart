@@ -178,7 +178,13 @@ class NotificationsRemoteDataSource {
         'unread_only': unreadOnly,
         if (userId.isNotEmpty) 'user_id': userId,
       },
-      options: Options(headers: await _headers()),
+      // The feed is painted from the app's own store and this call is the
+      // background revalidation: it must reach the origin, not a gateway
+      // HTTP cache entry (which the gateways honour for this header).
+      options: Options(headers: {
+        ...await _headers(),
+        'Cache-Control': 'no-cache',
+      }),
     );
     final data = resp.data is Map ? resp.data as Map : <String, dynamic>{};
     final rawList = (data['notifications'] as List?) ?? const [];
