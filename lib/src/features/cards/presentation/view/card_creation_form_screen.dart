@@ -12,6 +12,8 @@ import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart
 import 'package:lazervault/src/features/cards/presentation/cubit/card_state.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/cards/data/repositories/card_failure.dart';
+import 'package:lazervault/src/features/cards/presentation/widgets/card_kyc_dialog.dart';
 
 class CardCreationFormScreen extends StatefulWidget {
   const CardCreationFormScreen({super.key});
@@ -447,6 +449,14 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
             );
           } else if (state is CardError) {
             setState(() => _isLoading = false);
+            // Refused for want of verification: offer verification rather than
+            // a red toast the user can only read and dismiss. A card is one of
+            // the things the onboarding benefits screen promises verification
+            // unlocks, so this is the moment to make that true.
+            if (state.errorCode == kCardKycRequiredCode) {
+              showCardNeedsKycDialog(context, state.message);
+              return;
+            }
             Get.snackbar(
               'Error',
               state.message,

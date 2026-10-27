@@ -3,6 +3,7 @@ import 'package:lazervault/src/core/errors/failures.dart';
 import 'package:lazervault/src/features/cards/data/datasources/card_remote_data_source.dart';
 import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart';
 import 'package:lazervault/src/features/cards/domain/repositories/i_card_repository.dart';
+import 'package:lazervault/src/features/cards/data/repositories/card_failure.dart';
 
 /// Card repository implementation
 class CardRepositoryImpl implements ICardRepository {
@@ -28,7 +29,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -56,7 +57,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -88,7 +89,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -104,7 +105,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -118,7 +119,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -150,7 +151,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -166,7 +167,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -180,7 +181,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -202,7 +203,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -246,7 +247,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -262,7 +263,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 
@@ -278,7 +279,7 @@ class CardRepositoryImpl implements ICardRepository {
       );
       return Right(card);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+      return Left(cardFailureFrom(e));
     }
   }
 }
