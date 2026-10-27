@@ -954,6 +954,22 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
           // (otherwise the lock screen is stuck on a spinner). Capture the cubit
           // synchronously so we don't touch context across the async gap.
           final authCubit = context.read<AuthenticationCubit>();
+          // NAVIGATION IS NOW THE 2FA SCREEN'S JOB, NOT THIS ONE'S.
+          //
+          // The 2FA screen is pushed with the SAME app-wide cubit, so this
+          // route stays mounted underneath and its listener fires again on the
+          // AuthenticationSuccess that verifying emits. Both then called
+          // goAfterLogin — the same destination, so never a wrong landing, but
+          // two offAllNamed calls whose order depends on whether the bloc
+          // stream's microtask beats the screen's `await` continuation.
+          //
+          // Claiming _navigated here hands ownership over for good: this
+          // listener stops routing the moment the handoff happens, and the 2FA
+          // screen is the single owner. It has to be the one that keeps it —
+          // the PHONE login screen has no AuthenticationCubit listener at all,
+          // so 2FA from that path would go nowhere if the screen stopped
+          // navigating.
+          _navigated = true;
           Get.to(() => BlocProvider.value(
                 value: serviceLocator<AuthenticationCubit>(),
                 child: TwoFactorVerificationScreen(
@@ -961,7 +977,12 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                   method: state.method,
                 ),
               ))?.then((_) {
-            if (mounted) authCubit.startPasscodeLogin();
+            // Backed out without verifying: take ownership back, or the keypad
+            // would be live again with navigation permanently disabled.
+            if (mounted) {
+              _navigated = false;
+              authCubit.startPasscodeLogin();
+            }
           });
           return;
         }
@@ -969,13 +990,22 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
           // Risk-based step-up: collect the OTP (self-contained screen).
           // Same re-arm-on-return as the 2FA branch above.
           final authCubit = context.read<AuthenticationCubit>();
+          // Same handoff as the 2FA branch above, for the same reason: the OTP
+          // screen scopes the SAME app-wide cubit, so this route stays mounted
+          // and would route again on the AuthenticationSuccess that verifying
+          // the step-up emits — while login_otp_screen also calls
+          // goAfterLogin.
+          _navigated = true;
           Get.to(() => LoginOtpScreen(
                 stepUpToken: state.stepUpToken,
                 method: state.method,
                 destination: state.destination,
                 expiresInSeconds: state.expiresInSeconds,
               ))?.then((_) {
-            if (mounted) authCubit.startPasscodeLogin();
+            if (mounted) {
+              _navigated = false;
+              authCubit.startPasscodeLogin();
+            }
           });
           return;
         }

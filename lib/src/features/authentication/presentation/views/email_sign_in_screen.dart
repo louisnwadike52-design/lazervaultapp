@@ -412,13 +412,22 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                     twoFactorToken: final tfToken,
                     method: final tfMethod,
                   ):
+                  // Navigation is the 2FA screen's job from here — see the
+                  // same handoff in passcode_sign_in. This screen is pushed
+                  // under, keeps the SHARED cubit, and would otherwise route
+                  // again on the AuthenticationSuccess that verifying emits.
+                  _navigated = true;
                   Get.to(() => BlocProvider.value(
                         value: serviceLocator<AuthenticationCubit>(),
                         child: TwoFactorVerificationScreen(
                           twoFactorToken: tfToken,
                           method: tfMethod,
                         ),
-                      ));
+                      ))?.then((_) {
+                    // Backed out without verifying — take ownership back, or a
+                    // retry on this screen could never navigate.
+                    if (mounted) _navigated = false;
+                  });
                   break;
                 case LoginStepUpRequired(
                     stepUpToken: final token,
@@ -426,14 +435,23 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                     destination: final dest,
                     expiresInSeconds: final ttl,
                   ):
-                  // Risk-based step-up: collect the OTP. The screen is self-
-                  // contained (owns a fresh cubit + routes to dashboard on success).
+                  // Risk-based step-up: collect the OTP. Same handoff as the
+                  // 2FA branch — the OTP screen scopes the SAME app-wide
+                  // cubit and calls goAfterLogin itself, so this listener must
+                  // stop owning navigation or both route.
+                  //
+                  // (The comment here used to say the screen "owns a fresh
+                  // cubit", which was never true — it resolves the shared
+                  // singleton from the service locator.)
+                  _navigated = true;
                   Get.to(() => LoginOtpScreen(
                         stepUpToken: token,
                         method: method,
                         destination: dest,
                         expiresInSeconds: ttl,
-                      ));
+                      ))?.then((_) {
+                    if (mounted) _navigated = false;
+                  });
                   break;
                 case AuthenticationSuccess(profile: final profile):
                   // Guard against a duplicate navigation if the listener re-fires.
