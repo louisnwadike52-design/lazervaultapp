@@ -17,6 +17,7 @@ import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../data/services/prove_kyc_http_service.dart';
 import '../../domain/repositories/kyc_repository.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_profile_fix.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_gate_exit_cta.dart';
 
 /// Dark-theme palette (matches the rest of the app — see the platform conventions).
 const Color _bg = Color(0xFF0A0A0A);
@@ -239,6 +240,19 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                   ),
                 ),
               ],
+              // THE ONLY WAY OUT WHEN THERE IS NO OTHER ONE.
+              //
+              // Verification is compulsory below Tier 2 and there is no skip —
+              // correct. But when this screen is ALSO the navigation root
+              // (offAllNamed from signup, or from the post-login router when
+              // kyc_required_on_signup is on), the back arrow pops an empty
+              // stack and nothing else here signs out. Someone who cannot
+              // verify on this device had the app rendered unusable with no
+              // route even back to login.
+              //
+              // Shown only in exactly that corner: root AND no skip. With a
+              // skip, or a stack to pop, there is already a way out.
+              if (_isOnboardingRoot && !_allowSkip) const KycGateExitCta(),
             ],
           ),
         ),

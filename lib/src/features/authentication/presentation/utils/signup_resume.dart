@@ -242,13 +242,17 @@ String _postVerifyRoute({
   if (kyc.blocksDashboard) {
     return (
       name: AppRoutes.kycBVNVerification,
-      args: <String, dynamic>{
-        'fromSignup': false,
-        // Tells the screen to hide its skip affordance. The platform requires
-        // this, so offering a way past it would be a lie.
-        'isRequired': true,
-        'nextRoute': AppRoutes.dashboard,
-      },
+      // No args. The verification screen does not read `isRequired` or
+      // `nextRoute` — it reads its own Prove status and enforces a stricter
+      // rule than this flag asks for: compulsory below Tier 2, everywhere it
+      // appears, with no skip until a BVN is inserted.
+      //
+      // An earlier version of this passed `isRequired: true` with a comment
+      // saying it hid the skip. It did not — the screen ignores it — and a
+      // parameter that looks like it enforces something while enforcing
+      // nothing is worse than no parameter, because the next person reads the
+      // comment instead of the screen.
+      args: null,
     );
   }
 

@@ -208,13 +208,18 @@ void main() {
           kyc: kyc,
         );
 
-    test('required + unverified → verification, with no way to skip', () {
+    test('required + unverified → verification', () {
       final r = routeFor(const KycLoginGate(
           state: KycState.unverified, isRequired: true));
       expect(r.name, AppRoutes.kycBVNVerification);
-      // The screen must not offer a skip when the platform requires this —
-      // offering a way past a gate that will stop you is a lie.
-      expect(r.args?['isRequired'], true);
+      // No args, deliberately. This used to assert `args['isRequired'] == true`
+      // with a comment claiming it hid the screen's skip button. It did not:
+      // the verification screen never reads that key. It reads its own Prove
+      // status and enforces a STRICTER rule — compulsory below Tier 2 wherever
+      // it appears — so the flag was decorative and the assertion was pinning a
+      // promise nothing kept. Covered for real in
+      // test/src/core/kyc_gate_escape_test.dart.
+      expect(r.args, isNull);
     });
 
     test('required + REJECTED → verification (they must redo it)', () {

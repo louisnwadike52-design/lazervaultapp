@@ -25,6 +25,8 @@
 /// happens: [KycState.inReview] blocks nothing and prompts nobody.
 library;
 
+import 'dart:async';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:lazervault/core/config/feature_flags.dart';
@@ -233,6 +235,21 @@ class KycLoginGate {
   /// not reach into the authentication feature.
   factory KycLoginGate.forHolder({String? kycStatus, int? kycTier}) {
     var state = resolveKycState(status: kycStatus, tier: kycTier);
+
+    // Record a LIVE reading wherever one is seen, not only at login.
+    //
+    // goAfterLogin records too, but signup does not pass through it: a user who
+    // signs up, enables Face ID and never does a credential login again would
+    // otherwise have no mirror at all, and the prompt would be silent for them
+    // forever. The dashboard calls this on every session, so recording here
+    // catches that path and any other that consults the gate.
+    //
+    // remember() ignores an empty reading, so a biometric login passing nothing
+    // still cannot erase what a real one saw. Fire-and-forget: a build method
+    // must not await a preferences write.
+    if (state != KycState.unknown) {
+      unawaited(KycSnapshot.remember(tier: kycTier, status: kycStatus));
+    }
 
     // The payload carried nothing — biometric or voice login. Fall back to what
     // the last credential login recorded. See [KycSnapshot].
