@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/user_switch_purge.dart';
 import '../domain/entities/profile_entity.dart';
 import '../domain/repositories/i_auth_repository.dart';
 import 'phone_passcode_state.dart';
+import 'package:lazervault/src/features/authentication/domain/signup_phone_rules.dart';
 
 /// Drives the dedicated "Phone Number + Passcode" authentication flow
 /// (signup + login). Mirrors the responsibilities the [AuthenticationCubit]
@@ -34,8 +35,25 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
         super(const PhonePasscodeInitial()) {
     // Best-effort resume: re-hydrate the in-progress signup draft (phone +
     // signupToken) so a restart mid-flow can continue without re-doing OTP.
-    unawaited(_loadPersistedDraft());
+    //
+    // The future is KEPT, not discarded. `/phoneEntry` builds a fresh cubit
+    // (`_phoneSignup(reset: true)` in app_router), so a resumed flow starts
+    // with `_phone = ''` and only gets it back when this load finishes — and
+    // it is several Keystore-backed reads. A submit that overtakes it sends an
+    // empty phone to a server that requires one. See [_draftReady].
+    _draftReady = _loadPersistedDraft();
+    unawaited(_draftReady);
   }
+
+  /// Completes when the persisted draft has been read (or failed to read).
+  /// Awaited by every submit that depends on the restored phone/token.
+  late final Future<void> _draftReady;
+
+  /// Waits for the draft, but never forever: the reads are best-effort and a
+  /// locked keystore must not leave the user staring at a spinner. On timeout
+  /// the guards below still catch the missing phone and say so honestly.
+  Future<void> _awaitDraft() =>
+      _draftReady.timeout(const Duration(seconds: 3), onTimeout: () {});
 
   // ── Session storage keys (kept in sync with AuthenticationCubit) ─────────
   static const String _accessTokenKey = 'access_token';
@@ -291,6 +309,11 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
   Future<void> submitSignup({required String email}) async {
     if (isClosed || state is PhonePasscodeLoading)
       return; // guard double-submit
+    // The draft carries the phone and the signup token. Loading it is async and
+    // fired from the constructor, so without this a submit arriving first ran
+    // against `_phone = ''`.
+    await _awaitDraft();
+    if (isClosed) return;
     final token = _signupToken ?? '';
     // A token is required UNLESS the user skipped verification.
     if (!_verificationSkipped && token.isEmpty) {
@@ -313,6 +336,20 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
     if (_firstName.isEmpty || _lastName.isEmpty) {
       emit(const PhonePasscodeFailure(
         'Please re-enter your details.',
+        restartFlow: true,
+      ));
+      return;
+    }
+    // The phone is the one field the server ALWAYS requires, and was the only
+    // one with no guard here — so an empty or non-E.164 value went to
+    // SignupWithPhone, which rejected it before touching the database and
+    // returned "invalid phone number format". That surfaced on the EMAIL
+    // screen under "Couldn't use that email", telling users with a perfectly
+    // good address that their address was the problem. Catch it here and send
+    // them to the step that can actually fix it.
+    if (!isValidSignupE164(_phone)) {
+      emit(const PhonePasscodeFailure(
+        "We've lost track of your phone number. Please enter it again.",
         restartFlow: true,
       ));
       return;

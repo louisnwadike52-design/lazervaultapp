@@ -37,14 +37,31 @@ class QuickPayTileService : TileService() {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startActivityAndCollapse(android.app.PendingIntent.getActivity(
-                this, 0, intent,
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-            ))
-        } else {
-            @Suppress("DEPRECATION")
-            startActivityAndCollapse(intent)
+        // NEVER THROW OUT OF onClick. A TileService that crashes is killed by
+        // the system and the user sees a dead tile in their quick settings —
+        // a worse outcome than the tap simply not working. Two things here can
+        // throw and neither is in our control at tap time:
+        //
+        //  - ActivityNotFoundException, if nothing resolves
+        //    lazervault://quick-action/scan_to_pay. It resolves today via the
+        //    scheme filter in AndroidManifest.xml, but a manifest change is
+        //    exactly the sort of edit that breaks it silently.
+        //  - On API 34+, startActivityAndCollapse(Intent) itself throws
+        //    UnsupportedOperationException. That is handled by the version
+        //    branch below, but the branch is the only thing standing between
+        //    us and a guaranteed crash, so it is worth a net underneath it.
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startActivityAndCollapse(android.app.PendingIntent.getActivity(
+                    this, 0, intent,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                ))
+            } else {
+                @Suppress("DEPRECATION")
+                startActivityAndCollapse(intent)
+            }
+        } catch (e: Throwable) {
+            Log.e(TAG, "Quick Pay tile could not launch the app", e)
         }
     }
 }

@@ -39,6 +39,14 @@ Sync iOS code-signing via fastlane match. Run once on this machine.
 
 READ-ONLY: what build does TestFlight actually hold for a version?
 
+### ios review_status
+
+```sh
+[bundle exec] fastlane ios review_status
+```
+
+What App Store Connect says RIGHT NOW: Apple ID, review state, and the build under review
+
 ### ios testflight_upload_existing
 
 ```sh

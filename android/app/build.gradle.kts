@@ -265,4 +265,16 @@ dependencies {
     // gated instead of hard-blocking app open). The Firebase plugins pull GMS
     // transitively but don't expose play-services-base to the app compile classpath.
     implementation("com.google.android.gms:play-services-base:18.5.0")
+    // Play Install Referrer — how a referral code survives a fresh install.
+    //
+    // A universal link only reaches the app if the app is ALREADY installed. A
+    // new user taps an invite, lands on /download, and goes to the Play Store;
+    // the code has to travel through the install itself or it is lost and the
+    // referrer gets nothing. Play carries it in the `referrer` parameter and
+    // hands it back through this library on first launch.
+    //
+    // Google's own library, not a wrapper: this is an attribution path that
+    // decides who gets paid, so it is worth the forty lines of MainActivity
+    // over a third-party plugin in the dependency tree.
+    implementation("com.android.installreferrer:installreferrer:2.2")
 }

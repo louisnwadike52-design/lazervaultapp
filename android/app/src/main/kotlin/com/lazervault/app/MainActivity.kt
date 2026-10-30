@@ -16,6 +16,9 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
+import com.android.installreferrer.api.InstallReferrerClient
+import com.android.installreferrer.api.InstallReferrerStateListener
+import java.util.concurrent.atomic.AtomicBoolean
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterFragmentActivity() {
@@ -23,6 +26,7 @@ class MainActivity : FlutterFragmentActivity() {
     private val hceChannelName = "com.lazervault.app/hce"
     private val settingsChannelName = "com.lazervault.app/settings"
     private val playServicesChannelName = "com.lazervault.app/play_services"
+    private val installReferrerChannelName = "com.lazervault.app/install_referrer"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -142,6 +146,87 @@ class MainActivity : FlutterFragmentActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        // Play Install Referrer. Returns the raw referrer string Play recorded
+        // at install time, or null.
+        //
+        // Dart decides what the string MEANS (it parses `ref=<CODE>`); this
+        // only fetches it. Keeping the parsing on one side means the website,
+        // the deep link and the install referrer all normalise a code through
+        // the same Dart code rather than through two implementations that can
+        // disagree.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, installReferrerChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "fetch" -> fetchInstallReferrer(result)
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    /**
+     * Reads the Play install referrer, replying exactly once and never throwing.
+     *
+     * THREE THINGS THIS HAS TO GET RIGHT, and all three are why it is hand-written:
+     *
+     *  - REPLY ONCE. A MethodChannel result may be completed a single time;
+     *    completing it twice crashes the app. The listener can fire a setup
+     *    callback and a disconnect, so an AtomicBoolean gates the reply rather
+     *    than trusting the callback to arrive once.
+     *  - REPLY ON THE PLATFORM THREAD. Flutter requires it, and the referrer
+     *    callback is not guaranteed to be on it.
+     *  - NEVER FAIL THE CALLER. Play Store absent, an old Play version, a
+     *    sideloaded build, a dead service: every one of those is "no referrer",
+     *    not an error. A signup must never be blocked because an attribution
+     *    lookup failed, so every path answers null.
+     */
+    private fun fetchInstallReferrer(result: MethodChannel.Result) {
+        val replied = AtomicBoolean(false)
+        fun reply(value: String?) {
+            if (replied.compareAndSet(false, true)) {
+                runOnUiThread { result.success(value) }
+            }
+        }
+
+        val client = try {
+            InstallReferrerClient.newBuilder(this).build()
+        } catch (e: Throwable) {
+            reply(null)
+            return
+        }
+
+        try {
+            client.startConnection(object : InstallReferrerStateListener {
+                override fun onInstallReferrerSetupFinished(responseCode: Int) {
+                    var referrer: String? = null
+                    try {
+                        if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
+                            referrer = client.installReferrer.installReferrer
+                        }
+                    } catch (e: Throwable) {
+                        referrer = null
+                    } finally {
+                        // Always end the connection: the service stays bound
+                        // otherwise, and this is a one-shot read.
+                        try {
+                            client.endConnection()
+                        } catch (e: Throwable) {
+                            // Nothing useful to do; the reply below still happens.
+                        }
+                    }
+                    reply(referrer)
+                }
+
+                override fun onInstallReferrerServiceDisconnected() {
+                    // No retry. The referrer is readable for the life of the
+                    // install, so the next launch can ask again — far better
+                    // than holding a startup path open on a flaky service.
+                    reply(null)
+                }
+            })
+        } catch (e: Throwable) {
+            reply(null)
+        }
     }
 
     /**

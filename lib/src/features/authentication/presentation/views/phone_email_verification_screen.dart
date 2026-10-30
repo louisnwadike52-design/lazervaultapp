@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/resend_code_button.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/src/features/widgets/verification_decorations.dart';
+import 'package:lazervault/src/features/authentication/domain/signup_phone_rules.dart';
 
 /// Step 5 (final signup step) of the phone+passcode flow: collect the email AND
 /// verify it inline. Two phases on one slide:
@@ -115,14 +116,16 @@ class _PhoneEmailVerificationScreenState
           // through. A toast on top of that is noise.
         } else if (state is PhonePasscodeFailure) {
           if (state.restartFlow) {
-            showAppSnackbar('Session expired', state.message,
+            // Not always an expiry — a lost phone number lands here too, and
+            // the message says which. A title that contradicts the line under
+            // it is worse than a general one.
+            showAppSnackbar('Let\'s start that again', state.message,
                 type: AppSnackbarType.error);
             Get.offAllNamed(AppRoutes.phoneEntry);
           } else {
             showAppSnackbar(
-                _phase == _Phase.email
-                    ? 'Couldn\'t use that email'
-                    : 'Invalid code',
+                signupFailureTitle(state.message,
+                    onCodeStep: _phase == _Phase.code),
                 state.message,
                 type: AppSnackbarType.error);
           }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
@@ -74,7 +75,21 @@ class InstallReferrerService {
 
     String? raw;
     try {
-      raw = await channel.invokeMethod<String>('fetch');
+      // BOUNDED. The native side replies exactly once and never throws, but it
+      // cannot guarantee that the Play Install Referrer service replies AT ALL:
+      // if neither onInstallReferrerSetupFinished nor
+      // onInstallReferrerServiceDisconnected fires, nothing completes this
+      // future. captureOnce is `unawaited` at the call site, so a hang cannot
+      // delay app open or a signup — but it would leak the bound service for
+      // the life of the process. A deadline turns an indefinite wait into a
+      // bounded one, and "no referrer" is already a first-class answer here.
+      raw = await channel
+          .invokeMethod<String>('fetch')
+          .timeout(const Duration(seconds: 10));
+    } on TimeoutException {
+      debugPrint(
+          'InstallReferrerService: fetch timed out — treating as no referrer');
+      return null;
     } on MissingPluginException {
       // An older build of the host, or a platform without the channel.
       return null;
