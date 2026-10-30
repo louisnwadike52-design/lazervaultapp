@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_paged.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/p2p_chat/data/datasources/p2p_chat_remote_datasource.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_conversation_entity.dart';
@@ -47,6 +48,20 @@ class P2PChatRepositoryImpl implements P2PChatRepository {
       {int page = 1, int limit = 20}) async {
     final token = await _getToken();
     return _remoteDatasource.listConversations(token, page: page, limit: limit);
+  }
+
+  @override
+  Future<P2PPaged<P2PConversationEntity>> listConversationsPaged(
+      {int page = 1, int limit = 20}) async {
+    final token = await _getToken();
+    final paged = await _remoteDatasource.listConversationsPage(token,
+        page: page, limit: limit);
+    return P2PPaged<P2PConversationEntity>(
+      items: paged.items.cast<P2PConversationEntity>(),
+      total: paged.total,
+      page: paged.page,
+      limit: paged.limit,
+    );
   }
 
   @override

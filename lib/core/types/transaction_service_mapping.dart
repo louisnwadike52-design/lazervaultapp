@@ -109,6 +109,8 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.insurance;
       case AppServiceName.airtime:
         return TransactionServiceType.airtime;
+      case AppServiceName.data:
+        return TransactionServiceType.data;
       case AppServiceName.autoSave:
         return TransactionServiceType.autosave;
       case AppServiceName.crowdfund:

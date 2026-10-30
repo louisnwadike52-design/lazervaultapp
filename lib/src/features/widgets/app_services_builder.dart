@@ -184,6 +184,11 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceImg: AppServiceImg.insurance),
     AppService(
         serviceName: AppServiceName.airtime, serviceImg: AppServiceImg.airtime),
+    // Data sits beside airtime because they are the same errand. Both are
+    // ranked 1 and 2 in revenuePriority so they LEAD the grid rather than
+    // landing wherever this list happens to put them.
+    AppService(
+        serviceName: AppServiceName.data, serviceImg: AppServiceImg.data),
     AppService(
         serviceName: AppServiceName.autoSave,
         serviceImg: AppServiceImg.autoSave),
@@ -343,9 +348,15 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   // the same source list via getAllServices()).
   static const Set<AppServiceName> _hiddenServices = {
     AppServiceName.invest,
-    // Airtime lives inside the Utilities hub now; the standalone Quick
-    // Services tile is duplicate surface area.
-    AppServiceName.airtime,
+    // AIRTIME IS NO LONGER HIDDEN (operator request, 2026-10-30).
+    //
+    // It was withheld here as "duplicate surface area" because the Utilities
+    // hub already carries it. That reasoning is sound for surface area and
+    // wrong for THIS service: airtime and data are the two things a Nigerian
+    // user opens the app for most often, and making the most frequent errand
+    // the one that costs an extra tap to find is a worse trade than showing it
+    // twice. Both entry points now exist and both reach the same screen —
+    // deliberately, not by oversight.
     // Consolidated into the "WhatsApp/Phone Banking" tile (2026-09-07): the
     // Banking Channels hub manages BOTH channels and links out to the
     // WhatsApp account-linking flow. Route + deep links stay registered.

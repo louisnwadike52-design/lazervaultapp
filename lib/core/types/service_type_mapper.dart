@@ -9,6 +9,8 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.unknown;
       case AppServiceName.airtime:
         return TransactionServiceType.airtime;
+      case AppServiceName.data:
+        return TransactionServiceType.data;
       case AppServiceName.giftCards:
         return TransactionServiceType.giftCard;
       case AppServiceName.payBills:

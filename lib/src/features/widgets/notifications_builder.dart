@@ -116,6 +116,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.shield_outlined;
       case AppServiceName.airtime:
         return Icons.phone_android;
+      case AppServiceName.data:
+        return Icons.wifi_rounded;
       case AppServiceName.qrPay:
         return Icons.qr_code_2;
       case AppServiceName.crowdfund:
@@ -179,6 +181,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color.fromARGB(255, 78, 3, 208);
       case AppServiceName.airtime:
         return const Color(0xFF6366F1);
+      case AppServiceName.data:
+        return const Color(0xFF0EA5E9);
       case AppServiceName.tagPay:
         return const Color(0xFF3B82F6);
       case AppServiceName.autoSave:

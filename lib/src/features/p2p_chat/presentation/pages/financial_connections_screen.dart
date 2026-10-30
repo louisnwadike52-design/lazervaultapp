@@ -64,9 +64,32 @@ class _FinancialConnectionsScreenState
   /// Removes this page's inactivity-auto-logout suppression on dispose.
   VoidCallback? _releaseAutoLogout;
 
+  /// Drives look-ahead paging on the connections list.
+  final ScrollController _listScroll = ScrollController();
+
+  /// How far from the bottom to start fetching, in logical pixels.
+  ///
+  /// Roughly six tiles of lead time. The point is that the next page is asked
+  /// for BEFORE the user reaches the end, so the list grows under the thumb
+  /// instead of stopping at a spinner. The cubit also prefetches the page after
+  /// this one as soon as a page lands, so the usual case is already in memory.
+  static const double _pagePrefetchLookahead = 600;
+
+  void _onListScroll() {
+    if (!_listScroll.hasClients) return;
+    final pos = _listScroll.position;
+    if (pos.maxScrollExtent <= 0) return;
+    if (pos.pixels < pos.maxScrollExtent - _pagePrefetchLookahead) return;
+    // Safe to call freely: the cubit ignores a request while one is in flight
+    // or when the list is complete, which is what stops a scroll listener from
+    // firing a burst of duplicate page requests.
+    context.read<P2PConversationsCubit>().loadMoreConversations();
+  }
+
   @override
   void initState() {
     super.initState();
+    _listScroll.addListener(_onListScroll);
     // Financial connections is an exempt page: don't auto-logout while it's open
     // (re-enables on navigate-away, since dispose always fires on route pop).
     _releaseAutoLogout = AutoLogoutGuard.register(() => true);
@@ -96,6 +119,8 @@ class _FinancialConnectionsScreenState
   @override
   void dispose() {
     _releaseAutoLogout?.call();
+    _listScroll.removeListener(_onListScroll);
+    _listScroll.dispose();
     _searchController.dispose();
     _debouncer.dispose();
     super.dispose();
@@ -498,6 +523,7 @@ class _FinancialConnectionsScreenState
                       ],
                     )
                   : ListView(
+                      controller: _listScroll,
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 96.h),
                       children: onBirthdays
@@ -520,6 +546,12 @@ class _FinancialConnectionsScreenState
                                   _ChatFilter.birthdays => 'BIRTHDAYS',
                                 }),
                                 ...conversations.map(_buildConnectionTile),
+                                // Only on the unfiltered CONNECTIONS tab: the
+                                // other tabs filter the rows already on the
+                                // device, so paging the server would not change
+                                // what they show.
+                                if (_filter == _ChatFilter.chats)
+                                  _buildPagingFooter(state),
                               ],
                               if (_kManualAddVisible &&
                                   (hasContacts ||
@@ -730,6 +762,99 @@ class _FinancialConnectionsScreenState
         ],
       ),
     );
+  }
+
+  /// Foot of the connections list: progress while a page loads, a manual
+  /// fallback when one is available, and a quiet confirmation when the list is
+  /// complete.
+  ///
+  /// The MANUAL button matters even though scrolling fetches automatically. A
+  /// user who reaches the bottom on a short list never triggers the look-ahead,
+  /// and a tap target is the only way to page with a screen reader or a
+  /// keyboard. Scroll paging is the convenience; this is the guarantee.
+  ///
+  /// And when everything is loaded it says so. "Showing all 134" is the answer
+  /// to the question that made this list broken — whether there was more the
+  /// user could not see.
+  Widget _buildPagingFooter(P2PConversationsLoaded state) {
+    final loaded = state.conversations.length;
+    final total = state.totalConnections;
+
+    if (state.isLoadingMore) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 18.h),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 14.w,
+              height: 14.w,
+              child: const CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Color(0xFF3B82F6),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Text(
+              total > 0 ? 'Loading more ($loaded of $total)' : 'Loading more',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF6B7280),
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (state.hasMore) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 14.h),
+        child: Center(
+          child: TextButton(
+            onPressed: () =>
+                context.read<P2PConversationsCubit>().loadMoreConversations(),
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFF202024),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
+            ),
+            child: Text(
+              total > 0
+                  ? 'Show more · $loaded of $total'
+                  : 'Show more connections',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF3B82F6),
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Complete. Only worth saying once there is enough of a list for the
+    // question to have arisen.
+    if (total > 0 && loaded >= 20) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        child: Center(
+          child: Text(
+            'Showing all $total connections',
+            style: GoogleFonts.inter(
+              color: const Color(0xFF4B5563),
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildSectionHeader(String label) {

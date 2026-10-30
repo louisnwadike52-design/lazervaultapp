@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_paged.dart';
 import 'dart:convert';
 import 'package:lazervault/core/services/access_token_shape.dart';
 import 'dart:io';
@@ -150,18 +151,64 @@ class P2PChatRemoteDatasource {
       throw Exception('Failed to list conversations');
     }
 
-    final data = _decodeBody(response.body);
-    final conversations = data['conversations'] as List<dynamic>? ?? [];
-    return conversations
+    return _parseConversationPage(response.body, page, limit).items;
+  }
+
+  /// Same request as [listConversations], but keeps the `total`/`page`/`limit`
+  /// the server already sends so the caller can ask for the next page.
+  Future<P2PPaged<P2PConversationModel>> listConversationsPage(
+      String accessToken,
+      {int page = 1,
+      int limit = 20}) async {
+    final url = '$_baseUrl/conversations?page=$page&limit=$limit';
+    final response = await _timed(
+      'listConversationsPage',
+      url,
+      () => _client
+          .get(Uri.parse(url), headers: _headers(accessToken))
+          .timeout(_timeout),
+    );
+    _checkAuth(response);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to list conversations');
+    }
+    return _parseConversationPage(response.body, page, limit);
+  }
+
+  /// Shared parser, so the paged and unpaged reads can never disagree about the
+  /// shape of a row.
+  ///
+  /// `total` falls back to the row count when the server omits it: a missing
+  /// total must read as "this is everything", never as zero — zero would make
+  /// hasMore false on a full page and hide the rest of the list, which is the
+  /// bug this whole change exists to fix.
+  P2PPaged<P2PConversationModel> _parseConversationPage(
+      String body, int page, int limit) {
+    final data = _decodeBody(body);
+    final rows = data['conversations'] as List<dynamic>? ?? [];
+    final items = rows
         .map((c) => P2PConversationModel.fromJson(c as Map<String, dynamic>))
         .toList();
+    final total = (data['total'] as num?)?.toInt();
+    final servedLimit = (data['limit'] as num?)?.toInt() ?? limit;
+    final servedPage = (data['page'] as num?)?.toInt() ?? page;
+    return P2PPaged<P2PConversationModel>(
+      items: items,
+      total: total ?? ((servedPage - 1) * servedLimit + items.length),
+      page: servedPage,
+      limit: servedLimit,
+    );
   }
 
   Future<List<P2PConversationModel>> listConnections(String accessToken,
       {int page = 1, int limit = 20}) async {
     final url = '$_baseUrl/connections?page=$page&limit=$limit';
-    print(
-        'P2P_DEBUG listConnections: url=$url token_len=${accessToken.length} token_prefix=${accessToken.substring(0, accessToken.length > 30 ? 30 : accessToken.length)}');
+    // NO TOKEN IN LOGS. There used to be a print here carrying the first 30
+    // characters of the bearer token on every connections fetch. Device logs
+    // are readable by other tooling and get attached to bug reports, so a token
+    // prefix in them is a credential in them. The _debugLog call after the
+    // response already records the method, url and status — which is what was
+    // actually useful for debugging paging.
     final response = await _timed(
       'listConnections',
       url,

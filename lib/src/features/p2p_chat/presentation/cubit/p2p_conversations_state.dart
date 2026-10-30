@@ -23,12 +23,30 @@ class P2PConversationsLoaded extends P2PConversationsState {
   final int requestCount;
   final List<ConnectionBirthdayEntity> upcomingBirthdays;
 
+  /// Whether the server holds connections beyond the ones in [conversations].
+  ///
+  /// The list used to show only the first page of 20 with no way to reach the
+  /// rest, because the client parsed the rows and discarded the `total` the
+  /// server had always sent alongside them.
+  final bool hasMore;
+
+  /// True while a NEXT page is in flight. Distinct from the Loading state,
+  /// which blanks the screen — appending to a list the user is already reading
+  /// must never do that.
+  final bool isLoadingMore;
+
+  /// Server-side count across every page, for "showing 20 of 134".
+  final int totalConnections;
+
   P2PConversationsLoaded({
     required this.conversations,
     this.incomingRequests = const [],
     this.totalUnread = 0,
     this.requestCount = 0,
     this.upcomingBirthdays = const [],
+    this.hasMore = false,
+    this.isLoadingMore = false,
+    this.totalConnections = 0,
   });
 
   @override
@@ -37,7 +55,10 @@ class P2PConversationsLoaded extends P2PConversationsState {
         incomingRequests,
         totalUnread,
         requestCount,
-        upcomingBirthdays
+        upcomingBirthdays,
+        hasMore,
+        isLoadingMore,
+        totalConnections,
       ];
 }
 

@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_paged.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -292,6 +293,133 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
   /// badge tap, realtime nudge) do NOT flash the full-screen loading state;
   /// keep the current data on screen and swap it in place once the fetch
   /// completes.
+  // ── PAGING ────────────────────────────────────────────────────────────────
+  //
+  // The server has always returned `total`, `page` and `limit`; the client
+  // parsed only the rows, so a user with more than one page of connections
+  // could not reach the rest. These fields keep the numbers the server sends.
+
+  /// Rows per request. Larger than the server's default of 20 because a
+  /// connections list is cheap to render and the common case should need no
+  /// paging at all.
+  static const int connectionsPageSize = 50;
+
+  int _loadedPage = 0;
+  int _serverTotal = 0;
+  bool _loadingMore = false;
+
+  /// The NEXT page, already in flight.
+  ///
+  /// Prefetched as soon as a page lands, so by the time the user reaches the
+  /// bottom the rows are usually in memory and appending is instant. Holding
+  /// the Future (rather than the rows) means a scroll that arrives mid-flight
+  /// joins the existing request instead of firing a second one.
+  Future<P2PPaged<P2PConversationEntity>>? _nextPagePrefetch;
+
+  /// Whether more connections exist on the server than are currently loaded.
+  bool get hasMoreConnections =>
+      _serverTotal > 0 && _loadedPage * connectionsPageSize < _serverTotal;
+
+  bool get isLoadingMoreConnections => _loadingMore;
+
+  int get totalConnectionCount => _serverTotal;
+
+  /// Kick off the next page without waiting for it. Best-effort: a failed
+  /// prefetch must never surface as an error, because the user did not ask for
+  /// anything yet — [loadMoreConversations] will simply fetch on demand.
+  void _prefetchNextPage() {
+    if (!hasMoreConnections || _nextPagePrefetch != null) return;
+    final next = _loadedPage + 1;
+    _nextPagePrefetch = _repository.listConversationsPaged(
+        page: next, limit: connectionsPageSize)
+      ..catchError((Object e) {
+        debugPrint('P2PConversationsCubit: prefetch of page $next failed: $e');
+        _nextPagePrefetch = null;
+        return P2PPaged.empty<P2PConversationEntity>();
+      });
+  }
+
+  /// Append the next page of connections.
+  ///
+  /// Idempotent while in flight, so the scroll listener can call it freely
+  /// without firing duplicate requests — the common failure of
+  /// scroll-triggered paging.
+  Future<void> loadMoreConversations() async {
+    if (_loadingMore || !hasMoreConnections) return;
+    final current = state;
+    if (current is! P2PConversationsLoaded) return;
+
+    _loadingMore = true;
+    _safeEmit(_composeLoaded(
+      current.conversations,
+      current.incomingRequests,
+      unread: current.totalUnread,
+      commitPendingReads: false,
+      upcomingBirthdays: current.upcomingBirthdays,
+    ));
+
+    try {
+      final pending = _nextPagePrefetch;
+      _nextPagePrefetch = null;
+      final paged = pending != null
+          ? await pending
+          : await _repository.listConversationsPaged(
+              page: _loadedPage + 1, limit: connectionsPageSize);
+
+      // A page that comes back empty means the list shrank under us (a
+      // connection was removed between pages). Stop rather than loop forever
+      // asking for a page that will never arrive.
+      if (paged.items.isEmpty) {
+        _serverTotal = current.conversations.length;
+      } else {
+        _loadedPage = paged.page;
+        _serverTotal = paged.total;
+      }
+
+      // De-duplicate by id. Rows can shift between pages when a conversation
+      // is bumped by a new message, which would otherwise show the same person
+      // twice — and a duplicate in a list of people you send money to is the
+      // kind of glitch that makes someone pay the wrong tile.
+      final seen = current.conversations.map((c) => c.id).toSet();
+      final merged = <P2PConversationEntity>[
+        ...current.conversations,
+        ...paged.items.where((c) => seen.add(c.id)),
+      ];
+
+      _loadingMore = false;
+      final latest = state;
+      _safeEmit(_composeLoaded(
+        merged,
+        latest is P2PConversationsLoaded
+            ? latest.incomingRequests
+            : current.incomingRequests,
+        unread: latest is P2PConversationsLoaded
+            ? latest.totalUnread
+            : current.totalUnread,
+        commitPendingReads: false,
+        upcomingBirthdays: latest is P2PConversationsLoaded
+            ? latest.upcomingBirthdays
+            : current.upcomingBirthdays,
+      ));
+      _prefetchNextPage();
+    } catch (e) {
+      _loadingMore = false;
+      debugPrint('P2PConversationsCubit: loadMore failed: $e');
+      // Keep the rows already on screen; paging failing is not the list
+      // failing, so this must not replace a populated list with an error.
+      final latest = state;
+      if (latest is P2PConversationsLoaded) {
+        _safeEmit(_composeLoaded(
+          latest.conversations,
+          latest.incomingRequests,
+          unread: latest.totalUnread,
+          commitPendingReads: false,
+          upcomingBirthdays: latest.upcomingBirthdays,
+        ));
+      }
+    }
+  }
+
   Future<void> loadConversations({bool silent = false}) async {
     final seq = ++_loadSeq;
     _loadsInFlight++;
@@ -324,9 +452,15 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
       // (accepted only) so pending outgoing connections also appear.
       // Future.sync: a repository that throws synchronously must land in
       // the same catchError as one whose Future fails.
-      final convF =
-          Future.sync(() => _repository.listConversations()).then((rows) {
-        conversations = rows.cast<P2PConversationEntity>();
+      final convF = Future.sync(() => _repository.listConversationsPaged(
+          page: 1, limit: connectionsPageSize)).then((paged) {
+        // Record the server's own total so the list knows a second page
+        // exists, then warm it. A fresh load resets paging: the rows on screen
+        // are page one again.
+        _loadedPage = paged.page;
+        _serverTotal = paged.total;
+        _nextPagePrefetch = null;
+        conversations = paged.items.cast<P2PConversationEntity>();
         _emitPartial(seq,
             conversations: conversations, requests: requests, unread: unread);
       }).catchError((Object e) {

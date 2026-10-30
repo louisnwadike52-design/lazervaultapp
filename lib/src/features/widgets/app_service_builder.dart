@@ -37,6 +37,7 @@ const Set<AppServiceName> _frozenBlockedServices = {
   AppServiceName.exchange,
   AppServiceName.giftCards,
   AppServiceName.airtime,
+  AppServiceName.data,
   AppServiceName.autoSave,
   AppServiceName.lockFunds,
   AppServiceName.escrow,
@@ -156,6 +157,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.airtime:
         Get.toNamed(AppRoutes.airtime);
+        break;
+      case AppServiceName.data:
+        Get.toNamed(AppRoutes.dataBundlesHome);
         break;
       case AppServiceName.autoSave:
         Get.toNamed(AppRoutes.autoSave);
@@ -463,6 +467,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.airtime:
         iconData = Icons.phone_android;
+        break;
+      case AppServiceName.data:
+        iconData = Icons.wifi_rounded;
         break;
       case AppServiceName.autoSave:
         iconData = Icons.auto_awesome;

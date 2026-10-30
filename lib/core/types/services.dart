@@ -40,6 +40,9 @@ enum AppServiceName {
   rechargeCard,
   betting,
   bulkSms,
+  // APPENDED, not inserted. The fallback rank below is `100 + index`, so
+  // inserting a value mid-enum silently reshuffles every service after it.
+  data,
 }
 
 extension AppServiceRevenuePriority on AppServiceName {
@@ -50,21 +53,49 @@ extension AppServiceRevenuePriority on AppServiceName {
   /// order without needing a stable sort). `sendFunds` is pinned to the very
   /// front separately by the grid, so its rank here is irrelevant.
   int get revenuePriority => switch (this) {
-        AppServiceName.crypto => 1,
-        AppServiceName.payBills => 2,
-        AppServiceName.exchange => 3,
-        AppServiceName.giftCards => 4,
-        AppServiceName.rmb => 5,
-        AppServiceName.airtime => 6,
-        AppServiceName.insurance => 7,
-        AppServiceName.invoice => 8,
-        // payInvoice is consolidated into invoice; leave it on the default
-        // (unique) rank so no two services ever tie.
-        AppServiceName.invest => 9,
-        AppServiceName.stocks => 10,
-        AppServiceName.betting => 11,
-        AppServiceName.rechargeCard => 12,
-        AppServiceName.bulkSms => 13,
+        // PAGE ONE IS THE NIGERIAN SHORTLIST, AND IT IS EXPLICIT.
+        //
+        // The grid paginates at 12 tiles and pins sendFunds to the front, so
+        // eleven ranks decide what a user sees without swiping. Those eleven
+        // are enumerated here rather than left to the `100 + index` fallback,
+        // because the fallback made page one depend on which services happened
+        // to be filtered out: with `invest` hidden and `insurance` admin-gated
+        // off, splitBills (rank 103) still landed in the twelfth slot. A page
+        // that reshuffles when an unrelated flag flips is not a layout.
+        //
+        // Airtime and data lead: they are the errands people open the app for
+        // several times a week.
+        AppServiceName.airtime => 1,
+        AppServiceName.data => 2,
+        AppServiceName.payBills => 3,
+        AppServiceName.crypto => 4,
+        AppServiceName.giftCards => 5,
+        AppServiceName.invoice => 6,
+        AppServiceName.tagPay => 7,
+        AppServiceName.qrPay => 8,
+        AppServiceName.contactlessPay => 9,
+        AppServiceName.batchTransfer => 10,
+        AppServiceName.escrow => 11,
+
+        // ── SECOND CAROUSEL ───────────────────────────────────────────────
+        // Still revenue-bearing and still ranked deliberately, just not
+        // competing for the first screen.
+        AppServiceName.insurance => 20,
+        AppServiceName.invest => 21,
+        AppServiceName.stocks => 22,
+        AppServiceName.betting => 23,
+        AppServiceName.rechargeCard => 24,
+        AppServiceName.bulkSms => 25,
+
+        // Moved OFF page one by operator request (2026-10-30): priced in or
+        // settled through a foreign currency, so a minority of Nigerian
+        // sessions. Ranked explicitly so "second carousel" is a decision that
+        // survives the next service being added, not a side effect of enum
+        // position.
+        AppServiceName.exchange => 60,
+        AppServiceName.rmb => 61,
+        AppServiceName.splitBills => 62,
+
         // Non-revenue / P2P / internal + business tiles keep their enum order.
         _ => 100 + index,
       };
@@ -121,6 +152,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Insurance';
       case AppServiceName.airtime:
         return 'Airtime';
+      case AppServiceName.data:
+        return 'Data';
       case AppServiceName.autoSave:
         return 'Auto-Save';
       case AppServiceName.crowdfund:
@@ -210,6 +243,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'insurance-service';
       case AppServiceName.airtime:
         return 'airtime-service';
+      case AppServiceName.data:
+        return 'data-service';
       case AppServiceName.autoSave:
         return 'accounts-service';
       case AppServiceName.crowdfund:
@@ -296,6 +331,7 @@ enum AppServiceImg {
   rechargeCard,
   betting,
   bulkSms,
+  data,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -342,6 +378,10 @@ extension AppServiceImgExtension on AppServiceImg {
       case AppServiceImg.insurance:
         return 'assets/images/insurance.png';
       case AppServiceImg.airtime:
+        return 'assets/images/airtime.png';
+      case AppServiceImg.data:
+        // No dedicated asset — the tile renders a Material icon via
+        // app_service_builder's icon switch (Icons.wifi_rounded).
         return 'assets/images/airtime.png';
       case AppServiceImg.autoSave:
         return 'assets/images/auto-save.png';

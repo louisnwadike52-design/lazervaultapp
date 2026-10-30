@@ -56,6 +56,12 @@ extension _P2PConversationsLoadHelpers on P2PConversationsCubit {
       totalUnread: total,
       requestCount: requests.length,
       upcomingBirthdays: upcomingBirthdays,
+      // Paging is cubit-level, not per-emit: every partial paint during a load
+      // must report the same "is there more" as the final one, or the footer
+      // flickers between "load more" and nothing while the fetches land.
+      hasMore: hasMoreConnections,
+      isLoadingMore: isLoadingMoreConnections,
+      totalConnections: totalConnectionCount,
     );
   }
 

@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_paged.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_conversation_entity.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/connection_birthday_entity.dart';
@@ -12,6 +13,12 @@ abstract class P2PChatRepository {
     bool isSavedRecipient = false,
   });
   Future<List<P2PConversationEntity>> listConversations(
+      {int page = 1, int limit = 20});
+
+  /// Conversations WITH the server's paging metadata, so the caller can tell
+  /// whether more exist. The list-returning variant above stays for callers
+  /// that only ever want the first page.
+  Future<P2PPaged<P2PConversationEntity>> listConversationsPaged(
       {int page = 1, int limit = 20});
   Future<List<P2PConversationEntity>> listConnections(
       {int page = 1, int limit = 20});
