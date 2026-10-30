@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -20,10 +21,26 @@ enum BackendReachability {
   /// this is definitively ours no matter what the device's network is doing.
   serverError,
 
-  /// Nothing answered: socket error, DNS failure, timeout. AMBIGUOUS — this is
-  /// what a real outage looks like AND what a phone with no data looks like, and
-  /// the two cannot be told apart from this signal alone.
+  /// Nothing answered and the attempt failed FAST: socket error, DNS failure,
+  /// connection refused. AMBIGUOUS — this is what a real outage looks like AND
+  /// what a phone with no data looks like, and the two cannot be told apart
+  /// from this signal alone.
   unreachable,
+
+  /// Something was there but did not finish answering inside the timeout.
+  ///
+  /// This is NOT the same as [unreachable] and conflating the two is what put
+  /// "Our servers are being updated" in front of a user mid-signup while every
+  /// service was healthy and answering in under a second. A connection refused
+  /// or a DNS failure is a hard no; a timeout on a link doing 70 KB/s is a slow
+  /// yes. The link was working — it was carrying data the whole time — it just
+  /// could not complete a round trip inside six seconds.
+  ///
+  /// Blaming the servers for that is wrong twice over: it tells the user
+  /// something false, and it sends them away to wait for a fix that is not
+  /// coming, when the thing that would actually help is moving to better
+  /// signal.
+  timedOut,
 }
 
 /// App-global "re-check the backend now" signal.
@@ -74,10 +91,26 @@ class ServerStatusService {
 
   final http.Client _client;
 
-  static const Duration _timeout = Duration(seconds: 6);
+  // SIZED FOR THE NETWORK OUR USERS ACTUALLY HAVE.
+  //
+  // This was 6 seconds, which is a desk-internet number. The userbase is in
+  // Nigeria on mobile data: the report that prompted this arrived from a device
+  // moving 70 KB/s, where a round trip through Cloudflare to a tunnelled origin
+  // can take most of ten seconds on its own. At 6s that probe lost a race it
+  // should have won, and the app told the user our servers were being updated
+  // while every service was healthy and answering locally in under a second.
+  //
+  // A generous probe timeout costs nothing: this runs on launch and on resume,
+  // behind a splash, and nobody is waiting on it. Being WRONG costs a user
+  // abandoning signup.
+  static const Duration _timeout = Duration(seconds: 20);
   // Shorter per-probe timeout for the retry burst so confirming "really down"
   // stays bounded (worst case ≈ _healthAttempts × _retryTimeout + gaps).
-  static const Duration _retryTimeout = Duration(seconds: 3);
+  // Still shorter than the first attempt, because by now we are confirming
+  // rather than discovering — but 3 seconds was far too short to confirm
+  // anything on a slow link, so a burst of five retries used to be five
+  // guaranteed timeouts that added up to a confident wrong answer.
+  static const Duration _retryTimeout = Duration(seconds: 12);
   static const Duration _retryGap = Duration(milliseconds: 700);
 
   /// Minimum number of consecutive failed probes before we conclude the backend
@@ -120,8 +153,21 @@ class ServerStatusService {
           // our own /health returning 503 because auth/accounts/redis is failing.
           // Either way something spoke for us, so the fault is ours to report.
           : BackendReachability.serverError;
-    } catch (_) {
-      // socket/DNS/timeout. Says nothing about whose fault it is — see the enum.
+    } on TimeoutException {
+      // Ran out of time rather than failing. Kept separate from the hard
+      // failures below: see the note on [BackendReachability.timedOut].
+      return BackendReachability.timedOut;
+    } catch (e) {
+      // A socket or DNS failure is a hard no. But `http` wraps some stalled
+      // reads in its own ClientException rather than a TimeoutException, and a
+      // stalled read is a timeout by any other name, so it is classified by
+      // what it says rather than only by its type.
+      final text = e.toString().toLowerCase();
+      if (text.contains('timed out') ||
+          text.contains('timeout') ||
+          text.contains('connection closed before full header')) {
+        return BackendReachability.timedOut;
+      }
       return BackendReachability.unreachable;
     }
   }
@@ -133,6 +179,8 @@ class ServerStatusService {
   /// really, really down, not on a transient blip.
   Future<BackendReachability> checkReachability() async {
     var sawServerError = false;
+    var sawTimeout = false;
+    var sawHardFailure = false;
     for (var attempt = 0; attempt < _healthAttempts; attempt++) {
       final outcome =
           await _probeOnce(timeout: attempt == 0 ? _timeout : _retryTimeout);
@@ -142,13 +190,25 @@ class ServerStatusService {
       // Remembered across attempts: one 5xx anywhere in the burst is proof our
       // infrastructure is reachable and unwell, which outranks later timeouts.
       if (outcome == BackendReachability.serverError) sawServerError = true;
+      if (outcome == BackendReachability.timedOut) sawTimeout = true;
+      if (outcome == BackendReachability.unreachable) sawHardFailure = true;
       if (attempt < _healthAttempts - 1) {
         await Future<void>.delayed(_retryGap);
       }
     }
-    return sawServerError
-        ? BackendReachability.serverError
-        : BackendReachability.unreachable;
+    // Precedence, strongest claim first:
+    //   a 5xx   — something spoke for us and reported a fault. Definitely ours.
+    //   a hard  — connection refused or DNS failure on EVERY attempt. Nothing is
+    //   failure   listening, which is either our edge or the user's network.
+    //   a timeout — the link reached far enough to stall. Never attributed to
+    //               the servers on its own.
+    //
+    // Timeout ranks BELOW a hard failure deliberately. A burst that saw both
+    // means at least one attempt got no socket at all, and that is the stronger
+    // evidence of what is wrong.
+    if (sawServerError) return BackendReachability.serverError;
+    if (sawTimeout && !sawHardFailure) return BackendReachability.timedOut;
+    return BackendReachability.unreachable;
   }
 
   /// Well-known captive-portal probes, used ONLY to answer "does this device
@@ -164,7 +224,11 @@ class ServerStatusService {
     'https://connectivitycheck.gstatic.com/generate_204',
   ];
 
-  static const Duration _internetProbeTimeout = Duration(seconds: 4);
+  // The captive-portal probes are small (an empty 204) but they still have to
+  // cross the same slow link. At 4 seconds this check reported "no internet" on
+  // connections that were working, which flipped the outage card to the wrong
+  // explanation in the other direction.
+  static const Duration _internetProbeTimeout = Duration(seconds: 10);
 
   /// True when the device can actually reach the public internet.
   ///

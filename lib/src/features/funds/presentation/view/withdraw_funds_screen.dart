@@ -24,6 +24,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
+import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
 import 'package:lazervault/src/features/funds/presentation/view/withdrawal_receipt_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/withdrawal_history_screen.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
@@ -60,10 +62,12 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   static const _card = Color(0xFF1F1F1F);
   static const _divider = Color(0xFF2D2D2D);
   static const _textSecondary = Color(0xFF9CA3AF);
-  static const _primaryPurple =
-      Color(0xFF4E03D0); // signature hero / CTA / selection
-  static const _accent =
-      Color(0xFF7C5CFF); // lighter purple for text + icon accents
+  static const _primaryPurple = Color(
+    0xFF4E03D0,
+  ); // signature hero / CTA / selection
+  static const _accent = Color(
+    0xFF7C5CFF,
+  ); // lighter purple for text + icon accents
   static const _success = Color(0xFF10B981);
   static const _warning = Color(0xFFFB923C);
   static const _error = Color(0xFFEF4444);
@@ -77,18 +81,19 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   );
 
   // Inter text styling helper (the group-account theme's typeface).
-  static TextStyle _inter(
-          {double? size,
-          FontWeight? weight,
-          Color? color,
-          double? spacing,
-          double? height}) =>
-      GoogleFonts.inter(
-          fontSize: size,
-          fontWeight: weight,
-          color: color,
-          letterSpacing: spacing,
-          height: height);
+  static TextStyle _inter({
+    double? size,
+    FontWeight? weight,
+    Color? color,
+    double? spacing,
+    double? height,
+  }) => GoogleFonts.inter(
+    fontSize: size,
+    fontWeight: weight,
+    color: color,
+    letterSpacing: spacing,
+    height: height,
+  );
 
   final TextEditingController _amountController = TextEditingController();
   final FocusNode _amountFocus = FocusNode();
@@ -110,22 +115,37 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   String get _sourceAccountId =>
       (widget.selectedCard['id'] ?? widget.selectedCard['accountId'] ?? '')
           .toString();
-  String get _currency => (widget.selectedCard['currency'] ??
-          widget.selectedCard['currencyCode'] ??
-          'NGN')
-      .toString();
+  String get _currency =>
+      (widget.selectedCard['currency'] ??
+              widget.selectedCard['currencyCode'] ??
+              'NGN')
+          .toString();
   String get _currencySymbol => _currency == 'NGN' ? '₦' : '';
 
   /// Available balance in major units (naira). Read defensively from the card; the
   /// backend is the source of truth and re-validates before any money moves.
   double get _availableBalance {
-    final v = widget.selectedCard['availableBalance'] ??
+    final v =
+        widget.selectedCard['availableBalance'] ??
         widget.selectedCard['available_balance'] ??
         widget.selectedCard['balance'] ??
         0;
     if (v is num) return v.toDouble();
     return double.tryParse(v.toString()) ?? 0;
   }
+
+  /// Account type of the wallet being debited, for the retained-balance floor.
+  ///
+  /// Read from the same card the balance comes from, so the policy resolved here
+  /// is the one for the account actually losing the money. An operator can hold
+  /// a floor on savings while leaving a current account alone, so picking the
+  /// wrong account type would apply the wrong floor.
+  String get _sourceAccountType =>
+      (widget.selectedCard['accountType'] ??
+              widget.selectedCard['account_type'] ??
+              widget.selectedCard['type'] ??
+              '')
+          .toString();
 
   /// Identity of the ACTIVE Lazervault account being debited (the "Available to
   /// withdraw" figure is THIS account's wallet balance, not a linked-bank balance).
@@ -323,8 +343,10 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       });
     }
     if (_enteredAmount <= 0) return;
-    _feeQuoteDebounce =
-        Timer(const Duration(milliseconds: 400), _fetchWithdrawalFeeQuote);
+    _feeQuoteDebounce = Timer(
+      const Duration(milliseconds: 400),
+      _fetchWithdrawalFeeQuote,
+    );
   }
 
   Future<void> _fetchWithdrawalFeeQuote() async {
@@ -339,11 +361,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       final req = banking_pb.CalculateWithdrawalFeeRequest()
         ..amount = Int64(amountKobo)
         ..sourceAccountId = _sourceAccountId;
-      final callOptions =
-          await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      final callOptions = await serviceLocator<GrpcCallOptionsHelper>()
+          .withAuth();
       final client = serviceLocator<banking_grpc.BankingServiceClient>();
-      final resp =
-          await client.calculateWithdrawalFee(req, options: callOptions);
+      final resp = await client.calculateWithdrawalFee(
+        req,
+        options: callOptions,
+      );
       if (!mounted || !resp.success) return;
       // Drop a stale response if the amount changed while it was in flight.
       if ((_enteredAmount * 100).round() != resp.amount.toInt()) return;
@@ -418,8 +442,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     // real reauthorization flow instead of attempting a payout that would fail.
     if (_selected != null && _selected!.needsReauthorization) {
       _snack(
-          'Reconnect ${_selected!.bankName} from its card to withdraw to it.',
-          _error);
+        'Reconnect ${_selected!.bankName} from its card to withdraw to it.',
+        _error,
+      );
       return;
     }
     _submitting = true;
@@ -444,8 +469,10 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       // admin-tunable fees may have drifted, so it could under-show the real charge.
       // Ask the user to retry so the shown fee is always the authoritative one.
       if (_quotedFeeKobo == null) {
-        _snack("We couldn't confirm the withdrawal fee. Please try again.",
-            _error);
+        _snack(
+          "We couldn't confirm the withdrawal fee. Please try again.",
+          _error,
+        );
         return;
       }
       // Re-check affordability now that the real (higher) fee is known.
@@ -455,9 +482,51 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
         return;
       }
     }
+    // RETAINED-BALANCE FLOOR — the fifth payout entry point.
+    //
+    // WHY HERE. This runs AFTER the authoritative fee quote above and BEFORE the
+    // PIN sheet, which is the same position the other four entry points use. The
+    // fee matters: the server applies the floor to amount PLUS fee, so checking
+    // on the amount alone would let a withdrawal through here and have it
+    // refused server-side after the user had already entered their PIN.
+    //
+    // A bank withdrawal is money LEAVING the wallet, so the policy applies just
+    // as it does to a transfer. The server refuses it regardless — this exists so
+    // the user finds out before spending a PIN attempt, with a dialog that says
+    // the retained balance is still theirs to spend.
+    final floor = MinBalancePolicy.resolve(accountType: _sourceAccountType);
+    final availableMinor = (_availableBalance * 100).round();
+    final feeMinor = (_fee * 100).round();
+    if (floor.blocks(
+      availableMinor: availableMinor,
+      spendMinor: (_totalDebit * 100).round(),
+    )) {
+      await showMinBalanceRefusal(
+        context,
+        currencySymbol: _currencySymbol,
+        policy: floor,
+        availableMinor: availableMinor,
+        feeMinor: feeMinor,
+        onSendMax: () {
+          final maxMinor = floor.maxSendableMinor(
+            availableMinor: availableMinor,
+            feeMinor: feeMinor,
+          );
+          if (maxMinor <= 0) return;
+          _amountController.text = (maxMinor / 100.0).toStringAsFixed(2);
+          // Re-quote: the payout fee is tiered, so a smaller amount can carry a
+          // smaller fee. _validate() still guards the result, and the server
+          // remains authoritative either way.
+          setState(_scheduleFeeQuote);
+        },
+      );
+      return;
+    }
+
     final transactionId = const Uuid().v4();
-    final destName =
-        account.accountName.isNotEmpty ? account.accountName : account.bankName;
+    final destName = account.accountName.isNotEmpty
+        ? account.accountName
+        : account.bankName;
 
     banking_pb.WithdrawalResponse? resp;
 
@@ -503,27 +572,30 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     final totalKobo = resp!.withdrawal.totalAmount.toInt();
     final fee = feeKobo > 0 ? feeKobo / 100.0 : _fee;
     final totalDebited = totalKobo > 0 ? totalKobo / 100.0 : amount + fee;
-    Get.off(() => WithdrawalReceiptScreen(
-          amount: amount,
-          fee: fee,
-          totalDebited: totalDebited,
-          bankName: account.bankName.isNotEmpty ? account.bankName : 'Bank',
-          accountNumber: account.displayAccountNumber,
-          reference: resp!.withdrawal.reference,
-          currencySymbol: _currencySymbol,
-          status: resp!.withdrawal.status,
-          // Live receipt: polls GetWithdrawalStatus until the payout settles.
-          withdrawalId: resp!.withdrawal.id,
-        ));
+    Get.off(
+      () => WithdrawalReceiptScreen(
+        amount: amount,
+        fee: fee,
+        totalDebited: totalDebited,
+        bankName: account.bankName.isNotEmpty ? account.bankName : 'Bank',
+        accountNumber: account.displayAccountNumber,
+        reference: resp!.withdrawal.reference,
+        currencySymbol: _currencySymbol,
+        status: resp!.withdrawal.status,
+        // Live receipt: polls GetWithdrawalStatus until the payout settles.
+        withdrawalId: resp!.withdrawal.id,
+      ),
+    );
   }
 
   /// Fires the withdrawal gRPC. Returns the response (success or business
   /// failure); throws on transport error so the sheet shows a failure state.
   Future<banking_pb.WithdrawalResponse> _runWithdrawal(
-      LinkedBankAccount account,
-      double amount,
-      String transactionId,
-      String verificationToken) async {
+    LinkedBankAccount account,
+    double amount,
+    String transactionId,
+    String verificationToken,
+  ) async {
     final req = banking_pb.InitiateWithdrawalRequest()
       ..sourceAccountId = _sourceAccountId
       ..linkedAccountId = account.id
@@ -537,27 +609,37 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       ..transactionId = transactionId;
 
     var callOptions = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
-    callOptions = callOptions.mergedWith(CallOptions(metadata: {
-      'x-verification-token': verificationToken,
-      'x-transaction-id': transactionId,
-    }));
+    callOptions = callOptions.mergedWith(
+      CallOptions(
+        metadata: {
+          'x-verification-token': verificationToken,
+          'x-transaction-id': transactionId,
+        },
+      ),
+    );
 
     final client = serviceLocator<banking_grpc.BankingServiceClient>();
     return client.initiateWithdrawal(req, options: callOptions);
   }
 
   void _snack(String msg, Color color) {
-    Get.snackbar('', msg,
-        titleText: const SizedBox.shrink(),
-        messageText: Text(msg, style: const TextStyle(color: Colors.white)),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: color.withValues(alpha: 0.95),
-        margin: EdgeInsets.all(12.w));
+    Get.snackbar(
+      '',
+      msg,
+      titleText: const SizedBox.shrink(),
+      messageText: Text(msg, style: const TextStyle(color: Colors.white)),
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: color.withValues(alpha: 0.95),
+      margin: EdgeInsets.all(12.w),
+    );
   }
 
   // ===== Bank logo (bundled asset, gradient-initials fallback) =====
-  Widget _bankLogoAvatar(String bankName,
-      {String? bankCode, double size = 42}) {
+  Widget _bankLogoAvatar(
+    String bankName, {
+    String? bankCode,
+    double size = 42,
+  }) {
     return BankLogo(
       bankName: bankName,
       bankCode: bankCode,
@@ -579,8 +661,10 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                   .toList();
               _loadingAccounts = false;
               if (_selected == null && _linkedAccounts.isNotEmpty) {
-                _selected = _linkedAccounts.firstWhere((a) => a.isDefault,
-                    orElse: () => _linkedAccounts.first);
+                _selected = _linkedAccounts.firstWhere(
+                  (a) => a.isDefault,
+                  orElse: () => _linkedAccounts.first,
+                );
               }
             });
           } else if (state is AccountLinked) {
@@ -594,16 +678,20 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             if (mounted) {
               setState(() {
                 _linkedAccounts = _linkedAccounts
-                    .map((a) => a.id == state.accountId
-                        ? a.copyWith(
-                            lastKnownBalance: state.newBalance,
-                            balanceUpdatedAt: DateTime.now())
-                        : a)
+                    .map(
+                      (a) => a.id == state.accountId
+                          ? a.copyWith(
+                              lastKnownBalance: state.newBalance,
+                              balanceUpdatedAt: DateTime.now(),
+                            )
+                          : a,
+                    )
                     .toList();
                 if (_selected?.id == state.accountId) {
                   _selected = _linkedAccounts.firstWhere(
-                      (a) => a.id == state.accountId,
-                      orElse: () => _selected!);
+                    (a) => a.id == state.accountId,
+                    orElse: () => _selected!,
+                  );
                 }
               });
             }
@@ -630,9 +718,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           appBar: AppBar(
             backgroundColor: AppSurfaces.pageTop,
             elevation: 0,
-            title: Text('Withdraw',
-                style: _inter(
-                    size: 18.sp, weight: FontWeight.w700, color: Colors.white)),
+            title: Text(
+              'Withdraw',
+              style: _inter(
+                size: 18.sp,
+                weight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
             iconTheme: const IconThemeData(color: Colors.white),
             actions: [
               // Withdrawal history — every past payout with its live status.
@@ -648,11 +741,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                       color: Colors.white.withValues(alpha: 0.07),
                       borderRadius: BorderRadius.circular(10.r),
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.12)),
+                        color: Colors.white.withValues(alpha: 0.12),
+                      ),
                     ),
-                    child: Icon(Icons.receipt_long_rounded,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        size: 18.sp),
+                    child: Icon(
+                      Icons.receipt_long_rounded,
+                      color: Colors.white.withValues(alpha: 0.9),
+                      size: 18.sp,
+                    ),
                   ),
                 ),
               ),
@@ -696,7 +792,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                       child: Center(
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                              horizontal: 28.w, vertical: 26.h),
+                            horizontal: 28.w,
+                            vertical: 26.h,
+                          ),
                           decoration: BoxDecoration(
                             color: _card,
                             borderRadius: BorderRadius.circular(18.r),
@@ -707,15 +805,22 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                             children: [
                               LazerVaultLoader(size: 38),
                               SizedBox(height: 16.h),
-                              Text('Linking your bank…',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15.sp,
-                                      fontWeight: FontWeight.w700)),
+                              Text(
+                                'Linking your bank…',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                               SizedBox(height: 4.h),
-                              Text('Securely connecting via Mono',
-                                  style: TextStyle(
-                                      color: _textSecondary, fontSize: 12.sp)),
+                              Text(
+                                'Securely connecting via Mono',
+                                style: TextStyle(
+                                  color: _textSecondary,
+                                  fontSize: 12.sp,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -759,16 +864,22 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                   color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(11.r),
                 ),
-                child: Icon(Icons.account_balance_wallet_outlined,
-                    color: Colors.white, size: 20.sp),
+                child: Icon(
+                  Icons.account_balance_wallet_outlined,
+                  color: Colors.white,
+                  size: 20.sp,
+                ),
               ),
               SizedBox(width: 12.w),
               Expanded(
-                child: Text('Available to withdraw',
-                    style: _inter(
-                        size: 12.5.sp,
-                        weight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.85))),
+                child: Text(
+                  'Available to withdraw',
+                  style: _inter(
+                    size: 12.5.sp,
+                    weight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
+                ),
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
@@ -776,33 +887,47 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                   color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
-                child: Text(_currency,
-                    style: _inter(
-                        size: 11.sp,
-                        weight: FontWeight.w700,
-                        color: Colors.white,
-                        spacing: 0.4)),
+                child: Text(
+                  _currency,
+                  style: _inter(
+                    size: 11.sp,
+                    weight: FontWeight.w700,
+                    color: Colors.white,
+                    spacing: 0.4,
+                  ),
+                ),
               ),
             ],
           ),
           SizedBox(height: 16.h),
-          Text(_money(_availableBalance),
-              style: _inter(
-                  size: 30.sp, weight: FontWeight.w800, color: Colors.white)),
+          Text(
+            _money(_availableBalance),
+            style: _inter(
+              size: 30.sp,
+              weight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
           SizedBox(height: 4.h),
-          Text('From $_activeAccountLabel',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: _inter(
-                  size: 11.5.sp,
-                  weight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.92))),
+          Text(
+            'From $_activeAccountLabel',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: _inter(
+              size: 11.5.sp,
+              weight: FontWeight.w600,
+              color: Colors.white.withValues(alpha: 0.92),
+            ),
+          ),
           SizedBox(height: 4.h),
-          Text('Debited from this account · sent to your linked bank over NIP',
-              style: _inter(
-                  size: 11.5.sp,
-                  weight: FontWeight.w400,
-                  color: Colors.white.withValues(alpha: 0.78))),
+          Text(
+            'Debited from this account · sent to your linked bank over NIP',
+            style: _inter(
+              size: 11.5.sp,
+              weight: FontWeight.w400,
+              color: Colors.white.withValues(alpha: 0.78),
+            ),
+          ),
         ],
       ),
     );
@@ -813,9 +938,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Amount',
-            style: _inter(
-                size: 14.sp, weight: FontWeight.w600, color: Colors.white)),
+        Text(
+          'Amount',
+          style: _inter(
+            size: 14.sp,
+            weight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
         SizedBox(height: 8.h),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -829,29 +959,36 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           ),
           child: Row(
             children: [
-              Text(_currencySymbol,
-                  style: _inter(
-                      size: 20.sp,
-                      weight: FontWeight.w700,
-                      color: Colors.white)),
+              Text(
+                _currencySymbol,
+                style: _inter(
+                  size: 20.sp,
+                  weight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
               SizedBox(width: 8.w),
               Expanded(
                 child: TextField(
                   controller: _amountController,
                   focusNode: _amountFocus,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d*\.?\d{0,2}'),
+                    ),
                   ],
                   onChanged: (_) {
                     setState(() {});
                     _scheduleFeeQuote();
                   },
                   style: _inter(
-                      size: 22.sp,
-                      weight: FontWeight.w700,
-                      color: Colors.white),
+                    size: 22.sp,
+                    weight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                   decoration: InputDecoration(
                     hintText: '0.00',
                     hintStyle: _inter(size: 22.sp, color: _textSecondary),
@@ -867,14 +1004,19 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           SizedBox(height: 8.h),
           Row(
             children: [
-              Text('Fee ${_money(_fee)}',
-                  style: _inter(size: 12.sp, color: _textSecondary)),
+              Text(
+                'Fee ${_money(_fee)}',
+                style: _inter(size: 12.sp, color: _textSecondary),
+              ),
               const Spacer(),
-              Text('Total ${_money(_totalDebit)}',
-                  style: _inter(
-                      size: 12.sp,
-                      weight: FontWeight.w600,
-                      color: Colors.white.withValues(alpha: 0.8))),
+              Text(
+                'Total ${_money(_totalDebit)}',
+                style: _inter(
+                  size: 12.sp,
+                  weight: FontWeight.w600,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+              ),
             ],
           ),
           // The fee the user pays is ONE number.
@@ -888,9 +1030,10 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           // transaction (provider_fee_kobo / platform_fee_kobo) and is where it
           // belongs: the admin dashboard's fee auditing.
           SizedBox(height: 3.h),
-          Text('You receive ${_money(_enteredAmount)} at your bank',
-              style:
-                  _inter(size: 11.sp, weight: FontWeight.w500, color: _accent)),
+          Text(
+            'You receive ${_money(_enteredAmount)} at your bank',
+            style: _inter(size: 11.sp, weight: FontWeight.w500, color: _accent),
+          ),
         ],
       ],
     );
@@ -910,11 +1053,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Withdraw to',
-                      style: _inter(
-                          size: 16.sp,
-                          weight: FontWeight.w600,
-                          color: Colors.white)),
+                  Text(
+                    'Withdraw to',
+                    style: _inter(
+                      size: 16.sp,
+                      weight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
                   SizedBox(height: 3.h),
                   Text(
                     _linkedAccounts.isEmpty
@@ -934,11 +1080,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                   children: [
                     Icon(Icons.add_circle_outline, color: _accent, size: 16.sp),
                     SizedBox(width: 3.w),
-                    Text('Link new',
-                        style: _inter(
-                            size: 13.sp,
-                            weight: FontWeight.w700,
-                            color: _accent)),
+                    Text(
+                      'Link new',
+                      style: _inter(
+                        size: 13.sp,
+                        weight: FontWeight.w700,
+                        color: _accent,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -951,11 +1100,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                   padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
                   child: Row(
                     children: [
-                      Text('View all',
-                          style: _inter(
-                              size: 13.sp,
-                              weight: FontWeight.w700,
-                              color: _accent)),
+                      Text(
+                        'View all',
+                        style: _inter(
+                          size: 13.sp,
+                          weight: FontWeight.w700,
+                          color: _accent,
+                        ),
+                      ),
                       Icon(Icons.chevron_right, color: _accent, size: 18.sp),
                     ],
                   ),
@@ -1044,26 +1196,37 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             // never be pushed through the card's bottom edge (was a rigid
             // Spacer inside an overflowing fixed-height slot).
             const Spacer(),
-            Text(a.bankName.isNotEmpty ? a.bankName : 'Linked bank',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: _inter(
-                    size: 14.sp, weight: FontWeight.w700, color: Colors.white)),
+            Text(
+              a.bankName.isNotEmpty ? a.bankName : 'Linked bank',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: _inter(
+                size: 14.sp,
+                weight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
             if (a.accountName.isNotEmpty) ...[
               SizedBox(height: 3.h),
-              Text(a.accountName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 12.sp)),
+              Text(
+                a.accountName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 12.sp,
+                ),
+              ),
             ],
             SizedBox(height: 2.h),
-            Text(a.displayAccountNumber,
-                style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 11.5.sp,
-                    letterSpacing: 0.3)),
+            Text(
+              a.displayAccountNumber,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 11.5.sp,
+                letterSpacing: 0.3,
+              ),
+            ),
             SizedBox(height: 3.h),
             // Cached balance from our DB record + when it was last refreshed. A live
             // Mono balance read is BILLED PER ACCOUNT, so we NEVER auto-fetch — the
@@ -1075,43 +1238,53 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             // replaced this row with an error widget and blew the card out
             // ("BOTTOM OVERFLOWED BY 99941 PIXELS"). Same fix as the deposit
             // carousel cards.
-            Builder(builder: (liveCtx) {
-              final isRefreshing = liveCtx.select<OpenBankingCubit, bool>((c) {
-                final s = c.state;
-                return s is BalanceRefreshing && s.accountId == a.id;
-              });
-              return Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('₦${a.lastKnownBalance.toStringAsFixed(2)}',
+            Builder(
+              builder: (liveCtx) {
+                final isRefreshing = liveCtx.select<OpenBankingCubit, bool>((
+                  c,
+                ) {
+                  final s = c.state;
+                  return s is BalanceRefreshing && s.accountId == a.id;
+                });
+                return Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '₦${a.lastKnownBalance.toStringAsFixed(2)}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12.5.sp,
-                                fontWeight: FontWeight.w700)),
-                        SizedBox(height: 1.h),
-                        Text(
+                              color: Colors.white,
+                              fontSize: 12.5.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 1.h),
+                          Text(
                             needsReauth
                                 ? 'Reconnect to refresh'
                                 : linkedBalanceLastUpdatedLabel(
-                                    a.balanceUpdatedAt),
+                                    a.balanceUpdatedAt,
+                                  ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.45),
-                                fontSize: 9.5.sp)),
-                      ],
+                              color: Colors.white.withValues(alpha: 0.45),
+                              fontSize: 9.5.sp,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  if (!needsReauth) _cardRefreshButton(a, isRefreshing),
-                ],
-              );
-            }),
+                    if (!needsReauth) _cardRefreshButton(a, isRefreshing),
+                  ],
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -1147,7 +1320,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                       width: 13.w,
                       height: 13.w,
                       child: const CircularProgressIndicator(
-                          strokeWidth: 2, color: accent),
+                        strokeWidth: 2,
+                        color: accent,
+                      ),
                     )
                   : Icon(Icons.sync_rounded, size: 15.sp, color: accent),
             ),
@@ -1196,41 +1371,52 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18.r),
+        ),
         child: Padding(
           padding: EdgeInsets.all(20.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Container(
-                  width: 38.w,
-                  height: 38.w,
-                  decoration: BoxDecoration(
+              Row(
+                children: [
+                  Container(
+                    width: 38.w,
+                    height: 38.w,
+                    decoration: BoxDecoration(
                       color: _accent.withValues(alpha: 0.14),
-                      shape: BoxShape.circle),
-                  child: Icon(Icons.account_balance_outlined,
-                      color: _accent, size: 19.sp),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Text('Payout to $bank',
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.account_balance_outlined,
+                      color: _accent,
+                      size: 19.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Text(
+                      'Payout to $bank',
                       style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700)),
-                ),
-              ]),
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               SizedBox(height: 16.h),
               Text(
                 'Withdrawals send money TO this bank over NIP (instant bank transfer). '
                 'No Direct Debit authorization is needed. That is only for pulling money IN (deposits).',
                 style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 13.sp,
-                    height: 1.45),
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 13.sp,
+                  height: 1.45,
+                ),
               ),
               SizedBox(height: 12.h),
               _payoutInfoRow(
@@ -1242,8 +1428,11 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               ),
               if (a.needsReauthorization) ...[
                 SizedBox(height: 8.h),
-                _payoutInfoRow(Icons.refresh, const Color(0xFFFB923C),
-                    'The connection expired. Reconnect to refresh live balances.'),
+                _payoutInfoRow(
+                  Icons.refresh,
+                  const Color(0xFFFB923C),
+                  'The connection expired. Reconnect to refresh live balances.',
+                ),
               ],
               SizedBox(height: 18.h),
               Align(
@@ -1251,9 +1440,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                 child: TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
                   style: TextButton.styleFrom(foregroundColor: _accent),
-                  child: Text('Got it',
-                      style: TextStyle(
-                          fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                  child: Text(
+                    'Got it',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -1264,17 +1457,23 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   }
 
   Widget _payoutInfoRow(IconData icon, Color color, String text) {
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Icon(icon, color: color, size: 16.sp),
-      SizedBox(width: 10.w),
-      Expanded(
-        child: Text(text,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 16.sp),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Text(
+            text,
             style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.78),
-                fontSize: 12.5.sp,
-                height: 1.4)),
-      ),
-    ]);
+              color: Colors.white.withValues(alpha: 0.78),
+              fontSize: 12.5.sp,
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   /// Trailing carousel card to link another bank.
@@ -1306,15 +1505,23 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               child: Icon(Icons.add_rounded, color: Colors.white, size: 24.sp),
             ),
             const Spacer(),
-            Text('Link a new bank',
-                style: _inter(
-                    size: 13.sp, weight: FontWeight.w800, color: Colors.white)),
+            Text(
+              'Link a new bank',
+              style: _inter(
+                size: 13.sp,
+                weight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ),
             SizedBox(height: 3.h),
-            Text('Withdraw to another account',
-                maxLines: 2,
-                style: _inter(
-                    size: 10.5.sp,
-                    color: Colors.white.withValues(alpha: 0.85))),
+            Text(
+              'Withdraw to another account',
+              maxLines: 2,
+              style: _inter(
+                size: 10.5.sp,
+                color: Colors.white.withValues(alpha: 0.85),
+              ),
+            ),
           ],
         ),
       ),
@@ -1348,8 +1555,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               width: 46.w,
               height: 46.w,
               decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(13.r)),
+                color: Colors.white.withValues(alpha: 0.22),
+                borderRadius: BorderRadius.circular(13.r),
+              ),
               child: Icon(Icons.add_rounded, color: Colors.white, size: 26.sp),
             ),
             SizedBox(width: 14.w),
@@ -1357,16 +1565,22 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Link a bank to withdraw',
-                      style: _inter(
-                          size: 16.sp,
-                          weight: FontWeight.w800,
-                          color: Colors.white)),
+                  Text(
+                    'Link a bank to withdraw',
+                    style: _inter(
+                      size: 16.sp,
+                      weight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
                   SizedBox(height: 3.h),
-                  Text('Securely connect a bank via Mono',
-                      style: _inter(
-                          size: 12.sp,
-                          color: Colors.white.withValues(alpha: 0.85))),
+                  Text(
+                    'Securely connect a bank via Mono',
+                    style: _inter(
+                      size: 12.sp,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1385,7 +1599,8 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(
         constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(sheetCtx).size.height * 0.82),
+          maxHeight: MediaQuery.of(sheetCtx).size.height * 0.82,
+        ),
         decoration: BoxDecoration(
           color: const Color(0xFF2E2E38),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
@@ -1402,17 +1617,21 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                   width: 44.w,
                   height: 4.h,
                   decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(2.r)),
+                    color: Colors.white.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.fromLTRB(22.w, 18.h, 22.w, 14.h),
-                child: Text('Withdraw to',
-                    style: _inter(
-                        size: 20.sp,
-                        weight: FontWeight.w800,
-                        color: Colors.white)),
+                child: Text(
+                  'Withdraw to',
+                  style: _inter(
+                    size: 20.sp,
+                    weight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
               ),
               Flexible(
                 child: ListView(
@@ -1423,15 +1642,19 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                     if (_linkedAccounts.isNotEmpty) ...[
                       Padding(
                         padding: EdgeInsets.fromLTRB(4.w, 16.h, 4.w, 10.h),
-                        child: Text('YOUR LINKED BANKS',
-                            style: _inter(
-                                size: 11.sp,
-                                weight: FontWeight.w700,
-                                color: Colors.white.withValues(alpha: 0.45),
-                                spacing: 1.0)),
+                        child: Text(
+                          'YOUR LINKED BANKS',
+                          style: _inter(
+                            size: 11.sp,
+                            weight: FontWeight.w700,
+                            color: Colors.white.withValues(alpha: 0.45),
+                            spacing: 1.0,
+                          ),
+                        ),
                       ),
-                      ..._linkedAccounts
-                          .map((a) => _buildSheetAccountTile(sheetCtx, a)),
+                      ..._linkedAccounts.map(
+                        (a) => _buildSheetAccountTile(sheetCtx, a),
+                      ),
                     ],
                   ],
                 ),
@@ -1445,7 +1668,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   }
 
   Widget _buildSheetAccountTile(
-      BuildContext sheetCtx, LinkedBankAccount account) {
+    BuildContext sheetCtx,
+    LinkedBankAccount account,
+  ) {
     final selected = _selected?.id == account.id;
     return GestureDetector(
       onTap: () {
@@ -1469,28 +1694,36 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
         ),
         child: Row(
           children: [
-            _bankLogoAvatar(account.bankName,
-                bankCode: account.bankCode, size: 46),
+            _bankLogoAvatar(
+              account.bankName,
+              bankCode: account.bankCode,
+              size: 46,
+            ),
             SizedBox(width: 14.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      account.bankName.isNotEmpty
-                          ? account.bankName
-                          : 'Linked bank',
-                      overflow: TextOverflow.ellipsis,
-                      style: _inter(
-                          size: 15.sp,
-                          weight: FontWeight.w700,
-                          color: Colors.white)),
+                    account.bankName.isNotEmpty
+                        ? account.bankName
+                        : 'Linked bank',
+                    overflow: TextOverflow.ellipsis,
+                    style: _inter(
+                      size: 15.sp,
+                      weight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                   SizedBox(height: 4.h),
-                  Text(account.displayAccountNumber,
-                      style: _inter(
-                          size: 12.sp,
-                          color: Colors.white.withValues(alpha: 0.5),
-                          spacing: 0.3)),
+                  Text(
+                    account.displayAccountNumber,
+                    style: _inter(
+                      size: 12.sp,
+                      color: Colors.white.withValues(alpha: 0.5),
+                      spacing: 0.3,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1501,10 +1734,11 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                 shape: BoxShape.circle,
                 color: selected ? _primaryPurple : Colors.transparent,
                 border: Border.all(
-                    color: selected
-                        ? _primaryPurple
-                        : Colors.white.withValues(alpha: 0.25),
-                    width: 1.5),
+                  color: selected
+                      ? _primaryPurple
+                      : Colors.white.withValues(alpha: 0.25),
+                  width: 1.5,
+                ),
               ),
               child: selected
                   ? Icon(Icons.check, color: Colors.white, size: 15.sp)
@@ -1545,8 +1779,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               width: 46.w,
               height: 46.w,
               decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(13.r)),
+                color: Colors.white.withValues(alpha: 0.22),
+                borderRadius: BorderRadius.circular(13.r),
+              ),
               child: Icon(Icons.add_rounded, color: Colors.white, size: 26.sp),
             ),
             SizedBox(width: 14.w),
@@ -1554,16 +1789,22 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Link a new bank',
-                      style: _inter(
-                          size: 16.sp,
-                          weight: FontWeight.w800,
-                          color: Colors.white)),
+                  Text(
+                    'Link a new bank',
+                    style: _inter(
+                      size: 16.sp,
+                      weight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
                   SizedBox(height: 3.h),
-                  Text('Securely connect a bank to withdraw to',
-                      style: _inter(
-                          size: 12.sp,
-                          color: Colors.white.withValues(alpha: 0.85))),
+                  Text(
+                    'Securely connect a bank to withdraw to',
+                    style: _inter(
+                      size: 12.sp,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1605,14 +1846,19 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               disabledBackgroundColor: _primaryPurple.withValues(alpha: 0.3),
               elevation: 0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14.r)),
+                borderRadius: BorderRadius.circular(14.r),
+              ),
             ),
             child: Text(
-                _enteredAmount > 0
-                    ? 'Withdraw ${_money(_totalDebit)}'
-                    : 'Withdraw',
-                style: _inter(
-                    size: 16.sp, weight: FontWeight.w800, color: Colors.white)),
+              _enteredAmount > 0
+                  ? 'Withdraw ${_money(_totalDebit)}'
+                  : 'Withdraw',
+              style: _inter(
+                size: 16.sp,
+                weight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
       ),

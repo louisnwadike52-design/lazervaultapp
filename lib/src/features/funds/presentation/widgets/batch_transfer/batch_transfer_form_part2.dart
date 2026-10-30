@@ -926,10 +926,32 @@ class _MultiSelectRecipientBottomSheetState
                                         color: btTextPrimary,
                                         fontSize: 13.5.sp,
                                         fontWeight: FontWeight.w600)),
-                                Text(sug.bankName,
-                                    style: GoogleFonts.inter(
-                                        color: btTextSecondary,
-                                        fontSize: 11.5.sp)),
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                          // Never a bare bank name: the masked
+                                          // number says WHICH account this row
+                                          // pays.
+                                          [
+                                            sug.bankName,
+                                            maskedAccountNumber(
+                                                sug.accountNumber),
+                                          ]
+                                              .where((t) => t.isNotEmpty)
+                                              .join('  •  '),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.inter(
+                                              color: btTextSecondary,
+                                              fontSize: 11.5.sp)),
+                                    ),
+                                    if (sug.isLazervault) ...[
+                                      SizedBox(width: 6.w),
+                                      _internalInstantBadge(),
+                                    ],
+                                  ],
+                                ),
                               ],
                             ),
                           ),
@@ -1328,7 +1350,12 @@ class _MultiSelectRecipientBottomSheetState
         _loadingBankSuggestions = false;
         _bankSuggestions = suggestions;
       });
-      if (suggestions.length == 1) {
+      //
+      // A LAZERVAULT match is never auto-applied, even alone: it changes which
+      // rail the money takes, and "internal and instant" is the thing the
+      // payer is meant to be shown rather than have decided for them. With no
+      // Lazervault match this is byte-for-byte the previous rule.
+      if (!suggestions.any((s) => s.isLazervault) && suggestions.length == 1) {
         // The submit path would auto-apply a lone match anyway — do it now and
         // save the tap. Multi-match stays a human choice: same number at
         // different banks is a DIFFERENT holder each time.
@@ -1362,6 +1389,10 @@ class _MultiSelectRecipientBottomSheetState
   /// verified-state fields the manual verify path fills, so the existing Add
   /// button and the sheet's Add-Recipients CTA work unchanged.
   void _applyBankSuggestion(AccountSuggestion sug) {
+    if (sug.isLazervault) {
+      _applyLazervaultSuggestion(sug);
+      return;
+    }
     setState(() {
       _selectedBankName = sug.bankName;
       _selectedBankCode = sug.bankCode;
@@ -1372,6 +1403,75 @@ class _MultiSelectRecipientBottomSheetState
       _bankSuggestions = [];
       _loadingBankSuggestions = false;
     });
+  }
+
+  /// The user tapped the LAZERVAULT suggestion: the typed number is an account
+  /// on this platform, so it joins the batch as an INTERNAL recipient instead
+  /// of an external bank payout.
+  ///
+  /// Goes through [_toggleRecipientSelection] — the same path the user-search
+  /// tab uses — rather than [_addBankAccountRecipient], which gates on a bank
+  /// code there is no bank for, and which would stamp `type: 'external'`.
+  /// Reusing it also keeps the self-transfer guard and the 20-recipient cap.
+  void _applyLazervaultSuggestion(AccountSuggestion sug) {
+    final recipient = RecipientModel(
+      id: sug.internalUserId.isNotEmpty
+          ? sug.internalUserId
+          : 'lazervault_${sug.accountNumber}',
+      name: sug.accountName,
+      accountNumber: sug.accountNumber,
+      // BrandBank, not a literal — the correct user-facing spelling AND the
+      // value the internal/external decision recognises (CLAUDE.md §0).
+      bankName: BrandBank.displayName,
+      sortCode: '', // no bank to pay out to
+      isFavorite: false,
+      isSaved: false,
+      type: 'internal',
+      // The proof `canSendAsInternal` requires, plus the stable destination
+      // account id (the typed number is a virtual account; the id is not).
+      internalUserId: sug.internalUserId.isNotEmpty ? sug.internalUserId : null,
+      internalAccountId:
+          sug.internalAccountId.isNotEmpty ? sug.internalAccountId : null,
+      accountHolderName: sug.accountName,
+    );
+    setState(() {
+      _bankSuggestions = [];
+      _loadingBankSuggestions = false;
+      _bankAccountController.clear();
+      _verifiedBeneficiaryName = null;
+      _verifiedBankCode = null;
+      _verifiedBankName = null;
+    });
+    _toggleRecipientSelection(recipient);
+  }
+
+  /// "Internal · instant" — the two facts that make the Lazervault row the
+  /// better choice than the bank row under it: no transfer fee because the
+  /// money never leaves the platform, and it lands now rather than on the
+  /// bank's next settlement window.
+  Widget _internalInstantBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.bolt, size: 11.sp, color: const Color(0xFF34D399)),
+          SizedBox(width: 3.w),
+          Text(
+            'Internal · instant',
+            style: GoogleFonts.inter(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF34D399),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildRecipientItem({

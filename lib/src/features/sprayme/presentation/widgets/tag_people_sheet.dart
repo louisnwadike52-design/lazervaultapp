@@ -255,7 +255,7 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
         textInputAction: TextInputAction.search,
         style: TextStyle(color: Colors.white, fontSize: 14.sp),
         decoration: InputDecoration(
-          hintText: 'Search by name, username or email',
+          hintText: 'Name, username, email or account no.',
           hintStyle:
               TextStyle(color: const Color(0xFF6B7280), fontSize: 13.5.sp),
           prefixIcon:

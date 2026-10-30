@@ -194,9 +194,29 @@ class _AppStartupGateState extends State<AppStartupGate>
         // device's network — and worth not second-guessing with further probes.
         return OutageKind.server;
 
+      case BackendReachability.timedOut:
+        // The link reached far enough to stall rather than refuse. That is the
+        // signature of a slow connection, NOT of a dead server, and it is the
+        // case that used to be folded into the branch below and reported as
+        // "our servers are being updated".
+        //
+        // The radio check still runs first: a timeout with no interface at all
+        // is just being offline by a slower route.
+        if (!await _deviceOnline()) return OutageKind.connection;
+        if (!mounted) return null;
+        // If the small 204 probes also fail, the connection is not merely slow
+        // but effectively unusable, which the user reads as being offline.
+        final reachableWhileSlow = await _serverStatus.hasWorkingInternet();
+        if (!mounted) return null;
+        return reachableWhileSlow
+            ? OutageKind.slowConnection
+            : OutageKind.connection;
+
       case BackendReachability.unreachable:
-        // Ambiguous. The radio check is free and instant, so it goes first: if
-        // there is no interface at all, we are certainly not the problem.
+        // A HARD failure on every attempt — refused, or no DNS. Ambiguous
+        // between our edge being gone and the device having no route at all.
+        // The radio check is free and instant, so it goes first: if there is no
+        // interface, we are certainly not the problem.
         if (!await _deviceOnline()) return OutageKind.connection;
         if (!mounted) return null;
         // Radio says connected, which means nothing on its own. Ask whether the

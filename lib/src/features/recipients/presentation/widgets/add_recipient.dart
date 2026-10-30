@@ -1,4 +1,5 @@
 import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/core/utils/masked_account_number.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -130,6 +131,21 @@ class _AddRecipientState extends State<AddRecipient>
   List<AccountSuggestion> _bankSuggestions = [];
   bool _loadingSuggestions = false;
   Timer? _suggestDebounce;
+
+  // The LAZERVAULT suggestion the user actually tapped, if they did.
+  //
+  // Kept because the confirmation sheet and [_proceedToPayment] below speak in
+  // AccountVerificationResult, which has no room for the internal routing
+  // identities — and those are the whole point: `canSendAsInternal` accepts a
+  // resolved LazerVault user id as proof and nothing else, so without them the
+  // recipient would carry a Lazervault bank name with no user behind it and
+  // the backend would refuse it as "recipient not found on LazerVault".
+  //
+  // Cleared whenever a bank is picked manually or the account number changes,
+  // and re-checked against the result in [_proceedToPayment] — a stale match
+  // must never be able to turn a verified EXTERNAL account into an internal
+  // transfer.
+  AccountSuggestion? _pendingInternalMatch;
 
   // Account-FIRST: the Bank selection field is HIDDEN by default so the user
   // feels they only need the account number. It's revealed as a FALLBACK only
@@ -3433,6 +3449,8 @@ class _AddRecipientState extends State<AddRecipient>
     final complete = _isAccountNumberComplete(value);
     setState(() {
       if (_verificationResult != null) _verificationResult = null;
+      // Editing the number invalidates the Lazervault match it belonged to.
+      _pendingInternalMatch = null;
       if (!complete) {
         _bankSuggestions = [];
         _loadingSuggestions = false;
@@ -3470,6 +3488,8 @@ class _AddRecipientState extends State<AddRecipient>
   /// purely additive over the manual bank picker.
   Future<void> _fetchBankSuggestions(String accountNumber) async {
     if (!mounted) return;
+    // A new number invalidates the previous internal match outright.
+    _pendingInternalMatch = null;
     try {
       final suggestions = await context
           .read<AccountVerificationCubit>()
@@ -3498,7 +3518,14 @@ class _AddRecipientState extends State<AddRecipient>
       // transfer at the wrong person. Ambiguity is exactly when a human should
       // choose. The confirmation sheet still shows the resolved account name
       // either way, so the single-match path is confirmed, not assumed.
-      if (suggestions.length == 1) {
+      //
+      // A LAZERVAULT match is never auto-applied, even when it is the only
+      // one. Applying it silently would change which rail the money takes —
+      // internal instead of a bank payout — without the payer ever seeing
+      // that choice offered, and "internal and instant" is exactly the thing
+      // they are supposed to be told. When no Lazervault match is present this
+      // is byte-for-byte the previous rule.
+      if (!suggestions.any((s) => s.isLazervault) && suggestions.length == 1) {
         _selectSuggestion(suggestions.first);
         return; // _selectSuggestion syncs the overlay itself
       }
@@ -3516,6 +3543,10 @@ class _AddRecipientState extends State<AddRecipient>
   /// resolved holder name (no second verify round-trip), then open the same
   /// confirmation sheet the manual verify path uses.
   void _selectSuggestion(AccountSuggestion s) {
+    if (s.isLazervault) {
+      _selectLazervaultSuggestion(s);
+      return;
+    }
     setState(() {
       _bankController.text = s.bankName;
       _selectedBankCode = s.bankCode;
@@ -3530,6 +3561,37 @@ class _AddRecipientState extends State<AddRecipient>
       );
     });
     _syncSuggestOverlay(); // hide the tooltip now that a bank is chosen
+    _showAccountConfirmationBottomSheet(_verificationResult!);
+  }
+
+  /// The user tapped the LAZERVAULT suggestion: the number they typed is an
+  /// account on this platform, so the money stays internal.
+  ///
+  /// Goes through the SAME confirmation sheet as the external path — the payer
+  /// still gets to read the holder name and the destination before anything
+  /// moves — and only [_proceedToPayment] differs, where the recipient is
+  /// built as internal. No bank code is set, because there is no bank to pay.
+  void _selectLazervaultSuggestion(AccountSuggestion s) {
+    setState(() {
+      _loadingSuggestions = false;
+      _pendingInternalMatch = s;
+      _verificationResult = AccountVerificationResult(
+        accountNumber: s.accountNumber,
+        accountName: s.accountName,
+        bankName: s.bankName, // "Lazervault" — BrandBank.displayName
+        bankCode: '', // there is no bank
+        verificationStatus: 'verified',
+      );
+    });
+    // The BANK field is deliberately left untouched and the suggestion list is
+    // deliberately kept. Writing "Lazervault" into a field that feeds
+    // _handleVerifyAccount would leave the form in a state it cannot act on —
+    // a bank name with no bank code — so cancelling the confirmation sheet
+    // dead-ended on "Bank code not found. Please reselect the bank." Keeping
+    // the list means a cancel puts the payer back where they were, with both
+    // destinations still on offer. _syncSuggestOverlay (called by the
+    // confirmation sheet's onCancel) re-shows it on its own.
+    _syncSuggestOverlay();
     _showAccountConfirmationBottomSheet(_verificationResult!);
   }
 
@@ -3664,9 +3726,11 @@ class _AddRecipientState extends State<AddRecipient>
                           size: 14.sp, color: _kBrandPurple),
                       SizedBox(width: 6.w),
                       Text(
+                        // "Destination", not "bank": the list can now lead with
+                        // LAZERVAULT ITSELF, which is not a bank in it.
                         _bankSuggestions.length == 1
-                            ? 'Suggested bank'
-                            : 'Suggested banks',
+                            ? 'Suggested destination'
+                            : 'Suggested destinations',
                         style: TextStyle(
                           color: Colors.grey[700],
                           fontSize: 12.sp,
@@ -3721,15 +3785,30 @@ class _AddRecipientState extends State<AddRecipient>
                     ),
                   ),
                   SizedBox(height: 2.h),
-                  Text(
-                    s.bankName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          // Never a bare bank name: the masked number is what
+                          // tells the payer WHICH account this row pays.
+                          [
+                            s.bankName,
+                            maskedAccountNumber(s.accountNumber),
+                          ].where((t) => t.isNotEmpty).join('  •  '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      if (s.isLazervault) ...[
+                        SizedBox(width: 6.w),
+                        _internalInstantBadge(),
+                      ],
+                    ],
                   ),
                 ],
               ),
@@ -3738,6 +3817,37 @@ class _AddRecipientState extends State<AddRecipient>
                 color: _kBrandPurple, size: 20.sp),
           ],
         ),
+      ),
+    );
+  }
+
+  /// "Internal · instant" — says what the Lazervault row actually IS.
+  ///
+  /// The two facts a payer needs to choose it over the bank row directly
+  /// beneath it: the money never leaves the platform (so there is no transfer
+  /// fee) and it lands now rather than on the bank's next settlement window.
+  /// Without this the row looks like just another bank in the list.
+  Widget _internalInstantBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.bolt, size: 11.w, color: const Color(0xFF059669)),
+          SizedBox(width: 3.w),
+          Text(
+            'Internal · instant',
+            style: TextStyle(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF059669),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -3760,6 +3870,9 @@ class _AddRecipientState extends State<AddRecipient>
       // (now-irrelevant) matches so it can't re-appear over the chosen bank.
       _bankSuggestions = [];
       _loadingSuggestions = false;
+      // Choosing a BANK is choosing the external rail. Anything left over from
+      // a Lazervault suggestion must go with it.
+      _pendingInternalMatch = null;
     });
     _syncSuggestOverlay();
   }
@@ -3930,15 +4043,19 @@ class _AddRecipientState extends State<AddRecipient>
     // one auto-resolved suggestion → use it (the happy path); otherwise REVEAL
     // the manual bank field so the user can pick, rather than dead-ending.
     if (bankName == "Select Bank" && _selectedBankCode == null) {
-      if (_bankSuggestions.length == 1) {
+      // A lone LAZERVAULT suggestion is NOT used here either: pressing Verify
+      // must not be what commits the money to the internal rail. The payer is
+      // sent back to the list to tap it, where it says what it is.
+      final hasInternalSuggestion = _bankSuggestions.any((s) => s.isLazervault);
+      if (!hasInternalSuggestion && _bankSuggestions.length == 1) {
         _selectSuggestion(_bankSuggestions.first);
         return;
       }
       _revealBankField();
       Get.snackbar(
-        'Choose the bank',
-        _bankSuggestions.length > 1
-            ? 'Tap the correct bank from the suggestions, or pick it below.'
+        'Choose the destination',
+        _bankSuggestions.isNotEmpty
+            ? 'Tap the correct destination from the suggestions, or pick a bank below.'
             : "We couldn't auto-detect the bank, please pick it below.",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange.withValues(alpha: 0.8),
@@ -4245,20 +4362,41 @@ class _AddRecipientState extends State<AddRecipient>
   /// (Lemfi-style: only save after successful payment)
   void _proceedToPayment(AccountVerificationResult result, bool isSaved,
       bool isFavorite, String? alias) {
+    // Is this the LAZERVAULT destination the user tapped, or a bank account
+    // they verified? Three conditions, all of them required, because getting
+    // this wrong routes real money down the wrong rail:
+    //   * a Lazervault suggestion was tapped for THIS number, and
+    //   * the result carries no bank code — a verified bank always has one, so
+    //     this alone rules out "tapped Lazervault, then went back and picked
+    //     Wema manually for the same number", and
+    //   * the bank name is ours (BrandBank, the existing internal/external
+    //     test — the sentinel literal is untouched; see CLAUDE.md §0).
+    final internal = _pendingInternalMatch;
+    final isInternal = internal != null &&
+        internal.accountNumber == result.accountNumber &&
+        result.bankCode.trim().isEmpty &&
+        BrandBank.isOurs(result.bankName);
+
     // Create temporary recipient model (not saved to DB yet)
     final temporaryRecipient = RecipientModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(), // Temporary ID
       name: result.accountName,
       accountNumber: result.accountNumber,
-      bankName: result.bankName,
-      sortCode:
-          result.bankCode, // Use bank code as sort code for Nigerian banks
+      bankName: isInternal ? BrandBank.displayName : result.bankName,
+      sortCode: isInternal
+          ? '' // no bank to pay out to
+          : result.bankCode, // Use bank code as sort code for Nigerian banks
       isFavorite: isFavorite,
       isSaved: isSaved,
       alias: alias,
       countryCode: 'NG',
       currency: 'NGN',
-      type: 'external', // Explicitly set type for external bank recipients
+      type: isInternal ? 'internal' : 'external',
+      // The proof `canSendAsInternal` demands, plus the stable destination
+      // account id (the typed number is a virtual account; the id is not).
+      internalUserId: isInternal ? internal.internalUserId : null,
+      internalAccountId: isInternal ? internal.internalAccountId : null,
+      accountHolderName: isInternal ? result.accountName : null,
     );
 
     // Short flow (embedded): hand back to the host screen instead of navigating.

@@ -27,6 +27,19 @@ enum OutageKind {
   /// The device cannot reach the internet at all. Nothing to do with us, and
   /// claiming otherwise would be a lie told at the worst possible moment.
   connection,
+
+  /// The connection works but is too slow or unstable to finish a round trip.
+  ///
+  /// This is the third state, and leaving it out is what produced the report
+  /// above. A device on Nigerian mobile data doing 70 KB/s has internet — it is
+  /// moving bytes — so the offline check passes, and the health probe times out
+  /// anyway. Folded into [server] that becomes "our servers are being updated"
+  /// on a healthy platform; folded into [connection] it becomes "you have no
+  /// internet" to someone who plainly does. Neither is true and neither helps.
+  ///
+  /// What helps is naming it: the connection is too slow right now, and moving
+  /// to better signal or Wi-Fi is the thing that will fix it.
+  slowConnection,
 }
 
 /// The copy for one outage, chosen by kind and by where the user is standing.
@@ -70,6 +83,23 @@ class OutageCopy {
               : 'Our servers are being updated right now. Your money and data '
                   'are safe. Please try again in a moment.',
           dismissible: false,
+        );
+      case OutageKind.slowConnection:
+        return const OutageCopy(
+          icon: Icons.network_check_rounded,
+          // Does not say "no internet" — she can see that she has some — and
+          // does not blame our servers, which are answering. It names the one
+          // thing that is actually true and the one action that actually helps.
+          title: 'Your connection is too slow',
+          message:
+              'We can reach you, but the connection is too slow or unstable to '
+              'finish right now. Moving somewhere with better signal, or '
+              'switching between mobile data and Wi-Fi, usually fixes it.',
+          // Dismissible: this is the user's network, it may improve on its own,
+          // and nothing behind it is actually broken — so trapping them here
+          // would be the app refusing to let them retry something that might
+          // well succeed.
+          dismissible: true,
         );
       case OutageKind.connection:
         return const OutageCopy(

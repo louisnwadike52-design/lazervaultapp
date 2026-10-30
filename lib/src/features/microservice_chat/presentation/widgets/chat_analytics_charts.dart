@@ -225,6 +225,24 @@ class AnalyticsDonut extends StatelessWidget {
 }
 
 /// Vertical bars, for a handful of named amounts.
+///
+/// ## Why there are no labels under the bars
+///
+/// There used to be one label per bar, truncated to eight characters. That
+/// works for four or five bars and fails completely at thirteen, which is what
+/// a real income breakdown actually has: reported from a device, the axis read
+/// "DepositsCryptoTransferRefundBankingGroupSavingsEscrowPayments…" as a single
+/// unbroken run of overlapping text. Truncating harder would not have helped —
+/// thirteen labels do not fit across a phone at any length that still means
+/// something, and rotating or wrapping them steals the height the bars need.
+///
+/// So the chart draws bars only, and the names live in a key behind the info
+/// icon, where there is room for the full name, the amount and the rank. The
+/// bars are sorted largest-first, so position carries meaning on its own and
+/// the key states that rather than leaving it to be inferred.
+///
+/// Tapping a bar still shows its name and amount, so the common case — "what is
+/// that tall one" — needs neither the key nor the removed axis.
 class AnalyticsBars extends StatelessWidget {
   const AnalyticsBars({
     super.key,
@@ -235,6 +253,125 @@ class AnalyticsBars extends StatelessWidget {
   final List<AnalyticsPointView> points;
   final String currency;
 
+  /// The key that replaced the axis: every bar's colour, rank, name and amount.
+  ///
+  /// A sheet rather than a tooltip or an inline legend. Inline would reintroduce
+  /// the problem it solves — thirteen rows under a 168px chart is most of a
+  /// screen — and a tooltip cannot be read next to the bar it describes.
+  void _showKey(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF17172A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: ConstrainedBox(
+          // Capped so a long breakdown scrolls instead of covering the screen.
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.7,
+          ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3A3A52),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                Text(
+                  'What the bars mean',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  // States the ordering rule explicitly. Position is the only
+                  // thing the chart still encodes without words, so leaving the
+                  // reader to infer it would be leaving out the key fact.
+                  'Bars run left to right, largest first. '
+                  'Each colour below is the bar in that position.',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF8A8AA3),
+                    fontSize: 11.5.sp,
+                    height: 1.35,
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: points.length,
+                    itemBuilder: (_, i) => Padding(
+                      padding: EdgeInsets.only(bottom: 10.h),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 18.w,
+                            child: Text(
+                              '${i + 1}',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF8A8AA3),
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 10.w,
+                            height: 10.w,
+                            decoration: BoxDecoration(
+                              color: analyticsColorAt(i),
+                              borderRadius: BorderRadius.circular(3.r),
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: Text(
+                              // The FULL name. Having room for it is the whole
+                              // reason this sheet exists.
+                              points[i].label,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFD6D6E2),
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            analyticsMoney(points[i].value, currency),
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final maxValue = points.fold<double>(
@@ -243,99 +380,108 @@ class AnalyticsBars extends StatelessWidget {
     );
     if (maxValue <= 0) return const SizedBox.shrink();
 
-    return SizedBox(
-      height: 168.h,
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          // Headroom so the tallest bar does not touch the top border, which
-          // reads as a clipped chart.
-          maxY: maxValue * 1.18,
-          borderData: FlBorderData(show: false),
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            horizontalInterval: maxValue / 2 <= 0 ? null : maxValue / 2,
-            getDrawingHorizontalLine: (_) => FlLine(
-              color: const Color(0xFF2D2D3D),
-              strokeWidth: 1,
-            ),
-          ),
-          barTouchData: BarTouchData(
-            touchTooltipData: BarTouchTooltipData(
-              getTooltipItem: (group, _, rod, __) => BarTooltipItem(
-                '${points[group.x].label}\n'
-                '${analyticsMoney(rod.toY, currency)}',
-                GoogleFonts.inter(color: Colors.white, fontSize: 11.sp),
+    return Stack(
+      children: [
+        SizedBox(
+          height: 168.h,
+          child: BarChart(
+            BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              // Headroom so the tallest bar does not touch the top border, which
+              // reads as a clipped chart.
+              maxY: maxValue * 1.18,
+              borderData: FlBorderData(show: false),
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                horizontalInterval: maxValue / 2 <= 0 ? null : maxValue / 2,
+                getDrawingHorizontalLine: (_) => FlLine(
+                  color: const Color(0xFF2D2D3D),
+                  strokeWidth: 1,
+                ),
               ),
-            ),
-          ),
-          titlesData: FlTitlesData(
-            topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            rightTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 42.w,
-                interval: maxValue / 2 <= 0 ? null : maxValue / 2,
-                getTitlesWidget: (value, _) => Text(
-                  analyticsMoneyCompact(value, currency),
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF8A8AA3),
-                    fontSize: 9.sp,
+              barTouchData: BarTouchData(
+                touchTooltipData: BarTouchTooltipData(
+                  getTooltipItem: (group, _, rod, __) => BarTooltipItem(
+                    '${points[group.x].label}\n'
+                    '${analyticsMoney(rod.toY, currency)}',
+                    GoogleFonts.inter(color: Colors.white, fontSize: 11.sp),
                   ),
                 ),
               ),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 30.h,
-                getTitlesWidget: (value, _) {
-                  final i = value.toInt();
-                  if (i < 0 || i >= points.length) {
-                    return const SizedBox.shrink();
-                  }
-                  return Padding(
-                    padding: EdgeInsets.only(top: 6.h),
-                    child: Text(
-                      // Truncated hard rather than wrapped: a wrapped axis
-                      // label pushes the plot area up and squashes the bars.
-                      points[i].label.length > 8
-                          ? '${points[i].label.substring(0, 7)}…'
-                          : points[i].label,
+              titlesData: FlTitlesData(
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                rightTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 42.w,
+                    interval: maxValue / 2 <= 0 ? null : maxValue / 2,
+                    getTitlesWidget: (value, _) => Text(
+                      analyticsMoneyCompact(value, currency),
                       style: GoogleFonts.inter(
                         color: const Color(0xFF8A8AA3),
                         fontSize: 9.sp,
                       ),
                     ),
-                  );
-                },
+                  ),
+                ),
+                // No bottom axis. See the note on this class: thirteen names do
+                // not fit across a phone, and the key behind the info icon carries
+                // them with room to spare. The height freed here goes to the bars.
+                bottomTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+              ),
+              barGroups: [
+                for (int i = 0; i < points.length; i++)
+                  BarChartGroupData(
+                    x: i,
+                    barRods: [
+                      BarChartRodData(
+                        toY: points[i].value,
+                        color: analyticsColorAt(i),
+                        width: 16.w,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(4.r),
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ),
+        // The key's only affordance. Top-right, inside the chart's own box, so
+        // it travels with the chart wherever it is embedded — the analytics page
+        // and the chat both get it without either having to add one.
+        Positioned(
+          top: 0,
+          right: 0,
+          child: Semantics(
+            button: true,
+            label: 'What the bars mean',
+            child: InkWell(
+              onTap: () => _showKey(context),
+              borderRadius: BorderRadius.circular(14.r),
+              child: Padding(
+                // Generous padding rather than a bigger glyph: the tap target
+                // needs to clear 44px without the icon competing with the bars.
+                padding: EdgeInsets.all(7.w),
+                child: Icon(
+                  Icons.info_outline_rounded,
+                  size: 16.sp,
+                  color: const Color(0xFF8A8AA3),
+                ),
               ),
             ),
           ),
-          barGroups: [
-            for (int i = 0; i < points.length; i++)
-              BarChartGroupData(
-                x: i,
-                barRods: [
-                  BarChartRodData(
-                    toY: points[i].value,
-                    color: analyticsColorAt(i),
-                    width: 16.w,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(4.r),
-                    ),
-                  ),
-                ],
-              ),
-          ],
         ),
-      ),
+      ],
     );
   }
 }

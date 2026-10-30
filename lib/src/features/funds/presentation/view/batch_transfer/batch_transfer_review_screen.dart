@@ -19,6 +19,8 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
 
 class BatchTransferReviewScreen extends StatefulWidget {
   const BatchTransferReviewScreen({super.key});
@@ -302,6 +304,50 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
       _showError(
           'Insufficient balance. Available: $_currencySymbol${availableBalance.toStringAsFixed(2)}');
       return;
+    }
+
+    // MINIMUM RETAINED BALANCE.
+    //
+    // A batch is how a wallet actually gets emptied, so the floor has to be
+    // enforced here too — core-payments checks BatchTransfer independently
+    // (BatchTransfer does not route through SendFunds), and without this the
+    // refusal would arrive as a snackbar at the last screen before the PIN,
+    // which the comment above identifies as the most expensive place to be
+    // blocked.
+    //
+    // Ordered AFTER the insufficient-balance test for the same reason as the
+    // single-transfer flows: if the wallet cannot cover the batch at all, that
+    // is the truthful refusal and the floor is beside the point.
+    //
+    // Only when the balance is actually KNOWN. `availableBalance == null` means
+    // genuinely unknown here (see above), and refusing on a figure we never
+    // read is the bug that comment was written about.
+    if (availableBalance != null) {
+      final availableMinor = (availableBalance * 100).round();
+      final spendMinor = (chargeTotal * 100).round();
+      final minBalance = MinBalancePolicy.resolve(
+        accountType: selectedAccount?.accountType,
+      );
+      if (minBalance.blocks(
+        availableMinor: availableMinor,
+        spendMinor: spendMinor,
+      )) {
+        setState(() => _isProcessing = false);
+        // The same sheet both single-transfer flows use, so a user meets one
+        // explanation of this policy rather than three paraphrases.
+        await showMinBalanceRefusal(
+          context,
+          currencySymbol: _currencySymbol,
+          policy: minBalance,
+          availableMinor: availableMinor,
+          feeMinor: ((_totalFee ?? 0.0) * 100).round(),
+          // No "send max" here: a batch has many recipients, so there is no
+          // single amount to rewrite. Offering a button that cannot do the
+          // obvious thing is worse than offering none — the user needs to
+          // remove a recipient or lower an amount, which is their call.
+        );
+        return;
+      }
     }
 
     // Validate schedule if set

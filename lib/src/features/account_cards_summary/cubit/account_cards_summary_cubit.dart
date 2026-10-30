@@ -119,6 +119,10 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     // account's balances into the new session.
     _refetchDebounce?.cancel();
     _refetchDebounce = null;
+    // The NUBAN watch captured the outgoing user's id and token too.
+    _nubanWatch?.cancel();
+    _nubanWatch = null;
+    _nubanAttempt = 0;
     _currentSummaries = [];
     _currentUserId = null;
     _preAnimationBalances.clear();
@@ -342,8 +346,102 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
 
         // Auto-select personal account matching current locale's currency
         _autoSelectPersonalAccount(summaries);
+
+        // A Naira account with no NUBAN yet is a provisioning race, not a
+        // steady state — go and look for it.
+        _watchForPendingAccountNumber(
+          userId: userId,
+          accessToken: accessToken,
+          country: country,
+        );
       },
     );
+  }
+
+  /// How many times to look for a NUBAN that has not appeared yet, and how
+  /// long to wait before each look. Back-off rather than a fixed poll: the
+  /// provider usually answers within seconds of the KYC pack landing, and the
+  /// long tail is minutes. Five looks spanning about four minutes covers both
+  /// without becoming a background poller.
+  static const List<Duration> _nubanRetryDelays = <Duration>[
+    Duration(seconds: 6),
+    Duration(seconds: 15),
+    Duration(seconds: 30),
+    Duration(seconds: 60),
+    Duration(seconds: 120),
+  ];
+
+  Timer? _nubanWatch;
+  int _nubanAttempt = 0;
+
+  /// Re-fetch until a provisioned Naira account actually has its number.
+  ///
+  /// THE BUG THIS FIXES. A user finishes KYC, the provider mints their virtual
+  /// account, and the dashboard carries on showing `**** **** **` — while the
+  /// Deposit sheet, which fetches fresh, shows the real NUBAN on the same
+  /// screen. Two surfaces, one account, different answers, and the only way out
+  /// was to log out and back in.
+  ///
+  /// The dashboard had no way to learn the number had arrived. Its only
+  /// server-authoritative refetch is debounced off BALANCE events, and
+  /// provisioning is not a balance event — nothing moves money, so nothing
+  /// fires. There is no app-wide KYC-completion signal to listen for either.
+  ///
+  /// So this self-heals instead of waiting to be told: whenever a fetch comes
+  /// back with a Naira account that has no number, it looks again on a backoff
+  /// and emits the moment one appears. It needs no new plumbing and corrects
+  /// the dashboard however the number arrives — fresh KYC, a provider retry, or
+  /// an admin fixing it by hand.
+  ///
+  /// Deliberately narrow, because a timer that never stops is its own bug:
+  ///   * NGN only. There is no per-customer virtual account outside Naira, so
+  ///     a foreign wallet legitimately has no number and must not be polled —
+  ///     it shows the activation CTA instead.
+  ///   * Silent. No spinner and no error screen; the card simply fills in.
+  ///   * Bounded. Five attempts, then it stops for good until the next fetch.
+  ///   * Cancelled on reset, on a user change and on close, so a signed-out
+  ///     user's token is never used.
+  void _watchForPendingAccountNumber({
+    required String userId,
+    String? accessToken,
+    String? country,
+  }) {
+    final pending = _currentSummaries.any(_isAwaitingAccountNumber);
+    if (!pending) {
+      // Either it arrived or there was never one to wait for. Either way the
+      // watch has done its job and the budget resets for next time.
+      _nubanWatch?.cancel();
+      _nubanWatch = null;
+      _nubanAttempt = 0;
+      return;
+    }
+    if (_nubanWatch != null) return; // already waiting on one
+    if (_nubanAttempt >= _nubanRetryDelays.length) return; // budget spent
+
+    final delay = _nubanRetryDelays[_nubanAttempt];
+    _nubanAttempt++;
+    _nubanWatch = Timer(delay, () {
+      _nubanWatch = null;
+      if (isClosed || _currentUserId != userId) return;
+      // silent: the card must not flicker into a loading state for something
+      // the user did not ask for.
+      fetchAccountSummaries(
+        userId: userId,
+        accessToken: accessToken,
+        country: country,
+        silent: true,
+      );
+    });
+  }
+
+  /// A Naira account that has been provisioned but whose number we do not yet
+  /// hold. Last-4 is checked as well as the full value because the card renders
+  /// from last-4 and the deposit flow from the full NUBAN — either being empty
+  /// is the same stale-cache symptom.
+  static bool _isAwaitingAccountNumber(AccountSummaryEntity a) {
+    if (a.currency.toUpperCase() != 'NGN') return false;
+    final full = (a.accountNumber ?? '').trim();
+    return full.isEmpty || a.accountNumberLast4.trim().isEmpty;
   }
 
   static String _cacheKey(String userId) => 'acct_summaries_cache_$userId';
@@ -527,6 +625,10 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
 
   @override
   Future<void> close() {
+    // A pending-NUBAN watch must not outlive the cubit: it calls
+    // fetchAccountSummaries, which emits, and emitting after close throws.
+    _nubanWatch?.cancel();
+    _nubanWatch = null;
     _refetchDebounce?.cancel();
     _wsSubscription?.cancel();
     // A factory registration means instances are created and closed all day;

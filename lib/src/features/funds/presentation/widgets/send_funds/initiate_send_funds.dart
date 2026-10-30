@@ -52,6 +52,8 @@ import 'dart:async';
 import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/insufficient_funds_sheet.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_outcome_notice.dart';
+import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
 
 class InitiateSendFunds extends StatefulWidget {
   final RecipientModel? recipient;
@@ -1185,6 +1187,38 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         amountMajor: transferAmountMajor,
         feeMajor: isExternalTransfer ? estimatedFee : 0,
         availableMajor: availableBalance,
+      );
+      return;
+    }
+
+    // MINIMUM RETAINED BALANCE — after "do they have enough at all".
+    //
+    // Same ordering as the short flow and for the same reason: if the wallet
+    // cannot cover the transfer, that is the truthful refusal, and quoting a
+    // floor at someone who is simply short explains the wrong thing. This only
+    // speaks when the transfer would otherwise have gone through.
+    //
+    // Both flows call ONE helper so they cannot drift — which is exactly the
+    // problem insufficient_funds_sheet was created to fix when the short flow
+    // rendered the same refusal as a red line.
+    final int availableMinorForFloor = (availableBalance * 100).round();
+    final int spendMinorForFloor = (totalRequired * 100).round();
+    // The account type comes straight off the account this transfer is being
+    // sent FROM — the same local the balance above was read from — so the
+    // per-wallet floor resolves precisely here rather than best-effort.
+    final minBalancePolicy = MinBalancePolicy.resolve(
+      accountType: selectedAccount.accountType,
+    );
+    if (minBalancePolicy.blocks(
+      availableMinor: availableMinorForFloor,
+      spendMinor: spendMinorForFloor,
+    )) {
+      showMinBalanceRefusal(
+        context,
+        currencySymbol: currencySymbol,
+        policy: minBalancePolicy,
+        availableMinor: availableMinorForFloor,
+        feeMinor: isExternalTransfer ? (estimatedFee * 100).round() : 0,
       );
       return;
     }

@@ -40,6 +40,14 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   final _ninController = TextEditingController();
   // Phone is captured via AppPhoneField (country picker + leading-zero tolerant).
   PhoneNumber? _phone;
+  // The phone prefilled from a picked Lazervault user.
+  //
+  // Held separately because IntlPhoneField does NOT fire onChanged for its
+  // initialValue — so if the employer accepts the prefilled number without
+  // touching the field, `_phone` stays null and the number would be dropped
+  // on submit. That is the failure mode an autofill has to avoid: showing a
+  // value and then not saving it.
+  String _prefilledPhone = '';
 
   // Step: Bank Details (external only)
   final _bankAccountController = TextEditingController();
@@ -168,7 +176,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     context.read<PayrollCubit>().addEmployee(
           fullName: _nameController.text.trim(),
           email: _emailController.text.trim(),
-          phone: AppPhoneField.complete(_phone),
+          phone: _resolvedPhone(),
           nin: _ninController.text.trim(),
           bankAccountNumber:
               isInternal ? '' : _bankAccountController.text.trim(),
@@ -186,6 +194,17 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               ? '${_startDate!.year}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.day.toString().padLeft(2, '0')}'
               : null,
         );
+  }
+
+  /// The phone to submit: what the employer typed, else what we prefilled.
+  ///
+  /// `_phone` is only non-null once onChanged has fired, which does not happen
+  /// for a prefilled initial value — so falling back to `_prefilledPhone` is
+  /// what makes the autofill actually save.
+  String _resolvedPhone() {
+    final typed = AppPhoneField.complete(_phone);
+    if (typed.isNotEmpty) return typed;
+    return _prefilledPhone;
   }
 
   void _toast(String message, {bool isError = false}) {
@@ -567,6 +586,14 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       // so the placeholder shows and the employer can enter a real address.
       final prefillEmail = prefillableContact(result.email);
       if (prefillEmail.isNotEmpty) _emailController.text = prefillEmail;
+      // Phone, on the same terms as email. Search masks contacts by contract so
+      // nobody can harvest them, and a masked value must not be written into a
+      // field whose own validator would then reject it.
+      _prefilledPhone = prefillableContact(result.phoneNumber);
+      // A fresh prefill replaces whatever the field held for the previous pick,
+      // so the stale PhoneNumber must go too — otherwise switching employee
+      // would keep the first person's number.
+      _phone = null;
     });
   }
 
@@ -619,8 +646,13 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         ),
         SizedBox(height: 14.h),
         AppPhoneField(
+          // Keyed on the prefill so Flutter builds a NEW field when a user is
+          // picked. IntlPhoneField reads initialValue once, at construction, so
+          // without this the prefilled number would never appear.
+          key: ValueKey('employee-phone-$_prefilledPhone'),
           label: 'Phone Number (optional)',
           isRequired: false,
+          initialNumber: _prefilledPhone.isEmpty ? null : _prefilledPhone,
           onChanged: (p) => _phone = p,
         ),
         // NIN is deliberately NOT asked for here.

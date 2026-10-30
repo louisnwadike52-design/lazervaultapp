@@ -3,6 +3,7 @@ import 'package:lazervault/src/features/split_bills/presentation/utils/split_met
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
+import 'package:lazervault/core/utils/masked_account_number.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -1440,14 +1441,23 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     }
     if (!mounted) return;
     if (seq != _receiverLookupSeq) return;
+    // A LAZERVAULT match is never auto-picked, even alone: it changes which
+    // rail the money takes and whether the receiver is an internal user or a
+    // bank payout, and that is the creator's choice to see and make. With no
+    // Lazervault match this is byte-for-byte the previous rule.
+    final hasInternal = suggestions.any((s) => s.isLazervault);
     AccountSuggestion? auto;
-    if (suggestions.length == 1) {
+    if (!hasInternal && suggestions.length == 1) {
       auto = suggestions.first;
     } else if (preferredBankName != null &&
         preferredBankName.trim().isNotEmpty) {
       final want =
           preferredBankName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
       for (final s in suggestions) {
+        // The preferred bank came from a saved EXTERNAL recipient; it can
+        // never be a match for the internal row, and auto-picking that row
+        // behind the creator's back is exactly what the guard above prevents.
+        if (s.isLazervault) continue;
         final have =
             s.bankName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
         if (have == want || have.contains(want) || want.contains(have)) {
@@ -1554,7 +1564,10 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     // Ambiguity is left to the user on purpose: multiple matches are different
     // banks sharing an account number, each with a DIFFERENT account holder, so
     // auto-taking the first would aim the payout at the wrong person.
-    if (suggestions.length == 1) {
+    //
+    // Excluding a LAZERVAULT match, which is never applied without a tap: see
+    // _suggestReceiverBanksAutoPick.
+    if (!suggestions.any((s) => s.isLazervault) && suggestions.length == 1) {
       setState(() {
         _suggestingReceiverBanks = false;
         _receiverSuggestAttempted = true;
@@ -1574,6 +1587,10 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   /// Tapping a suggestion prefills the bank + confirms the receiver (the holder
   /// name came back resolved from the suggest call), so no second verify is needed.
   void _selectReceiverSuggestion(AccountSuggestion s) {
+    if (s.isLazervault) {
+      _selectLazervaultReceiver(s);
+      return;
+    }
     setState(() {
       _receiverBankCode = s.bankCode;
       _receiverBankName = s.bankName;
@@ -1581,6 +1598,66 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       _receiverBankAccountName = s.accountName;
       _receiverBankSuggestions = const [];
     });
+  }
+
+  /// The creator tapped the LAZERVAULT suggestion: the account number they
+  /// typed belongs to a Lazervault user, so the receiver becomes that USER
+  /// rather than a bank payout.
+  ///
+  /// This switches the receiver out of bank mode entirely, because the two are
+  /// different shapes on the wire — `SplitBillReceiverInput.internalUser`
+  /// (keyed by user id, account resolved server-side) vs `.externalBank`
+  /// (bank code + number). Leaving bank mode selected with no bank code would
+  /// fail `_isBankReceiverReady` and silently fall through to "creator
+  /// collects", which is the wrong receiver, not an error.
+  ///
+  /// `username` is left empty on purpose: it is display/legacy only on that
+  /// input, and a user found by account number need never have set one. The
+  /// resolved holder name is the display value.
+  void _selectLazervaultReceiver(AccountSuggestion s) {
+    setState(() {
+      _receiverMode = _ReceiverMode.lazerVaultUser;
+      _receiverUserId = s.internalUserId;
+      _receiverUsername = null;
+      _receiverDisplayName = s.accountName;
+      // Everything bank-shaped goes, so no stale code can be read back.
+      _receiverBankSuggestions = const [];
+      _suggestingReceiverBanks = false;
+      _receiverBankCode = null;
+      _receiverBankName = null;
+      _receiverAccountNumber = null;
+      _receiverBankAccountName = null;
+      _receiverAccountNumberController.clear();
+    });
+  }
+
+  /// "Internal · instant" — the two facts that make the Lazervault row the
+  /// better choice than the bank row beneath it: the money never leaves the
+  /// platform (no transfer fee) and it lands now rather than on the bank's
+  /// next settlement window.
+  Widget _internalInstantBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.bolt, size: 11, color: Color(0xFF34D399)),
+          SizedBox(width: 3),
+          Text(
+            'Internal · instant',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF34D399),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildReceiverSuggestionRow(AccountSuggestion s) {
@@ -1624,10 +1701,27 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                           fontSize: 13,
                           fontWeight: FontWeight.w600),
                     ),
-                    Text(
-                      s.bankName,
-                      style: const TextStyle(
-                          color: Color(0xFF9CA3AF), fontSize: 12),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            // Never a bare bank name: the masked number says
+                            // WHICH account this row pays.
+                            [
+                              s.bankName,
+                              maskedAccountNumber(s.accountNumber),
+                            ].where((t) => t.isNotEmpty).join('  •  '),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: Color(0xFF9CA3AF), fontSize: 12),
+                          ),
+                        ),
+                        if (s.isLazervault) ...[
+                          const SizedBox(width: 6),
+                          _internalInstantBadge(),
+                        ],
+                      ],
                     ),
                   ],
                 ),

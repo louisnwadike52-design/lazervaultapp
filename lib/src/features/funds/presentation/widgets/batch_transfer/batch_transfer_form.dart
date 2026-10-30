@@ -1,4 +1,5 @@
 import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/core/utils/masked_account_number.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'dart:math';
 

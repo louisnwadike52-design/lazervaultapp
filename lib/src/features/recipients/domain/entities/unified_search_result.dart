@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import 'package:lazervault/core/utils/brand_bank.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 
@@ -75,6 +76,60 @@ class UnifiedSearchResult extends Equatable {
 
   bool get isSavedHit => source == 'saved';
   bool get aliasMatched => matchedField == 'alias';
+
+  /// True when this row was found by the LAZERVAULT ACCOUNT NUMBER the user
+  /// typed, rather than by a text match on a name/handle/phone/email.
+  ///
+  /// A numeric query is ambiguous — the same digits are a valid phone number —
+  /// so the two kinds of hit are shown side by side and this is what lets the
+  /// UI say which is which. Without the distinction a payer cannot tell the
+  /// person whose PHONE ends in those digits from the account that IS them.
+  bool get accountNumberMatched => matchedField == 'account';
+
+  /// A row built from a bare ACCOUNT NUMBER that resolved to a Lazervault
+  /// account (`accounts.AccountsService/GetAccountByNumber`).
+  ///
+  /// Not a directory text match: it is THE one account those digits name, so
+  /// it carries the destination account id and the account number itself —
+  /// which an ordinary directory hit never does, because auth-service's user
+  /// search returns neither.
+  ///
+  /// [bankName] is `BrandBank.displayName`, which is both the correct
+  /// user-facing spelling and a value `BrandBank.isOurs` recognises — so the
+  /// recipient this adapts to routes INTERNALLY through the existing decision
+  /// (see CLAUDE.md §0 on the sentinel).
+  factory UnifiedSearchResult.lazervaultAccount({
+    required String userId,
+    required String accountId,
+    required String accountNumber,
+    required String holderName,
+    String username = '',
+    String profilePicture = '',
+  }) {
+    final display = holderName.trim().isNotEmpty
+        ? holderName.trim()
+        : (username.isNotEmpty ? '@$username' : 'Lazervault account');
+    return UnifiedSearchResult(
+      source: 'global',
+      userId: userId,
+      displayName: display,
+      name: holderName.trim(),
+      username: username,
+      accountNumber: accountNumber,
+      bankName: BrandBank.displayName,
+      profilePicture: profilePicture,
+      // The payer named this account explicitly. It is the destination, and
+      // it is NOT necessarily the payee's primary wallet — a Lazervault
+      // account number often belongs to a family or business account — so it
+      // is carried in both slots that mean "pay into this one".
+      primaryAccountId: accountId,
+      internalAccountId: accountId,
+      accountHolderName: holderName.trim(),
+      isLazervault: true,
+      matchedField: 'account',
+      type: 'internal',
+    );
+  }
 
   /// Stable identity for de-duplication across pages: prefer the internal user
   /// id, fall back to the saved recipient id, then a name+account composite.

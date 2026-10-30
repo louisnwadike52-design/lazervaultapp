@@ -26,6 +26,7 @@ import 'swap_flow_dispatcher.dart';
 import '../../domain/trade_precision.dart';
 import 'package:lazervault/src/features/crypto/domain/trade_amounts.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
+import 'package:lazervault/src/features/crypto/domain/trade_pricing.dart';
 
 /// Streamlined SELL bottom sheet.
 ///
@@ -164,23 +165,6 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     super.dispose();
   }
 
-  double _feeDisplayRate() {
-    int? bps;
-    try {
-      bps = context.read<CryptoConfigCubit>().config.feeDisplayFallbackBps;
-    } catch (_) {
-      try {
-        bps = GetIt.I<CryptoConfigCubit>().config.feeDisplayFallbackBps;
-      } catch (_) {}
-    }
-    // 150 bps was SIX TIMES the configured 25, and reachable whenever the
-    // config cubit is unavailable. CryptoRuntimeConfig.defaults() is the one
-    // place that mirrors the server's value, so there is a single number to
-    // change if the server's moves.
-    return (bps ?? CryptoRuntimeConfig.defaults().feeDisplayFallbackBps) /
-        10000.0;
-  }
-
   /// Estimated Lazervault sell fee for the current amount, honoring the admin's
   /// percentage/fixed config (crypto.fee.sell.*). Falls back to the flat display
   /// rate before the config RPC lands.
@@ -190,15 +174,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   /// can price a hypothetical amount with the SAME rules the real fee uses —
   /// a cap or a floor applies at the amount being priced, not at whatever is
   /// currently typed.
-  double _feeForFiat(double fiatGross) {
-    try {
-      return GetIt.I<CryptoConfigCubit>()
-          .config
-          .feeForOp('sell', fiatGross, CurrencySymbols.currentCurrency);
-    } catch (_) {
-      return fiatGross * _feeDisplayRate();
-    }
-  }
+  double _feeForFiat(double fiatGross) => _pricing.feeForFiat(fiatGross);
 
   /// THE trade, priced once: gross, our fee, the net proceeds, and the all-in
   /// unit rate the headline must show.
@@ -256,13 +232,16 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   /// that is a list-load snapshot and can be badly out of date. Without a live
   /// rate this returns 0 and the sheet refuses to quote or transact rather
   /// than showing the user proceeds computed from a stale price.
-  double _price() {
-    final p = _liveRate ?? 0.0;
-    if (p <= 0) return 0;
-    // A sell hits the swap's bid, so proceeds per unit are BELOW the ticker.
-    // Margin 0 (unmeasured) degrades to the previous behaviour.
-    return p * (1 - _swapMargin);
-  }
+  /// The shared derivation — see CryptoTradePricing. Rate and margin still come
+  /// from PriceQuoteCard's callbacks; only the arithmetic is shared.
+  CryptoTradePricing get _pricing => CryptoTradePricing(
+        isBuy: false,
+        fiatCurrency: CurrencySymbols.currentCurrency,
+        liveRate: _liveRate,
+        swapMargin: _swapMargin,
+      );
+
+  double _price() => _pricing.executableRate ?? 0;
 
   /// True once a live rate is available. Gates the CTA.
   bool get _hasLiveRate => (_liveRate ?? 0) > 0;

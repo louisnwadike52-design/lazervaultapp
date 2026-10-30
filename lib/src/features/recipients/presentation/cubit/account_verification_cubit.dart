@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/datasources/recipient_verification_remote_datasource.dart';
 import '../../domain/entities/account_verification_result.dart';
+import '../../data/datasources/lazervault_account_lookup.dart';
 import '../../domain/entities/account_suggestion.dart';
 import 'account_verification_state.dart';
 import '../../../../../core/utilities/banks_data.dart';
@@ -62,6 +63,13 @@ class _CacheEntry {
 class AccountVerificationCubit extends Cubit<AccountVerificationState> {
   final RecipientVerificationRemoteDataSource _dataSource;
 
+  /// Resolves a typed account number to a LAZERVAULT account, so the bank
+  /// flows can offer the internal rail for a number that is on this platform.
+  ///
+  /// Optional: when absent every method below behaves exactly as it did before
+  /// this existed, so a wiring gap costs a suggestion and nothing else.
+  final LazervaultAccountLookup? _lazervaultLookup;
+
   // Store last verification parameters for retry
   String? _lastBankCode;
   String? _lastAccountNumber;
@@ -69,7 +77,9 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
 
   AccountVerificationCubit({
     required RecipientVerificationRemoteDataSource dataSource,
+    LazervaultAccountLookup? lazervaultLookup,
   })  : _dataSource = dataSource,
+        _lazervaultLookup = lazervaultLookup,
         super(const AccountVerificationInitial());
 
   /// Verify a bank account and fetch account holder name.
@@ -188,7 +198,7 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
     }
   }
 
-  /// Suggest matching bank(s) for a bare 10-digit account number.
+  /// Suggest matching destination(s) for a bare 10-digit account number.
   ///
   /// Powers the account-number-first UX: the backend narrows candidate banks
   /// via the NUBAN check-digit algorithm and resolves the holder name against
@@ -197,18 +207,63 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
   /// states (so it never disturbs the shared verification state machine other
   /// flows rely on) and returns an empty list on any error, letting the UI
   /// fall back to manual bank selection.
+  ///
+  /// LAZERVAULT FIRST. If the number is an account on this platform, the
+  /// internal destination leads the list. A Lazervault user's receiving number
+  /// is a genuine NUBAN at a partner bank, so the external probe below
+  /// resolves it too — and before this, that was the ONLY answer the payer
+  /// was offered: a NIBSS payout with a fee and a settlement wait, to land in
+  /// a wallet the money never had to leave. Both are now offered and the payer
+  /// chooses; the internal one is marked (`isLazervault`) so a surface can say
+  /// what it is, and must not be auto-applied.
+  ///
+  /// Run together, not in series: the external probe fans out to a provider
+  /// name-enquiry per candidate bank and is the slow half, so the internal
+  /// lookup adds no latency the user can feel.
   Future<List<AccountSuggestion>> suggestBanks({
     required String accountNumber,
     String country = 'NG',
   }) async {
     if (accountNumber.length != 10) return const <AccountSuggestion>[];
+    final internalFuture = lazervaultSuggestion(accountNumber: accountNumber);
+    List<AccountSuggestion> external = const <AccountSuggestion>[];
     try {
-      return await _dataSource.suggestAccounts(
+      external = await _dataSource.suggestAccounts(
         accountNumber: accountNumber,
         country: country,
       );
     } catch (_) {
-      return const <AccountSuggestion>[];
+      external = const <AccountSuggestion>[];
+    }
+    final internal = await internalFuture;
+    if (internal == null) return external;
+    return <AccountSuggestion>[internal, ...external];
+  }
+
+  /// The LAZERVAULT destination [accountNumber] names, or null when it is not
+  /// an account on this platform (which is the common case).
+  ///
+  /// Public and separate from [suggestBanks] so the bank-destination surfaces
+  /// that have no suggestion list — they select a bank then call
+  /// [verifyAccount] directly — can offer the internal rail too without
+  /// duplicating the resolution. Side-effect-free and never throws: null is
+  /// "treat it as external", exactly as every caller did before.
+  Future<AccountSuggestion?> lazervaultSuggestion({
+    required String accountNumber,
+  }) async {
+    final lookup = _lazervaultLookup;
+    if (lookup == null) return null;
+    try {
+      final match = await lookup.resolve(accountNumber);
+      if (match == null) return null;
+      return AccountSuggestion.lazervault(
+        accountNumber: match.accountNumber,
+        accountName: match.holderName,
+        userId: match.userId,
+        accountId: match.accountId,
+      );
+    } catch (_) {
+      return null;
     }
   }
 

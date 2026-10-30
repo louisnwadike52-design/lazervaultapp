@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
+import 'package:lazervault/src/features/funds_transfer/services/transfer_websocket_service.dart';
 
 /// SendCryptoReceiptScreen renders a crypto **send** (withdrawal) receipt using
 /// the shared, Revolut-style [UnifiedTransactionReceipt] — same dark card, QR
@@ -112,6 +113,21 @@ class _SendCryptoReceiptScreenState extends State<SendCryptoReceiptScreen> {
 
   Timer? _timer;
   int _attempt = 0;
+  // Live status over the shared transfer socket.
+  //
+  // The poll below is good but it only runs while THIS screen is mounted, so a
+  // send stopped updating the moment the user navigated away — and an external
+  // send settles minutes later. crypto-service now publishes send status onto
+  // the same `transfers.status.events` topic the transfer socket already
+  // carries, so the update arrives without this screen having to ask.
+  //
+  // The poll is NOT removed. The socket can be down, and anything that changed
+  // while it was down was missed rather than queued — so polling stays as the
+  // fallback and a reconnect triggers a re-read, exactly as the chat receipt
+  // card does.
+  StreamSubscription<TransferStatusEvent>? _wsSub;
+  StreamSubscription<TransferWebSocketConnectionState>? _connSub;
+  StreamSubscription<void>? _reconnectSub;
   // Fast-poll budget: external withdrawals usually confirm within a couple of
   // minutes. ~24 attempts with a 3→6s backoff covers roughly 3 minutes; after
   // that the receipt drops to a SLOW 30s poll (never silently gives up) — the
@@ -136,6 +152,7 @@ class _SendCryptoReceiptScreenState extends State<SendCryptoReceiptScreen> {
     _isInternal = widget.isInternal;
     _createdAt = widget.createdAt ?? DateTime.now();
     _loaded = !widget.lookup;
+    _subscribeSendStatus();
     if (widget.lookup) {
       _scheduleNextPoll(const Duration(milliseconds: 50));
     } else if (_status == UnifiedTransactionStatus.processing) {
@@ -151,7 +168,51 @@ class _SendCryptoReceiptScreenState extends State<SendCryptoReceiptScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _wsSub?.cancel();
+    _connSub?.cancel();
+    _reconnectSub?.cancel();
     super.dispose();
+  }
+
+  /// Subscribe to live send status, filtered to THIS send's reference.
+  ///
+  /// Reference-filtered because the socket carries every transfer update for
+  /// the user; an unfiltered listener would apply another payment's status to
+  /// this receipt.
+  void _subscribeSendStatus() {
+    if (_reference.trim().isEmpty) return;
+    try {
+      final ws = GetIt.I<TransferWebSocketService>();
+      _wsSub = ws.transferUpdates.listen((e) {
+        if (!mounted) return;
+        if (e.reference.isEmpty || e.reference != _reference) return;
+        final norm = _normalize(e.status);
+        if (norm == 'done') {
+          setState(() => _status = UnifiedTransactionStatus.completed);
+          _timer?.cancel();
+        } else if (norm == 'rejected') {
+          setState(() {
+            _status = UnifiedTransactionStatus.failed;
+            final reason = e.errorMessage ?? '';
+            if (reason.isNotEmpty) _failReason = reason;
+          });
+          _timer?.cancel();
+        }
+        // A non-terminal update is deliberately ignored: the screen already
+        // shows Processing, and re-rendering the same state would only risk
+        // clobbering a txid the poll had already fetched.
+      });
+
+      // A reconnect is exactly when this screen is most likely to be stale,
+      // because whatever settled during the outage was never delivered.
+      _reconnectSub = ws.onReconnected.listen((_) {
+        if (!mounted) return;
+        unawaited(_poll());
+      });
+    } catch (_) {
+      // Socket unavailable (not registered, not connected) — the poll already
+      // covers this screen, so there is nothing to report to the user.
+    }
   }
 
   void _scheduleNextPoll(Duration delay) {

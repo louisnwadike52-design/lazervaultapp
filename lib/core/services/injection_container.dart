@@ -761,6 +761,7 @@ import 'package:lazervault/src/features/inventory/presentation/cubit/inventory_e
 
 // Business Analytics Imports
 import 'package:lazervault/src/features/business_analytics/presentation/cubit/business_analytics_cubit.dart';
+import 'package:lazervault/src/features/recipients/data/datasources/lazervault_account_lookup.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/unified_user_search_repository.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/unified_user_search_cubit.dart';
 // End Business Analytics Imports
@@ -1733,10 +1734,23 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(
       () => DeleteRecipientUseCase(serviceLocator<IRecipientRepository>()));
 
+  // Resolves a typed ACCOUNT NUMBER to the Lazervault account it names, so a
+  // payee can be found by the identifier they are most likely to have handed
+  // out — and so a bank-destination flow can see that a number is INTERNAL
+  // before it pays an external rail for it. Shared by the unified search and
+  // the account-verification cubit; see LazervaultAccountLookup.
+  serviceLocator.registerLazySingleton(() => LazervaultAccountLookup(
+        accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
+        callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+        secureStorage: serviceLocator<SecureStorageService>(),
+        profileRepository: serviceLocator<IProfileRepository>(),
+      ));
+
   // Unified user search (local saved recipients incl. alias → global users).
   serviceLocator.registerLazySingleton(() => UnifiedUserSearchRepository(
         serviceLocator<SecureStorageService>(),
         client: serviceLocator<http.Client>(),
+        accountLookup: serviceLocator<LazervaultAccountLookup>(),
       ));
   serviceLocator.registerFactory(() =>
       UnifiedUserSearchCubit(serviceLocator<UnifiedUserSearchRepository>()));
@@ -3445,8 +3459,8 @@ Future<void> init() async {
       () => RestartContribution(serviceLocator<GroupAccountRepository>()));
   // Savings-circle rounds: one use case covers the read, "go round again" and
   // "end the circle" — see ManageContributionRound for why it is not three.
-  serviceLocator.registerLazySingleton(() =>
-      ManageContributionRound(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ManageContributionRound(serviceLocator<GroupAccountRepository>()));
   // Invite-first membership use cases (slice 5).
   serviceLocator.registerLazySingleton(
       () => InviteToGroup(serviceLocator<GroupAccountRepository>()));
@@ -3506,14 +3520,12 @@ Future<void> init() async {
         openContribution: serviceLocator<OpenContribution>(),
         getOverdueContributions: serviceLocator<GetOverdueContributions>(),
         getUserGroupsPage: serviceLocator<GetUserGroupsPage>(),
-        getGroupContributionsPage:
-            serviceLocator<GetGroupContributionsPage>(),
+        getGroupContributionsPage: serviceLocator<GetGroupContributionsPage>(),
         listContributionCycles: serviceLocator<ListContributionCycles>(),
         getContributionCycleDetails:
             serviceLocator<GetContributionCycleDetails>(),
         restartContribution: serviceLocator<RestartContribution>(),
-        manageContributionRound:
-            serviceLocator<ManageContributionRound>(),
+        manageContributionRound: serviceLocator<ManageContributionRound>(),
         inviteToGroup: serviceLocator<InviteToGroup>(),
         respondToGroupInvite: serviceLocator<RespondToGroupInvite>(),
         cancelGroupInvite: serviceLocator<CancelGroupInvite>(),

@@ -187,24 +187,43 @@ class DataHistoryActionsSheet {
                           .toString(),
                 },
               );
-            } else if (networkCode.isNotEmpty) {
-              Get.toNamed(
-                AppRoutes.dataBundlesPlanSelection,
-                arguments: {
-                  'network': networkCode,
-                  'networkName': networkName,
-                  'phoneNumber': p.phoneNumber,
-                  'isRepeat': true,
-                },
-              );
             } else {
-              Get.toNamed(
-                AppRoutes.dataBundlesHome,
-                arguments: {
-                  'isRepeat': true,
-                  'phoneNumber': p.phoneNumber,
-                },
-              );
+              // Resolve the carrier the SAME way Save Contact does, including
+              // the NCC phone-prefix fallback.
+              //
+              // This branch used to read `networkCode` raw, and that getter is
+              // derived from the plan id: a history row with no plan — or one
+              // whose plan id carries no network prefix — yields an empty
+              // string. The else branch then navigated to dataBundlesHome,
+              // which is THE SCREEN THE SHEET IS OPENED FROM and which ignores
+              // these arguments entirely. So the action dismissed the sheet and
+              // did nothing visible, which is exactly what was reported.
+              final (effCode, effName) = _effectiveNetwork(p, isIntl);
+              if (effCode.isNotEmpty) {
+                Get.toNamed(
+                  AppRoutes.dataBundlesPlanSelection,
+                  arguments: {
+                    'network': effCode,
+                    'networkName': effName,
+                    'phoneNumber': p.phoneNumber,
+                    'isRepeat': true,
+                  },
+                );
+              } else {
+                // Genuinely unidentifiable: an unallocated prefix, or a row
+                // with neither plan nor a Nigerian number. Say so instead of
+                // navigating nowhere — a silent no-op reads as a broken button.
+                Get.snackbar(
+                  'Cannot repeat this purchase',
+                  "We couldn't tell which network this was for. "
+                      'Pick the network above and buy again.',
+                  backgroundColor:
+                      const Color(0xFFEF4444).withValues(alpha: 0.9),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                  duration: const Duration(seconds: 3),
+                );
+              }
             }
           },
         ),

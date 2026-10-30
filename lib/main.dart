@@ -50,6 +50,7 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
+import 'package:lazervault/src/features/recipients/data/datasources/lazervault_account_lookup.dart';
 import 'package:lazervault/src/features/recipients/data/datasources/recipient_verification_grpc_datasource.dart';
 import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments_grpc;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
@@ -730,8 +731,8 @@ Future<String> _determineInitialRoute() async {
         // what is actually true. A verified (or in-review) holder is never
         // sent to the verification screen on the strength of a stale flag —
         // the flag is dropped instead, so it cannot fire again.
-        final known = resolveKycState(
-            status: KycSnapshot.status, tier: KycSnapshot.tier);
+        final known =
+            resolveKycState(status: KycSnapshot.status, tier: KycSnapshot.tier);
         if (known == KycState.verified || known == KycState.inReview) {
           print('📋 KYC flag stale (${known.name}) - clearing, not routing');
           await storage.delete(key: 'kyc_onboarding_pending');
@@ -1055,6 +1056,9 @@ class _MyAppState extends State<MyApp> {
               client: serviceLocator<payments_grpc.PaymentsServiceClient>(),
               callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
             ),
+            // Lets every bank-destination surface see that a typed account
+            // number is INTERNAL before it pays for an external rail.
+            lazervaultLookup: serviceLocator<LazervaultAccountLookup>(),
           ),
         ),
         BlocProvider<ContactSyncCubit>(

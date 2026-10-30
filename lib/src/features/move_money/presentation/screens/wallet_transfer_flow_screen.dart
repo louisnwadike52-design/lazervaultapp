@@ -22,6 +22,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../cubit/wallet_transfer_cubit.dart';
 import '../../cubit/wallet_transfer_state.dart';
+import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
 
 class WalletTransferFlowScreen extends StatefulWidget {
   const WalletTransferFlowScreen({super.key});
@@ -234,6 +236,50 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
     final destination = _destinationAccount;
     final amount = _parsedAmount;
     if (source == null || destination == null || amount == null) return;
+
+    // MINIMUM RETAINED BALANCE — before the PIN sheet opens.
+    //
+    // This is the third transfer entry point (Lazerbeam wallet → bank) and it
+    // reuses core-payments SendFunds, so the server enforces the floor here
+    // too. Checked BEFORE validateTransactionPin because asking someone for
+    // their PIN and then refusing the transfer is the worst order to do it in —
+    // they have authorised something that was never going to happen.
+    //
+    // Deliberately NOT folded into `_isAmountValid`. That getter only disables
+    // the CTA, which would leave a user staring at a dead button with no
+    // explanation — the exact antipattern the shared refusal sheet was created
+    // to replace.
+    final availableMinor = (source.availableBalance * 100).round();
+    final spendMinor = (amount * 100).round();
+    final minBalance =
+        MinBalancePolicy.resolve(accountType: source.accountType);
+    if (minBalance.blocks(
+      availableMinor: availableMinor,
+      spendMinor: spendMinor,
+    )) {
+      await showMinBalanceRefusal(
+        context,
+        currencySymbol:
+            source.currency == 'NGN' ? '\u20A6' : '${source.currency} ',
+        policy: minBalance,
+        availableMinor: availableMinor,
+        // Lazerbeam's internal leg carries no fee of its own; the server
+        // re-checks with whatever fee actually applies.
+        feeMinor: 0,
+        onSendMax: () {
+          final max =
+              minBalance.maxSendableMinor(availableMinor: availableMinor);
+          if (max > 0 && mounted) {
+            final major = max / 100.0;
+            _amountController.text = major == major.roundToDouble()
+                ? major.toStringAsFixed(0)
+                : major.toStringAsFixed(2);
+            setState(() {});
+          }
+        },
+      );
+      return;
+    }
 
     final transactionId = const Uuid().v4();
     final description = _descriptionController.text.trim().isNotEmpty

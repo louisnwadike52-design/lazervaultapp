@@ -139,11 +139,28 @@ class DataPurchaseEntity extends Equatable {
       statusCategory == DataPurchaseStatusCategory.processing;
   bool get isRefunded => statusCategory == DataPurchaseStatusCategory.refunded;
 
+  /// The carrier this purchase was for, derived from the plan id.
+  ///
+  /// Only ever returns a REAL carrier. The previous version returned
+  /// `dataPlan.toUpperCase()` whenever the plan id had no underscore, so a
+  /// plan stored as "1001" produced the network code "1001" — a value no
+  /// screen can match, which sent Repeat Purchase to a plan-selection screen
+  /// for a network that does not exist. An empty string is the honest answer
+  /// and callers already handle it.
+  static const _knownNetworks = <String>{
+    'MTN',
+    'AIRTEL',
+    'GLO',
+    '9MOBILE',
+    'ETISALAT',
+  };
+
   String get networkCode {
     if (dataPlan.isEmpty) return '';
     final sep = dataPlan.indexOf('_');
-    if (sep <= 0) return dataPlan.toUpperCase();
-    return dataPlan.substring(0, sep).toUpperCase();
+    final candidate =
+        (sep <= 0 ? dataPlan : dataPlan.substring(0, sep)).toUpperCase();
+    return _knownNetworks.contains(candidate) ? candidate : '';
   }
 
   String get networkName {

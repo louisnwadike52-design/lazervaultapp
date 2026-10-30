@@ -8,10 +8,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
-import '../../cubit/crypto_config_cubit.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
+import '../../domain/trade_amounts.dart';
 import '../widgets/asset_wallet_sheet.dart';
 import '../widgets/asset_network_badge.dart';
 import '../widgets/network_picker_sheet.dart';
@@ -19,6 +19,7 @@ import '../widgets/price_quote_card.dart';
 import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/crypto/domain/trade_pricing.dart';
 
 class SellCryptoScreen extends StatefulWidget {
   final CryptoHolding? selectedHolding;
@@ -45,39 +46,83 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   bool _isLoading = false;
   bool _isTransacting = false;
 
+  /// Live exchange rate from PriceQuoteCard's onRateUpdated callback.
+  ///
+  /// Null until the first successful fetch, and deliberately WITHOUT a
+  /// fallback to `_selectedHolding.currentPrice`: that is a stale entity field
+  /// hydrated when the holdings list loaded, often hours old by the time the
+  /// user opens Sell. See sell_crypto_sheet._price and buy_crypto_sheet._rate.
+  double? _liveRate;
+
+  /// Quidax's swap margin, from PriceQuoteCard. The rate it reports is the MID
+  /// of the executable buy and sell rates; a sell fills BELOW it.
+  double _swapMargin = 0;
+
   @override
   ITransactionPinService get transactionPinService =>
       GetIt.I<ITransactionPinService>();
 
-  /// Display-only fee rate driven by `crypto.fee_display.fallback_bps`. The
-  /// authoritative fee comes from the server's swap-quote response.
-  double _feeDisplayRate() {
-    int? bps;
-    try {
-      bps = context.read<CryptoConfigCubit>().config.feeDisplayFallbackBps;
-    } catch (_) {
-      try {
-        bps = GetIt.I<CryptoConfigCubit>().config.feeDisplayFallbackBps;
-      } catch (_) {}
-    }
-    // 150 bps was SIX TIMES the configured 25, and reachable whenever the
-    // config cubit is unavailable. CryptoRuntimeConfig.defaults() is the one
-    // place that mirrors the server's value, so there is a single number to
-    // change if the server's moves.
-    return (bps ?? CryptoRuntimeConfig.defaults().feeDisplayFallbackBps) /
-        10000.0;
-  }
+  /// Effective rate used to drive every computed amount: the rate a SELL
+  /// actually fills at. Null while no live rate has arrived, so callers render
+  /// a loading / unavailable state rather than fake numbers.
+  ///
+  /// This screen used to price everything off `_selectedHolding.currentPrice`,
+  /// which is both stale AND un-margined — and on a sell an un-margined rate
+  /// OVERSTATES the proceeds by the whole margin, because a sell hits the
+  /// swap's bid and fills BELOW the mid. The sell SHEET already applied
+  /// `rate * (1 - margin)`; this screen, reachable from the same Sell action,
+  /// did not. (The buy side is the mirror image: `rate * (1 + margin)`, which
+  /// understated the cost — fixed in buy_crypto_screen._effectiveRate.)
+  CryptoTradePricing get _pricing => CryptoTradePricing(
+        isBuy: false,
+        fiatCurrency: CurrencySymbols.currentCurrency,
+        liveRate: _liveRate,
+        swapMargin: _swapMargin,
+      );
 
-  /// Estimated Lazervault sell fee honoring the admin's percentage/fixed config
-  /// (crypto.fee.sell.*). Falls back to the flat display rate before config loads.
-  double _resolveFee() {
-    try {
-      return GetIt.I<CryptoConfigCubit>()
-          .config
-          .feeForOp('sell', _fiatAmount, CurrencySymbols.currentCurrency);
-    } catch (_) {
-      return _fiatAmount * _feeDisplayRate();
-    }
+  double? get _effectiveRate => _pricing.executableRate;
+
+  /// True once a live rate is available. Gates the CTA so a sale can never be
+  /// composed against a price we don't currently have.
+  bool get _hasLiveRate => (_liveRate ?? 0) > 0;
+
+  /// True while the rate fetch is in flight with no fallback to show. Drives
+  /// the order summary's loading render.
+  bool get _isRateLoading =>
+      _selectedHolding != null &&
+      _amountController.text.isNotEmpty &&
+      _liveRate == null;
+
+  /// The platform fee for an arbitrary fiat gross, honouring the admin's
+  /// percentage / cap / floor / fixed configuration (crypto.fee.sell.*).
+  /// Falls back to the flat display rate before the config RPC lands.
+  ///
+  /// Taken as a function rather than read inline so CryptoTradeAmounts.estimate
+  /// can price a hypothetical amount with the SAME rules the real fee uses — a
+  /// cap or a floor applies at the amount being priced, not at whatever is
+  /// currently typed.
+  double _feeForFiat(double fiatGross) => _pricing.feeForFiat(fiatGross);
+
+  /// THE trade, priced once — the same definition the sell SHEET uses, so the
+  /// two routes to selling cannot quote different numbers for one trade.
+  CryptoTradeAmounts get _amounts => CryptoTradeAmounts.estimate(
+        isBuy: false,
+        fiatCurrency: CurrencySymbols.currentCurrency,
+        executableRate: _effectiveRate ?? 0,
+        assetQuantity: _cryptoAmount,
+        feeForFiatAmount: _feeForFiat,
+      );
+
+  /// What actually lands in the wallet: gross less our fee.
+  double get _netProceeds => _amounts.receive;
+
+  /// What one unit yields INCLUSIVE of our fee — the only rate the user can
+  /// reconcile against the proceeds beneath it. Null while no live rate.
+  double? _displayRate() {
+    final qty = _cryptoAmount;
+    if (qty <= 0) return _effectiveRate;
+    final allIn = _amounts.allInRateFor(qty);
+    return allIn > 0 ? allIn : _effectiveRate;
   }
 
   @override
@@ -128,24 +173,31 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     setState(() {});
   }
 
+  /// Crypto quantity being sold — the field value directly in crypto mode, or
+  /// the fiat value divided by the EXECUTABLE rate in fiat mode.
   double get _cryptoAmount {
     if (_amountController.text.isEmpty) return 0.0;
     final amount = double.tryParse(_amountController.text) ?? 0.0;
     if (_isAmountInCrypto) {
       return amount;
     }
-    if (_selectedHolding == null || _selectedHolding!.currentPrice <= 0)
-      return 0.0;
-    return amount / _selectedHolding!.currentPrice;
+    // Fiat-input mode: divide by the live executable rate. Without one we
+    // honestly return 0 so callers know there is nothing trustworthy to show,
+    // rather than dividing by a stale cached price.
+    final r = _effectiveRate;
+    if (r == null || r <= 0) return 0.0;
+    return amount / r;
   }
 
+  /// GROSS fiat value of the sale, before our fee. Always derived from the
+  /// quantity times the executable rate (in fiat mode that is an exact round
+  /// trip of what was typed), so the amount shown, the fee and the proceeds
+  /// all describe one trade. The NET figure is [_netProceeds].
   double get _fiatAmount {
     if (_amountController.text.isEmpty || _selectedHolding == null) return 0.0;
-    final amount = double.tryParse(_amountController.text) ?? 0.0;
-    if (_isAmountInCrypto) {
-      return amount * _selectedHolding!.currentPrice;
-    }
-    return amount;
+    final r = _effectiveRate;
+    if (r == null || r <= 0) return 0.0;
+    return _cryptoAmount * r;
   }
 
   String _trimNum(double v) {
@@ -160,8 +212,10 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   /// Flip the amount unit AND convert the entered value so the underlying
   /// value doesn't silently change meaning on toggle.
   void _toggleAmountUnit() {
-    final fiat = _fiatAmount; // fiat value in the CURRENT mode
-    final rate = _selectedHolding?.currentPrice ?? 0.0;
+    final fiat = _fiatAmount; // gross fiat value in the CURRENT mode
+    // Convert at the EXECUTABLE rate, the same one every other figure uses —
+    // converting at the stale cached price made the value jump on toggle.
+    final rate = _effectiveRate ?? 0.0;
     setState(() {
       _isAmountInCrypto = !_isAmountInCrypto;
       if (fiat > 0 && rate > 0) {
@@ -211,12 +265,30 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                             SizedBox(height: 12.h),
                             PriceQuoteCard(
                               // Show the rate this trade actually FILLS at, not the raw
-                              // order-book ticker. The sheet's own maths already applies
+                              // order-book ticker. The screen's own maths already applies
                               // the swap margin, so displaying the unadjusted ticker put
                               // two different rates on one screen.
                               side: 'sell',
                               cryptoId: _selectedHolding!.cryptoId,
                               cryptoSymbol: _selectedHolding!.cryptoSymbol,
+                              // The card already refetches every 30s; listen to it so
+                              // proceeds are computed from the LIVE rate instead of the
+                              // holding's cached currentPrice snapshot.
+                              onRateUpdated: (r) {
+                                if (mounted && r != _liveRate) {
+                                  setState(() => _liveRate = r);
+                                }
+                              },
+                              onSwapMarginUpdated: (m) {
+                                if (mounted && m != _swapMargin) {
+                                  setState(() => _swapMargin = m);
+                                }
+                              },
+                              // The headline must be the rate the PROCEEDS below
+                              // imply, fee included — otherwise the two numbers on
+                              // one screen cannot be reconciled.
+                              allInRate:
+                                  _cryptoAmount > 0 ? _displayRate() : null,
                             ),
                           ],
                           SizedBox(height: 24.h),
@@ -456,8 +528,17 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
+                        // The rate a SELL fills at, from the live quote — NOT
+                        // the holding's cached currentPrice. Printing the
+                        // stale, un-margined price here put a second,
+                        // better-looking rate directly above the PriceQuoteCard
+                        // and the proceeds, which is unreconcilable. '—' while
+                        // no live rate has arrived; PriceQuoteCard below owns
+                        // the loading/error affordance and the Retry button.
                         Text(
-                          '${CurrencySymbols.currentSymbol}${_selectedHolding!.currentPrice.toStringAsFixed(2)}',
+                          _effectiveRate == null
+                              ? '—'
+                              : '${CurrencySymbols.currentSymbol}${_effectiveRate!.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -691,10 +772,17 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 if (_selectedHolding != null &&
                     _amountController.text.isNotEmpty) ...[
                   SizedBox(height: 8.h),
+                  // No live rate → say so. Converting at the stale cached
+                  // price put a confident number here that the proceeds below
+                  // then contradicted.
                   Text(
-                    _isAmountInCrypto
-                        ? '≈ ${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'
-                        : '≈ ${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
+                    !_hasLiveRate
+                        ? (_isRateLoading
+                            ? 'Fetching live rate…'
+                            : 'Rate unavailable')
+                        : _isAmountInCrypto
+                            ? '≈ ${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'
+                            : '≈ ${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       color: Colors.white.withValues(alpha: 0.6),
@@ -780,12 +868,55 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
 
   Widget _buildOrderSummary() {
     // Display estimate; authoritative fee comes from server swap-quote
-    // response. Rate sourced from CryptoConfigCubit (PR5d.4).
+    // response.
     // ONE platform fee (spread). There is NO network fee on a sell — the crypto
     // moves sub→master as a zero-fee internal Quidax transfer. The old 30/70
     // "network/trading" split invented a fee category and misstated both.
-    final fee = _resolveFee();
-    final netProceeds = _fiatAmount - fee;
+    //
+    // The card chrome is the same in all three states; only the body branches.
+    // This used to ALWAYS compute, from `_selectedHolding.currentPrice` — a
+    // stale entity field with no swap margin — so even while PriceQuoteCard
+    // above said "Rate unavailable" these rows showed confident numbers, and
+    // the un-margined rate OVERSTATED the proceeds on every sale.
+    final Widget body;
+    if (!_hasLiveRate) {
+      body = _buildOrderSummaryUnavailable();
+    } else {
+      // ONE derivation, shared with the sell sheet. Deriving it here as
+      // `_fiatAmount - _resolveFee()` off an un-margined rate was a second
+      // definition that disagreed with the sheet for the same trade.
+      final amounts = _amounts;
+      body = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSummaryRow('You sell',
+              '${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}'),
+          SizedBox(height: 8.h),
+          _buildSummaryRow('Market value',
+              '${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'),
+          SizedBox(height: 8.h),
+          _buildSummaryRow('Fee',
+              '${CurrencySymbols.currentSymbol}${amounts.feeInFiat.toStringAsFixed(2)}'),
+          SizedBox(height: 12.h),
+          Container(
+            height: 1.h,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          _buildSummaryRow('You receive',
+              '${CurrencySymbols.currentSymbol}${amounts.receive.toStringAsFixed(2)}',
+              isTotal: true),
+        ],
+      );
+    }
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -829,33 +960,43 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          _buildSummaryRow('You sell',
-              '${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}'),
-          SizedBox(height: 8.h),
-          _buildSummaryRow('Market value',
-              '${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'),
-          SizedBox(height: 8.h),
-          _buildSummaryRow('Fee',
-              '${CurrencySymbols.currentSymbol}${fee.toStringAsFixed(2)}'),
-          SizedBox(height: 12.h),
-          Container(
-            height: 1.h,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  Colors.white.withValues(alpha: 0.2),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          _buildSummaryRow('You receive',
-              '${CurrencySymbols.currentSymbol}${netProceeds.toStringAsFixed(2)}',
-              isTotal: true),
+          body,
         ],
       ),
+    );
+  }
+
+  /// Body shown when no live rate has arrived: loading while the fetch is in
+  /// flight, otherwise an honest "unavailable". Deliberately no numbers —
+  /// PriceQuoteCard above owns the Retry affordance, so we don't duplicate it.
+  Widget _buildOrderSummaryUnavailable() {
+    final loading = _isRateLoading;
+    return Row(
+      children: [
+        if (loading)
+          SizedBox(
+            width: 14.sp,
+            height: 14.sp,
+            child: const CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+            ),
+          )
+        else
+          Icon(Icons.cloud_off_outlined, color: Colors.orange, size: 16.sp),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Text(
+            loading
+                ? 'Fetching the live sell rate…'
+                : 'Live rate unavailable — we can’t estimate your proceeds right now. Retry above.',
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1005,8 +1146,12 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   }
 
   Widget _buildSellButton() {
-    final isEnabled =
-        _selectedHolding != null && _hasValidAmount && !_isTransacting;
+    // _hasLiveRate: refuse to transact without a current price, the same gate
+    // the sell sheet and the buy screen apply.
+    final isEnabled = _selectedHolding != null &&
+        _hasValidAmount &&
+        !_isTransacting &&
+        _hasLiveRate;
 
     // Build validation error message
     String? validationError;
@@ -1016,6 +1161,10 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       validationError = 'Please enter an amount to sell';
     } else if (!_hasValidAmount) {
       validationError = 'Amount exceeds your holding balance';
+    } else if (!_hasLiveRate) {
+      validationError = _isRateLoading
+          ? 'Fetching the live sell rate…'
+          : 'Live rate unavailable — retry the price above before selling';
     }
 
     return Column(
@@ -1136,6 +1285,18 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 2),
+      );
+    } else if (!_hasLiveRate) {
+      // Never let a sale be composed against a price we don't currently hold.
+      Get.snackbar(
+        _isRateLoading ? 'Fetching Rate' : 'Rate Unavailable',
+        _isRateLoading
+            ? 'Getting the live sell rate, one moment...'
+            : 'We could not fetch a live sell rate. Retry the price above, then try again.',
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
       );
     }
   }
@@ -1309,6 +1470,12 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             onTap: () {
               setState(() {
                 _selectedHolding = holding;
+                // Drop the previous asset's rate so the screen shows the
+                // loading state until PriceQuoteCard reports a new one — the
+                // old rate belongs to a different coin entirely. (Same reset
+                // buy_crypto_screen does on asset change.)
+                _liveRate = null;
+                _swapMargin = 0;
               });
               _searchController.clear();
               Get.back();
@@ -1440,14 +1607,18 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     if (_selectedHolding == null ||
         !_hasValidAmount ||
         _isLoading ||
-        _isTransacting) return;
+        _isTransacting ||
+        // Mirrors the CTA gate: never open the quote flow against a price we
+        // don't currently hold.
+        !_hasLiveRate) return;
 
     // Fee display still shown to user via the PIN sheet; the actual platform
     // spread is computed server-side from system_settings.crypto.spread.*
-    // basis points and applied during the swap-quotation flow. The display
-    // rate here comes from CryptoConfigCubit (PR5d.4).
-    final fee = _resolveFee();
-    final netProceeds = _fiatAmount - fee;
+    // basis points and applied during the swap-quotation flow. The local
+    // estimate is the SHARED derivation (CryptoTradeAmounts.estimate off the
+    // live, margin-adjusted sell rate), so the number the PIN sheet falls back
+    // to can no longer be the un-margined one this screen used to show.
+    final netProceeds = _netProceeds;
     final quantity = _cryptoAmount;
 
     // One id minted up-front for both the PIN token binding and the swap's

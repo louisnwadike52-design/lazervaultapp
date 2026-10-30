@@ -26,6 +26,7 @@ import '../../../../generated/crypto.pbgrpc.dart' show QuidaxAssetNetwork;
 import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
+import 'package:lazervault/src/features/crypto/domain/trade_pricing.dart';
 
 /// Streamlined BUY bottom sheet — the mirror of [SellCryptoSheet].
 ///
@@ -77,7 +78,11 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
   String? _serverError;
   // Fiat-input by default for a buy (you spend NGN to get crypto).
   bool _isAmountInCrypto = false;
-  // Live rate from PriceQuoteCard; falls back to the entity's currentPrice.
+  // Live rate from PriceQuoteCard. Null until the first successful fetch, and
+  // there is deliberately NO fallback to the entity's currentPrice — see
+  // _rate() below, which returns 0 (and the sheet then refuses to quote or
+  // transact) rather than pricing off a list-load snapshot. This comment used
+  // to claim the opposite of what the code does.
   double? _liveRate;
   // Quidax's swap margin (0.01 = 1%). The ticker is the order book; a buy
   // actually fills about a percent above it. Quoting the ticker is what made a
@@ -195,9 +200,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     // flipped well-funded wallets into "insufficient".
     double feeAtMin;
     try {
-      feeAtMin = GetIt.I<CryptoConfigCubit>()
-          .config
-          .feeForOp('buy', min, CurrencySymbols.currentCurrency);
+      feeAtMin = _pricing.feeForFiat(min);
     } catch (_) {
       feeAtMin = min * _feeDisplayRate();
     }
@@ -535,15 +538,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
   /// can price a hypothetical amount (the Max button solves for it) with the
   /// SAME rules the real fee uses — a cap or a floor applies at the amount
   /// being priced, not at whatever is currently typed.
-  double _feeForFiat(double fiatSubtotal) {
-    try {
-      return GetIt.I<CryptoConfigCubit>()
-          .config
-          .feeForOp('buy', fiatSubtotal, CurrencySymbols.currentCurrency);
-    } catch (_) {
-      return fiatSubtotal * _feeDisplayRate();
-    }
-  }
+  double _feeForFiat(double fiatSubtotal) => _pricing.feeForFiat(fiatSubtotal);
 
   /// THE trade, priced once: subtotal, our fee, the total, and the all-in
   /// unit rate the headline must show.
@@ -590,13 +585,17 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
   /// to it is what put two different rates on one screen — a stale header
   /// figure beside a live calculation — and produced a cost estimate that
   /// disagreed with what the server actually quoted.
-  double _rate() {
-    final r = _liveRate ?? 0.0;
-    if (r <= 0) return 0;
-    // A buy lifts the swap's offer, so the naira cost per unit is ABOVE the
-    // ticker. Margin 0 (unmeasured) degrades to the previous behaviour.
-    return r * (1 + _swapMargin);
-  }
+  /// The shared derivation — see CryptoTradePricing. Rate and margin still come
+  /// from PriceQuoteCard's callbacks; only the arithmetic is shared, so this
+  /// adds no API call.
+  CryptoTradePricing get _pricing => CryptoTradePricing(
+        isBuy: true,
+        fiatCurrency: CurrencySymbols.currentCurrency,
+        liveRate: _liveRate,
+        swapMargin: _swapMargin,
+      );
+
+  double _rate() => _pricing.executableRate ?? 0;
 
   /// True once a live rate is available. Gates the CTA so a trade can never be
   /// composed against a price we don't currently have.
@@ -903,11 +902,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
                       _maxChip(() => setState(() {
                             double feeAtFull;
                             try {
-                              feeAtFull = context
-                                  .read<CryptoConfigCubit>()
-                                  .config
-                                  .feeForOp('buy', available,
-                                      CurrencySymbols.currentCurrency);
+                              feeAtFull = _pricing.feeForFiat(available);
                             } catch (_) {
                               feeAtFull = available * _feeDisplayRate();
                             }
@@ -1115,9 +1110,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
         // into ~₦6.7k) — the hint must be independent of what's typed.
         final feeAtFull = () {
           try {
-            return GetIt.I<CryptoConfigCubit>()
-                .config
-                .feeForOp('buy', available, CurrencySymbols.currentCurrency);
+            return _pricing.feeForFiat(available);
           } catch (_) {
             return available * _feeDisplayRate();
           }

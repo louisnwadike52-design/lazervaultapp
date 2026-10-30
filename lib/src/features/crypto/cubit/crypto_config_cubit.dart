@@ -22,6 +22,7 @@ class CryptoOpFee extends Equatable {
     required this.fixedNgnMinor,
     this.capNgnMinor = 0,
     this.floorNgnMinor = 0,
+    this.floorMaxBps = 0,
   });
 
   /// Fee ceiling in kobo, 0 = uncapped. The server applies one
@@ -35,7 +36,16 @@ class CryptoOpFee extends Equatable {
   /// the two directions to be wrong in.
   final int floorNgnMinor;
 
-  /// Parse "{mode}|{bps}|{fixed_ngn_minor}|{cap_ngn_minor}|{floor_ngn_minor}".
+  /// Cap on how much of a trade the FLOOR may take, in bps. 0 = uncapped.
+  ///
+  /// A flat floor is regressive: ₦100 is 0.25% of a ₦40,000 trade and 7.7% of
+  /// the ~₦1,300 minimum. The server clamps it (CryptoWorkerConfig.FloorMaxBps)
+  /// and publishes the clamp here, so the estimate and the charge agree at the
+  /// small end too. Applying the flat floor without this would OVERSTATE the
+  /// fee on exactly the trades where it is most visible.
+  final int floorMaxBps;
+
+  /// Parse "{mode}|{bps}|{fixed_ngn_minor}|{cap_ngn_minor}|{floor_ngn_minor}|{floor_max_bps}".
   ///
   /// Tolerant of missing trailing parts, so an older server that still sends
   /// the 3-field form degrades to no cap and no floor rather than throwing —
@@ -49,12 +59,13 @@ class CryptoOpFee extends Equatable {
       fixedNgnMinor: at(2),
       capNgnMinor: at(3),
       floorNgnMinor: at(4),
+      floorMaxBps: at(5),
     );
   }
 
   @override
   List<Object?> get props =>
-      [mode, bps, fixedNgnMinor, capNgnMinor, floorNgnMinor];
+      [mode, bps, fixedNgnMinor, capNgnMinor, floorNgnMinor, floorMaxBps];
 }
 
 class CryptoRuntimeConfig extends Equatable {
@@ -126,7 +137,13 @@ class CryptoRuntimeConfig extends Equatable {
     // Both are NGN-denominated, so they only apply to an NGN leg. Applying a
     // kobo ceiling to a USD amount would clamp a USD 5,000 fee to USD 25.
     if (isNgn) {
-      final floor = f.floorNgnMinor / 100.0;
+      var floor = f.floorNgnMinor / 100.0;
+      // The floor must not be regressive — the same clamp the server applies,
+      // published alongside it so the two cannot disagree.
+      if (floor > 0 && f.floorMaxBps > 0) {
+        final ceiling = fiatAmount * (f.floorMaxBps / 10000.0);
+        if (ceiling > 0 && floor > ceiling) floor = ceiling;
+      }
       if (floor > 0 && fee < floor) fee = floor;
       final cap = f.capNgnMinor / 100.0;
       if (cap > 0 && fee > cap) fee = cap;

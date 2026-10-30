@@ -299,11 +299,21 @@ class GrpcChannelFactory {
           // a 30s interval never violates. Only the edge objected, and only to
           // pings sent with no active stream.
           pingInterval: Duration(seconds: 30),
-          timeout: Duration(seconds: 10), // Ping timeout
+          // Keepalive ping timeout. If a ping goes unanswered the channel is
+          // torn down and every in-flight call on it fails, so on a link that
+          // routinely stalls for several seconds a 10s ping timeout kills
+          // healthy connections mid-request.
+          timeout: Duration(seconds: 20),
           permitWithoutCalls: false,
         ),
-        connectionTimeout:
-            const Duration(seconds: 10), // Connection establishment timeout
+        // Connection ESTABLISHMENT, which on a slow Nigerian mobile link means a
+        // DNS lookup, a TCP handshake and a TLS handshake across a congested
+        // radio before any request is sent. Ten seconds was not enough for that
+        // and a channel that failed to establish surfaces to the user as the
+        // app being broken. Per-request deadlines are separate and unchanged at
+        // 30s in grpc_channel_manager.dart, so this does not make a hung call
+        // hang any longer — it only stops us giving up during the handshake.
+        connectionTimeout: const Duration(seconds: 25),
         // Long idleTimeout. This was originally set because a channel that
         // reached SHUTDOWN could never recover — every later RPC failed with
         // "Connection shutting down" until the app was killed.

@@ -409,7 +409,14 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     // turning it off cannot leave a reachable entry point behind in one of
     // them. (Disabling only one CONTRIBUTION TYPE leaves the service visible
     // and is handled in the create flow, not here.)
-    if (!FeatureFlags.groupFundsAvailable) {
+    //
+    // A whitelisted email OVERRIDES the hide, exactly as it does for the
+    // quick-service gates below. Without this the whitelist was server-only:
+    // the financial-gateway already lets a whitelisted user's
+    // GroupAccountService calls through, but the app hid the tile from
+    // everyone the switch was off for — including them — so "off for everyone
+    // except these emails" was not actually expressible.
+    if (!FeatureFlags.groupFundsAvailableFor(FeatureFlags.currentUserEmail())) {
       hidden.add(AppServiceName.groupAccount);
     }
     // Outside NGN, hide every service the region cannot actually complete.

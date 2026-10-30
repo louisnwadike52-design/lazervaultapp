@@ -11,6 +11,8 @@ import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/re
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/schedule_repeat_sheet.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/insufficient_funds_sheet.dart';
+import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
 part 'send_funds_amount_sheet_widgets.dart';
 
 /// Short-flow amount entry — a bottom sheet that collects the transfer amount
@@ -27,6 +29,16 @@ class SendFundsAmountSheet extends StatefulWidget {
   final String transferType; // "internal" | "external"
   final String? destinationBankCode;
   final double availableBalanceMajor;
+
+  /// The source wallet's account type, when the caller knows it.
+  ///
+  /// Used only to pick a PER-WALLET minimum-balance floor. Optional and
+  /// null-safe: without it the GLOBAL floor applies client-side, and the
+  /// server — which always knows the type — still enforces the per-wallet
+  /// figure. So the worst case is a user reaching the server's refusal
+  /// instead of this sheet, never a transfer that should have been blocked
+  /// going through.
+  final String? sourceAccountType;
 
   /// Short label for the source account being debited (the dashboard's active
   /// swiped account) — just the account name/type, e.g. "Personal" (no number
@@ -46,6 +58,7 @@ class SendFundsAmountSheet extends StatefulWidget {
     required this.transferType,
     required this.transferCubit,
     required this.availableBalanceMajor,
+    this.sourceAccountType,
     required this.sourceAccountLabel,
     this.destinationBankCode,
     this.initialAmountMinor,
@@ -300,6 +313,56 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
       setState(() => _error = feeMinor > 0
           ? 'Amount + fee exceeds your available balance'
           : 'Amount exceeds your available balance');
+      return;
+    }
+
+    // MINIMUM RETAINED BALANCE — checked AFTER "do they have enough at all".
+    //
+    // Order matters. If the wallet cannot cover the transfer, that is the
+    // truthful refusal and the floor is beside the point; telling someone to
+    // keep ₦1,500 when they only have ₦400 explains the wrong thing. So the
+    // harder stop goes first and this only speaks when the transfer WOULD
+    // otherwise have succeeded.
+    //
+    // Resolved from settings already on the device (FeatureFlags), so no
+    // request happens while the user is typing and nothing blocks the frame.
+    // The server re-checks and is authoritative — this exists so the user
+    // learns it here, with the figures, rather than at the PIN sheet.
+    final availableMinor = (widget.availableBalanceMajor * 100).round();
+    final minBalance =
+        MinBalancePolicy.resolve(accountType: widget.sourceAccountType);
+    if (minBalance.blocks(
+      availableMinor: availableMinor,
+      spendMinor: minor + feeMinor,
+    )) {
+      showMinBalanceRefusal(
+        context,
+        currencySymbol: _symbol,
+        policy: minBalance,
+        availableMinor: availableMinor,
+        feeMinor: feeMinor,
+        // Offer the largest amount that WOULD go through, and set the field to
+        // it, so the user's next tap succeeds instead of returning them here.
+        onSendMax: () {
+          final max = minBalance.maxSendableMinor(
+            availableMinor: availableMinor,
+            feeMinor: feeMinor,
+          );
+          if (max > 0 && mounted) {
+            // Written the same way the initial amount is, so the field reads
+            // "975" rather than "975.00" on a whole figure.
+            final major = max / 100.0;
+            _controller.text = major == major.roundToDouble()
+                ? major.toStringAsFixed(0)
+                : major.toStringAsFixed(2);
+            _onChanged();
+            setState(() => _error = null);
+          }
+        },
+      );
+      // The field stays visibly in an error state behind and after the sheet,
+      // matching how the insufficient-funds refusal above behaves.
+      setState(() => _error = 'Your wallet must keep a minimum balance');
       return;
     }
     // Pass the raw note. Turning a category into narration is

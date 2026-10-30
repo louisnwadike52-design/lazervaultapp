@@ -109,8 +109,38 @@ class FeatureFlags {
   static const String groupFundsEsusuEnabled = 'group_funds_esusu_enabled';
 
   /// Whether Group Funds is available at all. Default true.
+  ///
+  /// DEPRECATED for gating the entry point — use [groupFundsAvailableFor],
+  /// which also honours the whitelist. Kept because the contribution-type
+  /// getters below compose with it and their own semantics are unchanged.
   static bool get groupFundsAvailable =>
       _prefs?.getBool(groupFundsEnabled) ?? true;
+
+  /// Whether Group Funds is available TO THIS USER.
+  ///
+  /// Group Funds is the one gate that read its switch as a plain boolean and
+  /// never consulted the whitelist, unlike every `quick_service_*` and
+  /// `feature_*` gate. The backend side already supports it — the
+  /// financial-gateway rule for GroupAccountService resolves
+  /// `group_funds_whitelist` through featuregate.Allowed — so switching the
+  /// feature off and whitelisting one person let that person's RPCs through
+  /// while the app still hid the tile from them. The gate was off, the
+  /// override was server-only, and the result was a feature nobody could
+  /// reach.
+  ///
+  /// So: the whitelist is an OVERRIDE, matching the server's precedence —
+  /// whitelisted(…) OR the switch — which is what makes "off for everyone
+  /// except these emails" expressible at all.
+  static bool groupFundsAvailableFor(String? email) =>
+      whitelisted(groupFundsPrefix, email) || groupFundsAvailable;
+
+  /// Whitelist key prefix for Group Funds.
+  ///
+  /// `group_funds` rather than a `quick_service_`/`feature_` prefix because
+  /// that is the gate name the financial-gateway rule already uses, and the
+  /// whole point of a single name is that the app and the gateway cannot
+  /// disagree about who is allowed in.
+  static const String groupFundsPrefix = 'group_funds';
 
   /// Whether a one-time contribution may be created. Default true.
   static bool get groupFundsOneTimeAvailable =>
@@ -127,6 +157,13 @@ class FeatureFlags {
   /// contributions while leaving existing ones running — so the create
   /// surface has to have something to say about it rather than opening a
   /// wizard with an empty type picker.
+  /// Whitelist-aware, so a user who can SEE Group Funds can also use it.
+  /// Composing with the plain switch instead would show a whitelisted user the
+  /// tile and then refuse them the create flow behind it.
+  static bool groupFundsCanCreateContributionFor(String? email) =>
+      groupFundsAvailableFor(email) &&
+      (groupFundsOneTimeAvailable || groupFundsEsusuAvailable);
+
   static bool get groupFundsCanCreateContribution =>
       groupFundsAvailable &&
       (groupFundsOneTimeAvailable || groupFundsEsusuAvailable);
@@ -917,6 +954,29 @@ class FeatureFlags {
         featurePrefix('explainer', 'lazerfundsguide'),
         defaultOn: false,
       );
+
+  /// Admin copy for a gate, or EMPTY when none is set.
+  ///
+  /// Distinct from [gateMessage], which substitutes "This service is not
+  /// available at the moment" — right for a withdrawn service, wrong for
+  /// anything else. A transfer refused for a balance floor needs its own
+  /// wording, and a caller has to be able to tell "no copy was set" from "the
+  /// admin wrote this" in order to choose its own default.
+  static String gateMessageOrEmpty(String prefix) =>
+      _prefs?.getString('${prefix}_message')?.trim() ?? '';
+
+  /// A numeric gate tunable in MINOR units (`<prefix>_amount`), or 0 when unset.
+  ///
+  /// Zero means "not configured" rather than "a floor of nothing", which is
+  /// what lets an operator clear the field to switch a threshold off — the
+  /// same convention the admin screen and the server both use.
+  static int gateAmountMinor(String prefix) {
+    final raw = _prefs?.getString('${prefix}_amount')?.trim();
+    if (raw == null || raw.isEmpty) return 0;
+    final n = int.tryParse(raw);
+    if (n == null || n < 0) return 0;
+    return n;
+  }
 
   /// Copy for the "not available" modal. Never blank, so an admin who disables
   /// a surface without writing a message still gets a sentence that is true.

@@ -10,6 +10,8 @@ import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/services/contact_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/core/utils/masked_account_number.dart';
 import 'package:lazervault/src/features/contacts/data/models/lazervault_user_match_model.dart';
 import 'package:lazervault/src/features/contacts/domain/usecases/find_lazervault_users_usecase.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/fullscreen_image_viewer.dart';
@@ -466,7 +468,7 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
         decoration: InputDecoration(
           hintText: _contactsMode
               ? 'Filter your contacts'
-              : 'Name, alias, username, phone or email',
+              : 'Name, username, phone, email or account no.',
           // Smaller hint + tighter icon box so the long hint stays on one line.
           hintStyle: GoogleFonts.inter(
               fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
@@ -501,7 +503,7 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     switch (state.status) {
       case UnifiedSearchStatus.initial:
         return _hint(Icons.person_search_outlined,
-            'Search for a contact or anyone on Lazervault');
+            'Search by name, username, phone, email or Lazervault account number');
       case UnifiedSearchStatus.loading:
         return const Center(child: LazerVaultLoader.small());
       case UnifiedSearchStatus.error:
@@ -559,13 +561,13 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     if (local.isNotEmpty) {
       children.add(_sectionHeader('Your contacts'));
       for (final r in local) {
-        children.add(_resultTile(r));
+        children.add(_resultTile(r, state.query));
       }
     }
     if (global.isNotEmpty) {
       children.add(_sectionHeader('Everyone else'));
       for (final r in global) {
-        children.add(_resultTile(r));
+        children.add(_resultTile(r, state.query));
       }
     }
     if (loadingMore) {
@@ -622,7 +624,8 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     );
   }
 
-  Widget _resultTile(UnifiedSearchResult r) {
+  Widget _resultTile(UnifiedSearchResult r, String query) {
+    final matchBadge = _matchBadge(r, query);
     return InkWell(
       onTap: _pickGuard.isBusy ? null : () => _pick(r),
       borderRadius: BorderRadius.circular(12.r),
@@ -653,6 +656,10 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
                       if (r.isSavedHit) ...[
                         SizedBox(width: 6.w),
                         _savedBadge(r),
+                      ],
+                      if (matchBadge != null) ...[
+                        SizedBox(width: 6.w),
+                        matchBadge,
                       ],
                     ],
                   ),
@@ -707,31 +714,10 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     );
   }
 
-  /// Secondary line: for a saved alias hit show the real name; otherwise the
-  /// best identifier (@username, masked phone/email, or bank • account).
-  String _subtitleFor(UnifiedSearchResult r) {
-    final bits = <String>[];
-    if (r.isSavedHit &&
-        r.alias.isNotEmpty &&
-        r.name.isNotEmpty &&
-        r.name.toLowerCase() != r.displayName.toLowerCase()) {
-      bits.add(r.name);
-    }
-    if (r.username.isNotEmpty) {
-      bits.add('@${r.username}');
-    } else if (r.phoneNumber.isNotEmpty) {
-      bits.add(r.phoneNumber);
-    } else if (r.email.isNotEmpty) {
-      bits.add(r.email);
-    } else if (r.accountNumber.isNotEmpty) {
-      final bank = r.bankName.isNotEmpty ? r.bankName : 'Bank';
-      bits.add('$bank • ${r.accountNumber}');
-    }
-    if (bits.isEmpty) {
-      bits.add(r.isLazervault ? 'Lazervault user' : 'Recipient');
-    }
-    return bits.join('  •  ');
-  }
+  /// Secondary line — see [_userSearchSubtitle] in the part file for the rule
+  /// (never a bare name; always the masked destination account when there is
+  /// one) and for why it lives there.
+  String _subtitleFor(UnifiedSearchResult r) => _userSearchSubtitle(r);
 
   /// Hero tag for one result's avatar.
   ///

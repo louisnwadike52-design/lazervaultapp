@@ -25,6 +25,7 @@ import '../../../account_cards_summary/domain/entities/account_summary_entity.da
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 import '../../domain/trade_amounts.dart';
+import 'package:lazervault/src/features/crypto/domain/trade_pricing.dart';
 
 class BuyCryptoScreen extends StatefulWidget {
   final Crypto? selectedCrypto;
@@ -91,9 +92,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   /// (crypto.fee.buy.*). Falls back to the flat display rate before config loads.
   double _resolveFee() {
     try {
-      return GetIt.I<CryptoConfigCubit>()
-          .config
-          .feeForOp('buy', _fiatAmount, CurrencySymbols.currentCurrency);
+      return _pricing.feeForFiat(_fiatAmount);
     } catch (_) {
       return _fiatAmount * _feeDisplayRate();
     }
@@ -249,23 +248,18 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   /// rate no buy can get — understating the cost by the whole margin (1.4% on
   /// USDC, measured). The sheet applied the margin; this screen, reachable
   /// from the same Buy action via AppRoutes.buyCrypto, did not.
-  double? get _effectiveRate {
-    final r = _liveRate;
-    if (r == null || r <= 0) return null;
-    return r * (1 + _swapMargin);
-  }
+  CryptoTradePricing get _pricing => CryptoTradePricing(
+        isBuy: true,
+        fiatCurrency: CurrencySymbols.currentCurrency,
+        liveRate: _liveRate,
+        swapMargin: _swapMargin,
+      );
+
+  double? get _effectiveRate => _pricing.executableRate;
 
   /// The platform fee for an arbitrary fiat subtotal, so the shared
   /// derivation can price a hypothetical amount with the same rules.
-  double _feeForFiat(double fiatSubtotal) {
-    try {
-      return GetIt.I<CryptoConfigCubit>()
-          .config
-          .feeForOp('buy', fiatSubtotal, CurrencySymbols.currentCurrency);
-    } catch (_) {
-      return fiatSubtotal * _feeDisplayRate();
-    }
-  }
+  double _feeForFiat(double fiatSubtotal) => _pricing.feeForFiat(fiatSubtotal);
 
   /// THE trade, priced once — the same definition the buy SHEET uses, so the
   /// two routes to buying cannot quote different numbers for one trade.

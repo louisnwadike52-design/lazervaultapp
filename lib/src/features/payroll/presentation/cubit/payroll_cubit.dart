@@ -22,6 +22,15 @@ class PayrollCubit extends Cubit<PayrollState> {
         return 'You don\'t have permission for this action.';
       case StatusCode.unauthenticated:
         return 'Session expired. Please log in again.';
+      case StatusCode.alreadyExists:
+        // The server's own words, deliberately. payroll-service answers a
+        // duplicate employee with a message that NAMES the person already on
+        // the roster and which field matched ("Chris is already on this
+        // payroll (matched by email)"). Replacing that with generic copy would
+        // throw away the only part an employer can act on. Listed explicitly
+        // rather than left to `default` so a later edit to the fallback cannot
+        // silently swallow it.
+        return e.message ?? 'That employee is already on this payroll.';
       default:
         return e.message ?? 'An error occurred';
     }
