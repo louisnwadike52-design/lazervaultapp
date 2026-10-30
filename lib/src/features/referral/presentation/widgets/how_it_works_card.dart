@@ -9,9 +9,17 @@ class HowItWorksCard extends StatelessWidget {
 
   const HowItWorksCard({
     super.key,
-    this.currency = 'GBP',
-    this.referrerReward = 10000, // £100 in minor units
-    this.refereeReward = 5000, // £50 in minor units
+    // NO DEFAULTS. These were 'GBP' / 10000 / 5000, and the dashboard built the
+    // card with `const HowItWorksCard()` — no arguments — so every user on
+    // every platform was promised "You get £100, they get £50" regardless of
+    // what their country actually pays. A Nigerian user saw that above a stats
+    // panel reading ₦0.
+    //
+    // Required, so the next caller cannot reintroduce it by omission. When the
+    // real figures are unknown the screen omits the card rather than guessing.
+    required this.currency,
+    required this.referrerReward,
+    required this.refereeReward,
   });
 
   /// Delegates to the shared resolver.

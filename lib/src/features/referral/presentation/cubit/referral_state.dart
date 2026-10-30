@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/referral/domain/entities/country_reward_config_entity.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/referral_code_entity.dart';
 import '../../domain/entities/referral_stats_entity.dart';
@@ -37,11 +38,22 @@ class ReferralLoaded extends ReferralState {
   final List<LeaderboardEntryEntity> leaderboard;
   final List<ReferralTransactionEntity> recentReferrals;
 
+  /// The reward this user's country actually pays.
+  ///
+  /// NULLABLE, and the UI must render nothing rather than a guess when it is
+  /// null. The "How it works" card used to carry compiled-in defaults of
+  /// GBP 100 / GBP 50, so a Nigerian user was promised "You get £100, they get
+  /// £50" above a stats panel reading ₦0 — the app advertising a reward in the
+  /// wrong currency, at twenty times the amount, on the screen whose whole job
+  /// is to get someone to share the code.
+  final CountryRewardConfigEntity? rewardConfig;
+
   const ReferralLoaded({
     required this.myCode,
     required this.stats,
     required this.leaderboard,
     required this.recentReferrals,
+    this.rewardConfig,
   });
 
   ReferralLoaded copyWith({
@@ -49,17 +61,20 @@ class ReferralLoaded extends ReferralState {
     ReferralStatsEntity? stats,
     List<LeaderboardEntryEntity>? leaderboard,
     List<ReferralTransactionEntity>? recentReferrals,
+    CountryRewardConfigEntity? rewardConfig,
   }) {
     return ReferralLoaded(
       myCode: myCode ?? this.myCode,
       stats: stats ?? this.stats,
       leaderboard: leaderboard ?? this.leaderboard,
       recentReferrals: recentReferrals ?? this.recentReferrals,
+      rewardConfig: rewardConfig ?? this.rewardConfig,
     );
   }
 
   @override
-  List<Object?> get props => [myCode, stats, leaderboard, recentReferrals];
+  List<Object?> get props =>
+      [myCode, stats, leaderboard, recentReferrals, rewardConfig];
 }
 
 /// Error state

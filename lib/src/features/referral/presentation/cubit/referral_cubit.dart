@@ -1,3 +1,5 @@
+import 'package:lazervault/core/utilities/invite_link.dart';
+import 'package:lazervault/src/features/referral/domain/usecases/get_country_reward_config_usecase.dart';
 import 'package:flutter/services.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,6 +24,7 @@ class ReferralCubit extends Cubit<ReferralState> {
   final GetMyPointsBalanceUseCase _getMyPointsBalanceUseCase;
   final GetMyPointsHistoryUseCase _getMyPointsHistoryUseCase;
   final GetPointsConfigUseCase _getPointsConfigUseCase;
+  final GetCountryRewardConfigUseCase _getCountryRewardConfigUseCase;
 
   ReferralCubit({
     required GetMyReferralCodeUseCase getMyReferralCode,
@@ -32,6 +35,7 @@ class ReferralCubit extends Cubit<ReferralState> {
     required GetMyPointsBalanceUseCase getMyPointsBalance,
     required GetMyPointsHistoryUseCase getMyPointsHistory,
     required GetPointsConfigUseCase getPointsConfig,
+    required GetCountryRewardConfigUseCase getCountryRewardConfig,
   })  : _getMyReferralCodeUseCase = getMyReferralCode,
         _getMyReferralStatsUseCase = getMyReferralStats,
         _getLeaderboardUseCase = getLeaderboard,
@@ -40,6 +44,7 @@ class ReferralCubit extends Cubit<ReferralState> {
         _getMyPointsBalanceUseCase = getMyPointsBalance,
         _getMyPointsHistoryUseCase = getMyPointsHistory,
         _getPointsConfigUseCase = getPointsConfig,
+        _getCountryRewardConfigUseCase = getCountryRewardConfig,
         super(const ReferralInitial());
 
   /// Load dashboard data (code, stats, leaderboard, recent referrals)
@@ -64,6 +69,18 @@ class ReferralCubit extends Cubit<ReferralState> {
           await _getLeaderboardUseCase(limit: 10, period: 'all_time');
       print(
           '[ReferralCubit] Leaderboard result: ${leaderboardResult.isRight() ? "SUCCESS" : "FAILED"}');
+
+      // The reward this country actually pays. BEST EFFORT and non-fatal: the
+      // dashboard is still worth showing without it, and the card renders no
+      // amount at all rather than a wrong one when it is missing. The country
+      // is left to the server, which resolves it from the caller's profile —
+      // the client guessing would be the same class of bug as the compiled-in
+      // GBP default this replaces.
+      final rewardConfigResult = await _getCountryRewardConfigUseCase();
+      final rewardConfig = rewardConfigResult.fold((l) {
+        print('[ReferralCubit] Reward config unavailable: $l');
+        return null;
+      }, (r) => r);
 
       print('[ReferralCubit] Fetching referrals...');
       final referralsResult =
@@ -122,6 +139,7 @@ class ReferralCubit extends Cubit<ReferralState> {
           stats: stats,
           leaderboard: leaderboard,
           recentReferrals: referrals,
+          rewardConfig: rewardConfig,
         ));
       } else {
         if (isClosed) return;
@@ -162,12 +180,42 @@ class ReferralCubit extends Cubit<ReferralState> {
   }
 
   /// Share referral code via system share sheet
-  Future<void> shareReferralCode(String code, {String? currency}) async {
+  /// Share the invite.
+  ///
+  /// THREE THINGS WERE WRONG HERE, and each one cost a referral on its own:
+  ///
+  ///  - The currency fell back to GBP, so a Nigerian user shared a message
+  ///    offering "£50 bonus" for a reward actually paid in naira.
+  ///  - The amount was the literal 50, unrelated to what the country pays.
+  ///  - The link was `https://lazervault.com` — the wrong top-level domain,
+  ///    carrying no code. Even on the right domain it would have landed the
+  ///    recipient on a page that knew nothing about the referral, with the code
+  ///    only readable in the message text beside it. InviteLink exists for
+  ///    exactly this and was not being used: its /download URL carries the code,
+  ///    so an installed app gets it handed over by the OS and signup prefills.
+  ///
+  /// [refereeRewardMinor] and [currency] come from the country's own config. If
+  /// they are unknown the message simply omits the amount, because naming the
+  /// wrong one is worse than naming none.
+  Future<void> shareReferralCode(
+    String code, {
+    String? currency,
+    int? refereeRewardMinor,
+  }) async {
     try {
-      final currencySymbol = _getCurrencySymbol(currency ?? 'GBP');
-      final message =
-          'Join Lazervault using my referral code: $code and get ${currencySymbol}50 bonus! '
-          'Download the app now: https://lazervault.com';
+      final link = InviteLink.forCode(code);
+      final String bonus;
+      if (refereeRewardMinor != null &&
+          refereeRewardMinor > 0 &&
+          (currency ?? '').isNotEmpty) {
+        final symbol = _getCurrencySymbol(currency!);
+        final major = (refereeRewardMinor / 100).toStringAsFixed(0);
+        bonus = ' and get a $symbol$major bonus';
+      } else {
+        bonus = '';
+      }
+      final message = 'Join Lazervault with my referral code $code$bonus. '
+          'Get the app: $link';
 
       await SharePlus.instance.share(ShareParams(
           // iOS: a non-zero popover anchor is required — CGRectZero throws

@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/recipients/presentation/widgets/user_search_skeleton.dart';
 import 'package:lazervault/core/utils/brand_bank.dart';
 import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
 import 'package:intl/intl.dart';
@@ -2054,10 +2055,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   Widget _buildShortSavedList(RecipientState state) {
     if (state is RecipientLoading || state is RecipientInitial) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.h),
-        child: const Center(child: LazerVaultLoader.small()),
-      );
+      // Saved recipients are the same row shape as a search result, so the
+      // same skeleton stands in for them.
+      return const UserSearchSkeleton(rows: 3, showSectionHeader: false);
     }
     // Filter to the active tab: Bank → external only, Lazervault user →
     // internal only.

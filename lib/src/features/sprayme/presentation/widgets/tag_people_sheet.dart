@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/recipients/presentation/widgets/user_search_skeleton.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -5,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/unified_user_search_repository.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
 
@@ -338,7 +338,12 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
 
   Widget _resultsList() {
     if (_searching) {
-      return const Center(child: LazerVaultLoader.medium());
+      // Same skeleton as every other user search, so a sheet opened here never
+      // looks like a different app from the one opened in send funds.
+      return const SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
+        child: UserSearchSkeleton(showSectionHeader: false),
+      );
     }
     if (_error != null) {
       return _hint(_error!, retry: () => _search(_controller.text));

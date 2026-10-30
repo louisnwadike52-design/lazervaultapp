@@ -80,6 +80,7 @@ import 'package:lazervault/src/features/statements/domain/usecases/get_statement
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
 import 'package:lazervault/src/features/referral/domain/repositories/i_referral_repository.dart';
 import 'package:lazervault/src/features/referral/data/repositories/referral_repository_impl.dart';
+import 'package:lazervault/src/features/referral/domain/usecases/get_country_reward_config_usecase.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/validate_referral_code_usecase.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_code_usecase.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_stats_usecase.dart';
@@ -1582,6 +1583,11 @@ Future<void> init() async {
       () => GetMyPointsHistoryUseCase(serviceLocator<IReferralRepository>()));
   serviceLocator.registerLazySingleton(
       () => GetPointsConfigUseCase(serviceLocator<IReferralRepository>()));
+  // The country's actual referral reward. Registered because the "How it
+  // works" card used compiled-in GBP defaults without it — the use case and
+  // the RPC both already existed and were simply never wired to the cubit.
+  serviceLocator.registerLazySingleton(() =>
+      GetCountryRewardConfigUseCase(serviceLocator<IReferralRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ReferralCubit(
@@ -1593,6 +1599,7 @@ Future<void> init() async {
         getMyPointsBalance: serviceLocator<GetMyPointsBalanceUseCase>(),
         getMyPointsHistory: serviceLocator<GetMyPointsHistoryUseCase>(),
         getPointsConfig: serviceLocator<GetPointsConfigUseCase>(),
+        getCountryRewardConfig: serviceLocator<GetCountryRewardConfigUseCase>(),
       ));
 
   // ================== Feature: WhatsApp Banking ==================

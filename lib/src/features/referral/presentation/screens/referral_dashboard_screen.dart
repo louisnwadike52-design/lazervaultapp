@@ -192,7 +192,12 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
               onCopy: () => cubit.copyReferralCode(state.myCode.code),
               onShare: () => cubit.shareReferralCode(
                 state.myCode.code,
-                currency: state.stats.currency,
+                // From the COUNTRY CONFIG, not the stats block: stats carries
+                // the currency of what has been earned, which is empty for a
+                // user who has not referred anyone yet — the exact user who is
+                // about to share.
+                currency: state.rewardConfig?.currency ?? state.stats.currency,
+                refereeRewardMinor: state.rewardConfig?.refereeReward,
               ),
             ),
 
@@ -200,7 +205,15 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
             _buildLazerPointsCard(),
 
             // How It Works
-            const HowItWorksCard(),
+            // Only when the real reward is known. An unknown reward shows no
+            // promise at all — advertising the wrong currency is worse than
+            // advertising nothing, because the user acts on it.
+            if (state.rewardConfig != null)
+              HowItWorksCard(
+                currency: state.rewardConfig!.currency,
+                referrerReward: state.rewardConfig!.referrerReward,
+                refereeReward: state.rewardConfig!.refereeReward,
+              ),
 
             // Stats
             ReferralStatsCard(

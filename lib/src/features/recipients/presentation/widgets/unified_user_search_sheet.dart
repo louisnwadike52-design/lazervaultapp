@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/recipients/presentation/widgets/user_search_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -505,7 +506,13 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
         return _hint(Icons.person_search_outlined,
             'Search by name, username, phone, email or Lazervault account number');
       case UnifiedSearchStatus.loading:
-        return const Center(child: LazerVaultLoader.small());
+        // A skeleton in the SHAPE of the rows about to arrive, not a spinner in
+        // the middle of an empty sheet. It tells the user where results will
+        // appear, and the list does not jump when they land on top of it.
+        return const SingleChildScrollView(
+          physics: NeverScrollableScrollPhysics(),
+          child: UserSearchSkeleton(),
+        );
       case UnifiedSearchStatus.error:
         return _hint(Icons.error_outline, state.error ?? 'Something went wrong',
             isError: true);
@@ -571,10 +578,10 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
       }
     }
     if (loadingMore) {
-      children.add(Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.h),
-        child: const Center(child: LazerVaultLoader.small()),
-      ));
+      // One skeleton row rather than a spinner: the next page appends BELOW
+      // what is already on screen, so a placeholder row in the right shape
+      // reads as "more is coming here" instead of "the list is busy".
+      children.add(const UserSearchSkeleton(rows: 1, showSectionHeader: false));
     }
     children
         .add(SizedBox(height: MediaQuery.of(context).padding.bottom + 16.h));
@@ -997,7 +1004,12 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
 
   Widget _buildContactsBody() {
     if (_loadingContacts) {
-      return const Center(child: LazerVaultLoader.small());
+      // Phone contacts resolve against the directory, so this is the same
+      // wait and gets the same treatment as a search.
+      return const SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
+        child: UserSearchSkeleton(showSectionHeader: false),
+      );
     }
     if (_contactsError != null) {
       return Center(

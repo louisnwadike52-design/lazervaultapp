@@ -2,6 +2,7 @@
 // physical-vs-emulator detection. The tier is now a build-time decision
 // via `--flavor`, so those checks are gone — see `currentAppEnvironment`.
 
+import 'package:lazervault/core/services/install_referrer_service.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_entry_tile.dart';
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_session.dart';
@@ -445,6 +446,11 @@ void main() {
     // and the GetMaterialApp/Navigator never mounts. unawaited() lets the
     // splash → home transition land on first frame and the perm prompt
     // appears alongside the home UI as it should.
+    // Play install referrer: the ONLY way a referral code survives a fresh
+    // install, since a universal link needs the app to already be there.
+    // unawaited and one-shot — attribution must never delay app open, and a
+    // signup must never wait on it.
+    unawaited(InstallReferrerService.instance.captureOnce());
     unawaited(_checkPermissions());
     unawaited(_initializeAndroidAudioSettings());
 

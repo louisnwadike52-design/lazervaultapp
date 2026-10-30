@@ -39,6 +39,20 @@ target 'Runner' do
 end
 
 post_install do |installer|
+  # Strip the private API App Review rejected the build for
+  # (RPSystemBroadcastPickerView, submission 482b3afb, 2026-10-26).
+  #
+  # Here, not as a committed edit, because the two plugin sources live in
+  # ~/.pub-cache and reach the build through ios/.symlinks — an edit there is
+  # undone by a cache repair or a clean checkout on another machine. Running it
+  # on every `pod install` is what makes the fix survive both, and the script is
+  # idempotent so repeat runs are a no-op.
+  #
+  # It EXITS NON-ZERO if the reference is still present afterwards. A silent
+  # no-op here would be another rejected submission a week later.
+  system('ruby', File.join(__dir__, 'scripts', 'patch_private_api.rb')) ||
+    raise('private-API patch failed — see ios/scripts/patch_private_api.rb')
+
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 
