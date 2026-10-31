@@ -6,6 +6,7 @@ import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/shared_widgets/service_unavailable_modal.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/bills/presentation/view/bill_services_catalogue_store.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
@@ -163,7 +164,16 @@ class _BillsHubScreenState extends State<BillsHubScreen>
       // last pushed route which, after deep entries, is the wrong target.
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Get.offAllNamed(AppRoutes.dashboard);
+        // backOrHome, not offAllNamed. The original comment here said the
+        // system back would "pop the last pushed route which, after deep
+        // entries, is the wrong target" — but that case is exactly when
+        // canPop() is false, which backOrHome already handles by resetting to
+        // the fallback. When there IS something beneath, destroying it is the
+        // wrong answer: a user who reached the hub from a send-funds refusal
+        // lost the whole flow.
+        if (!didPop) {
+          backOrHome();
+        }
       },
       child: Scaffold(
         backgroundColor: InvoiceThemeColors.primaryBackground,
@@ -171,7 +181,7 @@ class _BillsHubScreenState extends State<BillsHubScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+            onPressed: backOrHome,
             icon: Container(
               padding: EdgeInsets.all(8.w),
               decoration: const BoxDecoration(

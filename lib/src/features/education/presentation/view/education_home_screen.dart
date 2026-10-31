@@ -10,7 +10,7 @@ import '../../domain/repositories/education_repository.dart';
 import '../cubit/education_cubit.dart';
 import '../widgets/education_quick_buy.dart';
 import '../cubit/education_history_cubit.dart';
-import 'package:lazervault/src/features/bills/presentation/utils/bills_back_navigation.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Education PINs landing. Mirrors the internet / water landing pattern:
 /// quick-actions row (Saved Candidates, Reminders, History) → hero
@@ -58,7 +58,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
       // results, deep links, rebuy flows) is confusing.
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        onBillsLandingPopInvoked(didPop);
+        onServiceLandingPopInvoked(didPop);
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
@@ -66,7 +66,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: popBillsLandingScreen,
+            onPressed: popServiceLandingScreen,
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
           title: Text(

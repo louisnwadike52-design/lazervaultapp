@@ -62,6 +62,26 @@ BuildContext? _openSheetContext;
 /// generic copy: the server knows whether the limit is three accounts or five,
 /// and which of them is full, and that specificity is the entire value of the
 /// message. It is only sanitised for raw transport noise.
+/// A secondary way out of a refusal — "you cannot do THIS, but you can do
+/// these".
+///
+/// Modelled rather than passed as a raw widget so the sheet owns the
+/// behaviour every one of them must share: a trailing chevron so it reads as
+/// tappable, and POP-BEFORE-ACT. A link that navigated while the sheet was
+/// still mounted would strand the sheet over the new screen — the same bug
+/// the primary action's comment below records.
+class RefusalLink {
+  const RefusalLink({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+}
+
 Future<bool> showServerRefusal(
   BuildContext context, {
   required String title,
@@ -71,6 +91,7 @@ Future<bool> showServerRefusal(
   VoidCallback? onAction,
   String dismissLabel = 'Got it',
   String? hint,
+  List<RefusalLink> links = const [],
 }) async {
   if (_sheetIsOpen) {
     final open = _openSheetContext;
@@ -94,6 +115,7 @@ Future<bool> showServerRefusal(
       onAction: onAction,
       dismissLabel: dismissLabel,
       hint: hint,
+      links: links,
     );
   } finally {
     // In a finally so a throw from the sheet route cannot leave the guard set.
@@ -113,6 +135,7 @@ Future<bool> _present(
   String? actionLabel,
   VoidCallback? onAction,
   String? hint,
+  List<RefusalLink> links = const [],
 }) async {
   final result = await showModalBottomSheet<bool>(
     context: context,
@@ -134,6 +157,7 @@ Future<bool> _present(
         onAction: onAction,
         dismissLabel: dismissLabel,
         hint: hint,
+        links: links,
       );
     },
   );
@@ -149,6 +173,7 @@ class _ServerRefusalSheet extends StatelessWidget {
     this.actionLabel,
     this.onAction,
     this.hint,
+    this.links = const [],
   });
 
   final String title;
@@ -157,6 +182,7 @@ class _ServerRefusalSheet extends StatelessWidget {
   final String dismissLabel;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final List<RefusalLink> links;
   final String? hint;
 
   static const _bg = Color(0xFF121218);
@@ -248,6 +274,57 @@ class _ServerRefusalSheet extends StatelessWidget {
                 ),
               ),
             ),
+            // The alternatives, above the hint and the buttons: a refusal that
+            // offers somewhere to go is read as help, the same refusal with
+            // only a "Got it" is read as a wall.
+            if (links.isNotEmpty) ...[
+              SizedBox(height: 14.h),
+              ...links.map(
+                (l) => Padding(
+                  padding: EdgeInsets.only(bottom: 8.h),
+                  child: Material(
+                    color: Colors.white.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12.r),
+                      onTap: () {
+                        // Pop FIRST, then act — same reason as the primary
+                        // action below: navigating while this sheet is still
+                        // mounted strands it over the new screen, and the user
+                        // lands on Airtime with a refusal about transfers
+                        // sitting on top of it.
+                        Navigator.of(context).pop(true);
+                        l.onTap();
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 12.h),
+                        child: Row(
+                          children: [
+                            Icon(l.icon, size: 18.sp, color: Colors.white),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: Text(
+                                l.label,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13.5.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            // The arrow is what says "this goes somewhere".
+                            // Without it these read as labels, not actions.
+                            Icon(Icons.arrow_forward_ios,
+                                size: 12.sp, color: _muted),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
             if ((hint ?? '').trim().isNotEmpty) ...[
               SizedBox(height: 14.h),
               Container(

@@ -14,7 +14,7 @@ import '../../../../../core/widgets/bill_history_item.dart';
 import '../widgets/water_history_actions_sheet.dart';
 import '../widgets/water_quick_buy.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
-import 'package:lazervault/src/features/bills/presentation/utils/bills_back_navigation.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Water Bill landing screen.
 ///
@@ -58,7 +58,7 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        onBillsLandingPopInvoked(didPop);
+        onServiceLandingPopInvoked(didPop);
       },
       child: Scaffold(
         backgroundColor: _bg,
@@ -66,7 +66,7 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: popBillsLandingScreen,
+            onPressed: popServiceLandingScreen,
             icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
           ),
           title: Text(

@@ -8,7 +8,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../cubit/internet_bill_cubit.dart';
 import '../widgets/internet_recent_transactions_card.dart';
 import '../widgets/internet_quick_buy.dart';
-import 'package:lazervault/src/features/bills/presentation/utils/bills_back_navigation.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Internet Bill landing. Same shape as the other utility landings:
 ///   * ISP picker grid (live from `GetInternetProviders`)
@@ -38,7 +38,7 @@ class _InternetBillHomeScreenState extends State<InternetBillHomeScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        onBillsLandingPopInvoked(didPop);
+        onServiceLandingPopInvoked(didPop);
       },
       child: Scaffold(
         backgroundColor: _bg,
@@ -46,7 +46,7 @@ class _InternetBillHomeScreenState extends State<InternetBillHomeScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: popBillsLandingScreen,
+            onPressed: popServiceLandingScreen,
             icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
           ),
           title: Text(

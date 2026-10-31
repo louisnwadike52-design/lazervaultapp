@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lazervault/core/types/services.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/spendable_service_links.dart';
 import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
 
@@ -211,6 +213,58 @@ void main() {
         expect(formatMinorForCopy(minor), want,
             reason: 'formatMinorForCopy($minor)');
       });
+    });
+  });
+
+  group('the spendable-service shortcuts', () {
+    // A refusal that offers somewhere to go reads as help; the same refusal
+    // with only "Got it" reads as a wall. These pin the list that makes the
+    // difference.
+
+    test('mirrors the services the server lets a grant be spent on', () {
+      // If this list and accounts-service's grantDepletingServices disagree,
+      // we send the customer to a screen that then refuses them — which is
+      // worse than not offering it at all. Written against that Go map:
+      //   utility-payments -> airtime, data, payBills, betting, rechargeCard
+      //   giftcards        -> giftCards
+      //   crypto           -> crypto
+      //   insurance        -> insurance
+      //   bulk-sms         -> bulkSms
+      const expected = <AppServiceName>{
+        AppServiceName.airtime,
+        AppServiceName.data,
+        AppServiceName.payBills,
+        AppServiceName.giftCards,
+        AppServiceName.crypto,
+        AppServiceName.betting,
+        AppServiceName.rechargeCard,
+        AppServiceName.bulkSms,
+        AppServiceName.insurance,
+      };
+      expect(kGrantSpendableServices.toSet(), expected);
+
+      // No payout service may ever appear here — offering "send money" as a
+      // way to spend a balance that cannot be sent is the contradiction the
+      // whole restriction exists to prevent.
+      for (final payout in <AppServiceName>[
+        AppServiceName.batchTransfer,
+        AppServiceName.tagPay,
+        AppServiceName.escrow,
+        AppServiceName.lockFunds,
+      ]) {
+        expect(kGrantSpendableServices, isNot(contains(payout)),
+            reason: '$payout moves money out and must not be offered as a '
+                'way to spend a restricted balance');
+      }
+    });
+
+    test('every offered service has an icon', () {
+      // A missing icon falls back to a generic grid glyph, which in a list of
+      // four looks like a rendering bug rather than a service.
+      for (final s in kGrantSpendableServices) {
+        expect(s.displayName.trim(), isNotEmpty,
+            reason: '$s has no display name to label the row with');
+      }
     });
   });
 }

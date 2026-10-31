@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
 import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/spendable_service_links.dart';
 
 /// "Your wallet has to keep a minimum" — said once, used by every transfer flow.
 ///
@@ -76,8 +77,24 @@ Future<void> showMinBalanceRefusal(
   );
   final canSendSomething = maxSendable > 0;
 
+  // THE TWO WAYS OUT, shown rather than described.
+  //
+  // Depositing is the only action that changes this outcome — the floor is on
+  // what REMAINS, so every naira added is a naira that can leave. Everything
+  // else the balance is good for is listed under it, because "you can still
+  // spend this on Lazervault" is a claim the customer has no way to act on
+  // from a dead-end sheet.
+  //
+  // Deposit goes FIRST: it answers "how do I send this?", which is the
+  // question they actually asked.
+  final links = <RefusalLink>[
+    depositLink(),
+    ...buildSpendableServiceLinks(context),
+  ];
+
   await showServerRefusal(
     context,
+    links: links,
     title: 'Minimum wallet balance',
     message: minBalanceMessage(
       currencySymbol: currencySymbol,
@@ -86,7 +103,15 @@ Future<void> showMinBalanceRefusal(
       adminMessage: policy.message,
       action: action,
     ),
-    hint: 'Nothing has been sent.',
+    // Two facts, both of which the customer needs and neither of which the
+    // main sentence should carry: that nothing was taken (the first worry on
+    // seeing a refusal), and that topping up is what raises the limit. The
+    // floor is on what REMAINS, so every naira deposited is a naira that can
+    // leave — which is not obvious and is the difference between "this app
+    // is holding my money" and "I need to add some first".
+    hint: 'Nothing has been sent. Adding money raises how much you can '
+        '${action.verb} — the limit is on what stays in your wallet, not on '
+        'what you put in.',
     // Only offered when it would do something. `showServerRefusal` renders no
     // button when the label is null, which is the honest state here.
     // The verb matches the flow: "Withdraw ₦475 instead" on the withdraw

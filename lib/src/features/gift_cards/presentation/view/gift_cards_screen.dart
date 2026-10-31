@@ -17,6 +17,7 @@ import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../utils/sell_card_logo.dart';
+import '../../../../../core/navigation/back_or_home.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import '../../../widgets/service_voice_button.dart';
@@ -265,7 +266,15 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) {
-          if (!didPop) Get.offAllNamed(AppRoutes.dashboard);
+          // backOrHome, not offAllNamed: this screen is reachable from the
+          // dashboard tile, the all-services sheet AND the minimum-balance
+          // refusal sheet. Resetting the stack threw a user who arrived from
+          // a send-funds refusal back to the dashboard, losing the recipient
+          // and amount they were mid-way through. Falls back to the dashboard
+          // only when there is genuinely nothing beneath (a deep link).
+          if (!didPop) {
+            backOrHome();
+          }
         },
         child: Scaffold(
           backgroundColor: kGiftCardBgTop,
@@ -338,7 +347,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.offAllNamed(AppRoutes.dashboard),
+            onTap: backOrHome,
             child: Container(
               width: 44.w,
               height: 44.w,
