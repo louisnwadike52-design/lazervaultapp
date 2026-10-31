@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
+import 'package:lazervault/core/services/chat_theme_preference.dart';
 
 /// The confirmed counterparty of a transfer, rendered as a card.
 ///
@@ -54,7 +55,14 @@ class ChatRecipientCard extends StatelessWidget {
   /// cannot honour.
   final VoidCallback? onChangeRecipient;
 
-  static const Color _purple = Color(0xFF4E03D0);
+  /// Frame colour, from the chat accent rather than a fixed brand purple —
+  /// this card sits in the thread and was the last coloured thing in it still
+  /// ignoring the user's chosen theme.
+  Color get _purple => ChatThemePreference.accent.primary;
+
+  /// Verified stays FIXED. It is a status, not branding: recolouring it with
+  /// the theme would have a teal chat report verification in teal, which reads
+  /// as a different state rather than the same one restyled.
   static const Color _green = Color(0xFF10B981);
 
   String get _kind => (data['kind'] ?? 'internal').toString();
@@ -304,7 +312,7 @@ class ChatRecipientCandidates extends StatelessWidget {
   final Map<String, dynamic> data;
   final void Function(int index, String username, String displayName)? onSelect;
 
-  static const Color _purple = Color(0xFF4E03D0);
+  Color get _purple => ChatThemePreference.accent.primary;
 
   List<Map<String, dynamic>> get _candidates {
     final raw = data['candidates'];

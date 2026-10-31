@@ -92,6 +92,24 @@ void main() {
             'for both loses the distinction the blue/green pair had');
   });
 
+  test('the recipient card and candidate list follow the accent', () {
+    // Found by sweeping EVERY chat surface after the first pass, not by
+    // reading the diff: these two sit in the thread and were the last
+    // coloured things in it still on a fixed brand purple. The candidate
+    // list had inherited the same constant from the card it lives beside.
+    const path =
+        'lib/src/features/microservice_chat/presentation/widgets/chat_recipient_card.dart';
+    final src = code(read(path));
+    expect(src.contains('0xFF4E03D0'), isFalse,
+        reason: 'the recipient card is back on a fixed brand purple while the '
+            'thread around it follows the user\'s accent');
+    expect(src.contains('ChatThemePreference.accent.primary'), isTrue);
+    // Verified is a STATUS, not branding. It must stay fixed: a teal chat
+    // reporting verification in teal reads as a different state.
+    expect(src.contains('0xFF10B981'), isTrue,
+        reason: 'the verified badge should NOT follow the theme');
+  });
+
   test('NOVA shares the accent rather than its own violet', () {
     const path =
         'lib/src/features/microservice_chat/presentation/widgets/general_chat_content.dart';
