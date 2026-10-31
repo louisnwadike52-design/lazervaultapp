@@ -87,13 +87,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     Color? color,
     double? spacing,
     double? height,
-  }) => GoogleFonts.inter(
-    fontSize: size,
-    fontWeight: weight,
-    color: color,
-    letterSpacing: spacing,
-    height: height,
-  );
+  }) =>
+      GoogleFonts.inter(
+        fontSize: size,
+        fontWeight: weight,
+        color: color,
+        letterSpacing: spacing,
+        height: height,
+      );
 
   final TextEditingController _amountController = TextEditingController();
   final FocusNode _amountFocus = FocusNode();
@@ -115,18 +116,16 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   String get _sourceAccountId =>
       (widget.selectedCard['id'] ?? widget.selectedCard['accountId'] ?? '')
           .toString();
-  String get _currency =>
-      (widget.selectedCard['currency'] ??
-              widget.selectedCard['currencyCode'] ??
-              'NGN')
-          .toString();
+  String get _currency => (widget.selectedCard['currency'] ??
+          widget.selectedCard['currencyCode'] ??
+          'NGN')
+      .toString();
   String get _currencySymbol => _currency == 'NGN' ? '₦' : '';
 
   /// Available balance in major units (naira). Read defensively from the card; the
   /// backend is the source of truth and re-validates before any money moves.
   double get _availableBalance {
-    final v =
-        widget.selectedCard['availableBalance'] ??
+    final v = widget.selectedCard['availableBalance'] ??
         widget.selectedCard['available_balance'] ??
         widget.selectedCard['balance'] ??
         0;
@@ -140,12 +139,11 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   /// is the one for the account actually losing the money. An operator can hold
   /// a floor on savings while leaving a current account alone, so picking the
   /// wrong account type would apply the wrong floor.
-  String get _sourceAccountType =>
-      (widget.selectedCard['accountType'] ??
-              widget.selectedCard['account_type'] ??
-              widget.selectedCard['type'] ??
-              '')
-          .toString();
+  String get _sourceAccountType => (widget.selectedCard['accountType'] ??
+          widget.selectedCard['account_type'] ??
+          widget.selectedCard['type'] ??
+          '')
+      .toString();
 
   /// Identity of the ACTIVE Lazervault account being debited (the "Available to
   /// withdraw" figure is THIS account's wallet balance, not a linked-bank balance).
@@ -361,8 +359,8 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       final req = banking_pb.CalculateWithdrawalFeeRequest()
         ..amount = Int64(amountKobo)
         ..sourceAccountId = _sourceAccountId;
-      final callOptions = await serviceLocator<GrpcCallOptionsHelper>()
-          .withAuth();
+      final callOptions =
+          await serviceLocator<GrpcCallOptionsHelper>().withAuth();
       final client = serviceLocator<banking_grpc.BankingServiceClient>();
       final resp = await client.calculateWithdrawalFee(
         req,
@@ -507,6 +505,11 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
         policy: floor,
         availableMinor: availableMinor,
         feeMinor: feeMinor,
+        // This flow is a WITHDRAWAL, so the copy must not call it a transfer.
+        // banking-service's refusal says the same, via
+        // minbalance.ActionWithdrawal, so the dialog here and the snackbar an
+        // older build gets from the server read alike.
+        action: MinBalanceAction.withdrawal,
         onSendMax: () {
           final maxMinor = floor.maxSendableMinor(
             availableMinor: availableMinor,
@@ -524,9 +527,8 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     }
 
     final transactionId = const Uuid().v4();
-    final destName = account.accountName.isNotEmpty
-        ? account.accountName
-        : account.bankName;
+    final destName =
+        account.accountName.isNotEmpty ? account.accountName : account.bankName;
 
     banking_pb.WithdrawalResponse? resp;
 

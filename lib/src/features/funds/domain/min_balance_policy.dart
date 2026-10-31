@@ -1,12 +1,20 @@
+import 'package:intl/intl.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 
 /// MINIMUM RETAINED BALANCE — the client's half of the transfer floor.
 ///
-/// Mirrors `MinBalancePolicy` in core-payments
-/// (internal/service/transfer_min_balance.go). The SERVER is authoritative and
-/// refuses the transfer regardless; this exists so a user finds out at the
+/// Mirrors `minbalance.Policy` in microservices/shared/minbalance — the one
+/// place the rule lives on the server, read by core-payments (transfers and
+/// batch) and banking-service (withdrawals) alike. The SERVER is authoritative
+/// and refuses the payout regardless; this exists so a user finds out at the
 /// amount field, with a dialog that explains itself, instead of after tapping
 /// through to the PIN sheet and getting a snackbar.
+///
+/// Dart cannot import a Go module, so this is the one unavoidable second
+/// implementation. It is kept honest by reading the SAME admin rows and by
+/// matching that package function for function: `blocks` ↔ `Blocks`,
+/// `maxSendableMinor` ↔ `MaxPayoutMinor`, `_normaliseAccountType` ↔
+/// `NormaliseAccountType`, `formatMinorForCopy` ↔ `FormatMinor`.
 ///
 /// WHY THE CLIENT CAN DECIDE THIS AT ALL. The policy lives in three
 /// `system_settings` rows under the `feature_` prefix, which the app already
@@ -123,4 +131,43 @@ class MinBalancePolicy {
     final max = availableMinor - minimumMinor - feeMinor;
     return max < 0 ? 0 : max;
   }
+}
+
+/// What the refusal copy calls the thing being refused.
+///
+/// A withdrawal described as a transfer is the kind of wrongness a customer
+/// notices, and `withdraw_funds_screen.dart` shows the same sheet the send
+/// flows do. Mirrors `minbalance.Action` on the server so the app's dialog and
+/// the server's backstop sentence name the same action.
+enum MinBalanceAction {
+  transfer(verb: 'transfer', noun: 'transfer'),
+  withdrawal(verb: 'withdraw', noun: 'withdrawal');
+
+  const MinBalanceAction({required this.verb, required this.noun});
+
+  final String verb;
+  final String noun;
+}
+
+/// Renders minor units the way the SERVER renders them, dropping a trailing
+/// `.00` on a whole amount — "1,500" rather than "1,500.00".
+///
+/// WHY THIS EXISTS RATHER THAN A BARE NumberFormat. The server's fallback
+/// sentence is what an older app renders into a snackbar, and a newer app
+/// raises this policy's own dialog instead. Those are the same refusal reached
+/// two ways, so they must read the same. They did not: the app used
+/// `#,##0.00` and printed "₦1,500.00" while the server printed "₦1,500". The
+/// server's shorter form won the consolidation on 31 Oct 2026 (it reads as a
+/// sentence, and the floors are whole naira in practice), so this matches
+/// `FormatMinor` in microservices/shared/minbalance — the canonical rule. If
+/// one changes, change the other.
+String formatMinorForCopy(int minor) {
+  final neg = minor < 0;
+  final abs = neg ? -minor : minor;
+  var out = NumberFormat('#,##0').format(abs ~/ 100);
+  final kobo = abs % 100;
+  if (kobo != 0) {
+    out = '$out.${kobo.toString().padLeft(2, '0')}';
+  }
+  return neg ? '-$out' : out;
 }

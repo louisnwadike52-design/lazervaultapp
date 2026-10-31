@@ -88,8 +88,11 @@ void main() {
         minimumMinor: floor,
         maxSendableMinor: 97500,
       );
-      expect(msg, contains('1,500.00'));
-      expect(msg, contains('975.00'));
+      // "1,500" not "1,500.00" — the format the server uses, pinned here so
+      // the app's dialog and the server's snackbar cannot drift apart again.
+      expect(msg, contains('1,500'));
+      expect(msg, contains('975'));
+      expect(msg, isNot(contains('1,500.00')));
     });
 
     test('says what the retained balance is still for', () {
@@ -114,7 +117,7 @@ void main() {
         maxSendableMinor: 0,
       );
       expect(msg, isNot(contains('up to')));
-      expect(msg, contains('1,500.00'));
+      expect(msg, contains('1,500'));
       // Still tells them the balance is usable.
       expect(msg.toLowerCase(), contains('airtime'));
     });
@@ -142,7 +145,7 @@ void main() {
         maxSendableMinor: 97500,
         adminMessage: '   ',
       );
-      expect(msg, contains('1,500.00'));
+      expect(msg, contains('1,500'));
     });
 
     test('uses the wallet currency symbol it is given', () {
@@ -152,8 +155,62 @@ void main() {
         minimumMinor: floor,
         maxSendableMinor: 97500,
       );
-      expect(msg, contains(r'$1,500.00'));
+      expect(msg, contains(r'$1,500'));
       expect(msg, isNot(contains('₦')));
+    });
+
+    test('names the action, so a withdrawal is not called a transfer', () {
+      // withdraw_funds_screen.dart shows this same sheet. Before the action
+      // existed it told the user "this transfer can't go through" while they
+      // were withdrawing — and banking-service's own refusal said
+      // "withdrawal", so the two surfaces disagreed about what was refused.
+      final send = minBalanceMessage(
+        currencySymbol: '₦',
+        minimumMinor: floor,
+        maxSendableMinor: 97500,
+      );
+      expect(send, contains('transfer up to'),
+          reason: 'the default must stay a transfer for the send flows');
+
+      final draw = minBalanceMessage(
+        currencySymbol: '₦',
+        minimumMinor: floor,
+        maxSendableMinor: 47500,
+        action: MinBalanceAction.withdrawal,
+      );
+      expect(draw, contains('withdraw up to'));
+      expect(draw, isNot(contains('transfer')));
+
+      final drawAtFloor = minBalanceMessage(
+        currencySymbol: '₦',
+        minimumMinor: floor,
+        maxSendableMinor: 0,
+        action: MinBalanceAction.withdrawal,
+      );
+      expect(drawAtFloor, contains("withdrawal can't go through"));
+    });
+  });
+
+  group('the money format matches the server', () {
+    // formatMinorForCopy mirrors FormatMinor in microservices/shared/minbalance.
+    // These are the SAME cases that package's Go test pins, so a change on
+    // either side fails on both. The app's dialog and the server's fallback
+    // snackbar are the same refusal reached two ways; they must read alike.
+    test('renders amounts the way people write them', () {
+      const cases = <int, String>{
+        150000: '1,500',
+        100: '1',
+        150050: '1,500.50',
+        150005: '1,500.05',
+        100000000: '1,000,000',
+        0: '0',
+        99: '0.99',
+        -150000: '-1,500',
+      };
+      cases.forEach((minor, want) {
+        expect(formatMinorForCopy(minor), want,
+            reason: 'formatMinorForCopy($minor)');
+      });
     });
   });
 }

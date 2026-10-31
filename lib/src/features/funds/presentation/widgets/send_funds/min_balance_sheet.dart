@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
 import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
@@ -21,7 +20,8 @@ import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
 ///
 /// The ADMIN MAY REPLACE THE WHOLE SENTENCE (`..._message`), so the wording
 /// below is a fallback, not policy. It is kept in step with the server's
-/// fallback in transfer_min_balance.go — two copies of a money message written
+/// fallback in microservices/shared/minbalance — two copies of a money message
+/// written
 /// separately drift, so if one changes the other should.
 
 /// Builds the body text. Pure, so it can be tested and so the two flows cannot
@@ -31,23 +31,26 @@ String minBalanceMessage({
   required int minimumMinor,
   required int maxSendableMinor,
   String adminMessage = '',
+  MinBalanceAction action = MinBalanceAction.transfer,
 }) {
   if (adminMessage.trim().isNotEmpty) return adminMessage.trim();
 
-  final f = NumberFormat('#,##0.00');
-  final floor = '$currencySymbol${f.format(minimumMinor / 100.0)}';
+  // formatMinorForCopy, not a local NumberFormat: the server's fallback
+  // sentence reaches older builds as a snackbar and must read the same as this
+  // dialog. See its doc comment for the format that won.
+  final floor = '$currencySymbol${formatMinorForCopy(minimumMinor)}';
 
   if (maxSendableMinor <= 0) {
-    // Nothing can be sent, so do NOT offer "you can transfer up to ₦0.00" —
+    // Nothing can be sent, so do NOT offer "you can transfer up to ₦0" —
     // an offer of nothing reads as a bug.
-    return 'Your wallet needs to keep at least $floor, so this transfer '
+    return 'Your wallet needs to keep at least $floor, so this ${action.noun} '
         "can't go through right now.\n\n"
         'That balance is still yours to spend on Lazervault — airtime, data, '
         'bills, gift cards and crypto all work as normal.';
   }
-  final headroom = '$currencySymbol${f.format(maxSendableMinor / 100.0)}';
-  return 'Your wallet needs to keep at least $floor, so you can transfer up '
-      'to $headroom right now.\n\n'
+  final headroom = '$currencySymbol${formatMinorForCopy(maxSendableMinor)}';
+  return 'Your wallet needs to keep at least $floor, so you can ${action.verb} '
+      'up to $headroom right now.\n\n'
       'The rest stays available on Lazervault — airtime, data, bills, gift '
       'cards and crypto all work as normal.';
 }
@@ -65,6 +68,7 @@ Future<void> showMinBalanceRefusal(
   required int availableMinor,
   int feeMinor = 0,
   VoidCallback? onSendMax,
+  MinBalanceAction action = MinBalanceAction.transfer,
 }) async {
   final maxSendable = policy.maxSendableMinor(
     availableMinor: availableMinor,
@@ -80,13 +84,21 @@ Future<void> showMinBalanceRefusal(
       minimumMinor: policy.minimumMinor,
       maxSendableMinor: maxSendable,
       adminMessage: policy.message,
+      action: action,
     ),
     hint: 'Nothing has been sent.',
     // Only offered when it would do something. `showServerRefusal` renders no
     // button when the label is null, which is the honest state here.
+    // The verb matches the flow: "Withdraw ₦475 instead" on the withdraw
+    // screen, "Send ₦975 instead" on a transfer. Capitalised from the action so
+    // adding a third flow cannot leave the button saying the wrong thing.
     actionLabel: canSendSomething && onSendMax != null
-        ? 'Send ${NumberFormat('#,##0.00').format(maxSendable / 100.0)} instead'
+        ? '${_capitalise(action.verb)} $currencySymbol'
+            '${formatMinorForCopy(maxSendable)} instead'
         : null,
     onAction: canSendSomething ? onSendMax : null,
   );
 }
+
+String _capitalise(String s) =>
+    s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
