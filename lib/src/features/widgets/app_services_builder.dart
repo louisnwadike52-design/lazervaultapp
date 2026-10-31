@@ -30,6 +30,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // Quick Services carousel - 3 rows with reduced indicator spacing
 // Context-aware: switches between personal and business services based on active account
 import 'service_tile_scale_in.dart';
+import 'quick_services_more_tile.dart';
+import 'quick_services_paging.dart';
 
 class AppServicesBuilder extends StatefulWidget {
   /// When true the quick-service tiles render slightly shorter (the showcase
@@ -979,14 +981,41 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   }
 
   // Split services into pages
+  /// Whether the first page ends in the fixed [QuickServicesMoreTile].
+  ///
+  /// Only when there is genuinely a later page to go to — a More tile that
+  /// advances to nothing is worse than no More tile, and with 11 or fewer
+  /// services everything is already on screen.
+  ///
+  /// The threshold is `_itemsPerPage - 1` because the tile CONSUMES a cell:
+  /// page one then carries 11 services instead of 12, and the 12th flows onto
+  /// page two. With exactly 12 services that creates the second page, which is
+  /// the intended trade — one service moved one swipe away, in exchange for
+  /// the carousel advertising that it can be swiped at all.
+  bool _showMoreTileFor(List<AppService> services) =>
+      showsMoreTile(services.length, _itemsPerPage);
+
+  /// Index into [_activeServices] for the tile at [indexOnPage] of [pageIndex].
+  ///
+  /// NOT `pageIndex * _itemsPerPage + indexOnPage`. When the More tile is
+  /// shown it takes the last cell of page one, so page one holds one FEWER
+  /// service and every later page starts one position earlier.
+  ///
+  /// This is load-bearing: a reorder drag reports positions through here and
+  /// [_moveService] uses them to index the real list, so an off-by-one moves
+  /// the WRONG service — and then persists that order. It is also the stagger
+  /// index for the intro animation, which only has to be monotonic.
+  int _serviceIndexAt(int pageIndex, int indexOnPage, bool moreTileShown) =>
+      serviceIndexAt(pageIndex, indexOnPage, _itemsPerPage,
+          moreTileShown: moreTileShown);
+
   List<List<AppService>> _getServicePages() {
     final services = _activeServices;
-    List<List<AppService>> pages = [];
-    for (int i = 0; i < services.length; i += _itemsPerPage) {
-      int end = (i + _itemsPerPage < services.length)
-          ? i + _itemsPerPage
-          : services.length;
-      pages.add(services.sublist(i, end));
+    final pages = <List<AppService>>[];
+    var cursor = 0;
+    for (final size in quickServicePageSizes(services.length, _itemsPerPage)) {
+      pages.add(services.sublist(cursor, cursor + size));
+      cursor += size;
     }
     return pages;
   }
@@ -1238,6 +1267,13 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
             ),
             itemBuilder: (context, pageIndex, realIndex) {
               final servicesOnPage = servicePages[pageIndex];
+              // The More tile ends page ONE only. That is where the discovery
+              // problem is: a user looking at page one has no reason to know
+              // there is a page two. Once they are on page two the dots have
+              // told them, and repeating the tile there would cost a service
+              // slot on every page to re-teach something already learned.
+              final moreTileShown = _showMoreTileFor(activeServices);
+              final showMoreHere = moreTileShown && pageIndex == 0;
 
               return GridView.builder(
                 padding: EdgeInsets.zero,
@@ -1247,14 +1283,40 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                   mainAxisSpacing: 8.h,
                   childAspectRatio: widget.tileAspectRatio,
                 ),
-                itemCount: servicesOnPage.length,
+                itemCount: servicesOnPage.length + (showMoreHere ? 1 : 0),
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
+                  // The extra cell, always last — bottom-right of page one.
+                  // Deliberately NOT wrapped in _buildReorderableTile: it is
+                  // neither a drag source nor a drop target, so it cannot be
+                  // moved and nothing can be dropped onto it. Its position is
+                  // a property of the grid, not of any service, so it stays
+                  // put however the user rearranges everything else.
+                  if (showMoreHere && index == servicesOnPage.length) {
+                    return QuickServicesMoreTile(
+                      remainingCount:
+                          activeServices.length - servicesOnPage.length,
+                      onTap: () {
+                        // Guarded: _pageCount is recomputed on every build, so
+                        // a tap racing a rebuild that dropped the second page
+                        // (a service gate flipping, an account switch) must
+                        // not animate past the end.
+                        if (_pageCount <= 1) return;
+                        _carouselController.nextPage(
+                          duration: const Duration(milliseconds: 320),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                    );
+                  }
                   final service = servicesOnPage[index];
                   // Stagger across the whole grid, not within the page, so
-                  // page two does not restart the sweep from zero.
-                  final staggerIndex = pageIndex * _itemsPerPage + index;
+                  // page two does not restart the sweep from zero. This is
+                  // also the index reorder drags report, so it has to account
+                  // for the cell the More tile consumed.
+                  final staggerIndex =
+                      _serviceIndexAt(pageIndex, index, moreTileShown);
                   // Reorder is only offered on the PERSONAL grid — the other
                   // account types carry a hand-picked order that is not the
                   // user's to rearrange.
