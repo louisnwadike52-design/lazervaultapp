@@ -19,8 +19,12 @@ import 'package:shimmer/shimmer.dart';
 /// 10.h / 4.w padding as _resultTile. Changing the tile without changing this
 /// is what makes a skeleton read as a glitch.
 class UserSearchSkeleton extends StatelessWidget {
-  const UserSearchSkeleton(
-      {super.key, this.rows = 6, this.showSectionHeader = true});
+  const UserSearchSkeleton({
+    super.key,
+    this.rows = 6,
+    this.showSectionHeader = true,
+    this.onDark = false,
+  });
 
   /// How many placeholder rows to draw.
   ///
@@ -32,18 +36,38 @@ class UserSearchSkeleton extends StatelessWidget {
   /// "Your contacts" / "Everyone else" headings the real list renders.
   final bool showSectionHeader;
 
-  // The project's shimmer palette — same base, highlight and period as the
-  // crypto and statistics skeletons, so one loading state never looks like a
-  // different app from another.
-  static const Color _base = Color(0xFF1F1F1F);
-  static const Color _highlight = Color(0xFF3D3D3D);
+  /// Whether this skeleton is drawn on a DARK surface.
+  ///
+  /// It used to have no choice: the palette was hardcoded to the crypto and
+  /// statistics shimmer values (#1F1F1F / #3D3D3D) on the reasoning that one
+  /// loading state should never look like a different app from another. But
+  /// those two skeletons sit on dark screens, and almost every user-search
+  /// sheet is `Colors.white` — so the "consistent" palette painted near-black
+  /// bars onto a white sheet. Consistency is with the SURFACE, not with the
+  /// other file.
+  ///
+  /// Defaults to false because the search sheets that use this are light
+  /// (send funds, bank transfer, TagPay, invoice, crypto recipient pick); only
+  /// SprayMe's tag sheet is dark.
+  final bool onDark;
+
+  // Dark palette: unchanged, for the surfaces that genuinely are dark.
+  static const Color _darkBase = Color(0xFF1F1F1F);
+  static const Color _darkHighlight = Color(0xFF3D3D3D);
+
+  // Light palette. Base is visible against white without reading as content,
+  // highlight is close to white so the sweep is a soft pass rather than a
+  // flash — the same relationship the dark pair has to its own ground.
+  static const Color _lightBase = Color(0xFFE4E6EB);
+  static const Color _lightHighlight = Color(0xFFF7F8FA);
+
   static const Duration _period = Duration(milliseconds: 1200);
 
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: _base,
-      highlightColor: _highlight,
+      baseColor: onDark ? _darkBase : _lightBase,
+      highlightColor: onDark ? _darkHighlight : _lightHighlight,
       period: _period,
       // One Shimmer wrapping the whole list rather than one per row: the
       // highlight then sweeps across the list as a single motion instead of
@@ -106,9 +130,11 @@ class UserSearchSkeleton extends StatelessWidget {
 
   /// A single shimmer block.
   ///
-  /// White on purpose: Shimmer.fromColors paints the gradient over whatever it
-  /// wraps, so the child's own colour only has to be opaque — a themed colour
-  /// here would be tinted twice and come out muddy.
+  /// The child's colour only has to be OPAQUE: Shimmer.fromColors paints its
+  /// gradient over whatever it wraps, so the bar you see is baseColor →
+  /// highlightColor, never this value. Kept white because that is what the
+  /// shimmer package's own examples use and it makes the intent obvious; the
+  /// palette above is the thing that decides how the bar reads.
   Widget _box(double width, double height, {double radius = 6}) {
     return Container(
       width: width,

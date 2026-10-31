@@ -342,7 +342,10 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
       // looks like a different app from the one opened in send funds.
       return const SingleChildScrollView(
         physics: NeverScrollableScrollPhysics(),
-        child: UserSearchSkeleton(showSectionHeader: false),
+        // onDark: this sheet's ground is _bg (#1F1F1F). Every other search
+        // sheet is white, so the skeleton defaults to its light palette and
+        // this is the one place that opts back into the dark one.
+        child: UserSearchSkeleton(showSectionHeader: false, onDark: true),
       );
     }
     if (_error != null) {

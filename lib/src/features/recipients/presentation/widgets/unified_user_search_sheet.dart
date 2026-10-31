@@ -509,9 +509,14 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
         // A skeleton in the SHAPE of the rows about to arrive, not a spinner in
         // the middle of an empty sheet. It tells the user where results will
         // appear, and the list does not jump when they land on top of it.
-        return const SingleChildScrollView(
-          physics: NeverScrollableScrollPhysics(),
-          child: UserSearchSkeleton(),
+        return SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          // The 16.w matches the results ListView's own padding. Without it
+          // the skeleton drew 16.w further left than the rows that replace
+          // it, so the list visibly slid sideways the moment results landed —
+          // the opposite of the "no jump" this skeleton exists to provide.
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: const UserSearchSkeleton(),
         );
       case UnifiedSearchStatus.error:
         return _hint(Icons.error_outline, state.error ?? 'Something went wrong',
@@ -1006,9 +1011,11 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     if (_loadingContacts) {
       // Phone contacts resolve against the directory, so this is the same
       // wait and gets the same treatment as a search.
-      return const SingleChildScrollView(
-        physics: NeverScrollableScrollPhysics(),
-        child: UserSearchSkeleton(showSectionHeader: false),
+      return SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        // Same 16.w as the contacts ListView.builder below it.
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        child: const UserSearchSkeleton(showSectionHeader: false),
       );
     }
     if (_contactsError != null) {

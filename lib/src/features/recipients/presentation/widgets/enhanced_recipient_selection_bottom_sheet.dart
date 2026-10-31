@@ -18,7 +18,7 @@ import 'package:lazervault/src/features/recipients/data/models/recipient_model.d
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
-import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'user_search_skeleton.dart';
 part 'enhanced_recipient_selection_bottom_sheet_widgets.dart';
 
 class EnhancedRecipientSelectionBottomSheet extends StatefulWidget {
@@ -644,8 +644,13 @@ class _EnhancedRecipientSelectionBottomSheetState
       },
       builder: (context, state) {
         if (state is RecipientLoading) {
-          return const Center(
-            child: LazerVaultLoader.small(),
+          // A skeleton in the shape of the rows about to arrive, on this
+          // sheet's white ground. A centred spinner said only "wait" and gave
+          // the list nowhere to land, so the rows appeared with a jump.
+          return SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+            child: const UserSearchSkeleton(),
           );
         } else if (state is RecipientLoaded) {
           final filteredRecipients = _filterRecipients(state.recipients);
@@ -672,9 +677,11 @@ class _EnhancedRecipientSelectionBottomSheetState
               !hasPlatformResults &&
               _searchQuery.isNotEmpty) {
             if (_isLoadingLazertag) {
-              return const Center(
-                child: LazerVaultLoader.small(),
-              );
+              return SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+            child: const UserSearchSkeleton(showSectionHeader: false),
+          );
             }
             return _buildEmptyState(
               icon: Icons.search_off,
@@ -724,10 +731,10 @@ class _EnhancedRecipientSelectionBottomSheetState
                 ..._lazertagResults.map((user) => _buildLazertagUserItem(user)),
               ],
               if (!hasSavedMatches && !hasPlatformResults && _isLoadingLazertag)
-                const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: LazerVaultLoader.small()),
-                ),
+                // No padding: this sits INSIDE the ListView above, which
+                // already applies the 20.w. Adding it again would indent the
+                // bars past the rows they stand in for.
+                const UserSearchSkeleton(rows: 3, showSectionHeader: false),
             ],
           );
         } else if (state is RecipientError) {
@@ -741,9 +748,11 @@ class _EnhancedRecipientSelectionBottomSheetState
 
   Widget _buildLazertagTab(ScrollController scrollController) {
     if (_isLoadingLazertag) {
-      return const Center(
-        child: LazerVaultLoader.small(),
-      );
+      return SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+            child: const UserSearchSkeleton(showSectionHeader: false),
+          );
     }
 
     if (_searchQuery.isEmpty) {
@@ -786,9 +795,13 @@ class _EnhancedRecipientSelectionBottomSheetState
 
   Widget _buildContactsTab(ScrollController scrollController) {
     if (_isLoadingContacts) {
-      return const Center(
-        child: LazerVaultLoader.small(),
-      );
+      // Phone contacts are resolved against the directory, so this is the
+      // same wait as a search and gets the same treatment.
+      return SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+            child: const UserSearchSkeleton(showSectionHeader: false),
+          );
     }
 
     final filteredContacts = _filterContacts();
