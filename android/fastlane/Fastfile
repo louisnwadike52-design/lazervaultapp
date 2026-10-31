@@ -177,7 +177,44 @@ end
 # production listing). Per-env Firebase routing is separate — the AAB
 # bundles the matching google-services.json from android/app/src/<env>/.
 def play_store_json_key_path
-  ENV["PLAY_STORE_JSON_KEY"]
+  path = ENV["PLAY_STORE_JSON_KEY"]
+
+  # FAIL LOUDLY ON AN UNSET KEY.
+  #
+  # This returned nil when the variable was unset, and nil is not an error to
+  # upload_to_play_store — it falls back to Application Default Credentials,
+  # i.e. whatever `gcloud auth` happens to hold on the machine. Those have no
+  # androidpublisher scope, so the upload died with
+  #
+  #   Google Api Error: PERMISSION_DENIED: Request had insufficient
+  #   authentication scopes.
+  #
+  # which reads as a BROKEN SERVICE ACCOUNT and sends you to the Play Console
+  # and IAM looking for a permission to grant. The service account was fine;
+  # it was never being used. Two builds were spent on that.
+  #
+  # The default below is the key this machine actually publishes with, so the
+  # common case needs no environment at all; an explicit variable still wins.
+  if path.nil? || path.strip.empty?
+    default = File.expand_path("~/.config/play-store/play-store-sa-prod.json")
+    UI.user_error!(
+      "PLAY_STORE_JSON_KEY is not set and no key was found at #{default}.\n" \
+      "Play uploads need the publisher service account explicitly — without " \
+      "it fastlane silently falls back to ambient gcloud credentials and " \
+      "fails with a misleading 'insufficient authentication scopes' error.\n" \
+      "Fix: export PLAY_STORE_JSON_KEY=/path/to/play-store-sa-prod.json"
+    ) unless File.exist?(default)
+    UI.important("PLAY_STORE_JSON_KEY unset - using #{default}")
+    return default
+  end
+
+  UI.user_error!(
+    "PLAY_STORE_JSON_KEY points at #{path}, which does not exist. An " \
+    "unreadable key makes fastlane fall back to ambient gcloud credentials " \
+    "and fail with a misleading scopes error."
+  ) unless File.exist?(path)
+
+  path
 end
 
 # Deploy model:

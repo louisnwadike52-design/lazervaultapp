@@ -84,14 +84,54 @@ android {
             // that minified code no longer references. Run AFTER minify so
             // R8's reachability info drives the prune.
             isShrinkResources = true
-            // Native debug symbols: do NOT bundle them into the AAB. AGP was
-            // packaging FULL native symbols for every .so (Flutter engine, libapp,
-            // ML Kit, WebRTC) into BUNDLE-METADATA/…debugsymbols — ~191 MB of pure
-            // UPLOAD bloat that never ships to a device. "none" strips it entirely.
-            // (For production native-crash symbolication, switch to "symbol_table"
-            // — still ~10× smaller than "full".)
+            // Native debug symbols. "full" was packaging symbols for every .so
+            // (Flutter engine, libapp, ML Kit, WebRTC) into
+            // BUNDLE-METADATA/…debugsymbols — ~191 MB of pure UPLOAD bloat that
+            // never ships to a device.
+            //
+            // WHY NOT "none", WHICH IS WHAT THIS WAS: it broke `flutter build
+            // appbundle` outright. Flutter's post-build verifier
+            // (_isAabStrippedOfDebugSymbols in flutter_tools/lib/src/android/
+            // gradle.dart) does not inspect the .so files to decide whether AGP
+            // stripped them — it asks apkanalyzer to list the AAB and requires
+            // libflutter.so.sym/.dbg AND libapp.so.sym/.dbg to be PRESENT,
+            // inferring a successful strip from the existence of the extracted
+            // symbols. "none" removes precisely those files, so a correctly
+            // stripped bundle read as a failed one and the build exited 1 with
+            // "Release app bundle failed to strip debug symbols from native
+            // libraries" — a message that points at the NDK toolchain, which was
+            // never the problem. The Gradle build itself had already succeeded.
+            //
+            // "symbol_table" satisfies the verifier honestly rather than working
+            // around it: the symbols really are extracted out of the shipped
+            // libraries, and it buys back the production native-crash
+            // symbolication "none" gave up.
+            //
+            // MEASURED on build 469, not estimated — the saving over "full" is
+            // smaller than it looks on paper, so here are the real figures:
+            //   BUNDLE-METADATA  54.7 MB compressed (104 MB of that is
+            //                    libapp.so.sym across both ABIs — Dart AOT
+            //                    DWARF, which dominates everything else)
+            //   base/            78.3 MB compressed — UNCHANGED from the
+            //                    "none" build, which was 83 MB in total
+            // So the whole increase is upload-side. Play strips BUNDLE-METADATA
+            // before generating device APKs, so the download a user gets is
+            // byte-for-byte what it was. The cost is ~55 MB per release upload.
+            //
+            // If that upload cost ever needs to come back down, the lever is
+            // libapp.so, not this flag: the build already passes --obfuscate
+            // and --split-debug-info, and gen_snapshot still warns "The
+            // generated ELF library contains unobfuscated DWARF debugging
+            // information". Removing that DWARF would shrink libapp.so.sym by
+            // most of its 104 MB — but verify the .sym file is still PRESENT
+            // afterwards, because its absence is what broke the build in the
+            // first place.
+            //
+            // Do not set this back to "none" without also checking that
+            // verifier: it is the reason build 469 never reached the Play
+            // internal track while the iOS build of the same commit shipped.
             ndk {
-                debugSymbolLevel = "none"
+                debugSymbolLevel = "symbol_table"
             }
             // Crunch PNGs at packaging time. WebP conversion is configured
             // separately in androidResources below.
