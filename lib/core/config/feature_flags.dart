@@ -461,6 +461,15 @@ class FeatureFlags {
   /// always wins over it.
   static const String chatDefaultAccentKey = 'chat_default_accent';
 
+  /// The Lifestyle hub's layout for a user who has never chosen one.
+  ///
+  /// A STRING naming a [LifestyleViewMode] — banner, grid or list — so the
+  /// default can be changed from the admin dashboard without an app release,
+  /// and a value this build does not know falls back to the app's own default
+  /// rather than rendering nothing. A user's own choice always wins over it,
+  /// exactly like [chatDefaultAccentKey].
+  static const String lifestyleDefaultViewKey = 'lifestyle_default_view';
+
   /// Whether the RMB (China cross-border) transfer tile is shown.
   ///
   /// Hidden by DEFAULT. The rail is in maintenance while its provider sits in
@@ -1465,6 +1474,11 @@ class FeatureFlags {
   /// which is how every deployment behaves until an admin sets one.
   static String get chatDefaultAccent =>
       _prefs?.getString(chatDefaultAccentKey) ?? '';
+
+  /// Platform default layout for the Lifestyle hub. Empty means "the app
+  /// decides", which is how every deployment behaves until an admin sets one.
+  static String get lifestyleDefaultView =>
+      _prefs?.getString(lifestyleDefaultViewKey) ?? '';
 
   /// RMB cross-border transfers. Hidden unless an admin turns it on — see
   /// [rmbTransferVisibleKey] for why the default is off.

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:lazervault/core/config/feature_flags.dart';
+
 /// How the Lifestyle hub lays its entries out.
 ///
 /// The hub shipped with one layout — full-bleed banners — which reads well with
@@ -55,19 +57,40 @@ class LifestyleViewModePrefs {
   /// Only the DEFAULT moved. A stored preference still wins, including a
   /// stored `banner` — someone who picked banners keeps them, because the
   /// whole point of persisting the choice is that it is theirs.
-  static const LifestyleViewMode _default = LifestyleViewMode.grid;
+  static const LifestyleViewMode _appDefault = LifestyleViewMode.grid;
+
+  /// The default in force: the admin-set platform default when there is one,
+  /// otherwise [_appDefault].
+  ///
+  /// ADMIN-TUNABLE so the hub's opening layout can change without an app
+  /// release — the same arrangement the chat accent uses
+  /// ([FeatureFlags.chatDefaultAccentKey]). The setting names a mode; a value
+  /// this build does not recognise falls back rather than rendering nothing,
+  /// because a deployment can be ahead of a store release.
+  ///
+  /// This only answers "what does someone who has never chosen see". A stored
+  /// user preference still wins over it, so flipping the platform default
+  /// never overrides a choice somebody made.
+  static LifestyleViewMode get platformDefault {
+    final name = FeatureFlags.lifestyleDefaultView.trim().toLowerCase();
+    if (name.isEmpty) return _appDefault;
+    for (final m in LifestyleViewMode.values) {
+      if (m.name == name) return m;
+    }
+    return _appDefault;
+  }
 
   static Future<LifestyleViewMode> load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final stored = prefs.getString(_key);
-      if (stored == null) return _default;
+      if (stored == null) return platformDefault;
       return LifestyleViewMode.values.firstWhere(
         (m) => m.name == stored,
-        orElse: () => _default,
+        orElse: () => platformDefault,
       );
     } catch (_) {
-      return _default;
+      return platformDefault;
     }
   }
 

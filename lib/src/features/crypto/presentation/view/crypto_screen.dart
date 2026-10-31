@@ -130,10 +130,15 @@ class _CryptoScreenState extends State<CryptoScreen>
                         // user's KYC tier is too low to trade, self-hides once verified.
                         const CryptoVerifyBanner(),
                         _buildSupportedAssetsSection(state),
-                        _buildMarketOverview(state),
-                        _buildWatchlistSection(state),
+                        // Directly under the assets, ahead of market data and
+                        // the watchlist: after looking at what they hold, the
+                        // next thing someone wants is what they just did with
+                        // it. Market overview and the watchlist are browsing,
+                        // and browsing belongs below your own activity.
                         _buildRecentTransactionsSection(state.transactions,
                             loading: state.transactionsLoading),
+                        _buildMarketOverview(state),
+                        _buildWatchlistSection(state),
                         _buildLazerVaultServices(),
                         _buildPriceAlertsSection(state),
                         _buildCryptoCardsRow(state),

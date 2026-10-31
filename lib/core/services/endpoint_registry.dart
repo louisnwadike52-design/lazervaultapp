@@ -160,6 +160,7 @@ class EndpointRegistry {
     'rmb_transfer_visible',
     'exchange_send_abroad_visible',
     'chat_default_accent',
+    'lifestyle_default_view',
     'auto_biometric_login_enabled',
     'crowdfund_donation_alerts_visible',
     // Omitting a key here is the documented way this wiring fails:
