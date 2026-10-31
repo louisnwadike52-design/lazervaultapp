@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'account_details_sheet_opener.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 
 /// Tells a user, on the dashboard, that their deposit account number changed.
@@ -311,36 +310,24 @@ class AccountNumberChangeWatcher {
                 SizedBox(height: 18.h),
                 ...changes.map(_changeRow),
                 SizedBox(height: 18.h),
+                // ONE ACTION, and it is "Got it".
+                //
+                // This used to lead with "View account details", which opened
+                // the account-details SHEET on top of this dialog. Two stacked
+                // bottom sheets about the same thing is the state the user
+                // then has to dismiss twice, and with SEVERAL accounts moved
+                // the sheet could only honour one of them anyway (it fell back
+                // to "whatever the opener prefers" rather than the account the
+                // row was about) — so the button's promise did not hold for
+                // exactly the case it was most needed in.
+                //
+                // The dialog already lists every change inline, which is the
+                // information the button was going to fetch. Acknowledging is
+                // all that is left to do.
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(ctx).pop();
-                      // Open the details bottom sheet — the SAME sheet the
-                      // dashboard card's Details chip opens, so the user sees the
-                      // new number with copy/share instead of a settings page.
-                      // Outer dashboard context: it can read the summaries cubit,
-                      // the dialog ctx can't.
-                      //
-                      // Only name an account when exactly ONE moved. A provider
-                      // switch re-mints every wallet at once, and `changes.first`
-                      // is then whichever row the query happened to return first —
-                      // so the sheet opened, say, Savings while the user was
-                      // looking at Personal. Same sheet, different wallet, and
-                      // because the card is tinted per account type (savings is
-                      // blue, personal purple) it read as a second, unrelated
-                      // sheet rather than the one they knew.
-                      //
-                      // With several changed, defer to the opener's own order —
-                      // active account, then personal/primary — which is the
-                      // wallet the user is actually looking at.
-                      openAccountDetailsSheet(
-                        context,
-                        preferAccountId: changes.length == 1
-                            ? changes.first.accountId
-                            : null,
-                      );
-                    },
+                    onPressed: () => Navigator.of(ctx).pop(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4E03D0),
                       padding: EdgeInsets.symmetric(vertical: 15.h),
@@ -349,23 +336,12 @@ class AccountNumberChangeWatcher {
                           borderRadius: BorderRadius.circular(14.r)),
                     ),
                     child: Text(
-                      'View account details',
+                      'Got it',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
                       ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 6.h),
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text(
-                    'Got it',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 14.sp,
                     ),
                   ),
                 ),

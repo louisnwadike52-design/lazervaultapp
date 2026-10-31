@@ -26,6 +26,11 @@ const Map<String, AppServiceName> kRouteToService = {
   AppRoutes.bettingHome: AppServiceName.betting,
   AppRoutes.billsHub: AppServiceName.payBills,
   AppRoutes.bulkSms: AppServiceName.bulkSms,
+  // Data bundles. Absent until 31 Oct 2026, so a data deep link bypassed the
+  // admin unavailable gate entirely — the one service most likely to be
+  // promoted by a campaign, and the one whose gate was not being applied.
+  // Found by the sync test the moment it could see the dispatcher again.
+  AppRoutes.dataBundlesHome: AppServiceName.data,
   AppRoutes.businessAnalytics: AppServiceName.businessAnalytics,
   AppRoutes.businessDashboard: AppServiceName.businessDashboard,
   AppRoutes.cardAcceptance: AppServiceName.cardAcceptance,

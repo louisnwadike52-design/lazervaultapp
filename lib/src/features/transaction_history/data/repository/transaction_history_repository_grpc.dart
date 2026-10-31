@@ -214,7 +214,13 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       );
 
       // Convert proto transactions to unified transactions
-      var transactions = response.transactions.map(_convertFromProto).toList();
+      // Resolved ONCE for the page, awaiting the summaries if they have not
+      // loaded — that wait is precisely the window in which the old sync
+      // lookup silently answered "NGN".
+      final pageCurrency = (await ensureActiveAccountSnapshot())?.currency;
+      var transactions = response.transactions
+          .map((t) => _convertFromProto(t, fallbackCurrency: pageCurrency))
+          .toList();
 
       // ENFORCE THE SERVICE FILTER LOCALLY when neither a category nor a
       // service name could be derived for the selected type.
@@ -418,8 +424,10 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         offset: (page - 1) * limit,
       );
 
-      final transactions =
-          response.transactions.map(_convertFromProto).toList();
+      final svcCurrency = (await ensureActiveAccountSnapshot())?.currency;
+      final transactions = response.transactions
+          .map((t) => _convertFromProto(t, fallbackCurrency: svcCurrency))
+          .toList();
 
       // Legacy invoice platform-fee rows were stamped core-payments-service,
       // so the backend returns them for the Transfers view. They are fees into
@@ -505,8 +513,9 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         limit: 100, // Fetch a larger set for searching
       );
 
+      final searchCurrency = (await ensureActiveAccountSnapshot())?.currency;
       return response.transactions
-          .map(_convertFromProto)
+          .map((t) => _convertFromProto(t, fallbackCurrency: searchCurrency))
           .where((tx) =>
               tx.description?.toLowerCase().contains(query.toLowerCase()) ==
                   true ||
@@ -580,7 +589,10 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         offset: 0,
       );
 
-      return response.transactions.map(_convertFromProto).toList();
+      final ccy = (await ensureActiveAccountSnapshot())?.currency;
+      return response.transactions
+          .map((t) => _convertFromProto(t, fallbackCurrency: ccy))
+          .toList();
     } catch (e) {
       throw Exception('Failed to fetch transactions for export: $e');
     }
@@ -671,7 +683,23 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     return r;
   }
 
-  UnifiedTransaction _convertFromProto(Transaction protoTx) {
+  /// [fallbackCurrency] is the currency of the ACCOUNT this page was fetched
+  /// for, resolved once by the caller.
+  ///
+  /// WHY IT IS PASSED IN RATHER THAN LOOKED UP HERE. The fallback used to be
+  /// `activeAccountSnapshot()?.currency ?? 'NGN'`. That helper is SYNCHRONOUS
+  /// and returns null until AccountCardsSummaryCubit has loaded — its own doc
+  /// says to use the sync form "only where null degrades harmlessly". Here it
+  /// did not: null became 'NGN', so a GBP wallet's rows rendered with a naira
+  /// sign on the dashboard, whose recent-history list maps rows while those
+  /// summaries are still loading. The "View all" screen is reached after the
+  /// dashboard has loaded them, which is why the same rows looked right there
+  /// and wrong on the first few.
+  ///
+  /// Resolving once per PAGE also drops a serviceLocator lookup and a linear
+  /// scan of the summaries from every row to one per fetch.
+  UnifiedTransaction _convertFromProto(Transaction protoTx,
+      {String? fallbackCurrency}) {
     // Parse createdAt from ISO8601 string
     // Server sends UTC; normalize to LOCAL so history lists, detail, receipts
     // AND day-grouping (which uses timezone-dependent .day/.month/.year) all
@@ -1083,7 +1111,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     final currency =
         (!isCryptoSwap && !isCryptoSend && supportedFiat.contains(metaCurrency))
             ? metaCurrency
-            : (activeAccountSnapshot()?.currency ?? 'NGN');
+            : (fallbackCurrency ?? activeAccountSnapshot()?.currency ?? 'NGN');
 
     // Prefer the ORIGINATING reference stashed in metadata (TRF-…, C2C-…,
     // DEP-…) over the ledger row's internal bookkeeping reference

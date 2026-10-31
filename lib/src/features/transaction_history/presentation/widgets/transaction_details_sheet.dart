@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/country_config.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
@@ -27,11 +28,7 @@ class TransactionDetailsSheet {
     final isIncoming = tx.flow == TransactionFlow.incoming;
     final dateStr =
         DateFormat('EEEE, dd MMM yyyy \'at\' HH:mm').format(tx.createdAt);
-    final symbol = tx.currency == 'NGN'
-        ? '\u20A6'
-        : tx.currency == 'USD'
-            ? '\$'
-            : tx.currency;
+    final symbol = CountryConfigs.symbolForCurrency(tx.currency);
     final amtStr =
         '${isIncoming ? '+' : ''}$symbol${tx.amount.toStringAsFixed(2)}';
 

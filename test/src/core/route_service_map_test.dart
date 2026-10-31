@@ -14,15 +14,21 @@ import 'package:lazervault/core/types/services.dart';
 
 void main() {
   test('every service the dispatcher opens is reachable from the map', () {
+    // The dispatcher moved on 31 Oct 2026: the guards and the route switch
+    // were extracted out of _AppServiceBuilderState._handleGotoService into a
+    // top-level openAppService, in a `part` file, so the minimum-balance
+    // refusal sheet could route through the same guards instead of carrying
+    // its own route table. This test scanned the old location and went blind
+    // — it failed loudly on the empty scan, which is the only reason the gap
+    // was visible at all. Keep that assertion.
     final src = File(
-      'lib/src/features/widgets/app_service_builder.dart',
+      'lib/src/features/widgets/app_service_navigation.dart',
     ).readAsStringSync();
-    final start = src.indexOf('void _handleGotoService()');
+    final start = src.indexOf('void openAppService(');
     expect(start, greaterThan(-1),
-        reason: 'the dispatcher was renamed — this test is now blind');
-    // Clamp: the dispatcher may sit near the end of the file.
-    final end = (start + 20000).clamp(0, src.length);
-    final seg = src.substring(start, end);
+        reason: 'the dispatcher was renamed or moved again — this test is now '
+            'blind. Point it at the file holding the AppServiceName switch.');
+    final seg = src.substring(start);
 
     final re = RegExp(
       r'case AppServiceName\.([a-zA-Z0-9]+):(?:(?!case AppServiceName\.)[\s\S])*?'

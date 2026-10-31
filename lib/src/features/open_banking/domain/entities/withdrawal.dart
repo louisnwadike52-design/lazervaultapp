@@ -1,3 +1,5 @@
+import 'package:lazervault/core/config/country_config.dart';
+
 /// Withdrawal status
 enum WithdrawalStatus {
   pending,
@@ -141,7 +143,10 @@ class Withdrawal {
 
   /// Get formatted amount string
   String get formattedAmount {
-    final symbol = currency == 'NGN' ? '₦' : '\$';
+    // Was `'₦' : '\$'` — EVERY non-naira currency rendered as dollars, so a
+    // GBP withdrawal showed "\$500.00". A confidently wrong symbol on a money
+    // amount is worse than a bare code.
+    final symbol = CountryConfigs.symbolForCurrency(currency);
     return '$symbol${amount.toStringAsFixed(2).replaceAllMapped(
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',
@@ -150,7 +155,10 @@ class Withdrawal {
 
   /// Get formatted fee string
   String get formattedFee {
-    final symbol = currency == 'NGN' ? '₦' : '\$';
+    // Was `'₦' : '\$'` — EVERY non-naira currency rendered as dollars, so a
+    // GBP withdrawal showed "\$500.00". A confidently wrong symbol on a money
+    // amount is worse than a bare code.
+    final symbol = CountryConfigs.symbolForCurrency(currency);
     return '$symbol${fee.toStringAsFixed(2).replaceAllMapped(
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',
@@ -159,7 +167,10 @@ class Withdrawal {
 
   /// Get formatted total amount string
   String get formattedTotalAmount {
-    final symbol = currency == 'NGN' ? '₦' : '\$';
+    // Was `'₦' : '\$'` — EVERY non-naira currency rendered as dollars, so a
+    // GBP withdrawal showed "\$500.00". A confidently wrong symbol on a money
+    // amount is worse than a bare code.
+    final symbol = CountryConfigs.symbolForCurrency(currency);
     return '$symbol${totalAmount.toStringAsFixed(2).replaceAllMapped(
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',
@@ -343,12 +354,18 @@ class WithdrawalFeeCalculation {
   }
 
   String get formattedFee {
-    final symbol = currency == 'NGN' ? '₦' : '\$';
+    // Was `'₦' : '\$'` — EVERY non-naira currency rendered as dollars, so a
+    // GBP withdrawal showed "\$500.00". A confidently wrong symbol on a money
+    // amount is worse than a bare code.
+    final symbol = CountryConfigs.symbolForCurrency(currency);
     return '$symbol${fee.toStringAsFixed(2)}';
   }
 
   String get formattedTotalDebit {
-    final symbol = currency == 'NGN' ? '₦' : '\$';
+    // Was `'₦' : '\$'` — EVERY non-naira currency rendered as dollars, so a
+    // GBP withdrawal showed "\$500.00". A confidently wrong symbol on a money
+    // amount is worse than a bare code.
+    final symbol = CountryConfigs.symbolForCurrency(currency);
     return '$symbol${totalDebit.toStringAsFixed(2).replaceAllMapped(
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',

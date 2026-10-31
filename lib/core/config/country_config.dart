@@ -408,6 +408,28 @@ class CountryConfigs {
     return config?.dialingCode;
   }
 
+  /// Symbol for a CURRENCY code ("NGN" -> "₦"), from the same table the rest
+  /// of the app draws country data from.
+  ///
+  /// WHY THIS LIVES HERE. Three transaction widgets each carried their own
+  /// chain — `currency == 'NGN' ? '₦' : currency == 'USD' ? '\$' : currency` —
+  /// which knew exactly two currencies and printed the bare CODE for every
+  /// other, so a GBP wallet showed "GBP1500.00" where it should show
+  /// "£1,500.00". They were three copies of an incomplete table sitting beside
+  /// a complete one.
+  ///
+  /// Falls back to the code itself for a currency we do not operate in, which
+  /// is the honest rendering: a bare correct code beats a confident wrong
+  /// symbol.
+  static String symbolForCurrency(String? currencyCode) {
+    final code = (currencyCode ?? '').trim().toUpperCase();
+    if (code.isEmpty) return '';
+    for (final c in all) {
+      if (c.currency.toUpperCase() == code) return c.currencySymbol;
+    }
+    return code;
+  }
+
   /// Get currency symbol for a country
   static String? getCurrencySymbol(String countryCode) {
     final config = getByCode(countryCode);

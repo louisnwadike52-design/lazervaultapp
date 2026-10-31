@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/country_config.dart';
 import 'package:equatable/equatable.dart';
 part 'unified_transaction_widgets.dart';
 
@@ -65,6 +66,7 @@ class UnifiedTransaction extends Equatable {
     }
     return raw;
   }
+
   final Map<String, dynamic>? metadata;
   final String? counterpartyName;
   final String? counterpartyAccount;
@@ -133,12 +135,10 @@ class UnifiedTransaction extends Equatable {
     if (override != null && override.isNotEmpty) {
       return '${flow.prefix}$override';
     }
-    final symbol = currency == 'NGN'
-        ? '₦'
-        : currency == 'USD'
-            ? '\$'
-            : currency;
-    return '${flow.prefix}$symbol${amount.toStringAsFixed(2)}';
+    // One table, not a two-currency chain. This knew NGN and USD and printed
+    // the bare CODE for everything else, so a GBP row read "GBP1500.00".
+    final symbol = CountryConfigs.symbolForCurrency(currency);
+    return '${flow.prefix}$symbol${_withThousands(amount)}';
   }
 
   /// Get service-specific icon
@@ -342,3 +342,10 @@ class UnifiedTransaction extends Equatable {
     );
   }
 }
+
+/// Groups an amount's integer part — "1500.00" reads as a reference number,
+/// "1,500.00" reads as money.
+String _withThousands(double v) => v.toStringAsFixed(2).replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+\.)'),
+      (m) => '${m[1]},',
+    );

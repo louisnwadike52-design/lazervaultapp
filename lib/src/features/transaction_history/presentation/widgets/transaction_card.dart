@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/country_config.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
@@ -193,11 +194,7 @@ class TransactionCard extends StatelessWidget {
           : override;
       return '${transaction.flow.prefix}$compact';
     }
-    final symbol = transaction.currency == 'NGN'
-        ? '\u20A6'
-        : transaction.currency == 'USD'
-            ? '\$'
-            : transaction.currency;
+    final symbol = CountryConfigs.symbolForCurrency(transaction.currency);
     final amt = transaction.amount.toStringAsFixed(2);
     if (transaction.flow == TransactionFlow.incoming) {
       return '+$symbol$amt';
