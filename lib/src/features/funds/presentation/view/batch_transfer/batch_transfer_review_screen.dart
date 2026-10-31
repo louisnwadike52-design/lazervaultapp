@@ -324,14 +324,34 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     // read is the bug that comment was written about.
     if (availableBalance != null) {
       final availableMinor = (availableBalance * 100).round();
-      final spendMinor = (chargeTotal * 100).round();
+
+      // ONLY THE EXTERNAL LEGS COUNT, mirroring core-payments'
+      // ExternalLegSpendMinor. A batch is the one path that carries
+      // Lazervault-to-Lazervault and bank payouts in a single request, so the
+      // leg type has to be read per recipient rather than assumed for the
+      // whole batch. Weighing `chargeTotal` here refused a batch because of
+      // its INTERNAL recipients — a refusal the server would not issue, and
+      // one the user could never get past.
+      //
+      // `_totalFee` is already external-only (internal recipients are free),
+      // so it is added whole. An all-internal batch has no external leg and
+      // skips the policy entirely.
+      // `amount` is Int64 MINOR units, exactly as the totalAmount fold above
+      // reads it — not a major-unit double.
+      final externalAmount = recipients
+          .where((r) => r.isExternal)
+          .fold<double>(0.0, (sum, r) => sum + (r.amount.toDouble() / 100));
+      final hasExternalLeg = recipients.any((r) => r.isExternal);
+      final spendMinor = ((externalAmount + (_totalFee ?? 0.0)) * 100).round();
+
       final minBalance = MinBalancePolicy.resolve(
         accountType: selectedAccount?.accountType,
       );
-      if (minBalance.blocks(
-        availableMinor: availableMinor,
-        spendMinor: spendMinor,
-      )) {
+      if (hasExternalLeg &&
+          minBalance.blocks(
+            availableMinor: availableMinor,
+            spendMinor: spendMinor,
+          )) {
         setState(() => _isProcessing = false);
         // The same sheet both single-transfer flows use, so a user meets one
         // explanation of this policy rather than three paraphrases.

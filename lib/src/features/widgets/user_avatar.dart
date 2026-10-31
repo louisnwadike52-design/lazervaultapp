@@ -145,6 +145,17 @@ class UserAvatar extends StatelessWidget {
       width: size,
       height: size,
       decoration: decoration,
+      // CLIP THE CHILD TO THE CIRCLE.
+      //
+      // Without this the avatar overflows during a Hero flight. Flutter builds
+      // the flying child once and lays it out into a rect that interpolates
+      // between the source size and the destination size, so for most of the
+      // animation the child is being drawn into a box that is NOT `size`. An
+      // unclipped child painted at its own intrinsic size spills past the
+      // circle — visible as a square-ish smear behind the disc on the way from
+      // the drawer to My Account. Clipping costs nothing here (the decoration
+      // is already a circle) and bounds the child whatever the flight does.
+      clipBehavior: Clip.antiAlias,
       child: child,
     );
   }
@@ -163,31 +174,58 @@ class UserAvatar extends StatelessWidget {
     if (initials.isEmpty) {
       // No name to derive initials from — use a generic person icon
       // rather than an empty purple disc.
-      return Container(
-        width: size,
-        height: size,
+      // Same reasoning as the initials below: fill the parent rather than
+      // re-asserting `size`, and let the glyph scale to whatever box the
+      // flight gives us. This is the no-name, no-picture case the fix has to
+      // cover as well as the lettered one.
+      return DecoratedBox(
         decoration: BoxDecoration(shape: BoxShape.circle, color: bg),
-        child: Icon(
-          Icons.person_outline_rounded,
-          color: Colors.white,
-          size: size * 0.55,
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Padding(
+              padding: EdgeInsets.all(size * 0.2),
+              child: Icon(
+                Icons.person_outline_rounded,
+                color: Colors.white,
+                size: size * 0.55,
+              ),
+            ),
+          ),
         ),
       );
     }
-    return Container(
-      width: size,
-      height: size,
+    return DecoratedBox(
       decoration: BoxDecoration(shape: BoxShape.circle, color: bg),
-      alignment: Alignment.center,
-      child: Text(
-        initials,
-        style: GoogleFonts.inter(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-          // Scale font with avatar size. 0.4 gives a 16px char in a 40px
-          // disc — visually centered, still legible at 28px.
-          fontSize: size * 0.4,
-          letterSpacing: 0.5,
+      // NO width/height HERE, deliberately. The parent Container already is
+      // `size`, and during a Hero flight the real box is whatever the
+      // animation says — not `size`. Re-asserting `size` on the inner disc
+      // made the child fight the flight rect and overflow it. Filling the
+      // parent means the disc is always exactly the box it is given.
+      child: Center(
+        // FittedBox so the glyphs shrink to the box instead of overflowing it.
+        // `fontSize: size * 0.4` is the right size at rest, but mid-flight the
+        // box can be far smaller than `size`, and fixed-size text in a
+        // shrinking box is exactly what produced the overflow. scaleDown never
+        // enlarges, so the resting appearance is unchanged.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Padding(
+            padding: EdgeInsets.all(size * 0.18),
+            child: Text(
+              initials,
+              maxLines: 1,
+              softWrap: false,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                // 0.4 gives a 16px char in a 40px disc — visually centered,
+                // still legible at 28px.
+                fontSize: size * 0.4,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
         ),
       ),
     );

@@ -1209,10 +1209,18 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     final minBalancePolicy = MinBalancePolicy.resolve(
       accountType: selectedAccount.accountType,
     );
-    if (minBalancePolicy.blocks(
-      availableMinor: availableMinorForFloor,
-      spendMinor: spendMinorForFloor,
-    )) {
+    // EXTERNAL PAYOUTS ONLY. The floor exists so a retained balance is SPENT
+    // ON the platform, so a Lazervault-to-Lazervault send is the thing it is
+    // encouraging, not something to block. The server was narrowed to
+    // `isExternalTransfer` on 30 Oct 2026; without the same gate here the APP
+    // would refuse an internal transfer the backend would have allowed, which
+    // is the worse half of the bug — the user never even reaches the server to
+    // find out it was permitted.
+    if (isExternalTransfer &&
+        minBalancePolicy.blocks(
+          availableMinor: availableMinorForFloor,
+          spendMinor: spendMinorForFloor,
+        )) {
       showMinBalanceRefusal(
         context,
         currencySymbol: currencySymbol,

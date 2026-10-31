@@ -331,10 +331,19 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
     final availableMinor = (widget.availableBalanceMajor * 100).round();
     final minBalance =
         MinBalancePolicy.resolve(accountType: widget.sourceAccountType);
-    if (minBalance.blocks(
-      availableMinor: availableMinor,
-      spendMinor: minor + feeMinor,
-    )) {
+    // EXTERNAL PAYOUTS ONLY, matching the server. The floor keeps a balance on
+    // the platform, so a Lazervault-to-Lazervault send is what it encourages
+    // rather than something to stop. core-payments was narrowed to
+    // `isExternalTransfer` on 30 Oct 2026; the long flow
+    // (initiate_send_funds.dart) carries the same gate. Without it the sheet
+    // refuses an internal send the backend would have allowed, and the user
+    // never reaches the server to find out.
+    final isExternalForFloor = widget.transferType == 'external';
+    if (isExternalForFloor &&
+        minBalance.blocks(
+          availableMinor: availableMinor,
+          spendMinor: minor + feeMinor,
+        )) {
       showMinBalanceRefusal(
         context,
         currencySymbol: _symbol,
