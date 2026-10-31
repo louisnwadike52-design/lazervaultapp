@@ -48,11 +48,27 @@ void main() {
         AppServiceName.exchange,
         AppServiceName.rmb,
         AppServiceName.splitBills,
+        // Invoice joined them on 31 Oct 2026: "split bills and invoices can
+        // go to the second" carousel. Both are asking someone ELSE for money
+        // rather than the everyday spend page one is for.
+        AppServiceName.invoice,
       ]) {
         expect(s.revenuePriority, greaterThan(11),
-            reason: '$s must sit on the second carousel (operator request '
-                '2026-10-30), not compete for a first-screen slot');
+            reason: '$s must sit on the second carousel (operator request), '
+                'not compete for a first-screen slot');
       }
+    });
+
+    test('airtime and data lead, and recharge cards took the freed slot', () {
+      // The operator asked for airtime + data on page one and invoice off it.
+      // Moving invoice out left a twelfth slot; the next rank was insurance
+      // (20), which is admin-gated OFF, so the tile would have been chosen by
+      // a flag rather than by anyone. rechargeCard was promoted explicitly.
+      expect(AppServiceName.airtime.revenuePriority, 1);
+      expect(AppServiceName.data.revenuePriority, 2);
+      expect(AppServiceName.rechargeCard.revenuePriority, lessThan(12),
+          reason: 'recharge cards hold the slot invoice vacated');
+      expect(AppServiceName.invoice.revenuePriority, greaterThan(11));
     });
 
     test('they still rank deliberately relative to each other', () {
@@ -63,7 +79,8 @@ void main() {
         AppServiceName.rmb,
         AppServiceName.splitBills,
       ]) {
-        expect(s.revenuePriority, lessThan(100), reason: '$s fell to the fallback');
+        expect(s.revenuePriority, lessThan(100),
+            reason: '$s fell to the fallback');
       }
     });
   });

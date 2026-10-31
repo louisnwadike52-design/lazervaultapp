@@ -70,7 +70,15 @@ extension AppServiceRevenuePriority on AppServiceName {
         AppServiceName.payBills => 3,
         AppServiceName.crypto => 4,
         AppServiceName.giftCards => 5,
-        AppServiceName.invoice => 6,
+        // Recharge-card printing takes the slot invoice vacated (operator,
+        // 31 Oct 2026). Page one is twelve tiles — pinned sendFunds plus
+        // ranks 1..11 — so moving invoice off left a hole, and leaving it to
+        // be filled by whatever ranked next is the exact accident the note
+        // above warns about: the next rank is insurance (20), which is
+        // admin-gated OFF, so the twelfth tile would have been decided by a
+        // flag rather than by anyone. Recharge cards are an everyday Nigerian
+        // errand and revenue-bearing, which is what page one is for.
+        AppServiceName.rechargeCard => 6,
         AppServiceName.tagPay => 7,
         AppServiceName.qrPay => 8,
         AppServiceName.contactlessPay => 9,
@@ -84,7 +92,6 @@ extension AppServiceRevenuePriority on AppServiceName {
         AppServiceName.invest => 21,
         AppServiceName.stocks => 22,
         AppServiceName.betting => 23,
-        AppServiceName.rechargeCard => 24,
         AppServiceName.bulkSms => 25,
 
         // Moved OFF page one by operator request (2026-10-30): priced in or
@@ -95,6 +102,10 @@ extension AppServiceRevenuePriority on AppServiceName {
         AppServiceName.exchange => 60,
         AppServiceName.rmb => 61,
         AppServiceName.splitBills => 62,
+        // Invoice joins split-bills on the second carousel (operator,
+        // 31 Oct 2026). Both are "ask someone else for money" rather than the
+        // everyday spend page one is for, so they belong together.
+        AppServiceName.invoice => 63,
 
         // Non-revenue / P2P / internal + business tiles keep their enum order.
         _ => 100 + index,
