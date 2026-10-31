@@ -1173,40 +1173,49 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                   ],
                 ],
               ),
-              if (_activeAccountType != VirtualAccountType.business)
-                GestureDetector(
-                  onTap: () =>
-                      showAllServicesBottomSheet(context, activeServices),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: accentColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          "View All",
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w600,
-                            color: accentColor,
-                          ),
-                        ),
-                        SizedBox(width: 4.w),
-                        Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 14.sp,
+              // "View all" shows for EVERY account type, business included.
+              //
+              // It used to be hidden for business with no comment explaining
+              // why — and unlike every other decision in this file, there was
+              // no reason recorded, which is what gave it away as an
+              // oversight rather than a choice. The sheet is handed
+              // `activeServices`, which is already the account-type-correct
+              // set, so a business user sees their 11 business services and
+              // nothing else. Hiding it cost them the searchable list every
+              // other account type gets, for no stated benefit.
+              GestureDetector(
+                onTap: () =>
+                    showAllServicesBottomSheet(context, activeServices),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 4.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "View All",
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
                           color: accentColor,
                         ),
-                      ],
-                    ),
+                      ),
+                      SizedBox(width: 4.w),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 14.sp,
+                        color: accentColor,
+                      ),
+                    ],
                   ),
                 ),
+              ),
             ],
           ),
           SizedBox(height: 16.h),
