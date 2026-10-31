@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +13,10 @@ import '../../statistics/cubit/statistics_cubit.dart';
 import '../../statistics/cubit/statistics_state.dart';
 import '../../../generated/accounts.pb.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/dashboard_state_manager.dart';
+import 'expenditure_chart.dart';
+import 'expenditure_chart_controls.dart';
+import 'expenditure_chart_type.dart';
 part 'monthly_summary_widgets.dart';
 
 class MonthlySummary extends StatefulWidget {
@@ -25,6 +28,10 @@ class MonthlySummary extends StatefulWidget {
 
 class _MonthlySummaryState extends State<MonthlySummary> {
   TimePeriod _selectedPeriod = TimePeriod.month;
+
+  /// Held in the dashboard singleton, not in this State: leaving the dashboard
+  /// disposes this widget and the user's choice would not survive the trip.
+  final DashboardStateManager _dashboardState = DashboardStateManager();
   StreamSubscription<String?>? _accountSub;
   StreamSubscription<String>? _localeSub;
 
@@ -352,18 +359,8 @@ class _MonthlySummaryState extends State<MonthlySummary> {
           _buildPeriodSelector(),
           SizedBox(height: 24.h),
 
-          // Chart Section
-          Container(
-            height: 240.h,
-            padding: EdgeInsets.all(4.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: dailyTrend.isEmpty
-                ? _buildNoDataChart()
-                : _buildExpenditureChart(dailyTrend),
-          ),
+          // Chart Section — shape is user-selectable; see _buildChartSection.
+          _buildChartSection(state, dailyTrend, totalSpent, transactionCount),
           SizedBox(height: 24.h),
 
           // Statistics Section
@@ -499,122 +496,154 @@ class _MonthlySummaryState extends State<MonthlySummary> {
     );
   }
 
-  Widget _buildExpenditureChart(List<DailyExpensePoint> dailyTrend) {
-    final spots = _createSpotsFromDailyTrend(dailyTrend);
+  /// The chart block: a small control row, the chart itself, and a colour key
+  /// when the chart is a category one.
+  ///
+  /// The SHAPE is the user's choice and cycles on each tap of the CTA. What it
+  /// may cycle through is decided by the data, not by the enum — see
+  /// [availableChartTypes]. That matters because the two chart families read
+  /// different datasets: a pie needs the category breakdown, which is absent
+  /// on a quiet account and on some periods, and cycling onto an empty pie was
+  /// the obvious way to get this wrong.
+  Widget _buildChartSection(
+    StatisticsLoaded state,
+    List<DailyExpensePoint> dailyTrend,
+    double totalSpent,
+    int transactionCount,
+  ) {
+    final points = <ExpenditurePoint>[
+      for (final p in dailyTrend)
+        ExpenditurePoint(
+          // A row whose date the backend could not format must not take the
+          // whole card down; it falls back to today and still plots its amount.
+          date: DateTime.tryParse(p.date) ?? DateTime.now(),
+          amount: p.amount,
+        ),
+    ];
 
-    if (spots.isEmpty) {
-      return _buildNoDataChart();
+    // Only categories with money in them. A zero-amount category is a slice
+    // with no sweep: invisible in the pie, a dead spoke on the radar, and a
+    // legend row claiming a colour the user cannot find.
+    final slices = <ExpenditureSlice>[
+      for (final c
+          in (state.categoryAnalytics?.expenseCategories ??
+              <CategoryBreakdownItem>[]))
+        if (c.amount > 0)
+          ExpenditureSlice(name: c.categoryName, amount: c.amount),
+    ];
+
+    final available = availableChartTypes(
+      trendPoints: points.length,
+      categoryCount: slices.length,
+    );
+
+    // Nothing drawable at all — the card keeps its own empty state rather than
+    // an axis with no series on it.
+    if (available.isEmpty) {
+      return Container(
+        height: 240.h,
+        padding: EdgeInsets.all(4.w),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: _buildNoDataChart(),
+      );
     }
 
-    final maxAmount = _getMaxAmountFromTrend(dailyTrend);
+    // Clamp the remembered choice onto what today's data supports: a user who
+    // left this on Radar and returns to a period with two categories must not
+    // hit fl_chart's "Radar needs at least 3" assert.
+    final type =
+        resolveChartType(_dashboardState.expenditureChartType, available)!;
+    final next = nextChartType(type, available)!;
+    final showLegend = type.isCategoryChart && slices.isNotEmpty;
 
-    return LineChart(
-      LineChartData(
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: maxAmount > 0 ? maxAmount / 4 : 100,
-          getDrawingHorizontalLine: (value) {
-            return FlLine(
-              color: Colors.white.withValues(alpha: 0.1),
-              strokeWidth: 1,
-            );
-          },
-        ),
-        titlesData: FlTitlesData(
-          show: true,
-          rightTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          topTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 30,
-              interval: _getBottomInterval(dailyTrend.length),
-              getTitlesWidget: (value, meta) {
-                final index = value.toInt();
-                if (index < 0 || index >= dailyTrend.length) {
-                  return const Text('');
-                }
-                return Padding(
-                  padding: EdgeInsets.only(top: 8.h),
-                  child: Text(
-                    _formatBottomLabel(
-                        DateTime.tryParse(dailyTrend[index].date) ??
-                            DateTime.now()),
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: maxAmount > 0 ? maxAmount / 4 : 100,
-              reservedSize: 46,
-              getTitlesWidget: (value, meta) {
-                return Text(
-                  '$_currencySymbol${value.toInt()}',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        borderData: FlBorderData(show: false),
-        minX: 0,
-        maxX: (dailyTrend.length - 1).toDouble(),
-        minY: 0,
-        maxY: maxAmount + (maxAmount * 0.2),
-        lineBarsData: [
-          LineChartBarData(
-            spots: spots,
-            isCurved: true,
-            gradient: LinearGradient(
-              colors: [
-                Colors.white,
-                Colors.white.withValues(alpha: 0.8),
-              ],
-            ),
-            barWidth: 3,
-            isStrokeCapRound: true,
-            dotData: FlDotData(
-              show: true,
-              getDotPainter: (spot, percent, barData, index) {
-                return FlDotCirclePainter(
-                  radius: 4,
-                  color: Colors.white,
-                  strokeWidth: 2,
-                  strokeColor: Color.fromARGB(255, 78, 3, 208),
-                );
-              },
-            ),
-            belowBarData: BarAreaData(
-              show: true,
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.white.withValues(alpha: 0.2),
-                  Colors.white.withValues(alpha: 0.05),
-                ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(type.icon,
+                size: 14.sp, color: Colors.white.withValues(alpha: 0.75)),
+            SizedBox(width: 6.w),
+            Text(
+              type.isCategoryChart ? 'By category' : 'Daily trend',
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white.withValues(alpha: 0.75),
               ),
             ),
+            ExpenditureChartInfoButton(
+              onTap: () => showExpenditureChartInfoSheet(
+                context,
+                type: type,
+                categories: slices,
+                currencySymbol: _currencySymbol,
+                periodTitle: _getPeriodTitle(),
+                dateRange: _formatDateRange(state.startDate, state.endDate),
+                transactionCount: transactionCount,
+                totalSpent: totalSpent,
+                available: available,
+              ),
+            ),
+            const Spacer(),
+            // Hidden when there is only one shape to show: a cycle button that
+            // cycles back to itself is a dead control.
+            if (available.length > 1)
+              ExpenditureChartCta(
+                next: next,
+                onTap: () => setState(
+                    () => _dashboardState.setExpenditureChartType(next)),
+                // Long-press jumps straight to the explanation of every shape,
+                // which is also where a user can see why one is unavailable.
+                onLongPress: () => showExpenditureChartInfoSheet(
+                  context,
+                  type: type,
+                  categories: slices,
+                  currencySymbol: _currencySymbol,
+                  periodTitle: _getPeriodTitle(),
+                  dateRange: _formatDateRange(state.startDate, state.endDate),
+                  transactionCount: transactionCount,
+                  totalSpent: totalSpent,
+                  available: available,
+                ),
+              ),
+          ],
+        ),
+        SizedBox(height: 10.h),
+        Container(
+          height: 240.h,
+          // Asymmetric on purpose: the Y labels need room on the left, and the
+          // right only needs enough that the last point is not flush to the
+          // edge. The old uniform all(4.w) was why the first and last dots
+          // were sliced by the container.
+          padding: EdgeInsets.fromLTRB(4.w, 12.h, 12.w, 4.h),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          child: ExpenditureChart(
+            // Keyed by shape so fl_chart rebuilds rather than trying to
+            // animate a line's spots into a pie's sections.
+            key: ValueKey(type),
+            type: type,
+            trend: points,
+            categories: slices,
+            currencySymbol: _currencySymbol,
+            bottomLabel: _formatBottomLabel,
+            totalSpent: totalSpent,
+          ),
+        ),
+        if (showLegend) ...[
+          SizedBox(height: 12.h),
+          ExpenditureChartLegend(
+            categories: slices,
+            currencySymbol: _currencySymbol,
           ),
         ],
-      ),
+      ],
     );
   }
 
@@ -766,26 +795,6 @@ class _MonthlySummaryState extends State<MonthlySummary> {
         ],
       ),
     );
-  }
-
-  List<FlSpot> _createSpotsFromDailyTrend(List<DailyExpensePoint> dailyTrend) {
-    return List.generate(dailyTrend.length, (index) {
-      return FlSpot(index.toDouble(), dailyTrend[index].amount);
-    });
-  }
-
-  double _getMaxAmountFromTrend(List<DailyExpensePoint> dailyTrend) {
-    if (dailyTrend.isEmpty) return 0;
-    return dailyTrend
-        .map((e) => e.amount)
-        .reduce((max, value) => max > value ? max : value);
-  }
-
-  double _getBottomInterval(int dataLength) {
-    if (dataLength <= 7) return 1;
-    if (dataLength <= 14) return 2;
-    if (dataLength <= 30) return 5;
-    return 7;
   }
 
   String _formatBottomLabel(DateTime date) {
