@@ -11,7 +11,6 @@ class CurrencyData {
           flagUrl: '$_flagBaseUrl/ng.png',
           countryCode: 'NG',
           countryName: 'Nigeria',
-          exchangeRate: 411.0,
           isPopular: true,
         ),
         const Currency(
@@ -21,7 +20,6 @@ class CurrencyData {
           flagUrl: '$_flagBaseUrl/us.png',
           countryCode: 'US',
           countryName: 'United States',
-          exchangeRate: 1.0,
           isPopular: true,
         ),
         const Currency(
@@ -31,7 +29,6 @@ class CurrencyData {
           flagUrl: '$_flagBaseUrl/gb.png',
           countryCode: 'GB',
           countryName: 'United Kingdom',
-          exchangeRate: 0.73,
           isPopular: true,
         ),
         const Currency(
@@ -41,7 +38,6 @@ class CurrencyData {
           flagUrl: '$_flagBaseUrl/eu.png',
           countryCode: 'EU',
           countryName: 'European Union',
-          exchangeRate: 0.85,
           isPopular: true,
         ),
       ];
@@ -55,7 +51,6 @@ class CurrencyData {
           flagUrl: '$_flagBaseUrl/gh.png',
           countryCode: 'GH',
           countryName: 'Ghana',
-          exchangeRate: 6.1,
         ),
         const Currency(
           code: 'KES',
@@ -64,7 +59,6 @@ class CurrencyData {
           flagUrl: '$_flagBaseUrl/ke.png',
           countryCode: 'KE',
           countryName: 'Kenya',
-          exchangeRate: 107.0,
         ),
         // PHP (Philippines) / CAD (Canada) removed — the Klasha account is
         // inaccessible (login 403) and Klasha is reserved for RMB. Re-add here +

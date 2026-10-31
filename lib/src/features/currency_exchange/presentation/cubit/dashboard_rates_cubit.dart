@@ -82,7 +82,22 @@ class DashboardRatesCubit extends Cubit<DashboardRatesState> {
       _cachedCurrencies = currencies;
     }
 
-    final targets = currencies.where((c) => c.code != _baseCurrency).toList();
+    // ONLY CURRENCIES THE ACTIVE PROVIDER CAN ACTUALLY CONVERT.
+    //
+    // This filtered on `code != base` alone, so the dashboard printed a rate
+    // card for every currency GetSupportedCurrencies returned — including the
+    // international-only ones (CAD, PHP) that the provider's virtual accounts
+    // do not cover and which therefore cannot be converted at all. A rate on
+    // the dashboard is an invitation to exchange, so quoting one for a pair
+    // that would be refused is the reported defect.
+    //
+    // `supportsConversion` is the backend's own capability flag, re-read on
+    // every fetch (10-minute repository cache), so switching provider changes
+    // this list with no release — the exchange screen's destination picker
+    // reads the same flag.
+    final targets = currencies
+        .where((c) => c.code != _baseCurrency && c.supportsConversion)
+        .toList();
     if (targets.isEmpty) {
       if (!isRefresh && !isClosed) {
         emit(const DashboardRatesError(
@@ -91,10 +106,23 @@ class DashboardRatesCubit extends Cubit<DashboardRatesState> {
       return;
     }
 
-    // Fetch all rates in parallel
+    // FETCH THE DIRECTION WE DISPLAY. CountryRateCard renders
+    // "1 <target> = <baseSymbol><rate>", so the rate wanted is target→base.
+    //
+    // This used to ask for base→target and then invert the answer with
+    // `1.0 / rate`. That is not the same number. A quoted rate carries a
+    // spread, and the reciprocal of a spread-inclusive rate is not the
+    // spread-inclusive rate of the opposite pair — it leans the margin the
+    // wrong way. So the dashboard and the exchange screen, both reading the
+    // same gRPC endpoint, printed different figures for the same pair, which
+    // is the reported "the rates don't match".
+    //
+    // Asking for the direction we show means the dashboard's number IS the
+    // exchange screen's number for that pair, with no client-side arithmetic
+    // in between that could drift.
     final rateFutures = targets.map((target) => _repository.getExchangeRate(
-          fromCurrency: _baseCurrency,
-          toCurrency: target.code,
+          fromCurrency: target.code,
+          toCurrency: _baseCurrency,
         ));
 
     final results = await Future.wait(rateFutures);
@@ -107,8 +135,12 @@ class DashboardRatesCubit extends Cubit<DashboardRatesState> {
         (_) {},
         (exchangeRate) {
           final target = targets[i];
-          final invertedRate =
-              exchangeRate.rate > 0 ? 1.0 / exchangeRate.rate : 0.0;
+          // Used as returned. No inversion — see the fetch above.
+          final rate = exchangeRate.rate;
+          // A non-positive rate is not a rate. Dropping the row leaves the
+          // card out rather than printing "1 USD = ₦0.00", which reads as a
+          // collapsed currency rather than as missing data.
+          if (rate <= 0) return;
 
           dashboardRates.add(DashboardCurrencyRate(
             currencyCode: target.code,
@@ -116,7 +148,7 @@ class DashboardRatesCubit extends Cubit<DashboardRatesState> {
             currencySymbol: target.symbol,
             countryCode: target.country,
             flagEmoji: _flagEmojis[target.country] ?? '',
-            rate: invertedRate,
+            rate: rate,
             baseCurrency: _baseCurrency,
             baseSymbol: _currencySymbols[_baseCurrency] ?? _baseCurrency,
           ));

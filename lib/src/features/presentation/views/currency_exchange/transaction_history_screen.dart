@@ -1082,8 +1082,21 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
   }
 
   void _showCurrencyFilter() {
-    final currencies =
-        CurrencyData.allCurrencies.map((c) => c.code).toSet().toList();
+    // FROM THE USER'S OWN HISTORY, not a hardcoded catalogue.
+    //
+    // This listed every currency in CurrencyData, so the filter offered
+    // currencies the user has never transacted in — each one selecting to an
+    // empty list — while a currency they HAD used but which the static list
+    // omitted could not be filtered for at all. The set that is always right
+    // for a history filter is the set that appears in the history.
+    //
+    // Note this is deliberately NOT the active provider's supported list
+    // either: a corridor can be withdrawn after you have used it, and your
+    // past exchanges must stay findable when it is.
+    final currencies = <String>{
+      for (final t in _allTransactions) ...[t.fromCurrency, t.toCurrency],
+    }.where((c) => c.trim().isNotEmpty).toList()
+      ..sort();
 
     Get.bottomSheet(
       Container(

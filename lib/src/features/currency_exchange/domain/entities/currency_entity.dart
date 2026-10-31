@@ -1,3 +1,15 @@
+/// A currency the exchange UI can offer.
+///
+/// DELIBERATELY CARRIES NO RATE. It used to have an `exchangeRate` field
+/// ("Rate to USD") populated from six constants in currency_data.dart — NGN
+/// 411.0, GBP 0.73, EUR 0.85, GHS 6.1, KES 107.0 — which were years out of
+/// date and were never read by anything that displays a rate. A stale number
+/// on an identity object is a trap: the next person to need "the rate" finds
+/// one already sitting on the currency and uses it.
+///
+/// Rates come from the exchange service, through
+/// `IExchangeRepository.getExchangeRate`, which is the one source the
+/// dashboard and the exchange screen both read.
 class Currency {
   final String code;
   final String name;
@@ -5,7 +17,6 @@ class Currency {
   final String flagUrl;
   final String countryCode;
   final String countryName;
-  final double exchangeRate; // Rate to USD
   final bool isPopular;
   final bool isSupported;
 
@@ -16,7 +27,6 @@ class Currency {
     required this.flagUrl,
     required this.countryCode,
     required this.countryName,
-    required this.exchangeRate,
     this.isPopular = false,
     this.isSupported = true,
   });
@@ -29,7 +39,6 @@ class Currency {
       flagUrl: json['flagUrl'] ?? '',
       countryCode: json['countryCode'] ?? '',
       countryName: json['countryName'] ?? '',
-      exchangeRate: (json['exchangeRate'] ?? 0.0).toDouble(),
       isPopular: json['isPopular'] ?? false,
       isSupported: json['isSupported'] ?? true,
     );
@@ -43,7 +52,6 @@ class Currency {
       'flagUrl': flagUrl,
       'countryCode': countryCode,
       'countryName': countryName,
-      'exchangeRate': exchangeRate,
       'isPopular': isPopular,
       'isSupported': isSupported,
     };
@@ -56,7 +64,6 @@ class Currency {
     String? flagUrl,
     String? countryCode,
     String? countryName,
-    double? exchangeRate,
     bool? isPopular,
     bool? isSupported,
   }) {
@@ -67,7 +74,6 @@ class Currency {
       flagUrl: flagUrl ?? this.flagUrl,
       countryCode: countryCode ?? this.countryCode,
       countryName: countryName ?? this.countryName,
-      exchangeRate: exchangeRate ?? this.exchangeRate,
       isPopular: isPopular ?? this.isPopular,
       isSupported: isSupported ?? this.isSupported,
     );
