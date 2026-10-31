@@ -429,15 +429,8 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             // from chat_services_shared/protocol_emit.py. Direct gRPC
             // path doesn't carry top-level metadata so we read straight
             // off entities under the sentinel keys. Strip them so the
-            // next round-trip doesn't re-send.
-            final pinPrompt = _entities.remove('_pin_prompt_pending');
-            final pinSetup = _entities.remove('_pin_setup_pending');
-            final receiptCard = _entities.remove('_receipt_card_pending');
-            final recipientCard = _entities.remove('_recipient_card_pending');
-            final analyticsCard = _entities.remove('_analytics_card_pending');
-            final qrCard = _entities.remove('_qr_card_pending');
-
-            final messageMetadata = <String, dynamic>{};
+            // next round-trip doesn't re-send. Shared with the media path.
+            final messageMetadata = _drainSentinelMetadata(_entities);
             // Degradation chrome, matching the general chat: the same LLM
             // failure must explain itself here too rather than leaving the
             // fallback sentence looking like an ordinary answer.
@@ -457,43 +450,6 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             if (lastPaymentId != null && lastPaymentId.isNotEmpty) {
               messageMetadata['last_payment_id'] = lastPaymentId;
             }
-            if (pinPrompt is Map) {
-              messageMetadata['pin_prompt'] =
-                  Map<String, dynamic>.from(pinPrompt);
-            }
-            // The PIN-setup hand-off rides the same sentinel protocol, so it
-            // lands in message metadata and therefore survives in history —
-            // a card the user scrolls back to still works.
-            if (pinSetup is Map) {
-              messageMetadata['pin_setup'] =
-                  Map<String, dynamic>.from(pinSetup);
-            }
-            if (receiptCard != null) {
-              messageMetadata['receipt_card'] = receiptCard;
-              _invalidateTransferRelatedCaches();
-            }
-            // The confirmed counterparty, as data — same sentinel mechanism as the
-            // receipt card. The direct gRPC path carries no top-level metadata, so
-            // the payload rides in entities and is stripped here so it cannot
-            // re-send on the next turn.
-            if (recipientCard is Map) {
-              messageMetadata['recipient_card'] =
-                  Map<String, dynamic>.from(recipientCard);
-            }
-            // Charts for a "how am I doing?" turn — the same sentinel rail
-            // as the receipt card, because this gRPC path carries no
-            // top-level metadata of its own.
-            if (analyticsCard is Map) {
-              messageMetadata['analytics_card'] =
-                  Map<String, dynamic>.from(analyticsCard);
-            }
-            // Scannable QR for a payment-request turn. A QR is the one
-            // answer that cannot be delivered as text, and the agent's reply
-            // already says to share it from the card above.
-            if (qrCard is Map) {
-              messageMetadata['qr_card'] = Map<String, dynamic>.from(qrCard);
-            }
-
             final botMessage = MicroserviceChatMessageEntity(
               text: chatResponse.response,
               isUser: false,
@@ -542,17 +498,9 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
                   .toList(growable: false);
           final billType = responseEntities['last_bill_type'] as String?;
           final lastPaymentId = responseEntities['last_payment_id'] as String?;
-          // New chat protocol — pin_prompt + receipt_card sentinels.
-          final pinPrompt = responseEntities.remove('_pin_prompt_pending');
-          final pinSetup = responseEntities.remove('_pin_setup_pending');
-          final receiptCard = responseEntities.remove('_receipt_card_pending');
-          final recipientCard =
-              responseEntities.remove('_recipient_card_pending');
-          final analyticsCard =
-              responseEntities.remove('_analytics_card_pending');
-          final qrCard = responseEntities.remove('_qr_card_pending');
-
-          final messageMetadata = <String, dynamic>{};
+          // New chat protocol — pin_prompt + receipt_card sentinels, drained
+          // through the shared helper so every branch carries the same set.
+          final messageMetadata = _drainSentinelMetadata(responseEntities);
           // Degradation chrome, matching the general chat: the same LLM
           // failure must explain itself here too rather than leaving the
           // fallback sentence looking like an ordinary answer.
@@ -571,38 +519,6 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           }
           if (lastPaymentId != null && lastPaymentId.isNotEmpty) {
             messageMetadata['last_payment_id'] = lastPaymentId;
-          }
-          if (pinPrompt is Map) {
-            messageMetadata['pin_prompt'] =
-                Map<String, dynamic>.from(pinPrompt);
-          }
-          if (pinSetup is Map) {
-            messageMetadata['pin_setup'] = Map<String, dynamic>.from(pinSetup);
-          }
-          if (receiptCard != null) {
-            messageMetadata['receipt_card'] = receiptCard;
-            _invalidateTransferRelatedCaches();
-          }
-          // The confirmed counterparty, as data — same sentinel mechanism as the
-          // receipt card. The direct gRPC path carries no top-level metadata, so
-          // the payload rides in entities and is stripped here so it cannot
-          // re-send on the next turn.
-          if (recipientCard is Map) {
-            messageMetadata['recipient_card'] =
-                Map<String, dynamic>.from(recipientCard);
-          }
-          // Charts for a "how am I doing?" turn — the same sentinel rail
-          // as the receipt card, because this gRPC path carries no
-          // top-level metadata of its own.
-          if (analyticsCard is Map) {
-            messageMetadata['analytics_card'] =
-                Map<String, dynamic>.from(analyticsCard);
-          }
-          // Scannable QR for a payment-request turn. A QR is the one answer
-          // that cannot be delivered as text, and the agent's reply already
-          // says to share it from the card above.
-          if (qrCard is Map) {
-            messageMetadata['qr_card'] = Map<String, dynamic>.from(qrCard);
           }
           // AI "jump to message": the locate tool returns deterministic anchors
           // under the TRANSIENT `_jump_to_messages` key. Remove it (so it never
@@ -722,13 +638,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             _entities = Map<String, dynamic>.from(chatResponse.entities);
             _entities.addAll(_scopeEntities); // keep conversation scope bound
             final receiptData = _entities.remove('_receipt_data');
-            final receiptCard = _entities.remove('_receipt_card_pending');
-            final recipientCard = _entities.remove('_recipient_card_pending');
-            final analyticsCard = _entities.remove('_analytics_card_pending');
-            final qrCard = _entities.remove('_qr_card_pending');
-            final pinPrompt = _entities.remove('_pin_prompt_pending');
-            final pinSetup = _entities.remove('_pin_setup_pending');
-            final messageMetadata = <String, dynamic>{};
+            final messageMetadata = _drainSentinelMetadata(_entities);
             // Degradation chrome, matching the general chat: the same LLM
             // failure must explain itself here too rather than leaving the
             // fallback sentence looking like an ordinary answer.
@@ -738,42 +648,6 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             if (receiptData is Map<String, dynamic>) {
               messageMetadata['receipt_data'] = receiptData;
               _invalidateTransferRelatedCaches();
-            }
-            if (receiptCard != null) {
-              messageMetadata['receipt_card'] = receiptCard;
-              _invalidateTransferRelatedCaches();
-            }
-            // The confirmed counterparty, as data — same sentinel mechanism as the
-            // receipt card. The direct gRPC path carries no top-level metadata, so
-            // the payload rides in entities and is stripped here so it cannot
-            // re-send on the next turn.
-            if (recipientCard is Map) {
-              messageMetadata['recipient_card'] =
-                  Map<String, dynamic>.from(recipientCard);
-            }
-            // Charts for a "how am I doing?" turn — the same sentinel rail
-            // as the receipt card, because this gRPC path carries no
-            // top-level metadata of its own.
-            if (analyticsCard is Map) {
-              messageMetadata['analytics_card'] =
-                  Map<String, dynamic>.from(analyticsCard);
-            }
-            // Scannable QR for a payment-request turn. A QR is the one
-            // answer that cannot be delivered as text, and the agent's reply
-            // already says to share it from the card above.
-            if (qrCard is Map) {
-              messageMetadata['qr_card'] = Map<String, dynamic>.from(qrCard);
-            }
-            if (pinPrompt is Map) {
-              messageMetadata['pin_prompt'] =
-                  Map<String, dynamic>.from(pinPrompt);
-            }
-            // The PIN-setup hand-off rides the same sentinel protocol, so it
-            // lands in message metadata and therefore survives in history —
-            // a card the user scrolls back to still works.
-            if (pinSetup is Map) {
-              messageMetadata['pin_setup'] =
-                  Map<String, dynamic>.from(pinSetup);
             }
             final botMessage = MicroserviceChatMessageEntity(
               text: chatResponse.response,
@@ -815,43 +689,16 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
         (chatResponse) {
           final responseEntities =
               Map<String, dynamic>.from(chatResponse.entities);
-          final receiptCard = responseEntities.remove('_receipt_card_pending');
-          final recipientCard =
-              responseEntities.remove('_recipient_card_pending');
-          final analyticsCard =
-              responseEntities.remove('_analytics_card_pending');
-          final qrCard = responseEntities.remove('_qr_card_pending');
-          final messageMetadata = <String, dynamic>{};
+          // This branch drained four sentinels and NOT `_pin_prompt_pending`
+          // or `_pin_setup_pending`, so a PIN round-trip that came back asking
+          // for another PIN — the next leg of a batch, or a re-ask after a
+          // declined token — showed no sheet and stranded the user mid-flow.
+          final messageMetadata = _drainSentinelMetadata(responseEntities);
           // Degradation chrome, matching the general chat: the same LLM
           // failure must explain itself here too rather than leaving the
           // fallback sentence looking like an ordinary answer.
           if ((chatResponse.llmErrorCode ?? '').isNotEmpty) {
             messageMetadata['llm_error_code'] = chatResponse.llmErrorCode;
-          }
-          if (receiptCard != null) {
-            messageMetadata['receipt_card'] = receiptCard;
-            _invalidateTransferRelatedCaches();
-          }
-          // The confirmed counterparty, as data — same sentinel mechanism as the
-          // receipt card. The direct gRPC path carries no top-level metadata, so
-          // the payload rides in entities and is stripped here so it cannot
-          // re-send on the next turn.
-          if (recipientCard is Map) {
-            messageMetadata['recipient_card'] =
-                Map<String, dynamic>.from(recipientCard);
-          }
-          // Charts for a "how am I doing?" turn — the same sentinel rail
-          // as the receipt card, because this gRPC path carries no
-          // top-level metadata of its own.
-          if (analyticsCard is Map) {
-            messageMetadata['analytics_card'] =
-                Map<String, dynamic>.from(analyticsCard);
-          }
-          // Scannable QR for a payment-request turn. A QR is the one answer
-          // that cannot be delivered as text, and the agent's reply already
-          // says to share it from the card above.
-          if (qrCard is Map) {
-            messageMetadata['qr_card'] = Map<String, dynamic>.from(qrCard);
           }
           final botMessage = MicroserviceChatMessageEntity(
             text: chatResponse.response,
@@ -970,18 +817,31 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           ));
         },
         (chatResponse) {
-          // Extract transient receipt_data (same pattern as sendMessage)
-          final responseEntities =
-              Map<String, dynamic>.from(chatResponse.entities);
-          final receiptData = responseEntities.remove('_receipt_data');
-          final quickActions =
-              (responseEntities.remove('_quick_actions') as List?)
-                  ?.whereType<String>()
-                  .toList(growable: false);
-          final billType = responseEntities['last_bill_type'] as String?;
-          final lastPaymentId = responseEntities['last_payment_id'] as String?;
+          // Mirror sendMessage exactly. This path used to build a LOCAL copy
+          // of the response entities and leave `_entities` untouched, so a
+          // voice note or photo turn dropped the accumulated conversation
+          // state — the recipient and amount the agent had just confirmed
+          // were gone by the next turn.
+          //
+          // REPLACE, not merge — the agent is the source of truth, and it
+          // clears state deliberately after a completed operation.
+          _entities = Map<String, dynamic>.from(chatResponse.entities);
+          // Re-apply the immutable scope: the agent may omit conversation_id /
+          // peer_user_id, but the assistant must stay bound to this
+          // conversation on the next turn.
+          _entities.addAll(_scopeEntities);
 
-          final messageMetadata = <String, dynamic>{};
+          final receiptData = _entities.remove('_receipt_data');
+          final quickActions = (_entities.remove('_quick_actions') as List?)
+              ?.whereType<String>()
+              .toList(growable: false);
+          final billType = _entities['last_bill_type'] as String?;
+          final lastPaymentId = _entities['last_payment_id'] as String?;
+
+          // The protocol sentinels — above all `_pin_prompt_pending`, which
+          // this path dropped entirely, so a media-started money move could
+          // never open the PIN sheet.
+          final messageMetadata = _drainSentinelMetadata(_entities);
           // Degradation chrome, matching the general chat: the same LLM
           // failure must explain itself here too rather than leaving the
           // fallback sentence looking like an ordinary answer.
@@ -1016,6 +876,57 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     } finally {
       _isSending = false;
     }
+  }
+
+  /// Drain the `*_pending` protocol sentinels out of [entities] into message
+  /// metadata, stripping them so the next round-trip cannot re-send them.
+  ///
+  /// WHY THIS IS SHARED — it is a money fix, not a refactor.
+  ///
+  /// `sendMessage` drained all six sentinels; `sendMediaMessage` drained none.
+  /// So a transfer begun with a VOICE NOTE or a PHOTO lost `_pin_prompt_pending`
+  /// and the PIN sheet could never open: the card reads
+  /// `metadata['pin_prompt']`, and with no card in the tree
+  /// `ChatPinPromptCard.autoOpenFor` had nothing to drive. The agent still said
+  /// "enter your PIN to confirm" — the server HAD minted the prompt — so the
+  /// transfer looked stuck while every layer reported success.
+  ///
+  /// Both paths now drain through here, so a sentinel added for one is
+  /// honoured by the other.
+  Map<String, dynamic> _drainSentinelMetadata(Map<String, dynamic> entities) {
+    final out = <String, dynamic>{};
+    final pinPrompt = entities.remove('_pin_prompt_pending');
+    final pinSetup = entities.remove('_pin_setup_pending');
+    final receiptCard = entities.remove('_receipt_card_pending');
+    final recipientCard = entities.remove('_recipient_card_pending');
+    final analyticsCard = entities.remove('_analytics_card_pending');
+    final qrCard = entities.remove('_qr_card_pending');
+
+    if (pinPrompt is Map) {
+      out['pin_prompt'] = Map<String, dynamic>.from(pinPrompt);
+    }
+    // The PIN-setup hand-off rides the same rail, so it lands in message
+    // metadata and therefore survives in history — a card the user scrolls
+    // back to still works.
+    if (pinSetup is Map) {
+      out['pin_setup'] = Map<String, dynamic>.from(pinSetup);
+    }
+    if (receiptCard != null) {
+      out['receipt_card'] = receiptCard;
+      _invalidateTransferRelatedCaches();
+    }
+    if (recipientCard is Map) {
+      out['recipient_card'] = Map<String, dynamic>.from(recipientCard);
+    }
+    if (analyticsCard is Map) {
+      out['analytics_card'] = Map<String, dynamic>.from(analyticsCard);
+    }
+    // A QR is the one answer that cannot be delivered as text, and the
+    // agent's reply already says to share it from the card.
+    if (qrCard is Map) {
+      out['qr_card'] = Map<String, dynamic>.from(qrCard);
+    }
+    return out;
   }
 
   /// Invalidate caches that may be stale after a successful chatbot transfer.

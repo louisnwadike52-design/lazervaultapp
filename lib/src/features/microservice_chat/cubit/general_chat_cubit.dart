@@ -10,6 +10,8 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
+import '../data/datasources/http_general_chat_datasource.dart'
+    show GeneralChatResponse;
 import '../domain/entities/general_chat_message_entity.dart';
 import '../domain/usecases/send_general_chat_message_usecase.dart';
 import '../domain/usecases/load_microservice_chat_history_usecase.dart';
@@ -489,21 +491,11 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
               'message_count': conversationState.messageCount,
               'key_entities': conversationState.keyEntities,
               'isSystemMessage': false,
-              if (response.receiptData != null)
-                'receipt_data': response.receiptData,
-              // Surface the PIN prompt so general_chat_content renders the
-              // transaction PIN bottom sheet (_buildPinPromptCard reads
-              // metadata['pin_prompt']). Without this the general path collected
-              // the prompt server-side but never showed the sheet.
-              if (response.pinPrompt != null) 'pin_prompt': response.pinPrompt,
-              // Surface the ReceiptCard V2 payload (single dict or batch list) so
-              // general_chat_content renders ChatReceiptCardV2 / …List. Without
-              // this the batch flow completed but showed no receipt cards.
-              if (response.receiptCard != null)
-                'receipt_card': response.receiptCard,
-              'recipient_card': response.recipientCard,
-              'analytics_card': response.analyticsCard,
-              'qr_card': response.qrCard,
+              // `pin_prompt` (drives the PIN sheet via _buildPinPromptCard),
+              // `receipt_data`, the ReceiptCard V2 payload for single and
+              // batch receipts, and the recipient / analytics / QR cards.
+              // Shared with the media and PIN-round-trip paths.
+              ..._structuredPayloadMetadata(response),
               // Surface the classified LLM-provider error code (set by
               // chat-agent-gateway's llm_failover module) so the chat content
               // widget can render the downgrade banner + retry CTA. The
@@ -627,13 +619,11 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
             serviceRoutedTo: response.serviceRoutedTo,
             metadata: {
               ...responseMeta,
-              if (response.receiptData != null)
-                'receipt_data': response.receiptData,
-              if (response.receiptCard != null)
-                'receipt_card': response.receiptCard,
-              'recipient_card': response.recipientCard,
-              'analytics_card': response.analyticsCard,
-              'qr_card': response.qrCard,
+              // Includes `pin_prompt`, which this path used to omit. A PIN
+              // round-trip can legitimately return a FRESH prompt — the next
+              // leg of a batch, or a re-ask after a declined token — and
+              // dropping it stranded the user mid-batch with no sheet.
+              ..._structuredPayloadMetadata(response),
             },
           );
           _currentMessages.add(botMessage);
@@ -775,6 +765,13 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
             isUser: false,
             timestamp: DateTime.now(),
             serviceRoutedTo: response.serviceRoutedTo,
+            // A voice note or photo can start a money move exactly like typed
+            // text can, so this turn carries the same structured payloads —
+            // above all `pin_prompt`, without which the PIN sheet cannot open.
+            metadata: {
+              'isSystemMessage': false,
+              ..._structuredPayloadMetadata(response),
+            },
           );
           _currentMessages.add(botMessage);
           emit(GeneralChatSuccess(
@@ -788,6 +785,30 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
       _isSending = false;
     }
   }
+
+  /// The structured payloads a turn can carry, as metadata entries.
+  ///
+  /// WHY THIS IS SHARED — it is a money fix, not a refactor.
+  ///
+  /// The text path spread these inline; [sendMediaMessage] built its bot
+  /// message with NO metadata at all and [submitPinVerification] with a
+  /// partial set. So a transfer started by a VOICE NOTE or a PHOTO lost its
+  /// `pin_prompt`: `general_chat_content._buildPinPromptCard` reads
+  /// `metadata['pin_prompt']`, found nothing, rendered no card — and with no
+  /// card registered, `ChatPinPromptCard.autoOpenFor` had nothing to drive.
+  /// The agent still said "enter your PIN to confirm", so the transfer looked
+  /// stuck while every layer reported success.
+  ///
+  /// Every path now reads this one map, so none of them can support a
+  /// different set of payloads than the others.
+  Map<String, dynamic> _structuredPayloadMetadata(GeneralChatResponse r) => {
+        if (r.receiptData != null) 'receipt_data': r.receiptData,
+        if (r.pinPrompt != null) 'pin_prompt': r.pinPrompt,
+        if (r.receiptCard != null) 'receipt_card': r.receiptCard,
+        'recipient_card': r.recipientCard,
+        'analytics_card': r.analyticsCard,
+        'qr_card': r.qrCard,
+      };
 
   /// Invalidate caches after a successful chatbot transfer (auto-saved recipient).
   void _invalidateTransferRelatedCaches() {

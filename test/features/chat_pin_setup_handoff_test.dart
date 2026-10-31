@@ -47,15 +47,45 @@ void main() {
         reason: 'say so plainly; the user is being asked to leave the chat');
   });
 
-  test('every cubit path strips the sentinel AND sets the metadata', () {
+  test('the sentinel is stripped and set in exactly ONE shared place', () {
+    // The invariant is unchanged — a path that strips the sentinel without
+    // setting the metadata silently swallows the hand-off — but as of
+    // 31 Oct 2026 it is structural rather than counted.
+    //
+    // WHY IT CHANGED: this cubit had five response branches, each
+    // hand-rolling its own sentinel list. Two of them were wrong. The media
+    // branch drained NOTHING, so a money move begun with a voice note or a
+    // photo lost `_pin_prompt_pending` and the PIN pad could never open; one
+    // of the two PIN-round-trip branches drained four sentinels and omitted
+    // pin_prompt and pin_setup, stranding a user mid-batch. The old
+    // strips == sets count passed throughout, because both sides of a
+    // branch that handles neither are zero.
+    //
+    // All branches now route through `_drainSentinelMetadata`, so the count
+    // to assert is ONE: a second strip site means a branch has gone back to
+    // hand-rolling, which is exactly how the two defects above arose.
     final src = stripComments(read(cubit));
-    final strips = RegExp(r"remove\('_pin_setup_pending'\)").allMatches(src).length;
-    final sets = RegExp(r"messageMetadata\['pin_setup'\]").allMatches(src).length;
-    expect(strips, greaterThan(0), reason: 'the sentinel is never read');
+    final strips =
+        RegExp(r"remove\('_pin_setup_pending'\)").allMatches(src).length;
+    expect(strips, 1,
+        reason: 'expected exactly one strip site (the shared drain helper), '
+            'found $strips. More than one means a response branch is '
+            'building its own payload list again and can silently omit a '
+            'sentinel; zero means the sentinel is never read at all.');
+
+    final sets = RegExp(r"out\['pin_setup'\]").allMatches(src).length;
     expect(sets, strips,
-        reason: 'a path that strips the sentinel without setting the metadata '
-            'silently swallows the hand-off: the agent says setup opened and '
-            'nothing opens ($strips strip sites, $sets set sites)');
+        reason: 'the shared helper strips the sentinel but never writes it to '
+            'the metadata it returns, so the hand-off is swallowed for every '
+            'path at once ($strips strip sites, $sets set sites)');
+
+    // And the helper every branch must go through, by name.
+    final drains =
+        RegExp(r'_drainSentinelMetadata\(').allMatches(src).length;
+    expect(drains, greaterThanOrEqualTo(6),
+        reason: 'expected the declaration plus one call per response branch '
+            '(five at the time of writing); found $drains. A branch that '
+            'stopped calling it carries no pin_setup and no pin_prompt.');
   });
 
   test('both chat surfaces render it', () {

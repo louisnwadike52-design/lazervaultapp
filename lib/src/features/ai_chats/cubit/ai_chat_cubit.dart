@@ -10,6 +10,37 @@ import '../domain/usecases/get_ai_chat_history_usecase.dart';
 import './ai_chat_state.dart';
 import '../domain/entities/ai_chat_message_entity.dart';
 
+/// The structured payloads one assistant turn can carry alongside its text.
+///
+/// A plain value holder so [AIChatCubit._decodeStructuredPayloads] can return
+/// all of them together and every send path builds its message from the same
+/// set. See that method for why this is a correctness fixture rather than a
+/// convenience.
+class _StructuredChatPayloads {
+  const _StructuredChatPayloads({
+    this.receiptData,
+    this.pinPrompt,
+    this.receiptCard,
+    this.qrCard,
+    this.recipientCard,
+    this.analyticsCard,
+    this.serverMessageId,
+  });
+
+  final Map<String, dynamic>? receiptData;
+
+  /// Drives `ChatPinPromptCard`, and through it the native PIN sheet. The one
+  /// payload on this class whose loss costs the user a transaction.
+  final Map<String, dynamic>? pinPrompt;
+
+  /// Map for a single receipt, List for a batch — hence `dynamic`.
+  final dynamic receiptCard;
+  final Map<String, dynamic>? qrCard;
+  final Map<String, dynamic>? recipientCard;
+  final Map<String, dynamic>? analyticsCard;
+  final int? serverMessageId;
+}
+
 class AIChatCubit extends Cubit<AIChatState> {
   final ProcessChatUseCase _processChatUseCase;
   final GetAIChatHistoryUseCase _getAIChatHistoryUseCase;
@@ -92,6 +123,63 @@ class AIChatCubit extends Cubit<AIChatState> {
     }
     entitiesMap.remove('_analytics_card');
     return decoded is Map ? Map<String, dynamic>.from(decoded) : null;
+  }
+
+  /// Decode EVERY structured payload a chat turn can carry, in one place.
+  ///
+  /// WHY THIS EXISTS — a money bug, not a tidy-up.
+  ///
+  /// `sendMessage` decoded all seven of these; `sendMediaMessage` decoded two
+  /// (`_receipt_data` + `_receipt_card`) and silently dropped the rest. The
+  /// casualty that mattered was `_pin_prompt`: a money move started by a VOICE
+  /// NOTE or an IMAGE got an assistant message with `pinPrompt == null`, so
+  /// `ChatPinPromptCard` was never built, so `ChatPinAutoOpener` found no
+  /// prompt to open and `autoOpenFor` had no registered card to drive. The
+  /// agent still SAID "enter your PIN to confirm" — the server had minted the
+  /// prompt correctly and logged `_pin_prompt_pending` — so the transfer looked
+  /// stuck with no error anywhere. Every layer reported success.
+  ///
+  /// The two paths now share one decoder, so a payload added to one is
+  /// available to both and they cannot drift apart again.
+  ///
+  /// MUTATES [entitiesMap]: each `_`-prefixed key is REMOVED as it is decoded,
+  /// which is what keeps the passthrough plumbing out of the entities the UI
+  /// displays. Callers pass a copy, never the proto's own map.
+  _StructuredChatPayloads _decodeStructuredPayloads(
+    Map<String, String>? entitiesMap,
+  ) {
+    Map<String, dynamic>? receiptData;
+    if (entitiesMap != null && entitiesMap.containsKey('_receipt_data')) {
+      try {
+        receiptData =
+            jsonDecode(entitiesMap['_receipt_data']!) as Map<String, dynamic>;
+      } catch (_) {
+        // Malformed receipt data must not cost the user the rest of the
+        // turn — in particular not the pin_prompt decoded below.
+      }
+      entitiesMap.remove('_receipt_data');
+    }
+
+    Map<String, dynamic>? pinPrompt;
+    if (entitiesMap != null && entitiesMap.containsKey('_pin_prompt')) {
+      try {
+        pinPrompt =
+            jsonDecode(entitiesMap['_pin_prompt']!) as Map<String, dynamic>;
+      } catch (_) {
+        // Ignore malformed pin prompt
+      }
+      entitiesMap.remove('_pin_prompt');
+    }
+
+    return _StructuredChatPayloads(
+      receiptData: receiptData,
+      pinPrompt: pinPrompt,
+      receiptCard: _decodeReceiptCard(entitiesMap),
+      qrCard: _decodeQrCard(entitiesMap),
+      recipientCard: _decodeRecipientCard(entitiesMap),
+      analyticsCard: _decodeAnalyticsCard(entitiesMap),
+      serverMessageId: _decodeMessageId(entitiesMap),
+    );
   }
 
   // Internal state to hold the current messages
@@ -384,41 +472,13 @@ class AIChatCubit extends Cubit<AIChatState> {
             _sessionId = response.sessionId;
           }
 
-          // Extract receipt_data from entities (passed as JSON string via _receipt_data key)
-          Map<String, dynamic>? receiptData;
+          // Every structured payload this turn carries, decoded in one place
+          // and shared with sendMediaMessage so the text path and the
+          // voice/image path cannot support different ones.
           final entitiesMap = response.entities.isNotEmpty
               ? Map<String, String>.from(response.entities)
               : null;
-          if (entitiesMap != null && entitiesMap.containsKey('_receipt_data')) {
-            try {
-              receiptData = jsonDecode(entitiesMap['_receipt_data']!)
-                  as Map<String, dynamic>;
-            } catch (_) {
-              // Ignore malformed receipt data
-            }
-            entitiesMap.remove('_receipt_data');
-          }
-
-          // Extract pin_prompt the same way (drives the inline ChatPinPromptCard
-          // so a chat-driven money move collects the PIN in the thread).
-          Map<String, dynamic>? pinPrompt;
-          if (entitiesMap != null && entitiesMap.containsKey('_pin_prompt')) {
-            try {
-              pinPrompt = jsonDecode(entitiesMap['_pin_prompt']!)
-                  as Map<String, dynamic>;
-            } catch (_) {
-              // Ignore malformed pin prompt
-            }
-            entitiesMap.remove('_pin_prompt');
-          }
-
-          // Extract receipt_card (single dict or list for a batch) — drives the
-          // ChatReceiptCardV2 / ChatReceiptCardV2List so batch receipts render.
-          final dynamic receiptCard = _decodeReceiptCard(entitiesMap);
-          final qrCard = _decodeQrCard(entitiesMap);
-          final recipientCard = _decodeRecipientCard(entitiesMap);
-          final analyticsCard = _decodeAnalyticsCard(entitiesMap);
-          final serverMessageId = _decodeMessageId(entitiesMap);
+          final payloads = _decodeStructuredPayloads(entitiesMap);
 
           final aiMessageEntity = ChatMessageEntity(
             text: response.response,
@@ -437,13 +497,13 @@ class AIChatCubit extends Cubit<AIChatState> {
                 : null,
             sessionId:
                 response.sessionId.isNotEmpty ? response.sessionId : null,
-            receiptData: receiptData,
-            receiptCard: receiptCard,
-            qrCard: qrCard,
-            recipientCard: recipientCard,
-            analyticsCard: analyticsCard,
-            serverMessageId: serverMessageId,
-            pinPrompt: pinPrompt,
+            receiptData: payloads.receiptData,
+            receiptCard: payloads.receiptCard,
+            qrCard: payloads.qrCard,
+            recipientCard: payloads.recipientCard,
+            analyticsCard: payloads.analyticsCard,
+            serverMessageId: payloads.serverMessageId,
+            pinPrompt: payloads.pinPrompt,
           );
           _currentMessages.add(aiMessageEntity);
           emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
@@ -512,26 +572,11 @@ class AIChatCubit extends Cubit<AIChatState> {
         final entitiesMap = response.entities.isNotEmpty
             ? Map<String, String>.from(response.entities)
             : null;
-        Map<String, dynamic>? receiptData;
-        if (entitiesMap != null && entitiesMap.containsKey('_receipt_data')) {
-          try {
-            receiptData = jsonDecode(entitiesMap['_receipt_data']!)
-                as Map<String, dynamic>;
-          } catch (_) {}
-          entitiesMap.remove('_receipt_data');
-        }
-        Map<String, dynamic>? pinPrompt;
-        if (entitiesMap != null && entitiesMap.containsKey('_pin_prompt')) {
-          try {
-            pinPrompt =
-                jsonDecode(entitiesMap['_pin_prompt']!) as Map<String, dynamic>;
-          } catch (_) {}
-          entitiesMap.remove('_pin_prompt');
-        }
-        final dynamic receiptCard = _decodeReceiptCard(entitiesMap);
-        final qrCard = _decodeQrCard(entitiesMap);
-        final recipientCard = _decodeRecipientCard(entitiesMap);
-        final analyticsCard = _decodeAnalyticsCard(entitiesMap);
+        // Same decoder as the text and media paths. A PIN round-trip can
+        // itself return a fresh pin_prompt — a second leg of a batch, or a
+        // re-ask after a declined token — so this path needs every payload
+        // too, not a subset.
+        final payloads = _decodeStructuredPayloads(entitiesMap);
         _currentMessages.add(ChatMessageEntity(
           text: response.response,
           isUser: false,
@@ -544,12 +589,13 @@ class AIChatCubit extends Cubit<AIChatState> {
               ? response.conversationState
               : null,
           sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
-          receiptData: receiptData,
-          receiptCard: receiptCard,
-          qrCard: qrCard,
-          recipientCard: recipientCard,
-          analyticsCard: analyticsCard,
-          pinPrompt: pinPrompt,
+          receiptData: payloads.receiptData,
+          receiptCard: payloads.receiptCard,
+          qrCard: payloads.qrCard,
+          recipientCard: payloads.recipientCard,
+          analyticsCard: payloads.analyticsCard,
+          serverMessageId: payloads.serverMessageId,
+          pinPrompt: payloads.pinPrompt,
         ));
         emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
       },
@@ -653,25 +699,36 @@ class AIChatCubit extends Cubit<AIChatState> {
             _sessionId = response.sessionId;
           }
 
-          // Extract receipt_data for media responses too
-          Map<String, dynamic>? mediaReceiptData;
-          if (response.entities.containsKey('_receipt_data')) {
-            try {
-              mediaReceiptData = jsonDecode(response.entities['_receipt_data']!)
-                  as Map<String, dynamic>;
-            } catch (_) {}
-          }
-          final dynamic mediaReceiptCard =
-              _decodeReceiptCard(Map<String, String>.from(response.entities));
+          // The SAME decoder the text path uses. This path used to decode only
+          // _receipt_data and _receipt_card, which meant a transfer started by
+          // a voice note or a photo lost its pin_prompt and the PIN sheet
+          // could never open — see _decodeStructuredPayloads.
+          final mediaEntities = response.entities.isNotEmpty
+              ? Map<String, String>.from(response.entities)
+              : null;
+          final payloads = _decodeStructuredPayloads(mediaEntities);
 
           final aiMessage = ChatMessageEntity(
             text: response.response,
             isUser: false,
             timestamp: DateTime.now(),
+            intent: response.intent.isNotEmpty ? response.intent : null,
+            entities: mediaEntities != null && mediaEntities.isNotEmpty
+                ? mediaEntities
+                : null,
+            requiresConfirmation: response.requiresConfirmation,
+            conversationState: response.conversationState.isNotEmpty
+                ? response.conversationState
+                : null,
             sessionId:
                 response.sessionId.isNotEmpty ? response.sessionId : null,
-            receiptData: mediaReceiptData,
-            receiptCard: mediaReceiptCard,
+            receiptData: payloads.receiptData,
+            receiptCard: payloads.receiptCard,
+            qrCard: payloads.qrCard,
+            recipientCard: payloads.recipientCard,
+            analyticsCard: payloads.analyticsCard,
+            serverMessageId: payloads.serverMessageId,
+            pinPrompt: payloads.pinPrompt,
           );
           _currentMessages.add(aiMessage);
           emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
