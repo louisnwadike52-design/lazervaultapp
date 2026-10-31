@@ -278,13 +278,50 @@ class _AppStartupGateState extends State<AppStartupGate>
           final should =
               await service.shouldShowOptionalModal(info.latestBuild);
           if (should && mounted) {
-            await service.markOptionalModalSeen(info.latestBuild);
-            if (mounted) {
+            // Get.context, NOT this widget's context.
+            //
+            // THIS IS WHY THE SHEET ONLY EVER APPEARED AFTER LOGIN. The gate
+            // is built inside GetMaterialApp.builder, which wraps the
+            // Navigator — so its own context sits ABOVE the Navigator, and
+            // showModalBottomSheet(context: thatContext) cannot find one and
+            // throws. The throw landed in _run's catch-all, so nothing was
+            // logged and nothing appeared; the dashboard's own AppUpdateCubit
+            // then showed the sheet post-login with a real route context, and
+            // the prompt looked login-gated when it was simply broken here.
+            //
+            // Get.context is the Navigator's context (the same handle
+            // ImpersonationBannerHost uses a few lines up in main.dart), so
+            // the sheet renders over whatever route is on screen — including
+            // sign-in and sign-up, which is where someone on an unsupported
+            // build most needs to be told.
+            final navCtx = Get.context;
+            // `mounted` on the CONTEXT, not on this State: the context being
+            // used belongs to the Navigator, and it is the one that can go
+            // away across the awaits above (a route teardown, a logout).
+            if (navCtx == null || !navCtx.mounted) {
+              // No Navigator yet (very first frames). Leave the prompt
+              // UNSEEN so the 10s pre-login poll retries, rather than
+              // consuming it.
+              debugPrint('[startup-gate] update sheet deferred: no live '
+                  'Navigator context yet');
+              return;
+            }
+            try {
               await showUpdateModal(
-                context,
+                navCtx,
                 info: info,
                 onUpdate: () => service.openStore(info),
               );
+              // MARKED ONLY AFTER IT ACTUALLY SHOWED.
+              //
+              // This used to be marked BEFORE the call, so the throw above
+              // consumed the one-time prompt for that build: the gate recorded
+              // it as seen, the sheet never rendered, and the dashboard's
+              // later check correctly declined to show it again. A prompt that
+              // fails to appear must stay owed, not be spent.
+              await service.markOptionalModalSeen(info.latestBuild);
+            } catch (e) {
+              debugPrint('[startup-gate] update sheet failed to show: $e');
             }
           }
         }

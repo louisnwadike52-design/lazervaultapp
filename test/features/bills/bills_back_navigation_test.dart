@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/src/features/bills/presentation/utils/bills_back_navigation.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Backing out of a utility landing screen must return the user to WHERE THEY
 /// CAME FROM. Both entry points — the Bills Hub tile and the dashboard
@@ -12,6 +12,13 @@ import 'package:lazervault/src/features/bills/presentation/utils/bills_back_navi
 /// user who opened Airtime from the dashboard pressed back and arrived in
 /// Bills Hub, a screen they had never visited, with the rest of their stack
 /// discarded.
+// MOVED 31 Oct 2026: `bills/presentation/utils/bills_back_navigation.dart` was
+// one of two copies of this helper. They were merged into
+// `core/navigation/back_or_home.dart` and renamed to the service-neutral
+// `popServiceLandingScreen` / `onServiceLandingPopInvoked`, because the same
+// back behaviour is wanted by every service landing screen, not just Bills.
+// This test kept its Bills-shaped scenario deliberately — that is the stack
+// the original bug was reported against.
 void main() {
   Widget harness() => GetMaterialApp(
         initialRoute: '/dashboard',
@@ -25,7 +32,7 @@ void main() {
               body: Column(children: [
                 const Text('AIRTIME'),
                 TextButton(
-                  onPressed: popBillsLandingScreen,
+                  onPressed: popServiceLandingScreen,
                   child: const Text('back'),
                 ),
               ]),
@@ -80,7 +87,7 @@ void main() {
           name: AppRoutes.airtime,
           page: () => Scaffold(
             body: TextButton(
-              onPressed: popBillsLandingScreen,
+              onPressed: popServiceLandingScreen,
               child: const Text('back'),
             ),
           ),
@@ -107,7 +114,7 @@ void main() {
 
     // didPop == true means the framework already popped. Acting again would
     // take the user off a screen they never asked to leave.
-    onBillsLandingPopInvoked(true);
+    onServiceLandingPopInvoked(true);
     await t.pumpAndSettle();
 
     expect(find.text('AIRTIME'), findsOneWidget,
