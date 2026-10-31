@@ -17,6 +17,7 @@ import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../widgets/electricity_history_actions_sheet.dart';
 import '../widgets/electricity_quick_buy.dart';
+import 'package:lazervault/src/features/bills/presentation/utils/bills_back_navigation.dart';
 
 class ElectricityBillHomeScreen extends StatefulWidget {
   const ElectricityBillHomeScreen({super.key});
@@ -267,7 +268,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.offAllNamed(AppRoutes.billsHub),
+            onTap: popBillsLandingScreen,
             child: Container(
               width: 36.w,
               height: 36.w,

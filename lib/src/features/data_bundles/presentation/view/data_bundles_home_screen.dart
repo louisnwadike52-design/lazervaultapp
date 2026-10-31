@@ -10,6 +10,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../widgets/data_recent_purchases_card.dart';
 import '../widgets/data_quick_buy.dart';
+import 'package:lazervault/src/features/bills/presentation/utils/bills_back_navigation.dart';
 part 'data_bundles_home_screen_widgets.dart';
 
 /// Two-tab landing for data bundles mirroring the airtime landing page:
@@ -157,7 +158,7 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.offAllNamed(AppRoutes.billsHub),
+            onTap: popBillsLandingScreen,
             child: Container(
               width: 40.w,
               height: 40.w,

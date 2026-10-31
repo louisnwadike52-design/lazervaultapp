@@ -8,6 +8,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../widgets/cable_tv_recent_transactions_card.dart';
 import '../widgets/cable_tv_quick_buy.dart';
+import 'package:lazervault/src/features/bills/presentation/utils/bills_back_navigation.dart';
 
 /// Cable TV landing. Same shape as the other utility landings:
 ///   * Quick-access row: Saved / Auto-Renew / Reminders
@@ -38,7 +39,7 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Get.offAllNamed(AppRoutes.billsHub);
+        onBillsLandingPopInvoked(didPop);
       },
       child: Scaffold(
         backgroundColor: _bg,
@@ -46,7 +47,7 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
+            onPressed: popBillsLandingScreen,
             icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
           ),
           title: Text(

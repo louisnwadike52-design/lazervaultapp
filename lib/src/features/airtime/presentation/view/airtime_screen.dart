@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import '../cubit/airtime_cubit.dart';
 import '../widgets/airtime_quick_buy.dart';
 import '../widgets/recent_transactions_card.dart';
+import 'package:lazervault/src/features/bills/presentation/utils/bills_back_navigation.dart';
 
 /// Airtime landing page.
 ///
@@ -663,7 +664,7 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.offAllNamed(AppRoutes.billsHub),
+            onTap: popBillsLandingScreen,
             child: Container(
               width: 40.w,
               height: 40.w,
