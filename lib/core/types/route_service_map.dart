@@ -82,3 +82,46 @@ AppServiceName? serviceForRoute(String? route) {
   if (route == null || route.isEmpty) return null;
   return kRouteToService[route];
 }
+
+/// The route that opens a service, or null when the service has no named
+/// route of its own.
+///
+/// The inverse of [kRouteToService], built once and cached. It exists for
+/// PROMOTIONAL DEEP LINKS: a campaign names a service
+/// (`lazervault://n/promo?service=airtime`) rather than a route, because a
+/// marketing payload should not have to know the app's internal route names,
+/// and a route rename would otherwise silently break every link already sent
+/// to a handset.
+///
+/// Deriving it from the same map the availability gate uses means a promo
+/// link cannot point somewhere the gate does not know about — the two cannot
+/// disagree about what a service is.
+///
+/// An ALIAS resolves to its owner's route: a link naming `payInvoice` opens
+/// the consolidated invoice screen, which is the screen it has always meant.
+final Map<AppServiceName, String> kServiceToRoute = () {
+  final out = <AppServiceName, String>{};
+  kRouteToService.forEach((route, service) => out[service] = route);
+  kServiceRouteAliases.forEach((alias, owner) {
+    final r = out[owner];
+    if (r != null) out[alias] = r;
+  });
+  return Map<AppServiceName, String>.unmodifiable(out);
+}();
+
+/// Resolves a service NAME as a campaign would send it ("airtime",
+/// "giftCards", "gift_cards") to the route that opens it.
+///
+/// Tolerant of spelling on purpose. The name is typed by an operator into a
+/// campaign form, and refusing "gift_cards" because the enum says
+/// "giftCards" would turn a typo into a dead link on every handset that
+/// received the push — discovered, if at all, from a support ticket.
+String? routeForServiceName(String? raw) {
+  final want =
+      (raw ?? '').trim().toLowerCase().replaceAll(RegExp(r'[_\s-]'), '');
+  if (want.isEmpty) return null;
+  for (final entry in kServiceToRoute.entries) {
+    if (entry.key.name.toLowerCase() == want) return entry.value;
+  }
+  return null;
+}

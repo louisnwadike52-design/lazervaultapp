@@ -1,6 +1,8 @@
 import 'package:lazervault/core/notifications/notification_target.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+// routeForServiceName: promotional links name a SERVICE, not a route.
+import 'package:lazervault/core/types/route_service_map.dart';
 // TransactionServiceType lives in unified_transaction_widgets.dart, which is a
 // `part of` this library — import the parent, not the part.
 import 'package:lazervault/core/types/unified_transaction.dart';
@@ -9,6 +11,7 @@ part 'resolver_money.dart';
 part 'resolver_commerce.dart';
 part 'resolver_social.dart';
 part 'resolver_account.dart';
+part 'resolver_promo.dart';
 
 /// Turns a notification's `(type, data)` into the page it is about.
 ///
@@ -63,7 +66,12 @@ class NotificationRouteResolver {
       return _resolveMoney(type, data) ??
           _resolveCommerce(type, data) ??
           _resolveSocial(type, data) ??
-          _resolveAccount(type, data);
+          _resolveAccount(type, data) ??
+          // LAST, deliberately. _resolvePromo answers for its own types only,
+          // but its final branch returns the feed rather than null — put it
+          // earlier and that catch-all would shadow a real event type that a
+          // later part file would have resolved exactly.
+          _resolvePromo(type, data);
     } catch (_) {
       return null;
     }
