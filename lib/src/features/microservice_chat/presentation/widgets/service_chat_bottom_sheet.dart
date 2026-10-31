@@ -914,6 +914,13 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
                     _messageController.text = 'change recipient';
                     _sendMessage();
                   },
+                  // Tap-to-pick on a multi-match recipient search. Goes out
+                  // through the same controller+send path a typed reply uses,
+                  // so the agent cannot tell a tap from a typed answer.
+                  onSelectCandidate: (pick) {
+                    _messageController.text = pick;
+                    _sendMessage();
+                  },
                 ),
                 SizedBox(height: 4.h),
                 Text(

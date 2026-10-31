@@ -41,6 +41,7 @@ class ChatStructuredPayloads extends StatelessWidget {
     required this.onPinCancelled,
     required this.onPinVerified,
     required this.onChangeRecipient,
+    this.onSelectCandidate,
   });
 
   final Map<String, dynamic>? metadata;
@@ -58,6 +59,11 @@ class ChatStructuredPayloads extends StatelessWidget {
   ) onPinVerified;
 
   final VoidCallback onChangeRecipient;
+
+  /// Send a recipient pick back on the chat's text channel. Nullable because
+  /// a surface that cannot send text (a read-only transcript) must still be
+  /// able to render the list, just without tappable rows.
+  final void Function(String pick)? onSelectCandidate;
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +105,15 @@ class ChatStructuredPayloads extends StatelessWidget {
       children.add(ChatRecipientCard(
         data: Map<String, dynamic>.from(md['recipient_card'] as Map),
         onChangeRecipient: onChangeRecipient,
+        // Threaded from the caller so the per-service chat can send the pick
+        // on its own text channel, same as the other two surfaces.
+        onSelectCandidate: onSelectCandidate == null
+            ? null
+            : (index, username, displayName) => onSelectCandidate!(
+                  username.isNotEmpty
+                      ? '@$username'
+                      : (displayName.isNotEmpty ? displayName : '$index'),
+                ),
       ));
     }
 

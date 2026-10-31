@@ -36,6 +36,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/microservice_chat/data/datasources/chat_feedback_datasource.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_response_actions.dart';
+import 'package:lazervault/core/services/chat_theme_preference.dart';
 
 class GeneralChatContent extends StatefulWidget {
   const GeneralChatContent({super.key});
@@ -553,15 +554,18 @@ class _GeneralChatContentState extends State<GeneralChatContent>
             autofocus: true,
             maxLength: 60,
             style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
+            // Not const: the focused border reads the chat accent, which is a
+            // runtime preference.
+            decoration: InputDecoration(
               hintText: 'Chat title',
-              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
-              counterStyle: TextStyle(color: Color(0xFF9CA3AF)),
-              enabledBorder: UnderlineInputBorder(
+              hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+              counterStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+              enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Color(0xFF2D2D2D)),
               ),
               focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF7C3AED)),
+                borderSide:
+                    BorderSide(color: ChatThemePreference.accent.primary),
               ),
             ),
           ),
@@ -573,8 +577,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
             ),
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-              child: const Text('Save',
-                  style: TextStyle(color: Color(0xFF7C3AED))),
+              child: Text('Save',
+                  style: TextStyle(color: ChatThemePreference.accent.primary)),
             ),
           ],
         );
@@ -845,8 +849,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           icon: const Icon(Icons.my_location_rounded, size: 16),
           label: Text(label),
           style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF7C3AED),
-            side: const BorderSide(color: Color(0xFF7C3AED)),
+            foregroundColor: ChatThemePreference.accent.primary,
+            side: BorderSide(color: ChatThemePreference.accent.primary),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -1077,6 +1081,17 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                         message.metadata!['recipient_card'] as Map,
                       ),
                       onChangeRecipient: () => _sendText('change recipient'),
+                      // Tapping a candidate sends the pick as ordinary
+                      // text; select_recipient resolves name/number/position.
+                      // The @username is preferred because two people in one
+                      // list can share a display name — which is why the list
+                      // is on screen at all.
+                      onSelectCandidate: (index, username, displayName) =>
+                          _sendText(username.isNotEmpty
+                              ? '@$username'
+                              : (displayName.isNotEmpty
+                                  ? displayName
+                                  : '$index')),
                     ),
                   // PinPromptIntent — money-moving tools emit this when
                   // they need a PIN. The card opens the native

@@ -31,7 +31,19 @@ class ChatRecipientCard extends StatelessWidget {
     super.key,
     required this.data,
     this.onChangeRecipient,
+    this.onSelectCandidate,
   });
+
+  /// Whether this payload is a PICK-ONE list rather than one confirmed
+  /// recipient. Set by `attach_recipient_candidates` server-side.
+  bool get isCandidateList => data['candidates'] is List;
+
+  /// Invoked with a candidate's 1-based index and username when the user taps
+  /// a row in list mode. The caller sends it back through the ordinary text
+  /// channel, which the agent's `select_recipient` already resolves by name,
+  /// number or position — so a tap and "the second one" travel one path.
+  final void Function(int index, String username, String displayName)?
+      onSelectCandidate;
 
   /// The `recipient_card` payload, decoded.
   final Map<String, dynamic> data;
@@ -80,6 +92,14 @@ class ChatRecipientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A multi-match search ends in the user choosing, and that is a different
+    // widget from "here is who you are paying" — see ChatRecipientCandidates.
+    if (isCandidateList) {
+      return ChatRecipientCandidates(
+        data: data,
+        onSelect: onSelectCandidate,
+      );
+    }
     final subtitle = _subtitle;
     return Container(
       margin: EdgeInsets.only(top: 8.h, bottom: 4.h),
@@ -258,6 +278,198 @@ class ChatRecipientCard extends StatelessWidget {
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
       ),
+    );
+  }
+}
+
+/// A PICK-ONE list of possible recipients, rendered as tappable rows.
+///
+/// WHY THIS EXISTS
+/// ---------------
+/// A name search that matches several people ends in the user choosing. That
+/// choice used to be offered as markdown — the agent wrote "1. @wanne_e —
+/// Emmanuella Wanne" into its reply and waited for a typed answer. The
+/// structured list was emitted all along (`_visual_feedback` with
+/// `user_search_results`) but nothing rendered it: grep for that key across
+/// the app returns nothing, and the voice socket has no candidates event. So
+/// the one moment where picking the wrong row sends money to a stranger was
+/// the moment with no UI at all.
+///
+/// Each row carries the avatar, the name and the handle, because those are
+/// what distinguish two people with the same first name — which is the whole
+/// reason a list is being shown.
+class ChatRecipientCandidates extends StatelessWidget {
+  const ChatRecipientCandidates({super.key, required this.data, this.onSelect});
+
+  final Map<String, dynamic> data;
+  final void Function(int index, String username, String displayName)? onSelect;
+
+  static const Color _purple = Color(0xFF4E03D0);
+
+  List<Map<String, dynamic>> get _candidates {
+    final raw = data['candidates'];
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+  }
+
+  String get _query => (data['query'] ?? '').toString().trim();
+
+  /// How many matched in total, which can exceed the rows shown.
+  int get _total {
+    final t = data['total'];
+    if (t is int) return t;
+    return int.tryParse(t?.toString() ?? '') ?? _candidates.length;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = _candidates;
+    // An empty list must render nothing rather than an empty framed box that
+    // looks like a failed load.
+    if (items.isEmpty) return const SizedBox.shrink();
+    final hidden = _total - items.length;
+
+    return Container(
+      margin: EdgeInsets.only(top: 8.h, bottom: 4.h),
+      decoration: BoxDecoration(
+        color: _purple.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: _purple.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 8.h),
+            child: Row(
+              children: [
+                Icon(Icons.people_alt_rounded,
+                    size: 15.sp, color: Colors.white.withValues(alpha: 0.8)),
+                SizedBox(width: 7.w),
+                Expanded(
+                  child: Text(
+                    _query.isEmpty
+                        ? 'Who did you mean?'
+                        : '$_total matched "$_query" — who did you mean?',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          for (final c in items) _row(c),
+          if (hidden > 0)
+            Padding(
+              padding: EdgeInsets.fromLTRB(14.w, 2.h, 14.w, 10.h),
+              child: Text(
+                // Said plainly rather than silently truncating: someone whose
+                // person is not listed needs to know to narrow the search
+                // rather than assume they are absent from the platform.
+                '$hidden more match. Add a surname or use their @username to '
+                'narrow it down.',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 10.5.sp,
+                ),
+              ),
+            )
+          else
+            SizedBox(height: 6.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(Map<String, dynamic> c) {
+    final index = c['index'] is int
+        ? c['index'] as int
+        : int.tryParse(c['index']?.toString() ?? '') ?? 0;
+    final name = (c['display_name'] ?? '').toString().trim();
+    final username = (c['username'] ?? '').toString().trim();
+    final avatar = (c['avatar_url'] ?? '').toString().trim();
+    // Never an empty row: a candidate with neither name nor handle would be
+    // untappable and unexplainable, so the handle stands in and vice versa.
+    final title = name.isNotEmpty ? name : (username.isEmpty ? 'Recipient' : '@$username');
+    final subtitle = name.isNotEmpty && username.isNotEmpty ? '@$username' : '';
+
+    return InkWell(
+      onTap: onSelect == null ? null : () => onSelect!(index, username, name),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+        child: Row(
+          children: [
+            _avatar(avatar, title),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (subtitle.isNotEmpty)
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.65),
+                        fontSize: 11.sp,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                size: 18.sp, color: Colors.white.withValues(alpha: 0.5)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _avatar(String url, String title) {
+    final initial = title.replaceAll('@', '').trim();
+    final letter = initial.isEmpty ? '?' : initial[0].toUpperCase();
+    return Container(
+      width: 34.w,
+      height: 34.w,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: _purple.withValues(alpha: 0.35),
+        image: url.isEmpty
+            ? null
+            : DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
+      ),
+      child: url.isEmpty
+          ? Center(
+              child: Text(
+                letter,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

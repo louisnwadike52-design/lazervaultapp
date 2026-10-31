@@ -64,6 +64,19 @@ class AiChatContent extends StatefulWidget {
   State<AiChatContent> createState() => _AiChatContentState();
 }
 
+/// Gap between the input bar and the on-screen keyboard.
+///
+/// Small on purpose: the keyboard is a hard edge the user is already looking
+/// at, so this only has to stop the send button touching the top key row.
+const double _kKeyboardGap = 6;
+
+/// Gap between the input bar and the app's curved bottom navigation.
+///
+/// Larger than the keyboard gap because the nav bar is a tappable strip: with
+/// no gap the two controls read as one block and a thumb aiming for Send can
+/// catch a nav destination instead.
+const double _kBottomNavGap = 10;
+
 class _AiChatContentState extends State<AiChatContent>
     with TickerProviderStateMixin {
   // --- State variables ---
@@ -615,8 +628,8 @@ class _AiChatContentState extends State<AiChatContent>
                         padding: EdgeInsets.all(12.w),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(colors: [
-                            InvoiceThemeColors.primaryPurple,
-                            InvoiceThemeColors.gradientPurple,
+                            _accent.primary,
+                            _accent.secondary,
                           ]),
                           shape: BoxShape.circle,
                         ),
@@ -761,7 +774,7 @@ class _AiChatContentState extends State<AiChatContent>
             _buildOptionTile(
               'Export Chat',
               Icons.download_rounded,
-              InvoiceThemeColors.primaryPurple,
+              _accent.primary,
               () {
                 Get.back();
                 _showExportFormatSheet();
@@ -770,7 +783,7 @@ class _AiChatContentState extends State<AiChatContent>
             _buildOptionTile(
               'AI Settings',
               Icons.tune_rounded,
-              InvoiceThemeColors.primaryPurple,
+              _accent.primary,
               () {
                 Get.back();
                 _showAiSettingsModal();
@@ -855,7 +868,7 @@ class _AiChatContentState extends State<AiChatContent>
     Widget tile(String label, String sub, IconData icon, ChatExportFormat fmt) {
       return ListTile(
         leading:
-            Icon(icon, color: InvoiceThemeColors.primaryPurple, size: 22.sp),
+            Icon(icon, color: _accent.primary, size: 22.sp),
         title: Text(label,
             style: TextStyle(
                 color: Colors.white,
@@ -1096,7 +1109,7 @@ class _AiChatContentState extends State<AiChatContent>
                     child: Row(
                       children: [
                         Icon(Icons.tune_rounded,
-                            color: InvoiceThemeColors.primaryPurple,
+                            color: _accent.primary,
                             size: 22.sp),
                         SizedBox(width: 10.w),
                         Text('AI Settings',
@@ -1280,7 +1293,7 @@ class _AiChatContentState extends State<AiChatContent>
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: InvoiceThemeColors.primaryPurple,
+                          backgroundColor: _accent.primary,
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           shape: RoundedRectangleBorder(
@@ -1355,12 +1368,12 @@ class _AiChatContentState extends State<AiChatContent>
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
             decoration: BoxDecoration(
               color: isActive
-                  ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15)
+                  ? _accent.primary.withValues(alpha: 0.15)
                   : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(10.r),
               border: Border.all(
                 color: isActive
-                    ? InvoiceThemeColors.primaryPurple
+                    ? _accent.primary
                     : Colors.white.withValues(alpha: 0.1),
                 width: isActive ? 1.5 : 1,
               ),
@@ -1371,14 +1384,14 @@ class _AiChatContentState extends State<AiChatContent>
                 Icon(icons[i],
                     size: 16.sp,
                     color: isActive
-                        ? InvoiceThemeColors.primaryPurple
+                        ? _accent.primary
                         : Colors.white54),
                 SizedBox(width: 6.w),
                 Text(
                   labels[i],
                   style: TextStyle(
                     color: isActive
-                        ? InvoiceThemeColors.primaryPurple
+                        ? _accent.primary
                         : Colors.white70,
                     fontSize: 13.sp,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
@@ -1413,7 +1426,7 @@ class _AiChatContentState extends State<AiChatContent>
         trailing: Switch.adaptive(
           value: value,
           onChanged: onChanged,
-          activeTrackColor: InvoiceThemeColors.primaryPurple,
+          activeTrackColor: _accent.primary,
           activeThumbColor: Colors.white,
           inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
         ),
@@ -1484,15 +1497,15 @@ class _AiChatContentState extends State<AiChatContent>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
+                color: _accent.primary.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: InvoiceThemeColors.primaryPurple,
+                  color: _accent.primary,
                   width: 1.5,
                 ),
               ),
               child: Icon(Icons.smart_toy_rounded,
-                  color: InvoiceThemeColors.gradientPurple, size: 24.sp),
+                  color: _accent.secondary, size: 24.sp),
             ),
             SizedBox(width: 12.w),
             Column(
@@ -1532,7 +1545,7 @@ class _AiChatContentState extends State<AiChatContent>
           margin: EdgeInsets.only(right: 4.w),
           decoration: BoxDecoration(
             color: isTyping
-                ? InvoiceThemeColors.primaryPurple
+                ? _accent.primary
                 : InvoiceThemeColors.successGreen,
             shape: BoxShape.circle,
           ),
@@ -1541,7 +1554,7 @@ class _AiChatContentState extends State<AiChatContent>
           isTyping ? 'Typing...' : 'Online',
           style: TextStyle(
               color: isTyping
-                  ? InvoiceThemeColors.primaryPurple
+                  ? _accent.primary
                   : InvoiceThemeColors.successGreen,
               fontSize: 12.sp),
         ),
@@ -1557,7 +1570,7 @@ class _AiChatContentState extends State<AiChatContent>
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08),
+            _accent.primary.withValues(alpha: 0.08),
             Colors.transparent,
           ],
         ),
@@ -1567,7 +1580,7 @@ class _AiChatContentState extends State<AiChatContent>
       child: Row(
         children: [
           Icon(Icons.info_outline_rounded,
-              color: InvoiceThemeColors.gradientPurple, size: 18.sp),
+              color: _accent.secondary, size: 18.sp),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
@@ -1589,11 +1602,11 @@ class _AiChatContentState extends State<AiChatContent>
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+              color: _accent.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.lock_rounded,
-                color: InvoiceThemeColors.primaryPurple, size: 48.sp),
+                color: _accent.primary, size: 48.sp),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -1658,6 +1671,19 @@ class _AiChatContentState extends State<AiChatContent>
   static const _aiBubbleColor = InvoiceThemeColors.secondaryBackground;
 
   /// The accent in force, read fresh so a change lands on the open chat.
+  /// THE CHAT'S ACCENT, AND NOW ACTUALLY THE CHAT'S ACCENT.
+  ///
+  /// Picking a theme used to recolour the header gradient and the user's text
+  /// bubbles and nothing else, because every other coloured thing in this file
+  /// — 31 of them: icons, suggestion chips, avatars, the attach and send
+  /// buttons, selection highlights, empty-state art, the slider track —
+  /// referenced `InvoiceThemeColors.primaryPurple`, a fixed constant. So
+  /// "Teal" produced a teal header over a purple chat, which reads as a bug
+  /// rather than a theme, and is what was reported.
+  ///
+  /// Everything paints from here now. The ValueListenableBuilder on
+  /// `ChatThemePreference.revision` (see the build method) is what makes a
+  /// change land without reopening the screen.
   ChatAccent get _accent => ChatThemePreference.accent;
 
   /// Whether to render a message's text bubble. Voice notes carry a "Sent a
@@ -1773,7 +1799,7 @@ class _AiChatContentState extends State<AiChatContent>
             icon,
             size: 15.sp,
             color: active
-                ? InvoiceThemeColors.primaryPurple
+                ? _accent.primary
                 : Colors.white.withValues(alpha: 0.38),
           ),
         ),
@@ -2157,6 +2183,17 @@ class _AiChatContentState extends State<AiChatContent>
               ChatRecipientCard(
                 data: message.recipientCard!,
                 onChangeRecipient: () => _handleSubmitted('change recipient'),
+                // Tapping a candidate sends the pick as ordinary text, which
+                // the agent's select_recipient resolves by name, number or
+                // position. Prefer the @username — it is unambiguous, whereas
+                // two people in the list can share a display name, which is
+                // the very reason the list is on screen.
+                onSelectCandidate: (index, username, displayName) {
+                  final pick = username.isNotEmpty
+                      ? '@$username'
+                      : (displayName.isNotEmpty ? displayName : '$index');
+                  _handleSubmitted(pick);
+                },
               ),
             // PIN prompt card — chat-driven money moves collect the PIN inline.
             // "Enter PIN" opens the native modal; on success the single-use
@@ -2225,7 +2262,7 @@ class _AiChatContentState extends State<AiChatContent>
             bottomRight: Radius.circular(18.r),
           ),
           border: Border.all(
-              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.25)),
+              color: _accent.primary.withValues(alpha: 0.25)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2290,7 +2327,7 @@ class _AiChatContentState extends State<AiChatContent>
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 10.h),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.primaryPurple,
+                        color: _accent.primary,
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Center(
@@ -2419,11 +2456,11 @@ class _AiChatContentState extends State<AiChatContent>
                       padding:
                           EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.primaryPurple
+                        color: _accent.primary
                             .withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
-                            color: InvoiceThemeColors.primaryPurple
+                            color: _accent.primary
                                 .withValues(alpha: 0.35)),
                       ),
                       child: Row(
@@ -2431,13 +2468,13 @@ class _AiChatContentState extends State<AiChatContent>
                         children: [
                           if (btn.icon != null && btn.icon!.isNotEmpty) ...[
                             Icon(Icons.arrow_forward_rounded,
-                                color: InvoiceThemeColors.primaryPurple,
+                                color: _accent.primary,
                                 size: 14.sp),
                             SizedBox(width: 4.w),
                           ],
                           Text(btn.label,
                               style: TextStyle(
-                                  color: InvoiceThemeColors.primaryPurple,
+                                  color: _accent.primary,
                                   fontSize: 12.sp,
                                   fontWeight: FontWeight.w500)),
                         ],
@@ -2486,7 +2523,7 @@ class _AiChatContentState extends State<AiChatContent>
                       height: 8.h,
                       width: 8.w,
                       decoration: BoxDecoration(
-                          color: InvoiceThemeColors.primaryPurple
+                          color: _accent.primary
                               .withValues(alpha: opacity),
                           shape: BoxShape.circle),
                     );
@@ -2514,37 +2551,52 @@ class _AiChatContentState extends State<AiChatContent>
           // Show suggestions if enabled and message list is effectively empty or text field empty
           if (_settings.quickSuggestions &&
               (messages.isEmpty || _messageController.text.isEmpty))
-            Container(
-              height: 40.h,
-              margin: EdgeInsets.only(bottom: 12.h),
+            // A SINGLE SHORT ROW, not a band across the screen.
+            //
+            // This was 40.h tall with 16/8 padding and a 12.h margin — 52.h of
+            // vertical space above the input, on top of the input's own 16.w
+            // padding, which on a small Android phone pushed the conversation
+            // itself into the upper half. The chips are one line of 11.5sp
+            // text; they do not need 40 logical pixels to hold it.
+            //
+            // Centred rather than stretched, so trimming the row's height does
+            // not leave the chips floating at its top edge.
+            SizedBox(
+              height: 30.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.zero,
                 itemCount: _activeSuggestions(messages, suggestions).length,
                 itemBuilder: (context, index) {
                   final suggestionText =
                       _activeSuggestions(messages, suggestions)[index];
-                  return GestureDetector(
-                    onTap: () => _handleSubmitted(suggestionText),
-                    child: Container(
-                      margin: EdgeInsets.only(right: 8.w),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                      decoration: BoxDecoration(
-                        color: InvoiceThemeColors.primaryPurple
-                            .withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(
-                            color: InvoiceThemeColors.primaryPurple
-                                .withValues(alpha: 0.3)),
+                  return Center(
+                    child: GestureDetector(
+                      onTap: () => _handleSubmitted(suggestionText),
+                      child: Container(
+                        margin: EdgeInsets.only(right: 6.w),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 5.h),
+                        decoration: BoxDecoration(
+                          color: _accent.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(15.r),
+                          border: Border.all(
+                              color: _accent.primary.withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          suggestionText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              color: Colors.white, fontSize: 11.5.sp),
+                        ),
                       ),
-                      child: Text(suggestionText,
-                          style:
-                              TextStyle(color: Colors.white, fontSize: 12.sp)),
                     ),
                   );
                 },
               ),
             ),
+            SizedBox(height: 8.h),
           if (_isRecording)
             _buildRecordingIndicator()
           else
@@ -2632,7 +2684,7 @@ class _AiChatContentState extends State<AiChatContent>
                 ),
                 _buildImageSourceTile(
                   icon: Icons.photo_library_rounded,
-                  iconColor: InvoiceThemeColors.primaryPurple,
+                  iconColor: _accent.primary,
                   label: 'Choose from Gallery',
                   subtitle: 'Pick an existing photo',
                   onTap: () {
@@ -2807,7 +2859,7 @@ class _AiChatContentState extends State<AiChatContent>
           child: Container(
             padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: InvoiceThemeColors.primaryPurple,
+              color: _accent.primary,
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.send_rounded, color: Colors.white, size: 20.sp),
@@ -2867,8 +2919,8 @@ class _AiChatContentState extends State<AiChatContent>
         decoration: BoxDecoration(
           gradient: isEnabled
               ? LinearGradient(colors: [
-                  InvoiceThemeColors.primaryPurple,
-                  InvoiceThemeColors.gradientPurple
+                  _accent.primary,
+                  _accent.secondary
                 ])
               : null,
           color: isEnabled ? null : Colors.grey,
@@ -2946,20 +2998,25 @@ class _AiChatContentState extends State<AiChatContent>
       final isTyping = state.isTyping;
       final suggestions = state.suggestions;
 
+      // How far to lift the whole chat off the bottom of the window.
+      //
+      // Keyboard up: sit just above it. Keyboard down: clear the curved bottom
+      // nav. Both cases previously resolved to EXACTLY the obstruction's
+      // height, so the input bar ended up flush against it with no gap at all
+      // — on Android that reads as the typing area being stuck to the nav bar,
+      // which is what was reported. A small, explicit gap in each case is the
+      // whole fix; the nav clearance itself (72.h) was already right.
+      final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
+      final bottomLift = keyboardInset > 0
+          ? keyboardInset + _kKeyboardGap.h
+          : 72.h + _kBottomNavGap.h;
+
       return GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
         },
         child: Container(
-          // Keep bottom-nav clearance when the keyboard is closed, but rise
-          // with the keyboard so the input isn't covered. 72.h lifts the
-          // typing area clear of the curved nav bar (it previously sat a few
-          // px behind it).
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                ? MediaQuery.of(context).viewInsets.bottom
-                : 72.h,
-          ),
+          margin: EdgeInsets.only(bottom: bottomLift),
           decoration:
               const BoxDecoration(color: InvoiceThemeColors.primaryBackground),
           child: Scaffold(

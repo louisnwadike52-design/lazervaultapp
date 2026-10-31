@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/fullscreen_image_viewer.dart';
+import 'package:lazervault/core/services/chat_theme_preference.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_voice_note_player.dart';
 
 /// Renders media content (image or voice note) inside a chat bubble.
@@ -223,8 +224,19 @@ class _VoiceNotePlayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final player = ChatVoiceNotePlayer.instance;
-    final accentColor =
-        isUser ? const Color(0xFF3B82F6) : const Color(0xFF10B981);
+    // FOLLOWS THE CHAT ACCENT.
+    //
+    // These were a hardcoded blue for the sender and green for the receiver,
+    // so changing the chat theme recoloured the header and the text bubbles
+    // and left the voice notes sitting in the old palette — the single most
+    // visible thing the theme did not reach.
+    //
+    // The sender/receiver distinction is kept, because telling your own voice
+    // note from the assistant's at a glance is worth a colour: the user's
+    // takes the accent's strong colour (matching their text bubbles, which
+    // already use it) and the assistant's takes its lighter companion.
+    final accent = ChatThemePreference.accent;
+    final accentColor = isUser ? accent.primary : accent.secondary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

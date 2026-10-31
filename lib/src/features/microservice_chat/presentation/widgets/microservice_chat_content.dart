@@ -694,6 +694,8 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                           );
                     },
                     onChangeRecipient: () => _sendText('change recipient'),
+                    // Tap-to-pick on a multi-match recipient search.
+                    onSelectCandidate: _sendText,
                   ),
                   if (message.serviceRoutedTo != null) ...[
                     const SizedBox(height: 4),
