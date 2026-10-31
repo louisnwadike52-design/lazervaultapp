@@ -69,8 +69,25 @@ class AppUpdateService {
   AppUpdateService();
 
   /// Fallback store links used only when the admin hasn't configured one.
-  static const String _defaultIosStoreUrl =
-      'https://apps.apple.com/app/lazervault';
+  ///
+  /// ANDROID is a real, verified listing: com.lazervault.app resolves to a
+  /// live Play Store page (HTTP 200, checked 31 Oct 2026), and the package
+  /// name matches `applicationId` in android/app/build.gradle.kts.
+  ///
+  /// IOS IS DELIBERATELY EMPTY. An App Store link needs the app's NUMERIC
+  /// Apple ID — `https://apps.apple.com/app/id123456789`. There is no
+  /// name-based form: the previous default here,
+  /// `https://apps.apple.com/app/lazervault`, was not a real URL and 404s.
+  /// The ID cannot be looked up yet either — iTunes Lookup returns
+  /// resultCount 0 for this bundle in every storefront, because the build is
+  /// still TestFlight-only and the public listing does not exist.
+  ///
+  /// Sending a user to a 404 during a FORCED update is worse than sending
+  /// them nowhere: the app looks broken and there is nothing they can do. So
+  /// this stays empty and [openStore] refuses it, until someone pastes the
+  /// real ID into Settings → App Versions. It is on the App Store Connect
+  /// listing under App Information → General Information → "Apple ID".
+  static const String _defaultIosStoreUrl = '';
   static const String _defaultAndroidStoreUrl =
       'https://play.google.com/store/apps/details?id=com.lazervault.app';
 
@@ -135,8 +152,14 @@ class AppUpdateService {
   /// Open the platform store so the user can update. Best-effort — returns
   /// `false` if the URL couldn't be launched.
   Future<bool> openStore(AppUpdateInfo info) async {
-    final uri = Uri.tryParse(info.storeUrl);
-    if (uri == null) return false;
+    // An empty or scheme-less URL is not something to hand to the OS. Before
+    // this guard an unset iOS link reached launchUrl as a bare string and
+    // opened a 404 page in Safari, which during a forced update leaves the
+    // user staring at a broken App Store page with no way forward.
+    final raw = info.storeUrl.trim();
+    if (raw.isEmpty) return false;
+    final uri = Uri.tryParse(raw);
+    if (uri == null || !uri.hasScheme || !uri.hasAuthority) return false;
     try {
       return await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (_) {
