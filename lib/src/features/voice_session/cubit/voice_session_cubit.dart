@@ -1615,6 +1615,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         requestBody['voicePreference'] = _selectedVoiceId;
       }
       // Dashboard locale (e.g. en-NG) for voice-agent TTS routing (YarnGPT vs OpenAI for English)
+      // WHICH TALK MODE THIS SESSION IS STARTING IN.
+      //
+      // The gateway resolves the speech-capture mode per interaction family:
+      // hands-free needs server-side VAD and turn detection to decide where a
+      // turn ends, a gesture turn is already bounded by the user's finger.
+      // Without this the gateway could only answer with the general setting,
+      // and hands-free inherited on-device capture — which is how the agent
+      // ended up with nobody transcribing and no echo handling.
+      //
+      // Both families stay admin-tunable; this only says which one to ask
+      // about.
+      requestBody['interaction'] = _interactionMode;
+
       final localeManager = serviceLocator<LocaleManager>();
       requestBody['locale'] = localeManager.currentLocale;
       requestBody['userCountry'] = localeManager.currentCountry;

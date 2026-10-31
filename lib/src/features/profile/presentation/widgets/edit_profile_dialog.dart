@@ -310,8 +310,18 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                   // First Name Field
                   TextFormField(
                     controller: _firstNameController,
+                    // NOT EDITABLE. The name on this account is whatever KYC
+                    // verified; a profile that disagrees with the document
+                    // used to approve it is worse than one that cannot be
+                    // changed here. The server ignores these fields too, so
+                    // this is the honest surface for a decision already made
+                    // rather than the thing enforcing it.
+                    readOnly: true,
+                    enableInteractiveSelection: false,
                     decoration: InputDecoration(
                       labelText: 'First Name',
+                      helperText: 'Verified — contact support to change',
+                      filled: true,
                       prefixIcon: const Icon(Icons.person_outline),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -326,15 +336,13 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                             color: Color(0xFF4E03D0), width: 2),
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'First name is required';
-                      }
-                      if (value.trim().length < 2) {
-                        return 'First name must be at least 2 characters';
-                      }
-                      return null;
-                    },
+                    // NO VALIDATOR. The field is read-only, so its content
+                    // is whatever the server already holds — and a customer
+                    // whose record happens to carry an empty or one-character
+                    // name would otherwise be unable to save anything at all,
+                    // including the username they ARE allowed to change.
+                    // Validating a field nobody can edit only ever blocks an
+                    // unrelated save.
                   ),
 
                   SizedBox(height: 16.h),
@@ -342,8 +350,18 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                   // Last Name Field
                   TextFormField(
                     controller: _lastNameController,
+                    // NOT EDITABLE. The name on this account is whatever KYC
+                    // verified; a profile that disagrees with the document
+                    // used to approve it is worse than one that cannot be
+                    // changed here. The server ignores these fields too, so
+                    // this is the honest surface for a decision already made
+                    // rather than the thing enforcing it.
+                    readOnly: true,
+                    enableInteractiveSelection: false,
                     decoration: InputDecoration(
                       labelText: 'Last Name',
+                      helperText: 'Verified — contact support to change',
+                      filled: true,
                       prefixIcon: const Icon(Icons.person_outline),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -358,15 +376,13 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                             color: Color(0xFF4E03D0), width: 2),
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Last name is required';
-                      }
-                      if (value.trim().length < 2) {
-                        return 'Last name must be at least 2 characters';
-                      }
-                      return null;
-                    },
+                    // NO VALIDATOR. The field is read-only, so its content
+                    // is whatever the server already holds — and a customer
+                    // whose record happens to carry an empty or one-character
+                    // name would otherwise be unable to save anything at all,
+                    // including the username they ARE allowed to change.
+                    // Validating a field nobody can edit only ever blocks an
+                    // unrelated save.
                   ),
 
                   SizedBox(height: 16.h),

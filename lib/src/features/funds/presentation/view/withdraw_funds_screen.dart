@@ -395,7 +395,24 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   /// Map raw backend/provider withdrawal errors to user-facing copy. The raw
   /// text (e.g. "transfer failed: flutterwave transfer request failed:
   /// flutterwave HTTP 400: Transfer creation failed") must never reach the UI.
-  String _friendlyWithdrawError(String? raw) {
+  /// Turns provider plumbing into copy a person can act on.
+  ///
+  /// [code] is the server's own classification. A POLICY_REFUSED carries a
+  /// sentence already written for the customer — the retained-balance floor
+  /// or a per-user withdrawal allowance — and must pass through UNTOUCHED.
+  ///
+  /// The substring matching below is why: a tester who had reached their
+  /// withdrawal cap matched "insufficient" (banking used to prefix the
+  /// message) and was told they had no money, with the money in their
+  /// wallet. Without that prefix they fell to the default, "please try again
+  /// shortly" — advice that can never come true, because the allowance is
+  /// spent. Classifying a refusal as a failure invites a retry that is
+  /// guaranteed to fail.
+  String _friendlyWithdrawError(String? raw, [String? code]) {
+    if (code == 'POLICY_REFUSED') {
+      final msg = (raw ?? '').trim();
+      if (msg.isNotEmpty) return msg;
+    }
     final lower = (raw ?? '').toLowerCase();
     if (lower.contains('account resolve') || lower.contains('resolve failed')) {
       return 'We could not verify this bank account with our payout provider. '
@@ -553,7 +570,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           // Never surface raw provider plumbing ("flutterwave HTTP 400…") to
           // the user — classify into actionable copy. Money safety: a failed
           // payout releases its hold, so the balance is untouched.
-          throw Exception(_friendlyWithdrawError(resp?.errorMessage));
+          throw Exception(
+            _friendlyWithdrawError(resp?.errorMessage, resp?.errorCode),
+          );
         }
       },
     );
