@@ -6,6 +6,10 @@ import '../../domain/entities/social_account_entity.dart';
 import '../cubit/social_linking_cubit.dart';
 import '../cubit/social_linking_state.dart';
 import '../widgets/social_account_card.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/profile/presentation/widgets/social_avatar_prompt.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen for managing linked social accounts
@@ -21,6 +25,46 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
   void initState() {
     super.initState();
     context.read<SocialLinkingCubit>().loadLinkedAccounts();
+  }
+
+  /// Offers the just-linked account's photo as a profile picture.
+  ///
+  /// Every guard lives in SocialAvatarPrompt so this reads as one decision:
+  /// it declines silently when they already have a picture, when the provider
+  /// sent none, or when they have already answered for this provider.
+  Future<void> _maybeOfferAvatar(LinkedSocialAccountEntity account) async {
+    if (!serviceLocator.isRegistered<AuthenticationCubit>()) return;
+    final user = serviceLocator<AuthenticationCubit>().currentProfile?.user;
+    if (user == null) return;
+
+    final provider = account.provider.name;
+    final offer = await SocialAvatarPrompt.shouldOffer(
+      userId: user.id,
+      provider: provider,
+      currentProfilePicture: user.profilePicture,
+      socialPictureUrl: account.profilePictureUrl,
+    );
+    if (!offer || !mounted) return;
+
+    final accepted = await SocialAvatarPrompt.show(
+      context,
+      provider: provider,
+      pictureUrl: account.profilePictureUrl!,
+    );
+    // Remembered either way — "not now" has to mean not now, or the prompt
+    // becomes something people dismiss without reading.
+    await SocialAvatarPrompt.remember(
+        userId: user.id, provider: provider, accepted: accepted);
+    if (!accepted || !mounted) return;
+
+    // Through the profile cubit, not a direct repository call: it also
+    // refreshes the auth session's cached user and evicts the avatar image
+    // cache, without which every avatar surface keeps serving the old bytes
+    // until the next cold start.
+    if (serviceLocator.isRegistered<ProfileCubit>()) {
+      await serviceLocator<ProfileCubit>()
+          .updateUserProfile(profilePicture: account.profilePictureUrl);
+    }
   }
 
   @override
@@ -61,6 +105,11 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
               snackPosition: SnackPosition.TOP,
             );
             context.read<SocialLinkingCubit>().loadLinkedAccounts();
+            // Offer their provider photo — here, because this is the moment
+            // it becomes available and the one moment they are already
+            // thinking about that account. Asked once per provider, and only
+            // when they have no picture of their own.
+            _maybeOfferAvatar(state.account);
           } else if (state is SocialAccountUnlinked) {
             Get.snackbar(
               'Success',
