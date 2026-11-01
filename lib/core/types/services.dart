@@ -55,9 +55,10 @@ extension AppServiceRevenuePriority on AppServiceName {
   int get revenuePriority => switch (this) {
         // PAGE ONE IS THE NIGERIAN SHORTLIST, AND IT IS EXPLICIT.
         //
-        // The grid paginates at 12 tiles and pins sendFunds to the front, so
-        // eleven ranks decide what a user sees without swiping. Those eleven
-        // are enumerated here rather than left to the `100 + index` fallback,
+        // The grid paginates at 12 cells, gives one of them up to the
+        // navigation tile and pins sendFunds to the front, so TEN ranks decide
+        // what a user sees without swiping. Those ten are enumerated here
+        // rather than left to the `100 + index` fallback,
         // because the fallback made page one depend on which services happened
         // to be filtered out: with `invest` hidden and `insurance` admin-gated
         // off, splitBills (rank 103) still landed in the twelfth slot. A page
@@ -71,19 +72,17 @@ extension AppServiceRevenuePriority on AppServiceName {
         AppServiceName.crypto => 4,
         AppServiceName.giftCards => 5,
         // Recharge-card printing takes the slot invoice vacated (operator,
-        // 31 Oct 2026). Page one is twelve tiles — pinned sendFunds plus
-        // ranks 1..11 — so moving invoice off left a hole, and leaving it to
-        // be filled by whatever ranked next is the exact accident the note
-        // above warns about: the next rank is insurance (20), which is
-        // admin-gated OFF, so the twelfth tile would have been decided by a
-        // flag rather than by anyone. Recharge cards are an everyday Nigerian
-        // errand and revenue-bearing, which is what page one is for.
+        // 31 Oct 2026). Moving invoice off left a hole, and leaving it to be
+        // filled by whatever ranked next is the exact accident the note above
+        // warns about: the next rank is insurance (20), which is admin-gated
+        // OFF, so that tile would have been decided by a flag rather than by
+        // anyone. Recharge cards are an everyday Nigerian errand and
+        // revenue-bearing, which is what page one is for.
         AppServiceName.rechargeCard => 6,
         AppServiceName.tagPay => 7,
         AppServiceName.qrPay => 8,
         AppServiceName.contactlessPay => 9,
         AppServiceName.batchTransfer => 10,
-        AppServiceName.escrow => 11,
 
         // ── SECOND CAROUSEL ───────────────────────────────────────────────
         // Still revenue-bearing and still ranked deliberately, just not
@@ -106,6 +105,16 @@ extension AppServiceRevenuePriority on AppServiceName {
         // 31 Oct 2026). Both are "ask someone else for money" rather than the
         // everyday spend page one is for, so they belong together.
         AppServiceName.invoice => 63,
+        // Escrow joins them (operator, 1 Nov 2026). Same reason: it is money
+        // parked pending someone else's action, not an everyday spend, and
+        // page one is now eleven tiles rather than twelve — every page gives
+        // up a cell to the navigation tile, not just the first. Airtime and
+        // data are what people open the app for several times a week and they
+        // keep the lead; escrow moving here is what makes that fit without a
+        // hole, since ranks 1..10 plus pinned sendFunds now fill page one
+        // exactly and nothing is left to be decided by whichever flag happens
+        // to be on.
+        AppServiceName.escrow => 64,
 
         // Non-revenue / P2P / internal + business tiles keep their enum order.
         _ => 100 + index,

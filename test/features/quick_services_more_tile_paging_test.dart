@@ -1,11 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/src/features/widgets/quick_services_paging.dart';
 
-/// The quick-services carousel reserves the last cell of page one for a fixed
-/// "More" tile, because the carousel's only affordance was a row of dots and a
-/// swipe nobody knew to try — so the second page of services went undiscovered.
+/// The quick-services carousel reserves the last cell of EVERY page for a
+/// fixed navigation tile, because the carousel's only affordance was a row of
+/// dots and a swipe nobody knew to try — so the second page of services went
+/// undiscovered.
 ///
-/// Reserving a cell shifts every later page by one. A reorder drag reports
+/// It was page one only at first, which solved discovery and created its
+/// mirror image: a user who tapped "More" landed on page two with nothing
+/// offering the way back. Every page now ends in the tile — forward on the way
+/// out, back on the last page.
+///
+/// Reserving a cell on every page shrinks the stride. A reorder drag reports
 /// positions through [serviceIndexAt] and the grid persists the result, so an
 /// off-by-one here moves a service the user did not touch and saves that. The
 /// production grid is 4x3 = 12; these tests use 4 so the boundaries are
@@ -46,17 +52,21 @@ void main() {
       expect(quickServicePageSizes(0, 4), isEmpty);
     });
 
-    test('page one gives up a cell; the rest chunk normally', () {
-      // 4 services, page size 4: page one holds 3 + More, the 4th moves over.
+    test('every page gives up a cell', () {
+      // 4 services, page size 4: page one holds 3 + the tile, the 4th moves
+      // over and sits beside a Back tile.
       expect(quickServicePageSizes(4, 4), [3, 1]);
       expect(quickServicePageSizes(12, 12), [11, 1]);
     });
 
-    test('later pages are full-size, not short by one', () {
-      // The shift applies ONCE. If it leaked into later pages their sizes
-      // would be 3 as well and services would silently vanish off the end.
-      expect(quickServicePageSizes(8, 4), [3, 4, 1]);
-      expect(quickServicePageSizes(11, 4), [3, 4, 4]);
+    test('the stride is uniform, so no page is wider than another', () {
+      // Previously the shift applied to page one ALONE and later pages were
+      // full-size. That made the grid reflow mid-swipe and left later pages
+      // with no cell for a way back.
+      expect(quickServicePageSizes(8, 4), [3, 3, 2]);
+      expect(quickServicePageSizes(11, 4), [3, 3, 3, 2]);
+      // The real geometry: 20 services over two pages of 11.
+      expect(quickServicePageSizes(20, 12), [11, 9]);
     });
 
     test('every service lands on exactly one page, at every size', () {
@@ -95,19 +105,33 @@ void main() {
       expect(serviceIndexAt(2, 1, 4, moreTileShown: false), 9);
     });
 
-    test('with the More tile, page one is unshifted', () {
+    test('with the tile, page one is unshifted', () {
       expect(serviceIndexAt(0, 0, 4, moreTileShown: true), 0);
       expect(serviceIndexAt(0, 2, 4, moreTileShown: true), 2);
     });
 
-    test('with the More tile, later pages start one earlier', () {
+    test('with the tile, the stride is one shorter on every page', () {
       // Page one holds services 0..2, so page two begins at 3, not 4. Reading
       // it as 4 would make a drag move the service AFTER the one grabbed.
       expect(serviceIndexAt(1, 0, 4, moreTileShown: true), 3);
-      expect(serviceIndexAt(1, 3, 4, moreTileShown: true), 6);
-      expect(serviceIndexAt(2, 0, 4, moreTileShown: true), 7);
+      expect(serviceIndexAt(1, 2, 4, moreTileShown: true), 5);
+      // The shift COMPOUNDS now that every page reserves a cell: page three
+      // starts at 6, not 7. Under the old page-one-only rule this was 7, and
+      // reading it that way skips a service.
+      expect(serviceIndexAt(2, 0, 4, moreTileShown: true), 6);
       // Production geometry: page two starts at the 12th service (index 11).
       expect(serviceIndexAt(1, 0, 12, moreTileShown: true), 11);
+    });
+
+    test('the navigation tile points back only on the last page', () {
+      // "More" on the final page is a control that does nothing — the exact
+      // failure the tile was introduced to avoid.
+      expect(quickServiceTileGoesBack(0, 3), isFalse);
+      expect(quickServiceTileGoesBack(1, 3), isFalse);
+      expect(quickServiceTileGoesBack(2, 3), isTrue);
+      // Two pages: out on one, back on the other.
+      expect(quickServiceTileGoesBack(0, 2), isFalse);
+      expect(quickServiceTileGoesBack(1, 2), isTrue);
     });
 
     test('walking the grid visits every service index exactly once', () {

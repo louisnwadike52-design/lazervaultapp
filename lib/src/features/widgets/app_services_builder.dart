@@ -31,6 +31,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // Context-aware: switches between personal and business services based on active account
 import 'service_tile_scale_in.dart';
 import 'quick_services_more_tile.dart';
+import 'quick_services_ordering.dart';
 import 'quick_services_paging.dart';
 
 class AppServicesBuilder extends StatefulWidget {
@@ -747,22 +748,30 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     // tile, so it wins — including over the Send Funds pin, because a user who
     // deliberately moved Send Funds meant it.
     //
-    // Services with no rank (added since the arrangement, or never dragged)
-    // keep their relative default order and sit AFTER the arranged ones, so a
-    // new service appears without disturbing anything already placed.
+    // A service with NO hand-placed rank slots in where the DEFAULT order says
+    // it belongs among the arranged ones — it is NOT appended to the end.
+    //
+    // Appending is what the code used to do, and it was a trap. The saved
+    // arrangement is a snapshot of the services that existed on the day the
+    // user dragged something; every service added or re-keyed afterwards had
+    // no rank, so it went to the very end — which, on a paginated grid, is the
+    // last page. Airtime and data are ranked 1 and 2 precisely because they
+    // are the errands people open the app for several times a week, and they
+    // were landing in the final two cells of the second carousel, below
+    // everything. One drag years ago permanently hid every service shipped
+    // since, and nothing on screen said why.
+    //
+    // The insertion point is "immediately before the first arranged service
+    // that the default order puts AFTER this one". A hand rank still wins
+    // outright wherever the user set one, and the moment they drag the new
+    // service themselves it gets a rank and this path stops applying to it.
     final ranks = serviceLocator<ServiceOrderService>().ranks();
     if (ranks.isNotEmpty) {
-      final ordered = [...services];
-      ordered.sort((a, b) {
-        final ar = ranks[a.serviceName];
-        final br = ranks[b.serviceName];
-        if (ar != null && br != null) return ar.compareTo(br);
-        if (ar != null) return -1; // arranged before unarranged
-        if (br != null) return 1;
-        return a.serviceName.revenuePriority
-            .compareTo(b.serviceName.revenuePriority);
-      });
-      return ordered;
+      return orderByUserArrangement<AppService>(
+        services,
+        ranks: ranks,
+        nameOf: (s) => s.serviceName,
+      );
     }
 
     final adaptive = FeatureFlags.adaptiveQuickServices;
@@ -981,25 +990,25 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   }
 
   // Split services into pages
-  /// Whether the first page ends in the fixed [QuickServicesMoreTile].
+  /// Whether the grid carries its fixed [QuickServicesMoreTile].
   ///
-  /// Only when there is genuinely a later page to go to — a More tile that
-  /// advances to nothing is worse than no More tile, and with 11 or fewer
-  /// services everything is already on screen.
+  /// Only when there is genuinely another page to go to — a navigation tile
+  /// that leads nowhere is worse than none, and with 11 or fewer services
+  /// everything is already on screen.
   ///
-  /// The threshold is `_itemsPerPage - 1` because the tile CONSUMES a cell:
-  /// page one then carries 11 services instead of 12, and the 12th flows onto
-  /// page two. With exactly 12 services that creates the second page, which is
-  /// the intended trade — one service moved one swipe away, in exchange for
-  /// the carousel advertising that it can be swiped at all.
+  /// The threshold is `_itemsPerPage - 1` because the tile CONSUMES a cell on
+  /// EVERY page: each page then carries 11 services instead of 12. With
+  /// exactly 12 services that creates the second page, which is the intended
+  /// trade — one service moved one swipe away, in exchange for the carousel
+  /// advertising that it can be swiped at all.
   bool _showMoreTileFor(List<AppService> services) =>
       showsMoreTile(services.length, _itemsPerPage);
 
   /// Index into [_activeServices] for the tile at [indexOnPage] of [pageIndex].
   ///
-  /// NOT `pageIndex * _itemsPerPage + indexOnPage`. When the More tile is
-  /// shown it takes the last cell of page one, so page one holds one FEWER
-  /// service and every later page starts one position earlier.
+  /// NOT `pageIndex * _itemsPerPage + indexOnPage`. When the navigation tile
+  /// is shown it takes the last cell of every page, so each page carries one
+  /// FEWER service and the stride shrinks to match.
   ///
   /// This is load-bearing: a reorder drag reports positions through here and
   /// [_moveService] uses them to index the real list, so an off-by-one moves
@@ -1267,13 +1276,23 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
             ),
             itemBuilder: (context, pageIndex, realIndex) {
               final servicesOnPage = servicePages[pageIndex];
-              // The More tile ends page ONE only. That is where the discovery
-              // problem is: a user looking at page one has no reason to know
-              // there is a page two. Once they are on page two the dots have
-              // told them, and repeating the tile there would cost a service
-              // slot on every page to re-teach something already learned.
+              // EVERY page ends in the navigation tile, not just page one.
+              //
+              // Page one alone solved discovery and created its mirror image:
+              // a user who tapped "More" landed on page two with nothing
+              // offering the way back, so the return trip was the same
+              // undiscoverable swipe the tile exists to compensate for. The
+              // dots are feedback, not an invitation — they were not enough
+              // going out and they are not enough coming back.
+              //
+              // Reserving a cell on every page also keeps the geometry
+              // identical slide to slide, so the grid does not reflow mid-
+              // swipe. The last page's tile points BACK, because "More" there
+              // would be a control that does nothing.
               final moreTileShown = _showMoreTileFor(activeServices);
-              final showMoreHere = moreTileShown && pageIndex == 0;
+              final showMoreHere = moreTileShown;
+              final tileGoesBack =
+                  quickServiceTileGoesBack(pageIndex, servicePages.length);
 
               return GridView.builder(
                 padding: EdgeInsets.zero,
@@ -1294,15 +1313,39 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                   // a property of the grid, not of any service, so it stays
                   // put however the user rearranges everything else.
                   if (showMoreHere && index == servicesOnPage.length) {
+                    // How many services the user has NOT seen yet, which is
+                    // only meaningful going forward. Counting from this page's
+                    // own offset rather than page one's length, so the promise
+                    // stays true on a middle page.
+                    final seenThrough = _serviceIndexAt(
+                            pageIndex, servicesOnPage.length - 1, moreTileShown) +
+                        1;
                     return QuickServicesMoreTile(
-                      remainingCount:
-                          activeServices.length - servicesOnPage.length,
+                      back: tileGoesBack,
+                      label: tileGoesBack ? 'Back' : 'More',
+                      remainingCount: tileGoesBack
+                          ? null
+                          : activeServices.length - seenThrough,
                       onTap: () {
                         // Guarded: _pageCount is recomputed on every build, so
                         // a tap racing a rebuild that dropped the second page
                         // (a service gate flipping, an account switch) must
-                        // not animate past the end.
+                        // not animate past the end — or, going back, onto a
+                        // page that no longer exists.
                         if (_pageCount <= 1) return;
+                        if (tileGoesBack) {
+                          // Jump to page one rather than stepping back one at
+                          // a time: with three or more pages the tile is a way
+                          // OUT of the deep end, and animating through every
+                          // intermediate page to get there is slower and reads
+                          // as a glitch.
+                          _carouselController.animateToPage(
+                            0,
+                            duration: const Duration(milliseconds: 380),
+                            curve: Curves.easeOutCubic,
+                          );
+                          return;
+                        }
                         _carouselController.nextPage(
                           duration: const Duration(milliseconds: 320),
                           curve: Curves.easeOutCubic,

@@ -25,13 +25,31 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 /// a destination. A tile that looked exactly like a service would read as a
 /// service called "More", and tapping it would feel like a mis-navigation
 /// rather than a page turn.
+///
+/// WHY LATER PAGES GET ONE TOO
+/// ---------------------------
+/// The tile originally sat on page one only. That solved discovery and
+/// created its mirror image: a user who tapped "More" arrived on page two
+/// with nothing offering the trip back, so the return journey was the same
+/// undiscoverable swipe the tile exists to compensate for. Every page now
+/// ends in this control — forward on the way out, [back] on the last page —
+/// so the geometry is identical on every slide and the way out is always in
+/// the same corner.
 class QuickServicesMoreTile extends StatefulWidget {
   const QuickServicesMoreTile({
     super.key,
     required this.onTap,
     this.label = 'More',
     this.remainingCount,
+    this.back = false,
   });
+
+  /// Point at page one instead of the next page.
+  ///
+  /// Set on the LAST page, where "More" would be a control that does nothing.
+  /// Only the icon, the label and the screen-reader text change; the geometry
+  /// is deliberately identical so the grid does not shift as you swipe.
+  final bool back;
 
   /// Advance the carousel. Supplied by the grid so this widget owns no
   /// controller and can be driven by a test with a plain closure.
@@ -68,9 +86,11 @@ class _QuickServicesMoreTileState extends State<QuickServicesMoreTile> {
       button: true,
       // Spelled out for screen readers: "More" on its own does not say what
       // happens, and this is the control that reveals the rest of the grid.
-      label: widget.remainingCount != null && widget.remainingCount! > 0
-          ? 'Show ${widget.remainingCount} more services'
-          : 'Show more services',
+      label: widget.back
+          ? 'Back to the first page of services'
+          : (widget.remainingCount != null && widget.remainingCount! > 0
+              ? 'Show ${widget.remainingCount} more services'
+              : 'Show more services'),
       child: GestureDetector(
         onTap: _handleTap,
         onTapDown: (_) => setState(() => _pressed = true),
@@ -112,7 +132,9 @@ class _QuickServicesMoreTileState extends State<QuickServicesMoreTile> {
                   // chevron in this section's own header, and it says which
                   // direction the carousel will move.
                   child: Icon(
-                    Icons.arrow_forward_rounded,
+                    widget.back
+                        ? Icons.arrow_back_rounded
+                        : Icons.arrow_forward_rounded,
                     size: 18.sp,
                     color: Colors.white,
                   ),

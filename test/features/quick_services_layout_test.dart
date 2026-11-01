@@ -3,9 +3,10 @@ import 'package:lazervault/core/types/services.dart';
 
 /// THE FIRST SCREEN, PINNED.
 ///
-/// The quick-services grid paginates at 12 tiles and pins sendFunds to the
-/// front, so eleven `revenuePriority` ranks decide what a user sees without
-/// swiping. Those ranks used to fall back to `100 + enum index` for most
+/// The quick-services grid paginates at 12 cells, gives the last cell of
+/// every page to the navigation tile, and pins sendFunds to the front — so TEN
+/// `revenuePriority` ranks decide what a user sees without swiping. Those
+/// ranks used to fall back to `100 + enum index` for most
 /// services, which made page one depend on which services happened to be
 /// filtered out — with `invest` hidden and `insurance` gated off, Split Bills
 /// (rank 103) still reached the twelfth slot. A page that reshuffles when an
@@ -27,12 +28,15 @@ void main() {
     });
 
     test('every page-one rank is explicit, not an enum-order accident', () {
-      // 11 ranks + sendFunds pinned = the 12 visible tiles.
+      // 10 ranks + sendFunds pinned = 11 services, + the navigation tile = the
+      // 12 visible cells. It was 11 ranks until the tile moved from page one
+      // only to EVERY page, which costs one more service slot on page one and
+      // is what sent escrow to the second carousel.
       final pageOne = ordered(AppServiceName.values)
-          .where((s) => s.revenuePriority <= 11)
+          .where((s) => s.revenuePriority <= 10)
           .toList();
-      expect(pageOne.length, 11,
-          reason: 'page one must be exactly eleven deliberate ranks, so adding '
+      expect(pageOne.length, 10,
+          reason: 'page one must be exactly ten deliberate ranks, so adding '
               'a service cannot silently displace a tile');
       for (final s in pageOne) {
         expect(s.revenuePriority, lessThan(100),
@@ -52,8 +56,13 @@ void main() {
         // go to the second" carousel. Both are asking someone ELSE for money
         // rather than the everyday spend page one is for.
         AppServiceName.invoice,
+        // Escrow joined them on 1 Nov 2026, when every page started reserving
+        // a cell for the navigation tile: page one lost a service slot, and
+        // money parked pending someone else's action is the right thing to
+        // move rather than an everyday errand like airtime or data.
+        AppServiceName.escrow,
       ]) {
-        expect(s.revenuePriority, greaterThan(11),
+        expect(s.revenuePriority, greaterThan(10),
             reason: '$s must sit on the second carousel (operator request), '
                 'not compete for a first-screen slot');
       }
