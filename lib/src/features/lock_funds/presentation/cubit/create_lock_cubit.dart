@@ -94,6 +94,16 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   /// per-currency match happens client-side in [getConfigForType].
   /// Net effect: the wizard always renders SOMETHING as long as
   /// the dashboard has at least one row per plan.
+  /// Re-fetch the plan list after a failed load.
+  ///
+  /// Public because the wizard offers a retry rather than hardcoding plans it
+  /// cannot price — see _PlansUnavailable in lock_type_selector.dart.
+  Future<void> reloadConfigs() async {
+    _configsLoaded = false;
+    if (!isClosed) emit(CreateLockState());
+    await _loadConfigs();
+  }
+
   Future<void> _loadConfigs() async {
     try {
       final repo = serviceLocator<LockFundsRepository>();
@@ -255,6 +265,11 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   /// cosmetic icons.
   void selectConfig(PiggyVaultConfig config) {
     _selectedConfigId = config.id;
+    // The id above is the plan's real identity and is what the create call
+    // sends. This enum is a COSMETIC shadow for the legacy by-type lookups,
+    // and an admin-defined slug the client has never heard of falls back to
+    // savings — harmless for identity, but it must not be read as the plan's
+    // capabilities. Anything that needs those reads `selectedConfig`.
     _lockType = LockTypeX.fromBackendKey(config.lockType) ?? LockType.savings;
     if (!config.supportsAutoRenew) {
       _autoRenew = false;

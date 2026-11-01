@@ -92,25 +92,23 @@ class LockTypeSelector extends StatelessWidget {
                   SizedBox(height: 16.h),
                 ]
               else
-                // Offline / pre-load fallback: canonical enum plans.
-                for (final entry in [
-                  (LockType.savings, Icons.savings_rounded, false),
-                  (LockType.investment, Icons.trending_up_rounded, true),
-                  (LockType.goalBased, Icons.flag_rounded, true),
-                ]) ...[
-                  _buildLockTypeCard(
-                    context: context,
-                    icon: entry.$2,
-                    title: cubit.getDisplayName(entry.$1),
-                    description: cubit.getDescription(entry.$1),
-                    baseRate: cubit.getBaseRate(entry.$1),
-                    maxRate: cubit.getMaxRate(entry.$1),
-                    isPremium: entry.$3,
-                    isSelected: cubit.lockType == entry.$1,
-                    onTap: () => cubit.updateLockType(entry.$1),
-                  ),
-                  SizedBox(height: 16.h),
-                ],
+                // NO HARDCODED FALLBACK PLANS.
+                //
+                // This used to render the three canonical enum plans when the
+                // config fetch had not landed. Every one of their rates
+                // resolves to 0 without a config, so the user was shown real
+                // plan names advertising "0.00% p.a." — and, once ops retired
+                // a plan, names for plans that no longer exist. Tapping one
+                // is then refused with "<plan> is currently unavailable",
+                // which reads as the app being broken.
+                //
+                // A rate is a promise. Showing a plan we cannot price, or one
+                // that is not on sale, is worse than showing nothing: say the
+                // list has not loaded and offer the retry.
+                _PlansUnavailable(
+                  loaded: cubit.configsLoaded,
+                  onRetry: cubit.reloadConfigs,
+                ),
             ],
           ),
         );
@@ -564,6 +562,94 @@ class LockTypeSelector extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+
+/// Shown when the plan list has not arrived.
+///
+/// Two states, deliberately distinct: still loading is a spinner and says
+/// nothing, because a plan list that appears a moment later needs no
+/// explanation. A FINISHED load with no plans is a real condition — offline,
+/// or every plan retired — and gets a sentence and a retry rather than an
+/// empty screen the user cannot act on.
+class _PlansUnavailable extends StatelessWidget {
+  const _PlansUnavailable({required this.loaded, required this.onRetry});
+
+  final bool loaded;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!loaded) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 40.h),
+        child: const Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
+          ),
+        ),
+      );
+    }
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.cloud_off_rounded,
+                  size: 18.sp, color: const Color(0xFF9CA3AF)),
+              SizedBox(width: 8.w),
+              Text(
+                'Plans unavailable',
+                style: GoogleFonts.inter(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'We could not load the current Piggyvault plans. Their rates come '
+            'from our servers, so we would rather show you nothing than a '
+            'rate we cannot stand behind.',
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              height: 1.45,
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
+          SizedBox(height: 14.h),
+          GestureDetector(
+            onTap: onRetry,
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 18.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4E03D0),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Text(
+                'Try again',
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

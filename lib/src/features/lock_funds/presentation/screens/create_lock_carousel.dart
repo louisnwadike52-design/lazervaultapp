@@ -191,8 +191,17 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
     final lockDurationDays = createCubit.lockDurationDays ?? 0;
     // Final guard: never submit auto-renew for a plan that doesn't support it
     // (e.g. the Year lock) — the backend rejects it with INVALID_ARGUMENT.
-    final autoRenew =
-        createCubit.autoRenew && createCubit.getSupportsAutoRenew(lockType);
+    //
+    // Read from the SELECTED CONFIG, falling back to the enum only when there
+    // is no selection. The enum path cannot answer for a plan slug the client
+    // does not know: `selectConfig` coerces an unrecognised slug to
+    // LockType.savings, so an admin-defined plan would be judged by savings'
+    // capabilities — dropping a legitimate auto-renew, or offering one the
+    // plan does not have. Plan identity already travels as configId; this
+    // makes its capabilities travel with it.
+    final autoRenew = createCubit.autoRenew &&
+        (createCubit.selectedConfig?.supportsAutoRenew ??
+            createCubit.getSupportsAutoRenew(lockType));
     final goalName = createCubit.goalName;
     final goalDescription = createCubit.goalDescription;
     final paymentMethod = createCubit.paymentMethod!;
