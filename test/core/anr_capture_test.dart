@@ -105,20 +105,15 @@ void main() {
   });
 
   group('the alert', () {
-    test('Loki actually evaluates rules', () {
-      // The rules directory was configured under common.storage and NOTHING
-      // read it: with no ruler block Loki stores rule files and evaluates
-      // none of them, so any alert written there was inert.
-      final src = read(
-          '../.local-monitoring/loki.runtime.yml');
-      expect(src.contains('ruler:'), isTrue,
-          reason: 'without a ruler block no Loki alert can ever fire');
-      expect(src.contains('alertmanager_url'), isTrue);
-    });
+    // Asserted against the TRACKED rule, not the running stack's copy.
+    // `.local-monitoring/` is gitignored runtime state, so a test reading it
+    // passes on this machine and fails on every clean checkout — which is a
+    // test that reports on the developer rather than on the code.
+    const trackedRule =
+        '../infrastructure/monitoring-stack/loki/rules/fake/client-anr.yml';
 
     test('the rule selects the ANR flow on a six-hour window', () {
-      final src = read(
-          '../.local-monitoring/loki-data/rules/fake/client-anr.yml');
+      final src = read(trackedRule);
       expect(src.contains('{flow="anr"}'), isTrue);
       expect(src.contains('[6h]'), isTrue);
       expect(src.contains('ClientANRDetected'), isTrue);
@@ -127,16 +122,52 @@ void main() {
       expect(src.contains('ClientANRSpike'), isTrue);
     });
 
-    test('the ANR route is matched before the severity routes', () {
-      // First match wins in Alertmanager: behind the severity routes, the
+    test('the rule lives under the tenant directory Loki reads', () {
+      // Loki expects <rules dir>/<tenant>/<file>, and the tenant is "fake"
+      // when auth_enabled is false. A file one level higher is SILENTLY
+      // ignored — no error, no log line, the alert simply never fires. It is
+      // the usual reason a Loki alert appears to do nothing.
+      expect(trackedRule.contains('/rules/fake/'), isTrue);
+      expect(File(trackedRule).existsSync(), isTrue);
+    });
+
+    test('the deployment gotchas are written down', () {
+      // Both of these cost real debugging time and neither is discoverable
+      // from a failing alert, because nothing fails — it just never fires.
+      final readme =
+          read('../infrastructure/monitoring-stack/loki/rules/README.md');
+      expect(readme.contains('ruler:'), isTrue,
+          reason: 'configuring rules_directory alone makes Loki STORE rules '
+              'and evaluate none of them; the ruler block is what runs them');
+      expect(readme.toLowerCase().contains('silently ignored'), isTrue,
+          reason: 'the tenant-directory trap must stay documented');
+    });
+
+    test('the stack GENERATOR wires the ruler and the ANR route', () {
+      // Asserted on the script, not on the config it writes.
+      // `.local-monitoring/*.runtime.yml` is REGENERATED from here on every
+      // start, so editing the generated file is lost on the next restart and
+      // testing it would measure whether someone had restarted rather than
+      // whether the code is right.
+      final src = read('../scripts/start_monitoring_local.sh');
+
+      expect(src.contains('ruler:'), isTrue,
+          reason: 'the generated Loki config has no ruler block, so it will '
+              'store rule files and evaluate none of them');
+      expect(src.contains('alertmanager_url'), isTrue);
+      // A fresh machine must get the tracked rules, or it alerts on nothing.
+      expect(src.contains('monitoring-stack/loki/rules'), isTrue,
+          reason: 'nothing copies the tracked rules into the run directory');
+
+      // First match wins in Alertmanager: behind the severity routes the
       // warning rule would take the 12h route and the critical one the 1h
       // route, so neither would be the six-hourly digest that was asked for.
-      final src = read('../.local-monitoring/alertmanager.runtime.yml');
       final anrAt = src.indexOf('ClientANR');
       final critAt = src.indexOf('severity="critical"');
       expect(anrAt, greaterThan(-1), reason: 'the ANR route is gone');
       expect(anrAt, lessThan(critAt),
-          reason: 'the ANR route must come first or it never matches');
+          reason: 'the ANR route must be matched before the severity routes '
+              'or it never matches at all');
       expect(src.contains('repeat_interval: 6h'), isTrue);
     });
   });
