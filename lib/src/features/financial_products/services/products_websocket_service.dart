@@ -10,6 +10,7 @@ import 'package:web_socket_channel/io.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 /// Products status event received from WebSocket
 class ProductsStatusEvent {
@@ -166,6 +167,23 @@ class ProductsWebSocketService {
       cancelOnError: false,
     );
 
+    // NOTHING HAS CONNECTED YET. Both constructors above are lazy — they
+    // return a channel and dial in the background — so the lines below
+    // announced a connection that did not exist, and _startPingTimer() then
+    // wrote to a dead socket from inside a Timer callback. That is where the
+    // production hangs came from.
+    //
+    // listen() stays FIRST so the handshake error is still routed to
+    // _handleError rather than becoming an unhandled async error. The throw
+    // hands failure to connect()'s catch, which falls back to SSE — the
+    // recovery this class already implements.
+    final ready = await wsAwaitReady(_channel, context: 'products');
+    if (!ready.ok) {
+      await wsClose(_channel, context: 'products');
+      _channel = null;
+      throw StateError('products websocket handshake failed: ${ready.error}');
+    }
+
     _isConnected = true;
     _connectionController.add(ProductsWebSocketConnectionState.connected);
     _startPingTimer();
@@ -247,7 +265,7 @@ class ProductsWebSocketService {
     _pingTimer?.cancel();
     _pingTimer = null;
 
-    _channel?.sink.close();
+    wsClose(_channel);
     _channel = null;
 
     _sseSubscription?.cancel();
@@ -266,7 +284,7 @@ class ProductsWebSocketService {
   void _sendPing() {
     if (_isConnected && _channel != null && !_useSSE) {
       try {
-        _channel!.sink.add(jsonEncode({'type': 'ping'}));
+        wsSend(_channel, jsonEncode({'type': 'ping'}));
       } catch (e) {
         print('ProductsWebSocketService: Error sending ping - $e');
       }

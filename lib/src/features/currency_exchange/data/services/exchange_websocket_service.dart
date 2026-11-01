@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 /// A single terminal-or-intermediate event pushed by the financial-gateway
 /// exchange WebSocket. Mirrors the Go ExchangeEvent struct in
@@ -104,7 +105,7 @@ class ExchangeWebSocketService {
     _reconnectTimer = null;
     await _channelSub?.cancel();
     _channelSub = null;
-    _channel?.sink.close();
+    wsClose(_channel);
     _channel = null;
   }
 
@@ -133,13 +134,26 @@ class ExchangeWebSocketService {
       _channel = kIsWeb
           ? WebSocketChannel.connect(uri)
           : IOWebSocketChannel.connect(uri.toString());
-      _reconnectAttempt = 0;
       _channelSub = _channel!.stream.listen(
         _onMessage,
         onError: (_) => _scheduleReconnect(),
         onDone: _scheduleReconnect,
         cancelOnError: false,
       );
+
+      // Both constructors above are LAZY, so nothing has connected yet. The
+      // backoff reset used to sit where the listen call now is — before the
+      // handshake — which made it inert: every dial zeroed the counter before
+      // the failure it was counting could arrive, so the delay never grew and
+      // a dead gateway was hammered at the floor interval forever. It is now
+      // below the gate, where a reset actually means a connection happened.
+      final ready = await wsAwaitReady(_channel, context: 'exchange');
+      if (!ready.ok) {
+        await wsClose(_channel, context: 'exchange');
+        _channel = null;
+        throw StateError('exchange websocket handshake failed: ${ready.error}');
+      }
+      _reconnectAttempt = 0;
     } catch (_) {
       _scheduleReconnect();
     }

@@ -94,8 +94,20 @@ class UniversalVoiceMode {
       onDone: () => print('WebSocket closed'),
     );
 
+    // The gateway socket is LAZY: without this the confirmation below went
+    // into a sink whose connection never opened, and the caller was told the
+    // voice agent was up. There is no try/catch here, so failure returns
+    // quietly leaving _channel null for the caller to retry.
+    final ready = await wsAwaitReady(_channel, context: 'voice_gateway');
+    if (!ready.ok) {
+      await wsClose(_channel, context: 'voice_gateway');
+      _channel = null;
+      print('Voice Agent Gateway unreachable: ${ready.error}');
+      return;
+    }
+
     // Send connection confirmation
-    _channel!.sink.add(jsonEncode({
+    wsSend(_channel, jsonEncode({
       'type': 'connect',
       'session': _session!.toJson(),
     }));
@@ -174,7 +186,7 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    _channel!.sink.add(jsonEncode({
+    wsSend(_channel, jsonEncode({
       'type': 'audio',
       'audio_data': base64Encode(audioBytes),
       'session_id': _session!.sessionId,
@@ -186,7 +198,7 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    _channel!.sink.add(jsonEncode({
+    wsSend(_channel, jsonEncode({
       'type': 'text',
       'text': text,
       'session_id': _session!.sessionId,
@@ -194,7 +206,7 @@ class UniversalVoiceMode {
   }
 
   void disconnect() {
-    _channel?.sink.close();
+    wsClose(_channel);
     _channel = null;
     _session = null;
   }
@@ -204,7 +216,7 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    _channel!.sink.add(jsonEncode({
+    wsSend(_channel, jsonEncode({
       'type': 'submit_pin',
       'pin': pin,
       'session_id': _session!.sessionId,
@@ -217,7 +229,7 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    _channel!.sink.add(jsonEncode({
+    wsSend(_channel, jsonEncode({
       'type': 'cancel_pin',
       'session_id': _session!.sessionId,
       'user_id': _session!.userId,
@@ -320,8 +332,20 @@ class ServiceSpecificVoiceMode {
       onDone: () => print('WebSocket closed'),
     );
 
+    // The gateway socket is LAZY: without this the confirmation below went
+    // into a sink whose connection never opened, and the caller was told the
+    // voice agent was up. There is no try/catch here, so failure returns
+    // quietly leaving _channel null for the caller to retry.
+    final ready = await wsAwaitReady(_channel, context: 'voice_gateway');
+    if (!ready.ok) {
+      await wsClose(_channel, context: 'voice_gateway');
+      _channel = null;
+      print('Voice Agent Gateway unreachable: ${ready.error}');
+      return;
+    }
+
     // Send connection confirmation
-    _channel!.sink.add(jsonEncode({
+    wsSend(_channel, jsonEncode({
       'type': 'connect',
       'session': _session!.toJson(),
       'service_context': service,
@@ -364,7 +388,7 @@ class ServiceSpecificVoiceMode {
       throw Exception('Not connected to agent');
     }
 
-    _channel!.sink.add(jsonEncode({
+    wsSend(_channel, jsonEncode({
       'type': 'audio',
       'audio_data': base64Encode(audioBytes),
       'session_id': _session!.sessionId,
@@ -376,7 +400,7 @@ class ServiceSpecificVoiceMode {
       throw Exception('Not connected to agent');
     }
 
-    _channel!.sink.add(jsonEncode({
+    wsSend(_channel, jsonEncode({
       'type': 'text',
       'text': text,
       'session_id': _session!.sessionId,
@@ -384,7 +408,7 @@ class ServiceSpecificVoiceMode {
   }
 
   void disconnect() {
-    _channel?.sink.close();
+    wsClose(_channel);
     _channel = null;
     _session = null;
   }

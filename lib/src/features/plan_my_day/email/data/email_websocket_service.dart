@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 /// One realtime email event pushed from the backend
 /// (`{type, data}` on the `/ws/planning/email` socket). Types:
@@ -78,6 +79,23 @@ class EmailWebSocketService {
       }
       _channel!.stream.listen(_onMessage,
           onError: (_) => _onDone(), onDone: _onDone, cancelOnError: false);
+      // NOTHING HAS CONNECTED YET. Both constructors above are lazy — they return
+      // a channel and dial in the background — so the lines below announced a
+      // connection that did not exist, and the ping timer then wrote to a dead
+      // socket and threw from inside a Timer callback. That is where the
+      // production hangs came from.
+      //
+      // listen() stays FIRST so the handshake error is still routed to the stream
+      // handler rather than becoming an unhandled async error. The throw hands
+      // failure to the catch this method already has, which is the correct and
+      // only recovery path.
+      final ready = await wsAwaitReady(_channel, context: 'email');
+      if (!ready.ok) {
+        await wsClose(_channel, context: 'email');
+        _channel = null;
+        throw StateError('email websocket handshake failed: ${ready.error}');
+      }
+
       _connected = true;
       _attempts = 0;
     } catch (_) {
@@ -117,7 +135,7 @@ class EmailWebSocketService {
     _reconnectTimer?.cancel();
     _connected = false;
     try {
-      await _channel?.sink.close();
+      await wsClose(_channel);
     } catch (_) {}
     _channel = null;
   }

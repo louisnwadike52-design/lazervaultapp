@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 /// Wire shape from `services/commerce-gateway/websocket/qr_websocket.go`.
 /// Keep keys in sync with the Go `QRUpdateEvent`.
@@ -129,6 +130,20 @@ class QrPayWebSocketService {
       onDone: _handleDone,
       cancelOnError: false,
     );
+    // NOTHING HAS CONNECTED YET: the constructors above are lazy. Announcing
+    // `connected` here was wrong on every failed network, and _startPingTimer()
+    // below then wrote to a dead socket from a Timer callback — the production
+    // hang. This method has no try/catch, so a throw would escape to callers
+    // that do not handle it; instead we close the half-open channel, which
+    // forces onDone and lets the EXISTING stream plumbing schedule the
+    // reconnect. One recovery path, not two competing ones.
+    final ready = await wsAwaitReady(_channel, context: 'qr_pay');
+    if (!ready.ok) {
+      await wsClose(_channel, context: 'qr_pay');
+      _isConnected = false;
+      return;
+    }
+
     _isConnected = true;
     _connectionController.add(QrPayWebSocketConnectionState.connected);
     _startPingTimer();
@@ -139,7 +154,7 @@ class QrPayWebSocketService {
     _pingTimer?.cancel();
     _pingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_channel != null) {
-        _channel!.sink.add(jsonEncode({'type': 'ping'}));
+        wsSend(_channel, jsonEncode({'type': 'ping'}));
       }
     });
   }
@@ -177,7 +192,7 @@ class QrPayWebSocketService {
 
   Future<void> disconnect() async {
     _pingTimer?.cancel();
-    await _channel?.sink.close();
+    await wsClose(_channel);
     _channel = null;
     _isConnected = false;
     _connectionController.add(QrPayWebSocketConnectionState.disconnected);

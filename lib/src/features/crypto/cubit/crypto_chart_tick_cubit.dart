@@ -50,6 +50,7 @@ import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 /// One real-time price tick for a single crypto pair. Caller mutates
 /// the rightmost candle in its priceHistory in place — open carries
@@ -171,7 +172,10 @@ class CryptoChartTickCubit extends Cubit<ChartTickState> {
     emit(state.copyWith(tickCount: 0));
   }
 
-  void _connect() {
+  /// Async because the handshake is now awaited. Callers deliberately do not
+  /// await it — dialling is background work and must not block start() or the
+  /// reconnect timer — so failures surface through _onWsError, not a Future.
+  Future<void> _connect() async {
     final binanceQuote = _binanceQuoteFor(vsCurrency);
     if (binanceQuote == null) {
       // No Binance symbol for this quote — drop straight to polling
@@ -191,6 +195,16 @@ class CryptoChartTickCubit extends Cubit<ChartTickState> {
         onDone: _onWsDone,
         cancelOnError: false,
       );
+      // Binance's socket is LAZY like every other: `connect` returns before
+      // the handshake, so emitting `connected: true` here was a guess. On a
+      // dropped network the chart showed a live badge over a frozen series.
+      final ready = await wsAwaitReady(channel, context: 'crypto_chart');
+      if (!ready.ok) {
+        await wsClose(channel, context: 'crypto_chart');
+        _channel = null;
+        throw StateError('binance stream handshake failed: ${ready.error}');
+      }
+
       if (!isClosed) {
         emit(state.copyWith(connected: true, lastError: null));
       }
@@ -292,7 +306,7 @@ class CryptoChartTickCubit extends Cubit<ChartTickState> {
       _channelSub?.cancel();
     } catch (_) {}
     try {
-      _channel?.sink.close();
+      wsClose(_channel);
     } catch (_) {}
     _channel = null;
     _channelSub = null;

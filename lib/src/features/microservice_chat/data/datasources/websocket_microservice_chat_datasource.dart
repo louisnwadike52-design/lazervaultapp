@@ -4,6 +4,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'http_microservice_chat_datasource.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 abstract class WebSocketMicroserviceChatDataSource {
   Future<void> connect(String sessionId, String accessToken, String userId,
@@ -56,7 +57,7 @@ class WebSocketMicroserviceChatDataSourceImpl
         'source_context': sourceContext,
       });
 
-      _channel!.sink.add(initMessage);
+      wsSend(_channel, initMessage);
 
       // Listen for incoming messages
       _channel!.stream.listen(
@@ -72,6 +73,16 @@ class WebSocketMicroserviceChatDataSourceImpl
         },
         cancelOnError: false,
       );
+
+      // The handshake has not happened yet — `connect` is lazy — so without
+      // this the chat reported itself connected over a socket that never
+      // opened, and the user's first message vanished with no error.
+      final ready = await wsAwaitReady(_channel, context: 'microservice_chat');
+      if (!ready.ok) {
+        await wsClose(_channel, context: 'microservice_chat');
+        _channel = null;
+        throw StateError('chat websocket handshake failed: ${ready.error}');
+      }
 
       _isConnected = true;
     } catch (e) {
@@ -117,7 +128,7 @@ class WebSocketMicroserviceChatDataSourceImpl
       'message': message,
     });
 
-    _channel!.sink.add(messageData);
+    wsSend(_channel, messageData);
 
     // Return a completer that will be resolved when response arrives
     final completer = Completer<ChatResponse>();
@@ -156,7 +167,7 @@ class WebSocketMicroserviceChatDataSourceImpl
   @override
   Future<void> disconnect() async {
     _isConnected = false;
-    await _channel?.sink.close();
+    await wsClose(_channel);
     _channel = null;
     await _messageController.close();
   }

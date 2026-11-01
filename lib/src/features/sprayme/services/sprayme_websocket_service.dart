@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 /// Real-time event from a spray session room
 class SprayRoomEvent {
@@ -158,6 +159,21 @@ class SprayMeWebSocketService {
       cancelOnError: false,
     );
 
+    // NOTHING HAS CONNECTED YET: the constructors above are lazy. Announcing
+    // `connected` here was wrong on every failed network, and _startPingTimer()
+    // below then wrote to a dead socket from a Timer callback — the production
+    // hang. This method has no try/catch, so a throw would escape to callers
+    // that do not handle it; instead we close the half-open channel, which
+    // forces onDone and lets the EXISTING stream plumbing schedule the
+    // reconnect. One recovery path, not two competing ones.
+    final ready = await wsAwaitReady(_channel, context: 'sprayme');
+    if (!ready.ok) {
+      await wsClose(_channel, context: 'sprayme');
+      _isConnected = false;
+      _isConnecting = false;
+  return;
+    }
+
     _isConnected = true;
     _isConnecting = false;
     _connectionController.add(SprayWebSocketConnectionState.connected);
@@ -171,7 +187,7 @@ class SprayMeWebSocketService {
     _pingTimer = null;
     _channelSubscription?.cancel();
     _channelSubscription = null;
-    _channel?.sink.close();
+    wsClose(_channel);
     _channel = null;
     final wasConnected = _isConnected;
     _isConnected = false;
@@ -188,7 +204,7 @@ class SprayMeWebSocketService {
     _pingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_isConnected && _channel != null) {
         try {
-          _channel!.sink.add(jsonEncode({'type': 'ping'}));
+          wsSend(_channel, jsonEncode({'type': 'ping'}));
         } catch (_) {}
       }
     });

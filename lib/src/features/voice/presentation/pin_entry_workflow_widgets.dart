@@ -123,7 +123,7 @@ class PINWorkflowManager {
       throw Exception('WebSocket channel not connected');
     }
 
-    channel?.sink.add({
+    wsSend(channel, {
       'type': 'submit_pin',
       'session_id': sessionId,
       'user_id': userId,
@@ -136,7 +136,7 @@ class PINWorkflowManager {
       throw Exception('WebSocket channel not connected');
     }
 
-    channel?.sink.add({
+    wsSend(channel, {
       'type': 'cancel_pin',
       'session_id': sessionId,
       'user_id': userId,

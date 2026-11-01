@@ -8,6 +8,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/branding/assistant_identity.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 part 'voice_integration_widgets.dart';
 
 // ============================================================================

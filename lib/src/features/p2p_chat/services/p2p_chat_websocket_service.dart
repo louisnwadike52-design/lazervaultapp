@@ -9,6 +9,7 @@ import 'package:web_socket_channel/io.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/src/features/p2p_chat/data/models/p2p_message_model.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 part 'p2p_chat_websocket_service_widgets.dart';
 
 /// WebSocket service for real-time P2P chat messaging.
@@ -131,6 +132,23 @@ class P2PChatWebSocketService {
         cancelOnError: false,
       );
 
+      // NOTHING HAS CONNECTED YET. Both constructors above are lazy — they return
+      // a channel and dial in the background — so the lines below announced a
+      // connection that did not exist, and the ping timer then wrote to a dead
+      // socket and threw from inside a Timer callback. That is where the
+      // production hangs came from.
+      //
+      // listen() stays FIRST so the handshake error is still routed to the stream
+      // handler rather than becoming an unhandled async error. The throw hands
+      // failure to the catch this method already has, which is the correct and
+      // only recovery path.
+      final ready = await wsAwaitReady(_channel, context: 'p2p_chat');
+      if (!ready.ok) {
+        await wsClose(_channel, context: 'p2p_chat');
+        _channel = null;
+        throw StateError('p2p_chat websocket handshake failed: ${ready.error}');
+      }
+
       _isConnected = true;
       _isConnecting = false;
       _reconnectAttempts = 0;
@@ -222,7 +240,7 @@ class P2PChatWebSocketService {
     _pingTimer = null;
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
-    _channel?.sink.close();
+    wsClose(_channel);
     _channel = null;
     _isConnected = false;
     _isConnecting = false;
@@ -232,7 +250,7 @@ class P2PChatWebSocketService {
   void _send(Map<String, dynamic> data) {
     if (_isConnected && _channel != null) {
       try {
-        _channel!.sink.add(jsonEncode(data));
+        wsSend(_channel, jsonEncode(data));
       } catch (e) {
         // Ignore send errors on closed connections
       }

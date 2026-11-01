@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 /// Enhanced WebSocket manager for voice session with comprehensive edge case handling.
 ///
@@ -85,6 +86,17 @@ class VoiceWebSocketManager {
         onDone: _onDone,
       );
 
+      // `IOWebSocketChannel.connect` is LAZY, so this was not a successful
+      // connect. Zeroing _reconnectAttempts here made the backoff inert: every
+      // dial reset the counter before the failure it was counting arrived.
+      // Awaiting readiness is what makes the next two lines true.
+      final ready = await wsAwaitReady(_channel, context: 'voice_manager');
+      if (!ready.ok) {
+        await wsClose(_channel, context: 'voice_manager');
+        _channel = null;
+        throw StateError('voice websocket handshake failed: ${ready.error}');
+      }
+
       _isConnected = true;
       _reconnectAttempts = 0; // Reset on successful connect
 
@@ -111,7 +123,7 @@ class VoiceWebSocketManager {
     await _subscription?.cancel();
     _subscription = null;
 
-    await _channel?.sink.close();
+    await wsClose(_channel);
     _channel = null;
 
     _isConnected = false;
@@ -125,7 +137,7 @@ class VoiceWebSocketManager {
 
     if (_isConnected && _channel != null) {
       try {
-        _channel!.sink.add(jsonEncode(data));
+        wsSend(_channel, jsonEncode(data));
       } catch (e) {
         onError?.call('Failed to send message: $e');
         // Edge case: Queue message for retry after reconnection
@@ -220,7 +232,7 @@ class VoiceWebSocketManager {
       if (_isConnected && _channel != null) {
         try {
           // Send ping to keep connection alive
-          _channel!.sink.add(jsonEncode(
+          wsSend(_channel, jsonEncode(
               {'type': 'ping', 'timestamp': DateTime.now().toIso8601String()}));
         } catch (e) {
           onError?.call('Heartbeat failed: $e');

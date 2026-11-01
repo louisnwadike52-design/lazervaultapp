@@ -11,6 +11,7 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 /// Banking status event received from WebSocket
 class BankingStatusEvent {
@@ -181,6 +182,24 @@ class BankingWebSocketService {
       cancelOnError: false,
     );
 
+    // NOTHING HAS CONNECTED YET. Both constructors above are lazy: they hand
+    // back a channel and dial in the background, so announcing `connected` on
+    // the next line was a guess that was wrong on every failed network. The
+    // ping timer then wrote to the dead socket and threw from inside a Timer
+    // callback, which is where the production hangs came from.
+    //
+    // Awaiting readiness HERE turns that into the SSE fallback this class
+    // already implements: the caller's catch is the correct handler, so a
+    // failed handshake throws. The listen() above stays FIRST on purpose, so
+    // the handshake error is also routed to _handleError instead of becoming
+    // an unhandled async error on a stream nobody is reading.
+    final ready = await wsAwaitReady(_channel, context: 'banking');
+    if (!ready.ok) {
+      await wsClose(_channel, context: 'banking');
+      _channel = null;
+      throw StateError('banking websocket handshake failed: ${ready.error}');
+    }
+
     _isConnected = true;
     _connectionController.add(BankingWebSocketConnectionState.connected);
     _startPingTimer();
@@ -262,7 +281,7 @@ class BankingWebSocketService {
     _pingTimer?.cancel();
     _pingTimer = null;
 
-    _channel?.sink.close();
+    wsClose(_channel);
     _channel = null;
 
     _sseSubscription?.cancel();
@@ -281,7 +300,7 @@ class BankingWebSocketService {
   void _sendPing() {
     if (_isConnected && _channel != null && !_useSSE) {
       try {
-        _channel!.sink.add(jsonEncode({'type': 'ping'}));
+        wsSend(_channel, jsonEncode({'type': 'ping'}));
       } catch (e) {
         print('BankingWebSocketService: Error sending ping - $e');
       }

@@ -51,6 +51,7 @@ import 'package:lazervault/core/utils/logger.dart';
 import '../voice_audio_route_policy.dart';
 import '../services/voice_note_capture.dart';
 import '../../../../core/config/voice_language_availability.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // ── Voice session failures: one message for the user, the truth for ops ──
@@ -3322,13 +3323,16 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   // ── WebSocket connection to voice-ws-service ──
 
-  void _connectWebSocket() {
+  /// Async because the handshake is now awaited. The two callers intentionally
+  /// do not await it: dialling runs in the background while the LiveKit room
+  /// continues, and failures route to _scheduleWebSocketReconnect().
+  Future<void> _connectWebSocket() async {
     if (_currentSessionId == null || _currentAccessToken == null) return;
 
     // Clean up any existing connection before reconnecting
     _wsSubscription?.cancel();
     _wsSubscription = null;
-    _wsChannel?.sink.close();
+    wsClose(_wsChannel);
     _wsChannel = null;
 
     final wsUri = Uri.parse('$_voiceWsUrl/ws/voice/$_currentSessionId'
@@ -3364,6 +3368,17 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       // opened.
       _wsHandshakeConfirmed = false;
       print('VoiceSessionCubit: WebSocket dialling $_voiceWsUrl');
+
+      // Awaiting readiness turns "we find out when a message arrives" into "we
+      // know now". The first-message confirmation above stays as the second
+      // line of defence, but a dead network no longer has to wait for a
+      // message that is never coming before the backoff can start.
+      final ready = await wsAwaitReady(_wsChannel, context: 'voice_session');
+      if (!ready.ok) {
+        await wsClose(_wsChannel, context: 'voice_session');
+        _wsChannel = null;
+        throw StateError('voice session handshake failed: ${ready.error}');
+      }
     } catch (e) {
       print('VoiceSessionCubit: WebSocket connection failed: $e');
       // A synchronous throw never reaches onError, so without this a dial that
@@ -3986,7 +4001,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _wsReconnectTimer = null;
     _wsSubscription?.cancel();
     _wsSubscription = null;
-    _wsChannel?.sink.close();
+    wsClose(_wsChannel);
     _wsChannel = null;
     // ALL the retry state, not just the counter.
     //
@@ -4269,7 +4284,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (_wsChannel == null) return;
     final payload = jsonEncode({'event': eventType, 'data': data});
     try {
-      _wsChannel!.sink.add(payload);
+      wsSend(_wsChannel, payload);
       print('VoiceSessionCubit: Sent $eventType to voice agent via WS');
     } catch (e) {
       print('VoiceSessionCubit: Failed to send $eventType: $e');

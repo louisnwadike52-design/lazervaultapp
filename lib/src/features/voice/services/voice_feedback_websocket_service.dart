@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/foundation.dart';
 import '../cubit/voice_transaction_cubit.dart';
+import 'package:lazervault/core/network/ws_safe.dart';
 
 // ==============================================================================
 // Voice Feedback WebSocket Service
@@ -15,7 +16,7 @@ class VoiceFeedbackWebSocketService {
     required this.baseUrl,
     this.reconnectDelay = const Duration(seconds: 3),
     this.pingInterval = const Duration(seconds: 30),
-    this.connectionTimeout = const Duration(seconds: 10),
+    this.connectionTimeout = kWsHandshakeTimeout,
   });
 
   final String baseUrl;
@@ -80,9 +81,17 @@ class VoiceFeedbackWebSocketService {
 
       _channel = channel;
 
-      // Wait for connection with timeout
-      final readyFuture = channel.ready.timeout(connectionTimeout);
-      await readyFuture;
+      // This service already awaited readiness — it was the only one that
+      // did. It now goes through the shared gate so there is ONE mechanism to
+      // reason about, and so a handshake failure cannot throw out of here by a
+      // different route than everywhere else.
+      final ready = await wsAwaitReady(channel,
+          timeout: connectionTimeout, context: 'voice_feedback');
+      if (!ready.ok) {
+        await wsClose(channel, context: 'voice_feedback');
+        _channel = null;
+        throw StateError('voice feedback handshake failed: ${ready.error}');
+      }
 
       _isConnected = true;
       _reconnectAttempts =
@@ -132,11 +141,10 @@ class VoiceFeedbackWebSocketService {
     _pingTimer?.cancel();
     _reconnectTimer?.cancel();
 
-    try {
-      await _channel?.sink.close(1000, reason);
-    } catch (e) {
-      debugPrint('[VoiceFeedback] Error closing connection: $e');
-    }
+    // Normal-closure code + reason, through the guard: a channel whose connect
+    // never completed throws from close() exactly as it does from add().
+    await wsClose(_channel,
+        closeCode: 1000, closeReason: reason, context: 'voice_feedback');
 
     await _subscription?.cancel();
     _subscription = null;
@@ -409,7 +417,7 @@ class VoiceFeedbackWebSocketService {
     }
 
     try {
-      _channel!.sink.add(jsonEncode(data));
+      wsSend(_channel, jsonEncode(data));
     } catch (e) {
       debugPrint('[VoiceFeedback] Error sending message: $e');
     }
