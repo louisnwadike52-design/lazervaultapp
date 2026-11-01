@@ -35,6 +35,8 @@ import '../widgets/exchange_history_actions_sheet.dart';
 import '../widgets/exchange_transaction_tile.dart';
 import '../widgets/fee_breakdown_widget.dart';
 import '../widgets/quick_amount_buttons.dart';
+import '../widgets/wallet_balance_strip.dart';
+import '../../data/services/exchange_wallet_balances.dart';
 import '../widgets/source_currency_picker.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -55,6 +57,12 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       serviceLocator<ITransactionPinService>();
 
   final _amountController = TextEditingController();
+
+  /// What the user holds, per currency. ONE read, shared by the balance strip,
+  /// the MAX chip and the pre-flight validator — so the screen cannot offer a
+  /// MAX that the next step refuses.
+  ExchangeWalletBalances _balances = const ExchangeWalletBalances.empty();
+  bool _balancesLoading = true;
   final _amountFocusNode = FocusNode();
   ExchangeMode _mode = ExchangeMode.convert;
   // _isRefreshingRate tracks ONLY the in-flight GET /rates call so we can
@@ -117,6 +125,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     // explicit pair has to be checked against them (see below).
     final homeLoaded = cubit.loadHome();
     _amountController.addListener(_onAmountChanged);
+    unawaited(_loadBalances());
     if (isRepeatPrefill || hasExplicitPair) {
       // Fetch a rate immediately so the pair is live on arrival — with an
       // amount when one was prefilled, indicative otherwise (_fetchRate passes
@@ -246,7 +255,38 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   }
 
   Future<void> _refresh() async {
-    await context.read<ExchangeCubit>().loadHome();
+    await Future.wait([
+      context.read<ExchangeCubit>().loadHome(),
+      _loadBalances(),
+    ]);
+  }
+
+  /// Read the wallet balances. Silent on failure — the strip renders "—", MAX
+  /// hides itself, and the backend stays the authority on funds. A balance
+  /// panel must never be the reason an exchange screen fails to open.
+  Future<void> _loadBalances() async {
+    final loaded = await ExchangeWalletBalances.fetch();
+    if (!mounted) return;
+    setState(() {
+      _balances = loaded;
+      _balancesLoading = false;
+    });
+  }
+
+  /// The most this user can convert out of the source currency.
+  ///
+  /// Null when the balances have not loaded or the user holds nothing, which
+  /// hides MAX rather than offering a zero.
+  ///
+  /// The platform margin is NOT deducted: it lives inside the rate, so the
+  /// user converts their whole balance and receives the margin-adjusted
+  /// amount. Only an explicit service fee — off by default — is taken off,
+  /// because that genuinely leaves the balance on top of the amount.
+  double? _maxSpendable(String currency, double feeMajor) {
+    if (_balancesLoading) return null;
+    if (_balances.minorFor(currency) == null) return null;
+    final max = _balances.maxSpendableMajor(currency, feeMajor: feeMajor);
+    return max > 0 ? max : null;
   }
 
   void _onAmountChanged() {
@@ -556,32 +596,21 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     required double totalCost,
   }) async {
     try {
-      final accountsClient =
-          serviceLocator<accounts_grpc.AccountsServiceClient>();
-      final callOptions =
-          await serviceLocator<GrpcCallOptionsHelper>().withAuth();
-      // Cross-currency check: the validator MUST see USD/GBP/etc wallets
-      // even when the user's locale is en-NG. Default GetUserAccounts
-      // returns only the locale-currency accounts, which made the check
-      // report `bestBalance=0` for any non-locale source currency and
-      // refuse perfectly funded international transfers.
-      final response = await accountsClient.getUserAccounts(
-        accounts_pb.GetUserAccountsRequest(includeAllCurrencies: true),
-        options: callOptions,
-      );
+      // FRESH, not the strip's cached copy: this runs at the moment money is
+      // about to move, and a balance read when the screen opened can be
+      // minutes and several transactions old.
+      //
+      // Same source as the strip and the MAX chip, though, so all three apply
+      // one rule — "highest ACTIVE account in this currency", because a
+      // conversion debits ONE account and summing would accept an amount no
+      // single wallet can cover. Cross-currency is load-bearing: the default
+      // accounts response carries only locale-currency accounts, which made
+      // this report zero for any non-locale source and refuse perfectly
+      // funded transfers.
+      final balances = await ExchangeWalletBalances.fetch();
+      if (balances.isEmpty) return null; // unknown — let the backend decide
 
-      // Find the account with the highest balance for the source currency
-      double bestBalance = 0;
-      for (final account in response.accounts) {
-        if (account.currency == currency && account.status == 'active') {
-          // balance is in minor units (kobo/cents)
-          final balanceMajor = account.balance.toDouble() / 100;
-          if (balanceMajor > bestBalance) {
-            bestBalance = balanceMajor;
-          }
-        }
-      }
-
+      final bestBalance = balances.majorFor(currency);
       if (bestBalance < totalCost) {
         final formatted = bestBalance.toStringAsFixed(2);
         return 'Your $currency balance ($formatted) is not enough for this exchange (${totalCost.toStringAsFixed(2)} required).';
@@ -1132,7 +1161,20 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                         onToTap: () => _showCurrencyPicker(false),
                         onSwap: _onSwapCurrencies,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
+
+                      // What the user holds on each side. Directly under the
+                      // pair, because the balance only means anything next to
+                      // the currency it belongs to — and the target side is
+                      // what makes a conversion read as moving your own money
+                      // rather than sending it away.
+                      WalletBalanceStrip(
+                        balances: _balances,
+                        fromCurrency: cubit.fromCurrency,
+                        toCurrency: cubit.toCurrency,
+                        loading: _balancesLoading,
+                      ),
+                      const SizedBox(height: 14),
 
                       // You send — amount input
                       _buildAmountCard(
@@ -1144,11 +1186,21 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                       ),
                       const SizedBox(height: 12),
 
-                      // Quick amount buttons
+                      // Quick amount buttons, plus MAX.
+                      //
+                      // The fee passed here is the one the live quote carries,
+                      // so MAX lands on a figure the next step accepts. Zero
+                      // whenever no rate is loaded yet, which is also the
+                      // default: the platform's revenue is the margin inside
+                      // the rate, not a charge on top.
                       QuickAmountButtons(
                         currencyCode: cubit.fromCurrency,
                         onAmountSelected: _onQuickAmount,
                         selectedAmount: amount,
+                        maxAmount: _maxSpendable(
+                          cubit.fromCurrency,
+                          rate?.fees ?? 0,
+                        ),
                       ),
                       const SizedBox(height: 16),
 
