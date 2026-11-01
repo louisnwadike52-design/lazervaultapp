@@ -1,5 +1,7 @@
 package com.lazervault.app
 
+import android.app.ActivityManager
+import android.app.ApplicationExitInfo
 import android.content.Intent
 import android.hardware.biometrics.BiometricManager
 import android.hardware.fingerprint.FingerprintManager
@@ -27,9 +29,35 @@ class MainActivity : FlutterFragmentActivity() {
     private val settingsChannelName = "com.lazervault.app/settings"
     private val playServicesChannelName = "com.lazervault.app/play_services"
     private val installReferrerChannelName = "com.lazervault.app/install_referrer"
+    private val exitInfoChannelName = "com.lazervault.app/exit_info"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // --- WHY THE APP DIED LAST TIME ------------------------------------
+        //
+        // An ANR is invisible from inside Dart. The app is not crashing — it
+        // is alive and not answering, so no Dart error handler fires, nothing
+        // reaches runZonedGuarded, and the process is killed by the system
+        // with no record on our side. We were counting ANRs from Play Console
+        // days later, with no stack and no idea which screen the user was on.
+        //
+        // ApplicationExitInfo is the only first-party source for this. Android
+        // keeps the last several exit reasons per package — ANR, native
+        // crash, OOM kill, user action — WITH the ANR trace attached. Reading
+        // it at the NEXT launch is how a death that could not be observed as
+        // it happened becomes a report.
+        //
+        // API 30+. Below that the list does not exist and the channel returns
+        // empty, which the Dart side treats as "nothing to report" rather
+        // than as an error.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, exitInfoChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getRecentExits" -> result.success(recentExits())
+                    else -> result.notImplemented()
+                }
+            }
 
         // --- HCE control (Host Card Emulation for contactless "broadcast") -----
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, hceChannelName)
@@ -314,4 +342,86 @@ class MainActivity : FlutterFragmentActivity() {
         val adapter = NfcAdapter.getDefaultAdapter(this) ?: return false
         return adapter.isEnabled
     }
+    /// The system's record of how this process last died.
+    ///
+    /// Returns a list of maps rather than a typed object so the Dart side can
+    /// ship them straight to the log pipeline without a codec on either end.
+    ///
+    /// The ANR TRACE is the valuable part and it is a large blob — the main
+    /// thread's stack at the moment the system gave up on it, which is the
+    /// one thing that says WHERE the app was stuck. It is truncated here
+    /// rather than on the Dart side so an oversized trace never crosses the
+    /// channel at all; the first frames are the ones that matter.
+    private fun recentExits(): List<Map<String, Any?>> {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return emptyList()
+        return try {
+            val am = getSystemService(ActivityManager::class.java)
+                ?: return emptyList()
+            am.getHistoricalProcessExitReasons(packageName, 0, MAX_EXITS)
+                .map { info ->
+                    mapOf(
+                        "reason" to reasonName(info.reason),
+                        "reasonCode" to info.reason,
+                        "description" to info.description,
+                        "timestamp" to info.timestamp,
+                        "importance" to info.importance,
+                        "pss" to info.pss,
+                        "rss" to info.rss,
+                        // Only an ANR carries a trace, and reading the stream
+                        // for other reasons would be wasted I/O on every cold
+                        // start.
+                        "trace" to if (info.reason == ApplicationExitInfo.REASON_ANR) {
+                            readTrace(info)
+                        } else {
+                            null
+                        }
+                    )
+                }
+        } catch (t: Throwable) {
+            // Diagnostics must never be the reason a launch fails. An
+            // unreadable exit list is less bad than an app that will not
+            // start because it could not find out why it stopped.
+            emptyList()
+        }
+    }
+
+    private fun readTrace(info: ApplicationExitInfo): String? = try {
+        info.traceInputStream?.use { stream ->
+            val text = stream.bufferedReader().readText()
+            if (text.length > MAX_TRACE_CHARS) {
+                text.substring(0, MAX_TRACE_CHARS) + "\n…truncated"
+            } else {
+                text
+            }
+        }
+    } catch (t: Throwable) {
+        null
+    }
+
+    private fun reasonName(code: Int): String = when (code) {
+        ApplicationExitInfo.REASON_ANR -> "anr"
+        ApplicationExitInfo.REASON_CRASH -> "crash"
+        ApplicationExitInfo.REASON_CRASH_NATIVE -> "crash_native"
+        ApplicationExitInfo.REASON_LOW_MEMORY -> "low_memory"
+        ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE -> "excessive_resource_usage"
+        ApplicationExitInfo.REASON_SIGNALED -> "signaled"
+        ApplicationExitInfo.REASON_USER_REQUESTED -> "user_requested"
+        ApplicationExitInfo.REASON_USER_STOPPED -> "user_stopped"
+        ApplicationExitInfo.REASON_DEPENDENCY_DIED -> "dependency_died"
+        ApplicationExitInfo.REASON_PERMISSION_CHANGE -> "permission_change"
+        ApplicationExitInfo.REASON_INITIALIZATION_FAILURE -> "initialization_failure"
+        ApplicationExitInfo.REASON_EXIT_SELF -> "exit_self"
+        else -> "other_$code"
+    }
+
+    private companion object {
+        /// Android keeps up to 16; five is plenty to notice a pattern without
+        /// re-uploading the same history on every launch.
+        const val MAX_EXITS = 5
+
+        /// Enough for the main thread's stack, which is the part that says
+        /// where it was stuck.
+        const val MAX_TRACE_CHARS = 20000
+    }
+
 }

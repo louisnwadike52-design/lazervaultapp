@@ -34,6 +34,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'core/services/endpoint_registry.dart';
 import 'core/services/inactivity_watcher.dart';
+import 'core/services/app_exit_reporter.dart';
 import 'core/services/remote_log_sink.dart';
 import 'src/core/services/analytics_service.dart';
 import 'src/core/config/app_environment.dart'
@@ -286,6 +287,18 @@ void main() {
     // enqueue, and network shipping is a background Timer with timeouts. Nothing
     // here can stall or break the Flutter main thread / UI.
     unawaited(RemoteLogSink.instance.init());
+
+    // WHY THE APP DIED LAST TIME.
+    //
+    // An ANR never reaches any handler above: the app is not crashing, it is
+    // alive and not answering, so the system kills it leaving no trace on our
+    // side. The platform's own exit history is the only record, and the only
+    // moment we can read it is the NEXT launch — which is here.
+    //
+    // Deliberately unawaited and fail-silent: it runs on the cold path every
+    // single time, and a diagnostic that can delay or break a launch is worse
+    // than no diagnostic.
+    unawaited(AppExitReporter.reportPendingExits());
 
     // STARTUP TRACE → Loki: record the COMPILED tier and the exact backend host this
     // build will dial, so we can confirm SERVER-SIDE whether an installed build is
