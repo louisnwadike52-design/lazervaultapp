@@ -897,7 +897,16 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               Navigator.of(context).pop();
             } catch (_) {}
           }
-          Get.toNamed(
+          // REFRESH THE BALANCES ON THE WAY BACK.
+          //
+          // This pushes OVER the exchange home rather than replacing it (the
+          // success path uses offNamed and so gets a fresh State), so
+          // returning from processing lands on a screen whose balances were
+          // read before the conversion. The strip would show money that has
+          // already moved, and MAX would offer an amount the user no longer
+          // has — on the one screen whose entire job is knowing what they
+          // hold.
+          unawaited(Get.toNamed(
             AppRoutes.exchangeProcessing,
             arguments: {
               'mode': 'convert',
@@ -907,7 +916,9 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               'rate': cubit.currentRate,
               'transactionId': state.transactionId,
             },
-          );
+          )?.then((_) {
+            if (mounted) unawaited(_loadBalances());
+          }));
           return;
         }
         if (state is ExchangeSuccess) {

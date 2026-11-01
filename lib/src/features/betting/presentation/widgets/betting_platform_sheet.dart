@@ -112,7 +112,9 @@ class _BettingPlatformSheetState extends State<_BettingPlatformSheet> {
               ),
             ),
             // Search earns its place once the list outgrows a glance, which
-            // it already has.
+            // it already has — but a search box over an empty catalogue is
+            // an invitation to type into nothing.
+            if (widget.platforms.isNotEmpty)
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Container(
@@ -142,11 +144,24 @@ class _BettingPlatformSheetState extends State<_BettingPlatformSheet> {
             Expanded(
               child: visible.isEmpty
                   ? Center(
-                      child: Text(
-                        'No bookmaker matches "${_search.text.trim()}"',
-                        style: GoogleFonts.inter(
-                            color: BettingTheme.textSecondary,
-                            fontSize: 13.sp),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 32.w),
+                        child: Text(
+                          // An empty CATALOGUE and an empty SEARCH RESULT are
+                          // different conditions. Saying "no bookmaker matches
+                          // ''" when the list never loaded reads as a broken
+                          // search and sends the user typing; saying the
+                          // catalogue is empty tells them to close and retry.
+                          widget.platforms.isEmpty
+                              ? 'No betting platforms are available right now. '
+                                  'Close this and pull to refresh.'
+                              : 'No bookmaker matches "${_search.text.trim()}"',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                              color: BettingTheme.textSecondary,
+                              fontSize: 13.sp,
+                              height: 1.4),
+                        ),
                       ),
                     )
                   : ListView.separated(
