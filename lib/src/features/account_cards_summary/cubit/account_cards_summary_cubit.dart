@@ -20,6 +20,7 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   final AccountManager _accountManager;
   final LocaleManager _localeManager;
   StreamSubscription<BalanceUpdateEvent>? _wsSubscription;
+  StreamSubscription<String>? _currencySubscription;
 
   // Keep track of current summaries for WebSocket updates
   List<AccountSummaryEntity> _currentSummaries = [];
@@ -62,6 +63,19 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     // different objects. Without this, a successful background refetch
     // updated nothing the user could see.
     AccountSummariesStore.revision.addListener(_adoptPublishedSummaries);
+    // RE-SELECT THE ACTIVE ACCOUNT WHEN THE REGION CHANGES.
+    //
+    // Nothing did this. Switching region re-filtered the services grid and
+    // re-rendered the balance card, but `activeAccountId` kept pointing at the
+    // account chosen on first load — so the transaction list, statistics and
+    // every other account-scoped fetch kept asking for the OLD account while
+    // the header said otherwise. Currency, not country: two regions can share
+    // a currency and there is nothing to re-select then.
+    _currencySubscription =
+        _localeManager.currencyStream.distinct().listen((_) {
+      if (isClosed || _currentSummaries.isEmpty) return;
+      _autoSelectPersonalAccount(_currentSummaries);
+    });
     // Seed from whatever is already known, so an instance created by a route's
     // `BlocProvider(create: ...)` renders the user's accounts immediately
     // rather than a spinner (or nothing) until its own fetch returns. ~20
@@ -482,18 +496,30 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     // active account (and therefore the carousel) back to the personal account
     // every time. Only auto-select on the FIRST load, or when the previously
     // active account is no longer present (e.g. it was closed/removed).
-    final currentActive = _accountManager.activeAccountId;
-    if (currentActive != null &&
-        currentActive.isNotEmpty &&
-        summaries.any((acc) =>
-            acc.id == currentActive ||
-            acc.spendingAccountId == currentActive)) {
-      return; // keep the user's current selection
-    }
-
-    // Get current locale to determine expected currency
+    //
+    // The selection is kept only while it still matches the active CURRENCY.
+    // Switching region (the flag in the dashboard header) changes the locale
+    // and the currency, and the balance card follows — but nothing moved the
+    // active account, so it stayed pointed at the Naira account. Everything
+    // keyed off `activeAccountId` then fetched Naira data under a dollar
+    // header: the reported "GBP still showing recent transactions for NGN".
+    // An account in the wrong currency is not a selection worth preserving.
     final currentLocale = _localeManager.currentLocale;
     final expectedCurrency = _getCurrencyForLocale(currentLocale);
+
+    final currentActive = _accountManager.activeAccountId;
+    if (currentActive != null && currentActive.isNotEmpty) {
+      AccountSummaryEntity? held;
+      for (final acc in summaries) {
+        if (acc.id == currentActive || acc.spendingAccountId == currentActive) {
+          held = acc;
+          break;
+        }
+      }
+      if (held != null && held.currency == expectedCurrency) {
+        return; // keep the user's current selection
+      }
+    }
 
     // Find personal account with matching currency
     final personalAccount = summaries.firstWhere(
@@ -631,6 +657,7 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     _nubanWatch = null;
     _refetchDebounce?.cancel();
     _wsSubscription?.cancel();
+    _currencySubscription?.cancel();
     // A factory registration means instances are created and closed all day;
     // leaving the listener attached would keep every one of them alive and
     // emitting after its route was gone.

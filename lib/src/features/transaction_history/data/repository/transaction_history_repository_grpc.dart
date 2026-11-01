@@ -325,6 +325,28 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         }
       }
 
+      // A ROW IN ANOTHER CURRENCY CANNOT BELONG TO THIS ACCOUNT.
+      //
+      // The ledger query is scoped by account_id AND locale, but the external
+      // -transfer supplement merged just above is scoped by account_id alone —
+      // core-payments has no locale column to filter on. So a currency the
+      // active account does not hold could still reach the list through that
+      // one path, which is how Naira transfers appeared under a dollar
+      // account alongside a $0.00 balance.
+      //
+      // Dropping them is right rather than merely tidy: the amount, the
+      // symbol and the running totals above the list are all read as the
+      // active account's money. A row in another currency is not a different
+      // row, it is a wrong number.
+      //
+      // Only when the account's currency is actually known — never filter on
+      // a guess, or a slow summary load would blank a correct list.
+      if (pageCurrency != null && pageCurrency.isNotEmpty) {
+        transactions = transactions
+            .where((tx) => tx.currency.isEmpty || tx.currency == pageCurrency)
+            .toList();
+      }
+
       // Apply local search filter if set
       if (filters?.searchQuery?.isNotEmpty == true) {
         final query = filters!.searchQuery!.toLowerCase();
