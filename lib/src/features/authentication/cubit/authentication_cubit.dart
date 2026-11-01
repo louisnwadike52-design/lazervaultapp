@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:lazervault/core/utils/auth_error_copy.dart';
+import 'package:lazervault/src/features/betting/data/betting_platforms_store.dart';
 import 'package:lazervault/src/features/family_account/presentation/utils/family_archive_session.dart';
 
 import 'package:dartz/dartz.dart' hide State;
@@ -594,6 +595,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // A same-user re-login loses nothing: the carousel's instant first paint
       // comes from the per-user SharedPreferences copy, not from here.
       AccountSummariesStore.clear();
+      // The bookmaker catalogue is cached across route entries so the funding
+      // screen stops refetching on every visit. It is not user data, but one
+      // account's view of what is on sale must not persist into another's
+      // session on a shared handset.
+      BettingPlatformsStore.clear();
       // Drop the shared P2P realtime socket. It's a lazy singleton connected
       // with THIS user's token; its `connect()` early-returns while connected,
       // so without disconnecting here the next user would keep receiving the

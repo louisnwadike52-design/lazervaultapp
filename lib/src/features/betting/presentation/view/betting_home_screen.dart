@@ -278,7 +278,10 @@ class _BettingHomeScreenState extends State<BettingHomeScreen> {
             ),
             SizedBox(height: 16.h),
             TextButton(
-              onPressed: () => context.read<BettingCubit>().loadPlatforms(),
+              // force: the user tapped Retry, so they have asked for the
+              // round trip and expect to see it happen.
+              onPressed: () =>
+                  context.read<BettingCubit>().loadPlatforms(force: true),
               child: const Text('Retry', style: TextStyle(color: _primary)),
             ),
           ],

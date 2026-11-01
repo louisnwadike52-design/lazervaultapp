@@ -22,6 +22,7 @@ import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/utils/ng_msisdn.dart';
 import '../../../../../core/widgets/amount_preset_row.dart';
+import 'betting_platform_sheet.dart';
 
 /// Single-page betting-wallet funding — streamlined "one page, very fast" flow
 /// (mirror of WaterQuickBuy). Pick platform (Bet9ja/SportyBet/…) → enter the
@@ -357,7 +358,7 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
         SizedBox(height: 20.h),
         _label('Platform'),
         SizedBox(height: 8.h),
-        _platformChips(),
+        _platformSelector(),
         SizedBox(height: 20.h),
         _label('Account / user ID'),
         SizedBox(height: 8.h),
@@ -439,7 +440,7 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
       style: GoogleFonts.inter(
           color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600));
 
-  Widget _platformChips() {
+  Widget _platformSelector() {
     if (_platforms.isEmpty) {
       return Row(children: [
         SizedBox(width: 14.w, height: 14.w, child: LazerVaultLoader.small()),
@@ -448,37 +449,67 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
             style: GoogleFonts.inter(color: _muted, fontSize: 12.sp)),
       ]);
     }
-    return Wrap(
-      spacing: 10.w,
-      runSpacing: 10.h,
-      children: _platforms.map((p) {
-        final selected = _platform?.code == p.code;
-        return GestureDetector(
-          onTap: () => _selectPlatform(p),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            decoration: BoxDecoration(
-              color: selected ? _accent : _card,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: selected ? _accent : _border),
-            ),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              BillerLogo(
-                  code: p.code,
-                  name: p.name,
-                  logoUrl: p.logoUrl,
-                  size: 22,
-                  borderRadius: 6),
-              SizedBox(width: 8.w),
-              Text(p.name,
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600)),
-            ]),
-          ),
+    // ONE ROW, NOT A WALL OF CHIPS.
+    //
+    // Fourteen bookmakers wrapped as chips filled most of the screen before
+    // the user reached the fields that take input — account id, amount,
+    // phone — so funding a bet began with a scroll past a grid of logos. And
+    // the list only grows: every bookmaker added pushed the form further
+    // down. The sheet gives the list room plus a search, and keeps the form
+    // on one screen.
+    final chosen = _platform;
+    return GestureDetector(
+      onTap: () async {
+        final picked = await showBettingPlatformSheet(
+          context,
+          platforms: _platforms,
+          selected: chosen,
         );
-      }).toList(),
+        if (picked != null) _selectPlatform(picked);
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 13.h),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: chosen == null ? _border : _accent),
+        ),
+        child: Row(
+          children: [
+            if (chosen != null) ...[
+              BillerLogo(
+                  code: chosen.code,
+                  name: chosen.name,
+                  logoUrl: chosen.logoUrl,
+                  size: 26,
+                  borderRadius: 7),
+              SizedBox(width: 12.w),
+            ] else ...[
+              Icon(Icons.sports_soccer, color: _muted, size: 20.sp),
+              SizedBox(width: 12.w),
+            ],
+            Expanded(
+              child: Text(
+                chosen?.name ?? 'Choose a platform',
+                style: GoogleFonts.inter(
+                  color: chosen == null ? _muted : Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            // Says the row opens something, and says it is changeable once
+            // a choice has been made.
+            Text(
+              chosen == null ? '' : 'Change',
+              style: GoogleFonts.inter(
+                  color: _accent, fontSize: 12.sp, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(width: 6.w),
+            Icon(Icons.keyboard_arrow_down_rounded, color: _muted, size: 22.sp),
+          ],
+        ),
+      ),
     );
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
 import '../../../../../core/services/account_manager.dart';
 import '../../../../../core/utils/friendly_error.dart';
+import '../../data/betting_platforms_store.dart';
 import '../../domain/repositories/betting_repository.dart';
 import 'betting_state.dart';
 
@@ -15,17 +16,47 @@ class BettingCubit extends Cubit<BettingState> {
   })  : _accountManager = accountManager,
         super(const BettingInitial());
 
-  Future<void> loadPlatforms() async {
+  /// Load the bookmaker list, serving the cache first.
+  ///
+  /// THE RELOAD THIS FIXES. This cubit is a FACTORY registration, so a new
+  /// one is built on every entry into the funding screen, and this method
+  /// emitted Loading before anything else. The screen renders a full-page
+  /// spinner on that state, so leaving and coming back blanked the entire
+  /// form and refetched over the network every time — the reported "constant
+  /// reloading".
+  ///
+  /// The list is near-static reference data, so a cached copy is painted
+  /// IMMEDIATELY and the network call only happens when it has gone stale.
+  /// Loading is now emitted only when there is genuinely nothing to show,
+  /// which is the one case where a spinner is the honest answer.
+  ///
+  /// [force] is for an explicit retry, where the user has asked for the
+  /// round trip and expects to see it happen.
+  Future<void> loadPlatforms({bool force = false}) async {
     if (isClosed) return;
-    emit(const BettingPlatformsLoading());
+
+    final cached = BettingPlatformsStore.platforms;
+    if (cached.isNotEmpty) {
+      emit(BettingPlatformsLoaded(platforms: cached));
+      // Nothing more to do unless the copy is old or the user asked.
+      if (!force && !BettingPlatformsStore.isStale) return;
+    } else {
+      emit(const BettingPlatformsLoading());
+    }
+
     try {
       final platforms = await repository.getPlatforms();
       if (isClosed) return;
-      emit(BettingPlatformsLoaded(
-        platforms: platforms.where((p) => p.isActive).toList(),
-      ));
+      final active = platforms.where((p) => p.isActive).toList();
+      BettingPlatformsStore.save(active);
+      emit(BettingPlatformsLoaded(platforms: active));
     } catch (e) {
       if (isClosed) return;
+      // A failed REFRESH must not wipe a list already on screen. The user is
+      // mid-form; replacing their platform picker with an error page because
+      // a background revalidation failed is strictly worse than letting them
+      // continue on the copy they can see.
+      if (cached.isNotEmpty) return;
       emit(BettingPlatformsError(message: _friendlyError(e)));
     }
   }
