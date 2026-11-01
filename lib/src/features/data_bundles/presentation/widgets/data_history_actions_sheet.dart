@@ -207,6 +207,17 @@ class DataHistoryActionsSheet {
                     'networkName': effName,
                     'phoneNumber': p.phoneNumber,
                     'isRepeat': true,
+                    // The BUNDLE the user actually bought. Without it a
+                    // "repeat" dropped them on the full plan list with only
+                    // the carrier filled in, so the one thing they were
+                    // repeating — which bundle — was the thing they had to
+                    // choose again.
+                    //
+                    // Matched against the LIVE plan list rather than rebuilt
+                    // from the history row, so a repeat always carries
+                    // today's price and a withdrawn bundle falls back to the
+                    // list instead of quoting a plan that no longer sells.
+                    'planId': p.dataPlan,
                   },
                 );
               } else {

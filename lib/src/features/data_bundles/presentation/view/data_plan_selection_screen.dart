@@ -67,6 +67,11 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
   /// shop. Ranges rather than exact sizes — 87 chips is not a filter.
   DataVolumeBucket? _volumeFilter;
 
+  /// Guards the repeat auto-advance so it fires at most once. The plans
+  /// listener rebuilds on filter taps and scrolls too, and re-navigating on
+  /// each would trap the user on the recipient screen.
+  bool _repeatAdvanced = false;
+
   @override
   void initState() {
     super.initState();
@@ -74,6 +79,57 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
     if (network.isNotEmpty) {
       context.read<DataBundlesCubit>().getDataPlans(network: network);
     }
+  }
+
+  /// The bundle a Repeat Purchase is repeating, if any.
+  String _argPlanId() {
+    final v = _args['planId'];
+    return v is String ? v.trim() : '';
+  }
+
+  /// Carry a repeat straight through to the recipient step when the exact
+  /// bundle is still on sale.
+  ///
+  /// A repeat used to land here with only the carrier filled in, so the one
+  /// thing being repeated — which bundle — was the thing the user had to find
+  /// again in a list of dozens.
+  ///
+  /// Matched against the LIVE plan list rather than rebuilt from the history
+  /// row, so the price is today's. A bundle that has been withdrawn simply
+  /// does not match and the user stays on the list, which is the honest
+  /// outcome — better than carrying them forward with a plan that no longer
+  /// sells.
+  void _maybeAdvanceRepeat(List<DataPlanEntity> plans) {
+    if (_repeatAdvanced) return;
+    final wanted = _argPlanId();
+    if (wanted.isEmpty || plans.isEmpty) return;
+    DataPlanEntity? match;
+    for (final p in plans) {
+      if (p.variationId.trim().toLowerCase() == wanted.toLowerCase()) {
+        match = p;
+        break;
+      }
+    }
+    if (match == null) return;
+    _repeatAdvanced = true;
+    // After the frame: this runs from a builder, and navigating during build
+    // throws.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Get.toNamed(
+        AppRoutes.dataBundlesRecipientInput,
+        arguments: {
+          'plan': match,
+          'network': _argNetwork(),
+          'networkName': _argNetworkName(),
+          'networkColor': _argNetworkColor(),
+          // Forwarded so the recipient step fills the number too — the
+          // whole point of a repeat is that nothing has to be re-entered.
+          if (_args['phoneNumber'] is String) 'phoneNumber': _args['phoneNumber'],
+          'isRepeat': true,
+        },
+      );
+    });
   }
 
   /// Defensive readers — every entry into this screen goes through
@@ -371,6 +427,11 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                     }
 
                     if (state is DataPlansLoaded) {
+                      // A Repeat Purchase carries the bundle it is repeating;
+                      // if that bundle is still on sale, go straight on.
+                      // Checked against the UNFILTERED list so an active
+                      // filter cannot hide the match.
+                      _maybeAdvanceRepeat(state.plans);
                       if (state.plans.isEmpty) {
                         return _buildEmptyState();
                       }

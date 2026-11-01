@@ -12,6 +12,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bill_auto_recharge_create_sheet.dart';
+import 'airtime_prefill.dart';
 import 'package:lazervault/core/widgets/network_logo.dart';
 import 'package:lazervault/core/widgets/save_beneficiary_controls.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -113,6 +114,46 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     _prefillFromProfile();
     _loadSavedContacts();
     _loadProviders();
+    // A Repeat Purchase tapped while THIS screen is already open arrives
+    // here rather than as route arguments, which only land at construction.
+    // See airtime_prefill.dart for why that mattered.
+    AirtimePrefillSignal.revision.addListener(_onPrefillRequested);
+  }
+
+  /// Apply a repeat hand-off to the live form.
+  ///
+  /// OVERWRITES, unlike the cold-open path below, which fills only empty
+  /// fields so it cannot clobber something half-typed. Here the user has just
+  /// tapped "Repeat Purchase" on a specific transaction: replacing what is in
+  /// the form is the whole request, and leaving a stale number in place would
+  /// be the one outcome they definitely did not ask for.
+  void _onPrefillRequested() {
+    final req = AirtimePrefillSignal.pending;
+    if (req == null || !mounted) return;
+    AirtimePrefillSignal.consume();
+
+    final amount = req.amount;
+    if (amount != null && amount > 0) {
+      _amountController.text = amount == amount.roundToDouble()
+          ? amount.toInt().toString()
+          : amount.toString();
+    }
+    final code = req.networkCode?.trim();
+    if (code != null && code.isNotEmpty) {
+      // Cleared first: _applyArgNetwork is a no-op while a network is
+      // already selected (so prefix detection keeps winning on a cold open),
+      // and a repeat has to be able to CHANGE the carrier.
+      _network = null;
+      _argNetworkCode = code;
+      _applyArgNetwork();
+    }
+    final phone = _toLocalNg(req.phone ?? '');
+    if (phone.isNotEmpty) {
+      _phoneController.text = phone; // triggers _onPhoneChanged → detect
+      _phoneController.selection =
+          TextSelection.collapsed(offset: _phoneController.text.length);
+    }
+    if (mounted) setState(() {});
   }
 
   /// Load the supported networks (for the manual pills shown when the phone
@@ -179,6 +220,7 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   @override
   void dispose() {
     _detectDebounce?.cancel();
+    AirtimePrefillSignal.revision.removeListener(_onPrefillRequested);
     _phoneController.dispose();
     _amountController.dispose();
     super.dispose();

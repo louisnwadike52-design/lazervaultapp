@@ -13,6 +13,8 @@ import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/intl_airtime_country.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/repositories/airtime_repository.dart';
+import '../view/airtime_screen.dart';
+import 'airtime_prefill.dart';
 import 'save_airtime_beneficiary_sheet.dart';
 
 /// Bottom sheet shown when an airtime history item is tapped.
@@ -404,9 +406,33 @@ class AirtimeHistoryActionsSheet {
 
     // Repeat lands on the MAIN quick-buy (Buy tab) with everything
     // prefilled — the separate legacy purchase flow was removed.
+    //
+    // WHEN THAT SCREEN IS ALREADY OPEN, PREFILL IT — DO NOT PUSH ANOTHER.
+    //
+    // This sheet is most often opened from the recent-transactions card ON
+    // the airtime screen, and route arguments are read at construction, so
+    // the only way to deliver them used to be `preventDuplicates: false` —
+    // stacking a SECOND airtime screen over the one the user was already
+    // looking at. That is the reported "repeat purchase seems like a new
+    // screen showing", and it left a back stack needing two pops to leave.
+    //
+    // The signal decouples prefill from construction, so an open screen can
+    // simply take the values and we pop back to it.
+    final request = AirtimePrefillRequest(
+      phone: t.recipientPhoneNumber,
+      amount: t.amount,
+      networkCode: t.networkProvider.name,
+    );
+    if (AirtimeScreen.isOpen) {
+      AirtimePrefillSignal.emit(request);
+      // Safe to pop to: isOpen means the route IS in the stack, so this
+      // cannot unwind past it. Usually a no-op — the sheet has already been
+      // dismissed by the caller and the airtime screen is right there.
+      Get.until((route) => route.settings.name == AppRoutes.airtime);
+      return;
+    }
     Get.toNamed(
       AppRoutes.airtime,
-      preventDuplicates: false,
       arguments: {
         'phoneNumber': t.recipientPhoneNumber,
         'amount': t.amount,

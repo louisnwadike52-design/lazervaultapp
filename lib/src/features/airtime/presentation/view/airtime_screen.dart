@@ -33,6 +33,19 @@ class AirtimeScreen extends StatefulWidget {
   /// after a write succeeds; the landing listens and reloads.
   static final ValueNotifier<int> dataChangedTick = ValueNotifier<int>(0);
 
+  /// How many airtime screens are currently in the stack.
+  ///
+  /// Repeat Purchase reads this to choose between prefilling the screen the
+  /// user is already looking at and opening a new one. Without it the only
+  /// way to deliver a prefill was to push a DUPLICATE screen, because the
+  /// arguments are read at construction — which is what produced the "repeat
+  /// purchase seems like a new screen showing" report, and a back stack
+  /// needing two pops to leave.
+  static int mountedCount = 0;
+
+  /// Whether an airtime screen is already open.
+  static bool get isOpen => mountedCount > 0;
+
   /// Convenience helper called by post-purchase / post-edit handlers.
   static void notifyDataChanged() {
     dataChangedTick.value = dataChangedTick.value + 1;
@@ -137,11 +150,14 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
     // the user would see stale recent-transactions until they
     // pull-to-refresh manually.
     AirtimeScreen.dataChangedTick.addListener(_onDataChangedTick);
+    AirtimeScreen.mountedCount++;
   }
+
 
   @override
   void dispose() {
     AirtimeScreen.dataChangedTick.removeListener(_onDataChangedTick);
+    if (AirtimeScreen.mountedCount > 0) AirtimeScreen.mountedCount--;
     super.dispose();
   }
 
