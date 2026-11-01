@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lazervault/core/network/network_timeouts.dart';
 
 /// The user's HAND-PLACED quick-service order.
 ///
@@ -148,7 +149,7 @@ class ServiceOrderService {
                 'Content-Type': 'application/json',
               },
               body: jsonEncode({'order': _order}))
-          .timeout(const Duration(seconds: 8));
+          .timeout(NetworkTimeouts.probe);
     } catch (_) {
       // Offline, or the endpoint isn't deployed yet. The local order still
       // stands; the next save re-pushes the whole list, so nothing is lost.
@@ -170,7 +171,7 @@ class ServiceOrderService {
           '${endpointRegistry.httpStatistics}/statistics/service-order');
       final resp = await http.get(uri, headers: {
         ...authHeader(token),
-      }).timeout(const Duration(seconds: 8));
+      }).timeout(NetworkTimeouts.probe);
       if (resp.statusCode != 200) return;
       final decoded = jsonDecode(resp.body);
       if (decoded is! Map) return;

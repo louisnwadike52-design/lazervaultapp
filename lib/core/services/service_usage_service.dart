@@ -9,6 +9,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lazervault/core/network/network_timeouts.dart';
 
 /// Per-user quick-service usage tally that powers adaptive dashboard ordering.
 ///
@@ -115,7 +116,7 @@ class ServiceUsageService {
                 'Content-Type': 'application/json',
               },
               body: jsonEncode({'service_key': service.name}))
-          .timeout(const Duration(seconds: 6));
+          .timeout(NetworkTimeouts.probe);
     } catch (_) {/* fire-and-forget */}
   }
 
@@ -133,7 +134,7 @@ class ServiceUsageService {
           '${endpointRegistry.httpStatistics}/statistics/service-usage');
       final resp = await http.get(uri, headers: {
         ...authHeader(token),
-      }).timeout(const Duration(seconds: 8));
+      }).timeout(NetworkTimeouts.probe);
       if (resp.statusCode != 200) return;
       final decoded = jsonDecode(resp.body);
       final items =

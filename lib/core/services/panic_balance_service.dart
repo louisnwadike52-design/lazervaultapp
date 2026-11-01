@@ -10,6 +10,7 @@ import 'account_manager.dart';
 import 'haptics_service.dart';
 import 'injection_container.dart';
 import 'locale_manager.dart';
+import 'package:lazervault/core/network/network_timeouts.dart';
 
 /// A single saved decoy preset — a label ("market", "travel") + the fake amount
 /// shown as the balance when that preset is active.
@@ -394,7 +395,7 @@ class PanicBalanceService extends ChangeNotifier {
     try {
       final resp = await http.get(uri, headers: {
         ...authHeader(token),
-      }).timeout(const Duration(seconds: 8));
+      }).timeout(NetworkTimeouts.interactive);
       if (resp.statusCode != 200) return;
       final body = jsonDecode(resp.body) as Map<String, dynamic>;
       final presets = ((body['presets'] as List?) ?? [])
@@ -423,7 +424,7 @@ class PanicBalanceService extends ChangeNotifier {
                 'Content-Type': 'application/json',
               },
               body: jsonEncode(configToJson()))
-          .timeout(const Duration(seconds: 8));
+          .timeout(NetworkTimeouts.interactive);
     } catch (_) {
       // best-effort — local stays source of truth
     }

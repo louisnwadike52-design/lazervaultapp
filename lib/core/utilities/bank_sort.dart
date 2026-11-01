@@ -6,6 +6,7 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lazervault/core/network/network_timeouts.dart';
 
 /// Shared bank-picker sort model + Nigerian popularity ranking + per-user MRU
 /// store. This is the SINGLE source of truth for the "Most used / Most popular /
@@ -217,7 +218,7 @@ class MostUsedBanks {
           Uri.parse('${endpointRegistry.httpTransfer}/payments/frequent-banks');
       final resp = await http.get(uri, headers: {
         ...authHeader(token),
-      }).timeout(const Duration(seconds: 8));
+      }).timeout(NetworkTimeouts.probe);
       if (resp.statusCode != 200) return;
       final decoded = jsonDecode(resp.body);
       final banks = decoded is Map ? decoded['banks'] : decoded;

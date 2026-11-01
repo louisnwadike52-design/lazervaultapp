@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'account_details_sheet_opener.dart';
 import 'endpoint_registry.dart';
+import 'package:lazervault/core/network/network_timeouts.dart';
 
 /// Server-driven "your account details changed" announcement — shown once per
 /// user per version after a virtual-account provider migration (the deposit
@@ -76,7 +77,7 @@ class AccountUpdateAnnouncementService {
     try {
       final res = await http
           .get(Uri.parse(endpointRegistry.adminSettingsEndpoint))
-          .timeout(const Duration(seconds: 6));
+          .timeout(NetworkTimeouts.probe);
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
         final list = body is Map<String, dynamic> ? body['settings'] : null;

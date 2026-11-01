@@ -1,6 +1,7 @@
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/access_token_shape.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/network/network_timeouts.dart';
 
 /// Manages gRPC channels and provides authentication interceptors
 /// Uses an injected ClientChannel from injection_container (Investment Gateway)
@@ -17,6 +18,13 @@ class GrpcChannelManager {
   ClientChannel get channel => _channel;
 
   /// Create call options with authentication token
+  /// The gRPC deadline for every authenticated call.
+  ///
+  /// This is the single biggest lever on whether the app works on a
+  /// congested Nigerian cell: it caps EVERY backend request. It was 30s,
+  /// which sounds generous on wifi and is not — DNS, TCP, TLS and the round
+  /// trip can each cost seconds there, and a call cut off at 30s had often
+  /// not failed, it was still arriving. See NetworkTimeouts.
   Future<CallOptions> getAuthCallOptions() async {
     final accessToken = await secureStorage.getAccessToken();
 
@@ -25,19 +33,19 @@ class GrpcChannelManager {
         metadata: {
           ...authHeader(accessToken, key: 'authorization'),
         },
-        timeout: const Duration(seconds: 30),
+        timeout: NetworkTimeouts.interactive,
       );
     }
 
     return CallOptions(
-      timeout: const Duration(seconds: 30),
+      timeout: NetworkTimeouts.interactive,
     );
   }
 
   /// Create call options without authentication
   CallOptions getCallOptions() {
     return CallOptions(
-      timeout: const Duration(seconds: 30),
+      timeout: NetworkTimeouts.interactive,
     );
   }
 

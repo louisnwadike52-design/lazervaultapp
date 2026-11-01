@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:lazervault/core/utilities/invite_link.dart';
 import 'package:lazervault/core/utilities/pending_referral.dart';
+import 'package:lazervault/core/network/network_timeouts.dart';
 
 /// HOW A REFERRAL CODE SURVIVES A FRESH INSTALL.
 ///
@@ -85,7 +86,7 @@ class InstallReferrerService {
       // bounded one, and "no referrer" is already a first-class answer here.
       raw = await channel
           .invokeMethod<String>('fetch')
-          .timeout(const Duration(seconds: 10));
+          .timeout(NetworkTimeouts.probe);
     } on TimeoutException {
       debugPrint(
           'InstallReferrerService: fetch timed out — treating as no referrer');

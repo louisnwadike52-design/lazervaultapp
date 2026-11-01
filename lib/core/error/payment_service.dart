@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:lazervault/core/error/error_handler.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/network/network_timeouts.dart';
 
 /// PaymentService demonstrates error recovery integration for Flutter app
 class PaymentService {
@@ -195,8 +196,8 @@ class PaymentBloc {
 ///     final paymentService = PaymentService(
 ///       dio: Dio(BaseOptions(
 ///         baseUrl: 'https://api.lazervault.com',
-///         connectTimeout: Duration(seconds: 10),
-///         receiveTimeout: Duration(seconds: 30),
+///         connectTimeout: NetworkTimeouts.connect,
+///         receiveTimeout: NetworkTimeouts.interactive,
 ///       )),
 ///     );
 ///
@@ -271,9 +272,12 @@ class PaymentInterceptor extends Interceptor {
 Dio createDioWithRecovery() {
   final dio = Dio(BaseOptions(
     baseUrl: endpointRegistry.httpCore,
-    connectTimeout: Duration(seconds: 10),
-    receiveTimeout: Duration(seconds: 30),
-    sendTimeout: Duration(seconds: 10),
+    // See NetworkTimeouts: a 10s connect budget does not survive DNS + TCP
+    // + TLS on a congested cell, and a 10s send budget fails any upload
+    // larger than a thumbnail.
+    connectTimeout: NetworkTimeouts.connect,
+    receiveTimeout: NetworkTimeouts.interactive,
+    sendTimeout: NetworkTimeouts.upload,
   ));
 
   // Add interceptors

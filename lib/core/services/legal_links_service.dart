@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/network/network_timeouts.dart';
 
 /// Resolves the Terms of Service / Privacy Policy / Gift-card T&C URLs shown
 /// across the app. The URLs are admin-configurable and now come from a single
@@ -83,7 +84,7 @@ class LegalLinksService {
     try {
       final res = await http
           .get(Uri.parse(endpointRegistry.adminSettingsEndpoint))
-          .timeout(const Duration(seconds: 6));
+          .timeout(NetworkTimeouts.probe);
       if (res.statusCode != 200) return false;
       final body = jsonDecode(res.body);
       final list = body is Map<String, dynamic> ? body['settings'] : null;
@@ -112,7 +113,7 @@ class LegalLinksService {
     try {
       final res = await http
           .get(Uri.parse(_legalUrl))
-          .timeout(const Duration(seconds: 6));
+          .timeout(NetworkTimeouts.probe);
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
         setUrls(
