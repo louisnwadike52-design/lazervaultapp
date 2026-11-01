@@ -208,7 +208,21 @@ class ContactlessWebSocketService {
     _pingTimer?.cancel();
     _pingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_channel != null) {
-        wsSend(_channel, jsonEncode({'type': 'ping'}));
+        // A FAILED PING MEANS THE SOCKET IS GONE.
+        //
+        // This is the whole reason a ping exists: a half-open connection
+        // delivers no onDone and no onError, so the stream can tell us
+        // nothing and the write is the only probe we have. Discarding the
+        // result left the service believing it was connected forever.
+        //
+        // Timer cancelled first — _handleDone reconnects, which starts a new
+        // ping timer, and leaving this one running would stack them.
+        if (!wsSend(_channel, jsonEncode({'type': 'ping'}))) {
+          _pingTimer?.cancel();
+          _pingTimer = null;
+          _handleDone();
+          return;
+        }
       }
     });
   }

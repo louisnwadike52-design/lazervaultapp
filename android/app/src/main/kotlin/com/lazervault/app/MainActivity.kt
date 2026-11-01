@@ -421,7 +421,13 @@ class MainActivity : FlutterFragmentActivity() {
 
         /// Enough for the main thread's stack, which is the part that says
         /// where it was stuck.
-        const val MAX_TRACE_CHARS = 20000
+        ///
+        /// MATCHED TO RemoteLogSink._maxDiagnosticChars. The sink caps every
+        /// field, so shipping more than it accepts spends the user's data
+        /// on bytes that are discarded on arrival — and the field still
+        /// LOOKS complete in Loki, which is the worst version of missing.
+        /// Change both or neither.
+        const val MAX_TRACE_CHARS = 12000
     }
 
 }

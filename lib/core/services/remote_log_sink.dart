@@ -285,12 +285,30 @@ class RemoteLogSink {
   static final RegExp _jwtLike =
       RegExp(r'[A-Za-z0-9\-_]{12,}\.[A-Za-z0-9\-_]{12,}\.[A-Za-z0-9\-_]{6,}');
 
-  String _redactString(String? input) {
+  /// Per-field cap. Generous enough for a message, deliberately not enough
+  /// for a stack trace — see [_diagnosticKeys].
+  static const int _maxFieldChars = 2000;
+
+  /// Fields that ARE a stack trace, and are useless truncated to a message.
+  ///
+  /// The 2,000-char cap silently cut these: a main-thread ANR trace or a
+  /// Dart stack runs well past it, so the tail — which is where the actual
+  /// call site usually is — was being thrown away before the log ever left
+  /// the handset. The field looked present and complete in Loki, which is
+  /// the worst version of missing.
+  static const Set<String> _diagnosticKeys = {'anr_trace', 'stack'};
+
+  /// Still bounded. A runaway trace must not be able to push a batch past
+  /// what the gateway accepts, which would lose the whole batch rather than
+  /// the tail of one field.
+  static const int _maxDiagnosticChars = 12000;
+
+  String _redactString(String? input, {int maxChars = _maxFieldChars}) {
     if (input == null || input.isEmpty) return '';
     var s = input;
     s = s.replaceAll(_bearer, 'bearer ***');
     s = s.replaceAll(_jwtLike, '***');
-    return s.length > 2000 ? '${s.substring(0, 2000)}…' : s;
+    return s.length > maxChars ? '${s.substring(0, maxChars)}…' : s;
   }
 
   Map<String, dynamic> _redactMap(Map<String, dynamic> input) {
@@ -302,14 +320,17 @@ class RemoteLogSink {
         out[k] = '***';
         return;
       }
+      final limit = _diagnosticKeys.contains(k.toLowerCase())
+          ? _maxDiagnosticChars
+          : _maxFieldChars;
       if (v is String) {
-        out[k] = _redactString(v);
+        out[k] = _redactString(v, maxChars: limit);
       } else if (v is Map) {
         out[k] = _redactMap(Map<String, dynamic>.from(v));
       } else if (v is num || v is bool || v == null) {
         out[k] = v;
       } else {
-        out[k] = _redactString(v.toString());
+        out[k] = _redactString(v.toString(), maxChars: limit);
       }
     });
     return out;

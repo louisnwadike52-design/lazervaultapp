@@ -460,7 +460,21 @@ class TransferWebSocketService {
   void _sendPing() {
     if (_isConnected && _channel != null && !_useSSE) {
       try {
-        wsSend(_channel, jsonEncode({'type': 'ping'}));
+        // A FAILED PING MEANS THE SOCKET IS GONE.
+        //
+        // This is the whole reason a ping exists: a half-open connection
+        // delivers no onDone and no onError, so the stream can tell us
+        // nothing and the write is the only probe we have. Discarding the
+        // result left the service believing it was connected forever.
+        //
+        // Ping timer cancelled first — _handleDone reconnects, which starts
+        // a new one, and leaving this one running would stack them.
+        if (!wsSend(_channel, jsonEncode({'type': 'ping'}))) {
+          _pingTimer?.cancel();
+          _pingTimer = null;
+          _handleDone();
+          return;
+        }
       } catch (e) {
         print('TransferWebSocketService: Error sending ping - $e');
       }

@@ -204,7 +204,15 @@ class SprayMeWebSocketService {
     _pingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_isConnected && _channel != null) {
         try {
-          wsSend(_channel, jsonEncode({'type': 'ping'}));
+          // A failed ping means the socket is gone — see the note in the
+          // other services. _handleError is this one's recovery path: it
+          // tears the channel down and schedules a reconnect.
+          if (!wsSend(_channel, jsonEncode({'type': 'ping'}))) {
+            _pingTimer?.cancel();
+            _pingTimer = null;
+            _handleError('ping failed — socket is not writable');
+            return;
+          }
         } catch (_) {}
       }
     });

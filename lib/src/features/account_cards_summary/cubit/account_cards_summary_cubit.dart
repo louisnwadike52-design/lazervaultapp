@@ -516,24 +516,68 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
           break;
         }
       }
-      if (held != null && held.currency == expectedCurrency) {
+      if (held != null && _sameCurrency(held.currency, expectedCurrency)) {
         return; // keep the user's current selection
       }
     }
 
-    // Find personal account with matching currency
-    final personalAccount = summaries.firstWhere(
-      (acc) =>
-          acc.accountType.toLowerCase() == 'personal' &&
-          acc.currency == expectedCurrency,
-      orElse: () =>
-          summaries.first, // Fallback to first account if no personal match
-    );
+    // Prefer the PERSONAL account in the expected currency.
+    AccountSummaryEntity? chosen;
+    for (final acc in summaries) {
+      if (acc.accountType.toLowerCase() == 'personal' &&
+          _sameCurrency(acc.currency, expectedCurrency)) {
+        chosen = acc;
+        break;
+      }
+    }
+    // Then ANY account in that currency. Currency beats account type here:
+    // the question this selection answers is "which wallet is the user
+    // looking at", and a savings account in the right currency is a better
+    // answer than a personal account in the wrong one.
+    chosen ??= () {
+      for (final acc in summaries) {
+        if (_sameCurrency(acc.currency, expectedCurrency)) return acc;
+      }
+      return null;
+    }();
 
-    _accountManager.setActiveAccount(personalAccount.id);
+    if (chosen == null) {
+      // THE USER HAS NO WALLET IN THIS CURRENCY AT ALL.
+      //
+      // This used to fall back to `summaries.first`, which is normally the
+      // Naira account — so switching to a region the user has no wallet for
+      // re-created the exact bug this method was fixed for: a dollar header
+      // over Naira data, because everything downstream reads the active
+      // account.
+      //
+      // Keeping the existing selection does not make the header right, but
+      // it is the lesser wrong: the user keeps the wallet they were already
+      // using, nothing churns, and no screen silently rebinds to an account
+      // they did not choose. An empty selection on first load still needs
+      // SOMETHING, so that one case still takes the first account.
+      final existing = _accountManager.activeAccountId;
+      if (existing != null && existing.isNotEmpty) {
+        print('AccountCardsSummaryCubit: no $expectedCurrency wallet; '
+            'keeping the current account rather than switching to another '
+            'currency');
+        return;
+      }
+      chosen = summaries.first;
+    }
+
+    _accountManager.setActiveAccount(chosen.id);
     print(
-        'AccountCardsSummaryCubit: Auto-selected account ${personalAccount.accountNumber} (${personalAccount.accountType}) for locale $currentLocale ($expectedCurrency)');
+        'AccountCardsSummaryCubit: Auto-selected account ${chosen.accountNumber} (${chosen.accountType}) for locale $currentLocale ($expectedCurrency)');
   }
+
+  /// Currency codes compared case- and whitespace-insensitively.
+  ///
+  /// The summaries come from two sources (a gRPC read and a cached
+  /// SharedPreferences copy) and only one of them is guaranteed to have
+  /// normalised the code. An exact `==` quietly fails the match and sends
+  /// the selection down the no-wallet path.
+  static bool _sameCurrency(String a, String b) =>
+      a.trim().toUpperCase() == b.trim().toUpperCase();
 
   /// Get currency code for locale (e.g., en-NG -> NGN, en-US -> USD)
   /// Uses CountryLocales as the single source of truth.

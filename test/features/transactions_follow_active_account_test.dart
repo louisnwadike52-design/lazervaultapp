@@ -62,10 +62,32 @@ void main() {
 
     test('keeping the current selection requires a currency match', () {
       final src = code(read(path));
-      expect(src.contains('held.currency == expectedCurrency'), isTrue,
+      expect(src.contains('_sameCurrency(held.currency, expectedCurrency)'),
+          isTrue,
           reason: 'the early return is back to "is it still in the list", '
               'which is always true — the Naira account does not disappear '
               'because the user tapped the US flag');
+      // Compared case-insensitively: the summaries come from a gRPC read AND
+      // a cached SharedPreferences copy, and only one normalises the code.
+      // An exact == quietly fails the match and sends the selection down the
+      // no-wallet path.
+      expect(src.contains('a.trim().toUpperCase() == b.trim().toUpperCase()'),
+          isTrue,
+          reason: 'currency comparison is case-sensitive again');
+    });
+
+    test('no wallet in that currency keeps the current account', () {
+      // The narrower version of the same bug. This used to fall back to
+      // `summaries.first` — normally the Naira account — so switching to a
+      // region the user has no wallet for re-created the dollar-header-over-
+      // Naira-data defect that this whole method was fixed for.
+      final src = code(read(path));
+      expect(src.contains('keeping the current account rather than switching'),
+          isTrue,
+          reason: 'the no-wallet path churns the active account again');
+      expect(src.contains('summaries.first'), isTrue,
+          reason: 'first load still needs SOMETHING selected — only the '
+              'already-have-a-selection case should keep what it has');
     });
   });
 

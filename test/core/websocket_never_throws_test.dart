@@ -84,6 +84,29 @@ void main() {
     );
   });
 
+  test('a failed ping triggers recovery instead of being discarded', () {
+    // THE REGRESSION THIS GUARDS. Making wsSend non-throwing fixed the hang,
+    // and silently created a quieter bug: every ping timer called it and
+    // threw the answer away.
+    //
+    // A ping exists precisely to detect a socket the STREAM cannot report
+    // on — a half-open connection delivers no onDone and no onError, so the
+    // write is the only probe there is. Discarding its result left the
+    // service believing it was connected forever: no hang, and no data.
+    final offenders = <String>[];
+    for (final f in dartFiles) {
+      // The wrapper quotes the old call in its own doc comment, which is
+      // the explanation of this bug rather than an instance of it.
+      if (f.path.endsWith('core/network/ws_safe.dart')) continue;
+      final src = code(f.readAsStringSync());
+      if (!src.contains("jsonEncode({'type': 'ping'})")) continue;
+      if (!src.contains("if (!wsSend(")) offenders.add(f.path);
+    }
+    expect(offenders, isEmpty,
+        reason: 'these ping and ignore the result, so a dead socket is never '
+            'noticed:\n  ${offenders.join('\n  ')}');
+  });
+
   test('the wrapper itself still cannot throw', () {
     final src = File('lib/core/network/ws_safe.dart').readAsStringSync();
     // Every public entry point must have a catch. A wrapper that throws is

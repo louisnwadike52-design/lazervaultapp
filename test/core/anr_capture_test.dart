@@ -104,6 +104,33 @@ void main() {
     });
   });
 
+  test('a stack trace is not truncated to the size of a message', () {
+    // THE SILENT ONE. RemoteLogSink caps every field at 2,000 chars, and a
+    // main-thread ANR trace runs well past that — so the tail, where the
+    // actual call site usually is, was thrown away before the log left the
+    // handset. The field still looked present and complete in Loki, which
+    // is the worst version of missing. The existing crash `stack` field was
+    // being cut the same way.
+    final sink = read('lib/core/services/remote_log_sink.dart');
+    expect(sink.contains('_diagnosticKeys'), isTrue,
+        reason: 'stack-trace fields are back on the message-sized cap');
+    expect(sink.contains("'anr_trace'"), isTrue);
+    expect(sink.contains("'stack'"), isTrue,
+        reason: 'crash stacks need the same budget — they were cut too');
+
+    // And the native cap must MATCH, or we spend the user's data shipping
+    // bytes that are discarded on arrival.
+    final native = read(
+        'android/app/src/main/kotlin/com/lazervault/app/MainActivity.kt');
+    final sinkCap = RegExp(r'_maxDiagnosticChars = (\d+)').firstMatch(sink);
+    final nativeCap = RegExp(r'MAX_TRACE_CHARS = (\d+)').firstMatch(native);
+    expect(sinkCap, isNotNull);
+    expect(nativeCap, isNotNull);
+    expect(nativeCap!.group(1), sinkCap!.group(1),
+        reason: 'the native truncation and the sink budget disagree, so the '
+            'trace is cut twice or shipped and discarded');
+  });
+
   group('the alert', () {
     // Asserted against the TRACKED rule, not the running stack's copy.
     // `.local-monitoring/` is gitignored runtime state, so a test reading it
