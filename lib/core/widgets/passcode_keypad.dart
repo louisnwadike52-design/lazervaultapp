@@ -20,6 +20,22 @@ class PasscodeKeypad extends StatelessWidget {
   /// When true, all buttons are greyed out and taps are ignored.
   final bool disabled;
 
+  /// Whether anything has been entered yet.
+  ///
+  /// When false the backspace cell renders EMPTY rather than showing a
+  /// control that cannot do anything: there is nothing to delete, so the
+  /// icon is an affordance that lies. Hiding it is the convention every
+  /// system keypad follows, and it keeps the pad visually quiet at the
+  /// moment the user is about to type.
+  ///
+  /// The cell is kept (an empty SizedBox, not a removed child) so the 3x4
+  /// grid does not reflow and the digits never shift under a finger that is
+  /// already moving toward one.
+  ///
+  /// Defaults to TRUE — today's behaviour — so a call site that has not been
+  /// updated keeps its backspace rather than silently losing it.
+  final bool hasEntry;
+
   /// Digit text colour (enabled state).
   final Color digitColor;
 
@@ -45,6 +61,7 @@ class PasscodeKeypad extends StatelessWidget {
     required this.onDigit,
     required this.onBackspace,
     this.disabled = false,
+    this.hasEntry = true,
     this.digitColor = Colors.white,
     this.iconColor = Colors.white,
     this.buttonColor = const Color(0x26FFFFFF), // white @ 15%
@@ -115,6 +132,11 @@ class PasscodeKeypad extends StatelessWidget {
   }
 
   Widget _iconButton() {
+    // Nothing entered → nothing to delete. Occupy the cell so the grid keeps
+    // its shape; just do not paint a control.
+    if (!hasEntry) {
+      return const SizedBox.shrink();
+    }
     return Material(
       color: Colors.transparent,
       shape: const CircleBorder(),

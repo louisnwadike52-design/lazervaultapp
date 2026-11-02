@@ -467,6 +467,8 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
         PasscodeKeypad(
           onDigit: _onDigit,
           onBackspace: _onBackspace,
+          // Nothing typed yet → no backspace to show.
+          hasEntry: _entered.isNotEmpty,
           disabled: _submitting,
         ),
         SizedBox(height: 8.h),

@@ -406,6 +406,8 @@ class _ForgotPasscodePhoneScreenState extends State<ForgotPasscodePhoneScreen> {
         PasscodeKeypad(
           onDigit: _onDigit,
           onBackspace: _onBackspace,
+          // Nothing typed yet → no backspace to show.
+          hasEntry: _entered.isNotEmpty,
         ),
         SizedBox(height: 20.h),
       ],

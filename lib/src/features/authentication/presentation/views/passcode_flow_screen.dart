@@ -676,6 +676,14 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
                     child: PasscodeKeypad(
                       onDigit: _onDigit,
                       onBackspace: _onBackspace,
+                      // Three buffers, one per step — the backspace belongs
+                      // to whichever is being typed right now.
+                      hasEntry: (_step == 0
+                              ? _current
+                              : _step == 1
+                                  ? _next
+                                  : _confirm)
+                          .isNotEmpty,
                     ),
                   ),
                 ),

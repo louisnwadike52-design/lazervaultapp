@@ -1266,6 +1266,13 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                 onDigit: _onNumberPressed,
                                 onBackspace: _onBackspacePressed,
                                 disabled: isAuthenticating,
+                                // The buffer lives on the cubit here, not in
+                                // this widget; read it from the same state
+                                // the dots are painted from so the two can
+                                // never disagree about whether anything has
+                                // been typed.
+                                hasEntry: state is PasscodeLoginInProgress &&
+                                    state.enteredPasscode.isNotEmpty,
                               ),
                               SizedBox(height: 16.h),
                               // "Forgot passcode" (left) and "Switch user" (right)
