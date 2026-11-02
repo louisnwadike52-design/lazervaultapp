@@ -99,7 +99,24 @@ class FcyCapabilities {
       // The capability set rides on the status read — no extra endpoint, and
       // the currency asked about does not change the answer.
       final s = await svc.status(probeCurrency);
-      if (s.supportedCurrencies.isNotEmpty) {
+      // Cache on PRESENCE, not on non-emptiness.
+      //
+      // This used to be `if (s.supportedCurrencies.isNotEmpty)`, which was
+      // right while the only way to get an empty list was a failed or
+      // ancient read. It stopped being right when an empty list became a
+      // real answer: Fincra is the only wired foreign-account issuer and is
+      // now disabled pending its KYB, so the server correctly reports that
+      // NO currency can be issued.
+      //
+      // Treating that as silence left _cached null, so `currencies` returned
+      // the hardcoded USD/GBP/EUR/CAD fallback and the app would open a
+      // three-minute KYC wizard for an account nothing can issue — the
+      // user's time spent on a request that can only be refused.
+      //
+      // supportedCurrenciesKnown comes from containsKey on the JSON body, so
+      // an older server that omits the field still falls back exactly as
+      // before.
+      if (s.supportedCurrenciesKnown) {
         _cached = s.supportedCurrencies;
       }
       // Only overwritten when the server actually sent the split. An older

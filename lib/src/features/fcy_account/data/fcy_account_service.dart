@@ -68,6 +68,9 @@ class FCYAccountService {
       accountName: (d['accountName'] ?? '').toString(),
       routingDetailsJson: (d['routingDetailsJson'] ?? '').toString(),
       supportedCurrencies: _currencyList(d['supportedCurrencies']),
+      // containsKey, not isNotEmpty: an empty list the server deliberately
+      // sent is an answer, and must not read as silence.
+      supportedCurrenciesKnown: d.containsKey('supportedCurrencies'),
       activatableCurrencies: _currencyList(d['activatableCurrencies']),
       gatedCurrencies: _currencyList(d['gatedCurrencies']),
       currencyGated: d['currencyGated'] == true,
@@ -258,6 +261,20 @@ class FCYStatus {
   /// feature exists.
   final List<String> gatedCurrencies;
 
+  /// Whether the server ACTUALLY SENT the supported-currency set, as opposed
+  /// to this being an older build that omits the field.
+  ///
+  /// The distinction became load-bearing when a legitimately EMPTY answer
+  /// became possible. Fincra is the only wired foreign-account issuer and is
+  /// now disabled pending its KYB, so the server correctly reports that no
+  /// currency can be issued — an empty list that MEANS something.
+  ///
+  /// Without this flag the app cannot tell that apart from "this server is
+  /// too old to tell me", and FcyCapabilities treated both as "no answer" and
+  /// fell back to a hardcoded USD/GBP/EUR/CAD. That would offer a
+  /// three-minute KYC wizard for accounts nothing can open.
+  final bool supportedCurrenciesKnown;
+
   /// Whether the currency THIS status was read for is one of the gated ones.
   final bool currencyGated;
 
@@ -275,6 +292,7 @@ class FCYStatus {
     this.supportedCurrencies = const [],
     this.activatableCurrencies = const [],
     this.gatedCurrencies = const [],
+    this.supportedCurrenciesKnown = false,
     this.currencyGated = false,
     this.provider = '',
   });
