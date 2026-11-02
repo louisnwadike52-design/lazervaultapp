@@ -213,6 +213,11 @@ Future<void> showExpenditureChartInfoSheet(
   required int transactionCount,
   required double totalSpent,
   required List<ExpenditureChartType> available,
+  /// Called when the user picks a shape from the chip row. When supplied the
+  /// chips become a PICKER rather than a legend: the active shape is already
+  /// marked, so showing which one is current and letting the user change it
+  /// are the same control instead of two.
+  ValueChanged<ExpenditureChartType>? onSelect,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -230,6 +235,7 @@ Future<void> showExpenditureChartInfoSheet(
       transactionCount: transactionCount,
       totalSpent: totalSpent,
       available: available,
+      onSelect: onSelect,
     ),
   );
 }
@@ -244,6 +250,7 @@ class _InfoSheet extends StatelessWidget {
     required this.transactionCount,
     required this.totalSpent,
     required this.available,
+    this.onSelect,
   });
 
   final ExpenditureChartType type;
@@ -254,6 +261,8 @@ class _InfoSheet extends StatelessWidget {
   final int transactionCount;
   final double totalSpent;
   final List<ExpenditureChartType> available;
+  /// When non-null the shape chips become a picker. See the sheet function.
+  final ValueChanged<ExpenditureChartType>? onSelect;
 
   static const _dim = Color(0xFF9CA3AF);
 
@@ -361,7 +370,7 @@ class _InfoSheet extends StatelessWidget {
                 runSpacing: 8.h,
                 children: [
                   for (final t in ExpenditureChartType.values)
-                    _shapeChip(t, enabled: available.contains(t)),
+                    _shapeChip(context, t, enabled: available.contains(t)),
                 ],
               ),
             ],
@@ -448,9 +457,14 @@ class _InfoSheet extends StatelessWidget {
     );
   }
 
-  Widget _shapeChip(ExpenditureChartType t, {required bool enabled}) {
+  Widget _shapeChip(BuildContext context, ExpenditureChartType t,
+      {required bool enabled}) {
     final isCurrent = t == type;
-    return Container(
+    // Tappable only when it would do something: a shape the data cannot fill
+    // stays inert and keeps its "n/a", and re-picking the current shape is a
+    // no-op the sheet should not close for.
+    final selectable = enabled && !isCurrent && onSelect != null;
+    final chip = Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: isCurrent
@@ -492,6 +506,18 @@ class _InfoSheet extends StatelessWidget {
           ],
         ],
       ),
+    );
+    if (!selectable) return chip;
+    return InkWell(
+      borderRadius: BorderRadius.circular(20.r),
+      onTap: () {
+        // Close first, then apply: the caller rebuilds the card behind this
+        // sheet, and animating a dismissal over a chart that is already
+        // swapping shape reads as a glitch.
+        Navigator.of(context).maybePop();
+        onSelect!(t);
+      },
+      child: chip,
     );
   }
 }

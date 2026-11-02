@@ -594,11 +594,16 @@ class _MonthlySummaryState extends State<MonthlySummary> {
             if (available.length > 1)
               ExpenditureChartCta(
                 next: next,
-                onTap: () => setState(
-                    () => _dashboardState.setExpenditureChartType(next)),
-                // Long-press jumps straight to the explanation of every shape,
-                // which is also where a user can see why one is unavailable.
-                onLongPress: () => showExpenditureChartInfoSheet(
+                // TAP OPENS THE PICKER, which marks the shape currently on
+                // screen and lets any other be chosen directly.
+                //
+                // It used to cycle blind. With six shapes that is up to five
+                // taps to reach one, and nothing told the user which was
+                // active — the button names the NEXT shape, so the one piece
+                // of state they wanted was the one thing not shown. The
+                // picker answers "what am I looking at" and "give me that one
+                // instead" with the same tap.
+                onTap: () => showExpenditureChartInfoSheet(
                   context,
                   type: type,
                   categories: slices,
@@ -608,7 +613,13 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                   transactionCount: transactionCount,
                   totalSpent: totalSpent,
                   available: available,
+                  onSelect: (picked) => setState(
+                      () => _dashboardState.setExpenditureChartType(picked)),
                 ),
+                // Long-press keeps the quick cycle, so the gesture anyone had
+                // learned still does the old thing.
+                onLongPress: () => setState(
+                    () => _dashboardState.setExpenditureChartType(next)),
               ),
           ],
         ),
