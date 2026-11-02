@@ -106,14 +106,29 @@ Future<ReceiptFileFormat?> pickReceiptFormat(BuildContext context,
       onTap: () => Navigator.of(ctx).pop(fmt),
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF3A3A3A)),
+          // No hairline border — see unified_transaction_receipt's tile for
+          // the same change and the reasoning. Three greys within six points
+          // of each other meant the outline separated nothing; it only made
+          // a three-item list look like a cramped table. The rows separate by
+          // surface and spacing instead.
+          color: const Color(0xFF2E2E2E),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Row(children: [
-          Icon(icon, color: color, size: 22),
+          // Tinted chip rather than a loose glyph, so the format colour
+          // carries weight and each row has a focal point.
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, color: color, size: 20),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

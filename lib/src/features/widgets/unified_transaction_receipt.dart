@@ -1860,7 +1860,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                   "Sender's copy",
                   'Amount + fee, your own record.',
                   () => Navigator.of(ctx).pop(ReceiptCopyType.sender)),
-              SizedBox(height: 10.h),
+              SizedBox(height: 12.h),
               _receiptOptionTile(
                   ctx,
                   Icons.call_received_rounded,
@@ -1902,7 +1902,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                   '$actionLabel as PDF',
                   'Vector document, best for printing.',
                   () => Navigator.of(ctx).pop(ReceiptFileFormat.pdf)),
-              SizedBox(height: 10.h),
+              SizedBox(height: 12.h),
               _receiptOptionTile(
                   ctx,
                   Icons.image_outlined,
@@ -1910,7 +1910,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                   '$actionLabel as JPG',
                   'Compact image, easy to share in chats.',
                   () => Navigator.of(ctx).pop(ReceiptFileFormat.jpg)),
-              SizedBox(height: 10.h),
+              SizedBox(height: 12.h),
               _receiptOptionTile(
                   ctx,
                   Icons.photo_outlined,
@@ -1931,15 +1931,39 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       onTap: onTap,
       borderRadius: BorderRadius.circular(14.r),
       child: Container(
-        padding: EdgeInsets.all(14.w),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 13.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: const Color(0xFF3A3A3A)),
+          // NO HAIRLINE BORDER.
+          //
+          // This was a 1px 0xFF3A3A3A outline around a 0xFF2A2A2A fill on a
+          // 0xFF1F1F1F sheet — three greys inside six points of each other,
+          // so the border did not separate the row from anything. It just
+          // drew a thin grey rectangle around every option and made a short
+          // list look like a cramped table.
+          //
+          // The rows separate by SURFACE instead: a lighter fill against the
+          // sheet, spaced apart. That is what the rest of the app does, and
+          // it reads as a list of things you can tap rather than cells in a
+          // grid.
+          color: const Color(0xFF2E2E2E),
+          borderRadius: BorderRadius.circular(16.r),
         ),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 22.sp),
+            // The icon gets its own tinted chip rather than floating loose
+            // against the fill. It gives each row a focal point, and the
+            // semantic colour (blue = sender, green = recipient) now carries
+            // real weight instead of being a small coloured glyph.
+            Container(
+              width: 38.w,
+              height: 38.w,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(11.r),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, color: color, size: 20.sp),
+            ),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
