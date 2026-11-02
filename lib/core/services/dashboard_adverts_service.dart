@@ -89,6 +89,39 @@ const List<DashboardAdvert> kSeedDashboardAdverts = <DashboardAdvert>[
     subtitle: 'Lock funds and earn as you save',
     sort: 4,
   ),
+  // Slides six and seven. Both link to routes that already exist, so the deep
+  // link works the moment the slide is shown — Get.toNamed in the carousel's
+  // _openLink takes any registered path.
+  //
+  // NOTE ON THE ART. The five slides above are photographic composites
+  // flattened to 1242x376 and served from our storage under UUID filenames.
+  // I could not produce matching art here: the compose_slides.py these
+  // reference is not in the repo and there are no source frames. So these two
+  // use a READABLE SLUG instead of a UUID — the path is predictable, and the
+  // slide picks the image up the moment a 1242x376 webp is uploaded there,
+  // with no code change.
+  //
+  // Until then the behaviour is graceful rather than broken: a remote image
+  // that fails to load degrades to the Dart-painted card, which still draws
+  // the title, subtitle and a working tap target. (That is only true of a
+  // FAILED load — an admin row with an EMPTY image_url is dropped at parse,
+  // which is why these carry a URL rather than ''.)
+  DashboardAdvert(
+    imageUrl:
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/contactless.webp',
+    link: '/contactless-pay',
+    title: 'Tap to pay, anywhere',
+    subtitle: 'Contactless payments from your phone',
+    sort: 5,
+  ),
+  DashboardAdvert(
+    imageUrl:
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/gift-cards.webp',
+    link: '/gift-cards',
+    title: 'Buy and sell gift cards',
+    subtitle: 'Top brands, paid straight to your wallet',
+    sort: 6,
+  ),
 ];
 
 /// Fetches + caches the dashboard adverts list from the admin settings endpoint
