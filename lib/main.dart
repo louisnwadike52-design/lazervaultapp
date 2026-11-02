@@ -68,6 +68,7 @@ import 'dart:async';
 import 'package:lazervault/core/services/chat_theme_preference.dart';
 import 'package:lazervault/core/utils/kyc_completion.dart';
 import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
+import 'package:lazervault/src/features/presentation/views/notification_feed_store.dart';
 part 'main_widgets.dart';
 
 Future<void> _checkPermissions() async {
@@ -362,6 +363,21 @@ void main() {
     // Hydrate P2P chat sound/vibration preferences so the first outgoing message
     // fires the correct (per-chat or global) feedback without a cold read.
     await ChatSoundSettings.instance.init();
+
+    // Warm page one of the notifications feed off the main thread.
+    //
+    // The feed already paints from a disk-mirrored store, but only after an
+    // async hydrate: on the FIRST open of a session peek() is empty, so the
+    // bottom sheet animates in, shows a loader, waits on SharedPreferences
+    // and only then paints. Short on a fast phone, visibly slow on the
+    // low-end Android hardware most of our users are on.
+    //
+    // unawaited on purpose. This must not add a millisecond to startup —
+    // nothing at launch depends on it, and if it has not finished by the
+    // time the user taps the bell the screen simply hydrates itself exactly
+    // as it does today. It can only make the first open faster, never
+    // slower, and never blocks the first frame.
+    unawaited(NotificationFeedStore.warm());
 
     // Initialize dependency injection (after env vars are loaded)
     await init();

@@ -25,6 +25,26 @@ class NotificationFeedStore {
     fromJson: AppNotification.fromJson,
   );
 
+  /// Pull page one off disk into memory, in the background, at launch.
+  ///
+  /// The feed hydrates itself on open, but that hydrate is ASYNC: on the
+  /// first open of a session the sheet animates in, paints a loader, waits
+  /// on SharedPreferences and only then shows rows. Doing it at startup
+  /// makes peek() hit immediately, so the first open paints in the same
+  /// frame as every subsequent one.
+  ///
+  /// Entirely best-effort. No user signed in yet, nothing stored, a decode
+  /// failure — all end the same way: the feed hydrates on open exactly as it
+  /// does today. This can make the first open faster and can never make it
+  /// slower, which is why the caller does not await it.
+  static Future<void> warm() async {
+    try {
+      final uid = currentUserId();
+      if (uid.isEmpty) return;
+      await page1.hydrate(userId: uid);
+    } catch (_) {/* best-effort: the screen hydrates itself on open */}
+  }
+
   /// Whoever is signed in, or '' when nobody is — the store then refuses to
   /// remember and the feed behaves exactly as it did before.
   static String currentUserId() {
