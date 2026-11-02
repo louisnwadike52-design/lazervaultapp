@@ -83,11 +83,21 @@ class ExpenditureChart extends StatelessWidget {
 
   /// How many x labels to draw. Every day on a week, every few on a month —
   /// drawing all 31 overlaps them into a grey smear.
+  /// How many data points to skip between x-axis labels.
+  ///
+  /// Targets a LABEL COUNT rather than stepping through a table of ranges.
+  /// The table allowed seven labels on a fortnight and seven again on a
+  /// month, and seven date labels ("12 Nov") do not fit across a dashboard
+  /// card — they collided into the clustered strip this replaces.
+  ///
+  /// Five is the ceiling because the card is ~320dp wide inside its padding
+  /// and a label is ~44dp: five leaves real gaps, six is tight, seven
+  /// touches. The first and last points are the ones a reader actually uses
+  /// to orient themselves, and those always land on a step.
   double _bottomInterval(int n) {
-    if (n <= 7) return 1;
-    if (n <= 14) return 2;
-    if (n <= 31) return 5;
-    return (n / 6).ceilToDouble();
+    const maxLabels = 5;
+    if (n <= maxLabels) return 1;
+    return (n / maxLabels).ceilToDouble();
   }
 
   // ── Trend shapes ──────────────────────────────────────────────────
@@ -417,6 +427,15 @@ class ExpenditureChart extends StatelessWidget {
       padding: EdgeInsets.only(top: 6.h),
       child: Text(
         bottomLabel(trend[i].date),
+        // One line, no wrap, clipped rather than ellipsised: a wrapped date
+        // grows the label's box into the slot beside it, which is the other
+        // half of how the axis looked clustered. Clipping is right over an
+        // ellipsis here because the labels are short and uniform — an "…" on
+        // every one would be noisier than the overflow it prevents.
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.clip,
+        textAlign: TextAlign.center,
         style: TextStyle(
           color: _inkDim,
           fontSize: 10.sp,
