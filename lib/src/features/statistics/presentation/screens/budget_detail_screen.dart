@@ -61,9 +61,57 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (budgetId == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0A0A0A),
-        body: Center(child: LazerVaultLoader.small()),
+      // A SPINNER THAT CAN NEVER FINISH.
+      //
+      // budgetId comes from the route arguments. If it is null nothing is
+      // in flight and nothing ever will be — there is no id to fetch — so
+      // the loader span forever on a screen that could not load. Same
+      // defect as the decorative ring below: an indeterminate animation
+      // standing in for a state that is not "waiting".
+      //
+      // Say what happened and offer the way out.
+      return Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0A0A0A),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          title: const Text('Budget Details',
+              style: TextStyle(color: Colors.white)),
+        ),
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline_rounded,
+                    size: 34.sp, color: const Color(0xFF9CA3AF)),
+                SizedBox(height: 12.h),
+                Text(
+                  'We could not open that budget.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  'It may have been deleted. Go back and pick it from the list.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 13.sp,
+                      height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
@@ -259,7 +307,38 @@ class _BudgetDetailView extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  LazerVaultLoader(size: 160),
+                  // THE RING IS THE BUDGET, NOT A SPINNER.
+                  //
+                  // This was LazerVaultLoader(size: 160) — an INDETERMINATE
+                  // loading animation used as decoration behind the
+                  // percentage. It never stopped because it was never
+                  // reporting progress: the page had finished loading and
+                  // the spinner span on forever, which reads as a screen
+                  // stuck mid-fetch while fully-populated data sits on top
+                  // of it.
+                  //
+                  // A determinate ring carries the number the text already
+                  // states, so the two agree and the animation ends.
+                  SizedBox(
+                    height: 160,
+                    width: 160,
+                    child: CircularProgressIndicator(
+                      // Clamped: an exceeded budget is 100% of a ring, and
+                      // a value above 1.0 makes the arc wrap over itself.
+                      // The overspend is reported in the figures below.
+                      value: (percentage / 100).clamp(0.0, 1.0),
+                      strokeWidth: 12,
+                      strokeCap: StrokeCap.round,
+                      backgroundColor: const Color(0xFF2D2D2D),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        percentage >= 90
+                            ? const Color(0xFFEF4444)
+                            : percentage >= 70
+                                ? const Color(0xFFFB923C)
+                                : AnalyticsTheme.accent,
+                      ),
+                    ),
+                  ),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
