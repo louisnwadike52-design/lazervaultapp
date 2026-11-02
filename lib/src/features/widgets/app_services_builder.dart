@@ -32,6 +32,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'service_tile_scale_in.dart';
 import 'quick_services_more_tile.dart';
 import 'quick_services_ordering.dart';
+import 'quick_services_policy.dart';
 import 'quick_services_paging.dart';
 
 class AppServicesBuilder extends StatefulWidget {
@@ -127,6 +128,27 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   /// Debounces edge auto-advance so a slow drag near the edge doesn't flip
   /// through every page at once.
   DateTime _lastEdgeFlip = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// The admin's ordering and locking policy for this build.
+  ///
+  /// Cached per build rather than read per tile. Backed by SharedPreferences,
+  /// which the background settings poll has already written — so by the time
+  /// a finger lands on a tile the answer is in memory and the gesture path
+  /// never blocks.
+  /// Invalidated whenever a fresh admin snapshot lands, so a policy change
+  /// reaches the running session instead of waiting for a restart — the
+  /// cache is a per-build optimisation, not a session-long copy.
+  QuickServicePolicy get _servicePolicy {
+    final rev = FeatureFlags.revision.value;
+    if (_policyCache == null || _policyRevision != rev) {
+      _policyCache = QuickServicePolicy.current();
+      _policyRevision = rev;
+    }
+    return _policyCache!;
+  }
+
+  QuickServicePolicy? _policyCache;
+  int _policyRevision = -1;
 
   /// Only the PERSONAL grid is arrangeable — the other account types carry a
   /// hand-picked order that isn't the user's to rearrange.
@@ -743,6 +765,34 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   /// with [revenuePriority] as the (unique) tiebreak. Default OFF → pure
   /// revenue-priority order.
   List<AppService> _orderPersonalServices(List<AppService> services) {
+    // THE ADMIN'S ORDER OUTRANKS EVERYTHING BELOW, and is applied last so it
+    // cannot be undone by anything here. See quick_services_policy.dart for
+    // why a low default rank was not enough: revenuePriority already put
+    // airtime and data first and kept losing to a saved drag and to adaptive
+    // ordering, both per-user state an operator could neither see nor undo.
+    final policy = QuickServicePolicy.current();
+
+    // Enforced: the admin order is the WHOLE answer. Skip user arrangement
+    // and adaptive entirely rather than computing an order and overwriting
+    // it, so the enforced path cannot accidentally inherit either.
+    if (policy.enforcedForAll) {
+      final ordered = [...services]..sort((a, b) => a.serviceName.revenuePriority
+          .compareTo(b.serviceName.revenuePriority));
+      return applyAdminOrder(ordered, policy, nameOf: (s) => s.serviceName);
+    }
+
+    return applyAdminOrder(
+      _orderPersonalServicesForUser(services, policy),
+      policy,
+      nameOf: (s) => s.serviceName,
+    );
+  }
+
+  /// The user-controlled half of the ordering: their arrangement, then
+  /// adaptive, then revenue priority. Only reached when the admin has not
+  /// enforced a global order.
+  List<AppService> _orderPersonalServicesForUser(
+      List<AppService> services, QuickServicePolicy policy) {
     // A HAND-PLACED order outranks everything below it. Usage ordering is a
     // guess the app makes; this is an instruction the user gave by dragging a
     // tile, so it wins — including over the Send Funds pin, because a user who
@@ -774,7 +824,11 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
       );
     }
 
-    final adaptive = FeatureFlags.adaptiveQuickServices;
+    // BOTH have to agree. The user opts in, and the admin may switch
+    // adaptive off for everyone — an operator who has set an order should
+    // not have usage counts quietly reshuffling it underneath them.
+    final adaptive =
+        FeatureFlags.adaptiveQuickServices && policy.adaptiveEffective;
     final usage = adaptive
         ? serviceLocator<ServiceUsageService>().counts()
         : const <AppServiceName, int>{};
@@ -1258,6 +1312,37 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
           ),
           SizedBox(height: 16.h),
 
+          // WHY THE TILES WILL NOT MOVE.
+          //
+          // Only on the personal grid, and only when the admin has actually
+          // taken the arrangement away. A long-press that does nothing reads
+          // as a broken screen — the user cannot tell "locked" from "not
+          // working", and the one who can tell them is us. One quiet line,
+          // not a banner: it explains a gesture most users will never try.
+          if (_reorderEnabled && _servicePolicy.lockReason != null) ...[
+            Padding(
+              padding: EdgeInsets.only(bottom: 10.h),
+              child: Row(
+                children: [
+                  Icon(Icons.lock_outline_rounded,
+                      size: 13.sp, color: const Color(0xFF9CA3AF)),
+                  SizedBox(width: 6.w),
+                  Expanded(
+                    child: Text(
+                      _servicePolicy.lockReason!,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        height: 1.3,
+                        color: const Color(0xFF9CA3AF),
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           // Services Carousel
           CarouselSlider.builder(
             carouselController: _carouselController,
@@ -1290,9 +1375,22 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
               // swipe. The last page's tile points BACK, because "More" there
               // would be a control that does nothing.
               final moreTileShown = _showMoreTileFor(activeServices);
+              // Resolved ONCE per build rather than per tile: twenty tiles
+              // parsing the same CSVs twenty times is work on the frame that
+              // renders the dashboard.
+              final servicePolicy = _servicePolicy;
               final showMoreHere = moreTileShown;
               final tileGoesBack =
                   quickServiceTileGoesBack(pageIndex, servicePages.length);
+              // On the LAST page the tile takes the first cell of the final
+              // row rather than trailing the last service. Going forward it
+              // reads as "and then more", which belongs where the eye already
+              // is; coming back it is the way OUT, and at the start of the
+              // last row it reads as a control instead of another service.
+              final navIndex = navTileIndexOnPage(
+                servicesOnPage.length, _itemsPerRow,
+                isLastPage: tileGoesBack,
+              );
 
               return GridView.builder(
                 padding: EdgeInsets.zero,
@@ -1312,7 +1410,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                   // moved and nothing can be dropped onto it. Its position is
                   // a property of the grid, not of any service, so it stays
                   // put however the user rearranges everything else.
-                  if (showMoreHere && index == servicesOnPage.length) {
+                  if (showMoreHere && index == navIndex) {
                     // How many services the user has NOT seen yet, which is
                     // only meaningful going forward. Counting from this page's
                     // own offset rather than page one's length, so the promise
@@ -1320,6 +1418,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                     final seenThrough = _serviceIndexAt(
                             pageIndex, servicesOnPage.length - 1, moreTileShown) +
                         1;
+
                     return QuickServicesMoreTile(
                       back: tileGoesBack,
                       label: tileGoesBack ? 'Back' : 'More',
@@ -1353,17 +1452,34 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                       },
                     );
                   }
-                  final service = servicesOnPage[index];
+                  // The tile displaces one cell, so every cell after it maps
+                  // one service earlier. A reorder drag reports positions
+                  // through here, so an off-by-one moves a service the user
+                  // never touched — and persists it.
+                  final slot = showMoreHere
+                      ? serviceSlotForCell(index, navIndex)
+                      : index;
+                  final service = servicesOnPage[slot];
                   // Stagger across the whole grid, not within the page, so
                   // page two does not restart the sweep from zero. This is
                   // also the index reorder drags report, so it has to account
                   // for the cell the More tile consumed.
                   final staggerIndex =
-                      _serviceIndexAt(pageIndex, index, moreTileShown);
+                      _serviceIndexAt(pageIndex, slot, moreTileShown);
                   // Reorder is only offered on the PERSONAL grid — the other
                   // account types carry a hand-picked order that is not the
                   // user's to rearrange.
-                  if (!_reorderEnabled) {
+                  //
+                  // AND only where the admin allows it. A tile the admin has
+                  // ordered or locked renders as a plain tile with no drag
+                  // affordance: allowing the gesture would write a hand-rank
+                  // that outranks the admin order on the very next build, so
+                  // the drag would appear to work and then silently undo
+                  // itself. The policy is read from SharedPreferences, which
+                  // the settings poll filled in the background long before
+                  // anyone touched a tile — nothing on this path awaits.
+                  if (!_reorderEnabled ||
+                      !servicePolicy.isDraggable(service.serviceName)) {
                     return ServiceTileScaleIn(
                       id: service.serviceName.name,
                       index: staggerIndex,

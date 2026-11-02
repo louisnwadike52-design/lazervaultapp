@@ -158,4 +158,69 @@ void main() {
       }
     });
   });
+
+  _navTilePlacement();
+}
+
+/// WHERE THE NAVIGATION TILE SITS.
+///
+/// Trailing the last service on every page EXCEPT the final one, where the
+/// operator asked for it at the start of the last row: going forward it
+/// reads as "and then more", which belongs where the eye already is; coming
+/// back it is the way OUT and should read as a control, not another service.
+void _navTilePlacement() {
+  group('navTileIndexOnPage', () {
+    test('a forward page keeps the tile after the last service', () {
+      expect(navTileIndexOnPage(11, 4, isLastPage: false), 11);
+      expect(navTileIndexOnPage(3, 4, isLastPage: false), 3);
+    });
+
+    test('the last page puts it first on the final row', () {
+      // 9 services, 4 columns: rows are [0-3] [4-7] [8]. The tile takes
+      // index 8, so the last row renders [Back, 9th service].
+      expect(navTileIndexOnPage(9, 4, isLastPage: true), 8);
+      // 6 services: rows [0-3] [4-5] -> tile at 4, last row [Back, 5th, 6th].
+      expect(navTileIndexOnPage(6, 4, isLastPage: true), 4);
+    });
+
+    test('an exactly-full last row starts a new one', () {
+      // 8 services fill two whole rows, so the final row is the tile alone.
+      expect(navTileIndexOnPage(8, 4, isLastPage: true), 8);
+    });
+
+    test('degenerate inputs do not produce a negative index', () {
+      expect(navTileIndexOnPage(0, 4, isLastPage: true), 0);
+      expect(navTileIndexOnPage(5, 0, isLastPage: true), 5);
+    });
+  });
+
+  group('serviceSlotForCell', () {
+    test('cells before the tile map to themselves', () {
+      expect(serviceSlotForCell(0, 8), 0);
+      expect(serviceSlotForCell(7, 8), 7);
+    });
+
+    test('cells after the tile map one service earlier', () {
+      // THE OFF-BY-ONE THAT MATTERS: a reorder drag reports positions
+      // through here, so getting this wrong moves a service the user never
+      // touched and then persists it.
+      expect(serviceSlotForCell(9, 8), 8);
+      expect(serviceSlotForCell(11, 8), 10);
+    });
+
+    test('every service on a page is reachable exactly once', () {
+      for (final n in [1, 5, 8, 9, 11]) {
+        final nav = navTileIndexOnPage(n, 4, isLastPage: true);
+        final seen = <int>[];
+        for (var cell = 0; cell <= n; cell++) {
+          if (cell == nav) continue;
+          seen.add(serviceSlotForCell(cell, nav));
+        }
+        seen.sort();
+        expect(seen, List.generate(n, (i) => i),
+            reason: 'n=$n nav=$nav does not map the grid onto the page one '
+                'to one — a drag would move the wrong service');
+      }
+    });
+  });
 }

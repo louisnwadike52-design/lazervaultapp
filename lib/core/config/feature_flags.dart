@@ -827,6 +827,15 @@ class FeatureFlags {
   static String whitelistEnabledKey(String prefix) =>
       '${prefix}_whitelist_enabled';
 
+  /// A remote settings value exactly as the admin dashboard wrote it.
+  ///
+  /// The `quick_service_` family is persisted VERBATIM (CSV, "true"/"false",
+  /// free text) and parsed per key on read, so a reader needs the raw string
+  /// rather than a typed getter. Synchronous — backed by SharedPreferences,
+  /// which the settings poll has already written in the background. Nothing
+  /// on a gesture path may await.
+  static String? rawString(String key) => _prefs?.getString(key);
+
   /// Emails on this surface's whitelist, lower-cased and trimmed.
   static Set<String> whitelistEmails(String prefix) {
     final raw = _prefs?.getString(whitelistKey(prefix));

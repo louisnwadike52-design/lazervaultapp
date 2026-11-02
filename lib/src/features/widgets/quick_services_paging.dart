@@ -74,3 +74,34 @@ int serviceIndexAt(
 /// failure the first page's tile was added to avoid.
 bool quickServiceTileGoesBack(int pageIndex, int pageCount) =>
     pageCount > 0 && pageIndex >= pageCount - 1;
+
+/// Where the navigation tile sits within a page.
+///
+/// Trailing the last service everywhere EXCEPT the final page, where it
+/// takes the first cell of the last row.
+///
+/// The asymmetry is deliberate. Going forward the tile should read as "and
+/// then more", which is where the eye already is — immediately after the
+/// last tile. Coming back it is not a continuation of the list, it is the
+/// way out, and the operator asked for it at the start of the final row
+/// where it reads as a control rather than as another service.
+///
+/// Returns the cell index the tile occupies. Services fill every other cell
+/// in order, so a caller maps grid index -> service by skipping this one.
+int navTileIndexOnPage(int servicesOnPage, int itemsPerRow, {required bool isLastPage}) {
+  if (!isLastPage || servicesOnPage <= 0 || itemsPerRow <= 0) {
+    return servicesOnPage;
+  }
+  // First cell of the final row: whole rows before it, times the row width.
+  // With 9 services across 4 columns that is index 8 — the last row becomes
+  // [Back, 9th service] rather than [9th service, Back].
+  return (servicesOnPage ~/ itemsPerRow) * itemsPerRow;
+}
+
+/// Index into this page's service list for grid cell [cellIndex], given the
+/// navigation tile occupies [navIndex].
+///
+/// Load-bearing: a reorder drag reports positions through here, so an
+/// off-by-one moves a service the user did not touch and persists it.
+int serviceSlotForCell(int cellIndex, int navIndex) =>
+    cellIndex > navIndex ? cellIndex - 1 : cellIndex;
