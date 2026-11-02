@@ -70,6 +70,10 @@ class QuickServicesMoreTile extends StatefulWidget {
 
 class _QuickServicesMoreTileState extends State<QuickServicesMoreTile> {
   static const _brand = Color.fromARGB(255, 78, 3, 208);
+  /// The dashboard's light accent — the same value the account card section
+  /// and the voice glow use, so the nav tiles belong to that palette rather
+  /// than introducing a darker one of their own.
+  static const _accentLight = Color(0xFF7C5CFF);
 
   bool _pressed = false;
 
@@ -123,7 +127,17 @@ class _QuickServicesMoreTileState extends State<QuickServicesMoreTile> {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [_brand, Color.fromARGB(255, 57, 2, 111)],
+                    // Brand purple into the dashboard's LIGHT accent, not
+                    // into a darker shade of itself.
+                    //
+                    // This ran _brand -> 0xFF39026F, a near-black purple, so
+                    // the More and Back tiles read as the heaviest thing on a
+                    // screen where they are the least important — two
+                    // navigation affordances sitting among the services they
+                    // page between. Ending on the same 0xFF7C5CFF the account
+                    // card section uses keeps them in the dashboard's palette
+                    // and lets the services carry the visual weight.
+                    colors: [_brand, _accentLight],
                   ),
                   shape: BoxShape.circle,
                 ),
