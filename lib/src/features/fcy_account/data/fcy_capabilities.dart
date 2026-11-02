@@ -158,10 +158,16 @@ class FcyCapabilities {
   ///
   /// The capability set rides on every status response, so a caller that has
   /// just read one should not provoke a second round trip to refresh this cache.
-  /// Only non-empty fields overwrite: an older server sends none of them, and
-  /// adopting its silence would empty the offer.
+  ///
+  /// Same presence-versus-emptiness rule as [_refresh], and for the same
+  /// reason: a server that deliberately reports NO issuable currency — which
+  /// is the state today, with Fincra disabled pending its KYB — must be
+  /// believed, while an older server that omits the field must not empty the
+  /// offer. Checking isNotEmpty here would have quietly restored the
+  /// hardcoded fallback on the next status read, undoing the fix in _refresh
+  /// a few lines above.
   void adopt(FCYStatus status) {
-    if (status.supportedCurrencies.isNotEmpty) {
+    if (status.supportedCurrenciesKnown) {
       _cached = status.supportedCurrencies;
     }
     if (status.activatableCurrencies.isNotEmpty ||
