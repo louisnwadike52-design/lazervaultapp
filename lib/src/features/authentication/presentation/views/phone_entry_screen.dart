@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/authentication/cubit/phone_passcode_stat
 import 'package:lazervault/src/features/authentication/presentation/widgets/phone_flow_scaffold.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/device_phone_hint.dart';
 import 'package:lazervault/src/features/widgets/locked_country_phone_input.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/bvn_phone_notice.dart';
 
 /// Step 1 of the phone+passcode signup: enter a phone number (country picker +
 /// national number) and request an SMS OTP.
@@ -143,6 +144,16 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
       listener: (context, state) {
         if (state is PhoneOtpSent) {
           Get.toNamed(AppRoutes.phoneOtp);
+        } else if (state is PhoneOtpVerified) {
+          // SMS is unavailable, so the cubit skipped verification outright
+          // rather than sending a code that cannot arrive. Go straight to
+          // passcode setup — the OTP screen is not rendered at all, so there
+          // is nothing to pop back to and nothing for the user to dismiss.
+          //
+          // offNamed, not toNamed: the phone screen must not stay on the
+          // stack, or Back from passcode setup returns to a number the user
+          // has effectively already submitted.
+          Get.offNamed(AppRoutes.phonePasscodeCreate);
         } else if (state is PhonePasscodeFailure) {
           if (state.alreadyRegistered) {
             // This number already has an account → point them at login.
@@ -228,6 +239,10 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
               onChanged: (e164) => _e164Phone = e164,
               onCountryTap: () => _openCountryPicker(activeCountries),
             ),
+            // Directly under the field, so it is read while the number is
+            // being typed rather than after. Renders nothing when switched
+            // off, so no conditional is needed around it.
+            const BvnPhoneNotice(),
             if (DevicePhoneHint.isSupported) ...[
               SizedBox(height: 8.h),
               Align(

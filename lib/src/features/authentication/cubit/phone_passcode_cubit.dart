@@ -9,6 +9,7 @@ import '../domain/entities/profile_entity.dart';
 import '../domain/repositories/i_auth_repository.dart';
 import 'phone_passcode_state.dart';
 import 'package:lazervault/src/features/authentication/domain/signup_phone_rules.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 
 /// Drives the dedicated "Phone Number + Passcode" authentication flow
 /// (signup + login). Mirrors the responsibilities the [AuthenticationCubit]
@@ -161,12 +162,36 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
       await _storage.delete(key: _draftTokenKey);
       await _storage.delete(key: _draftSkippedKey);
     } catch (_) {/* best-effort */}
-    emit(const PhonePasscodeLoading());
-
     // Pin the auth mode for this in-progress journey so an admin flip can't
     // bounce the user into the email flow mid-onboarding.
     await _signupStateService
         .saveOnboardingAuthType(SignupStateService.authTypePhonePasscode);
+
+    // NO SMS PROVIDER? DO NOT ASK FOR A CODE THAT CANNOT ARRIVE.
+    //
+    // Checked BEFORE the loading emit, because skipPhoneVerification()
+    // early-returns while the state is loading — gating after the emit would
+    // silently do nothing and strand the user on the phone screen.
+    //
+    // The phone and country are persisted here exactly as the OTP success
+    // path does: skipPhoneVerification() clears the TOKEN but writes no
+    // draft, and submitSignup needs the number. Without this a quit/resume
+    // mid-signup would come back with no phone at all.
+    //
+    // Nothing is lost by skipping: the backend already supports creating the
+    // account with no token and phone_verified=false, which is the same path
+    // the manual "skip for now" link uses. The number is still collected,
+    // still goes to KYC, and can be verified later when a provider is live.
+    if (!SmsPolicy.showSignupOtpStep) {
+      try {
+        await _storage.write(key: _draftPhoneKey, value: phone);
+        await _storage.write(key: _draftCountryKey, value: countryCode);
+      } catch (_) {/* best-effort, mirrors the OTP success path */}
+      await skipPhoneVerification();
+      return;
+    }
+
+    emit(const PhonePasscodeLoading());
 
     final result = await _authRepository.requestSignupPhoneOtp(
       phone: phone,

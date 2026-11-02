@@ -67,6 +67,7 @@ import 'package:lazervault/src/core/services/deep_link_service.dart';
 import 'dart:async';
 import 'package:lazervault/core/services/chat_theme_preference.dart';
 import 'package:lazervault/core/utils/kyc_completion.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 part 'main_widgets.dart';
 
 Future<void> _checkPermissions() async {
@@ -822,6 +823,24 @@ Future<String?> _getRouteForPhoneSignupStep(
     case 'phone_otp':
       // Still verifying — resume at the OTP screen (the user can resend if the
       // code has lapsed). No phone draft → restart entry.
+      //
+      // UNLESS SMS IS UNAVAILABLE. A draft written while a provider was live
+      // (or before the switch was flipped) would otherwise resume onto an OTP
+      // screen the flow no longer renders, asking for a code that cannot
+      // arrive, with no way forward.
+      //
+      // Back to ENTRY, not forward to passcode setup. Forward looks kinder
+      // and is wrong: a draft abandoned mid-OTP has neither a token nor the
+      // skipped flag, which is exactly what the phone_passcode_create case
+      // below checks for before letting anyone in. Jumping past that guard
+      // would resume into a signup that cannot be submitted.
+      //
+      // Entry is cheap — the number is prefilled from the same draft — and
+      // re-submitting it runs requestPhoneOtp, which now takes the skip path
+      // itself and writes the flag properly.
+      if (hasPhone && !SmsPolicy.showSignupOtpStep) {
+        return AppRoutes.phoneEntry;
+      }
       return hasPhone ? AppRoutes.phoneOtp : AppRoutes.phoneEntry;
     case 'phone_passcode_create':
     case 'phone_personal_details':

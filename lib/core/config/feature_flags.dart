@@ -782,6 +782,63 @@ class FeatureFlags {
     return _prefs?.getBool(insuranceEnabled) ?? false;
   }
 
+  // ── SMS availability, admin-tunable ──────────────────────────────────────
+  //
+  // THE SITUATION THESE EXIST FOR. The platform has no working SMS provider:
+  // Twilio is suspended and nothing else is integrated. Every flow that sends
+  // a one-time code by SMS therefore cannot complete — and the worst version
+  // of that is the one we shipped, where the OTP step is SHOWN with a "skip
+  // for now" link. A user in the middle of signing up is asked for a code
+  // that will never arrive, and has to work out for themselves that skipping
+  // is the right move. That reads as a broken app at the exact moment a new
+  // user is deciding whether to trust us with money.
+  //
+  // So the step is not shown at all while SMS is off. Not disabled, not
+  // skippable — absent. The moment an operator marks a provider active, it
+  // returns, with no release.
+  //
+  // WHY THE DEFAULTS ARE WHAT THEY ARE. smsProviderActive defaults FALSE,
+  // which matches reality today and is the safe direction: if the admin
+  // snapshot has not resolved yet, or the settings call failed, the app
+  // behaves as though SMS is unavailable. Showing an OTP screen that cannot
+  // work is worse than skipping one that could have.
+  static const String smsProviderActiveKey = 'sms_provider_active';
+
+  /// Whether a working SMS provider is integrated and enabled.
+  ///
+  /// This is the master switch. The two keys below exist so an operator can
+  /// override a specific behaviour, but neither has to be set: both derive
+  /// sensible values from this one.
+  static bool get smsProviderActive =>
+      _prefs?.getBool(smsProviderActiveKey) ?? false;
+
+  /// Whether SMS one-time codes may be used anywhere — signup verification,
+  /// login step-up, two-factor, passcode recovery.
+  ///
+  /// Defaults to following [smsProviderActive], so an operator turning the
+  /// provider on gets the OTP flows back without having to find a second
+  /// switch. Settable independently for the case where a provider is
+  /// configured but not yet trusted for production traffic.
+  static const String smsOtpEnabledKey = 'sms_otp_enabled';
+  static bool get smsOtpEnabled =>
+      _prefs?.getBool(smsOtpEnabledKey) ?? smsProviderActive;
+
+  /// Whether to tell the user, on the phone-number step, that the number must
+  /// be the one on their BVN.
+  ///
+  /// Defaults to the INVERSE of SMS availability, which is the behaviour the
+  /// operator asked for: while we cannot verify a number by SMS ourselves,
+  /// the number goes to our KYC partners unverified, so the user has to be
+  /// told it must match their BVN or their verification fails later — long
+  /// after they have forgotten what they typed. Once SMS verification is back
+  /// the notice is redundant and defaults away.
+  ///
+  /// Still independently settable: an operator may want the notice regardless,
+  /// since the BVN match matters to KYC either way.
+  static const String bvnPhoneNoticeEnabledKey = 'bvn_phone_notice_enabled';
+  static bool get bvnPhoneNoticeEnabled =>
+      _prefs?.getBool(bvnPhoneNoticeEnabledKey) ?? !smsProviderActive;
+
   // ── Locale gating readers ────────────────────────────────────────────────
 
   /// Master switch for restricting the product outside NGN.
