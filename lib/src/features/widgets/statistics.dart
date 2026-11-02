@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -43,6 +44,9 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/statistics/utils/analytics_theme.dart';
 import 'dart:async';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/src/features/widgets/dashboard/expenditure_chart.dart';
+import 'package:lazervault/src/features/widgets/dashboard/expenditure_chart_controls.dart';
+import 'package:lazervault/src/features/widgets/dashboard/expenditure_chart_type.dart';
 part 'statistics_widgets.dart';
 
 /// Returns true for platform/internal fee categories that should be
@@ -169,6 +173,13 @@ class _StatisticsState extends State<Statistics>
 
   final List<String> timePeriods = ["Day", "Week", "Month", "Quarter", "Year"];
   String selectedPeriod = "Week"; // Default to week instead of Day
+
+  /// Shape for the Spending Overview chart.
+  ///
+  /// Same control the dashboard's expenditure card uses, deliberately: the
+  /// user learns one chart switcher, not two. Null until they pick, so the
+  /// default comes from availableChartTypes rather than being pinned here.
+  ExpenditureChartType? _spendingChartType;
 
   bool showIncome = true;
   bool _includeExternalBanks = true; // Track external banks filter state
@@ -1918,6 +1929,29 @@ class _StatisticsState extends State<Statistics>
       }
     }
 
+    // The same series as `spots`, but dated — ExpenditureChart labels its
+    // x-axis from real dates rather than indices.
+    final trendPoints = <ExpenditurePoint>[
+      if (state is StatisticsLoaded && state.expenseTimeSeries != null)
+        for (final p in state.expenseTimeSeries!.dataPoints)
+          ExpenditurePoint(
+            // A row whose date the backend could not format must not take the
+            // card down; it falls back to today and still plots its amount.
+            date: DateTime.tryParse(p.date) ?? DateTime.now(),
+            amount: p.amount,
+          ),
+    ];
+    // No category breakdown on this series, so only the trend shapes are
+    // offered — availableChartTypes drops pie/donut/radar at categoryCount 0.
+    final spendingAvailable = availableChartTypes(
+      trendPoints: trendPoints.length,
+      categoryCount: 0,
+    );
+    final spendingType =
+        resolveChartType(_spendingChartType, spendingAvailable) ??
+            ExpenditureChartType.line;
+    final spendingNext = nextChartType(spendingType, spendingAvailable);
+
     if (spots.isEmpty) {
       return GestureDetector(
         onTap: () => Get.toNamed(AppRoutes.statisticsSpendingDetail),
@@ -1994,50 +2028,70 @@ class _StatisticsState extends State<Statistics>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  'See Details',
-                  style: TextStyle(
-                    color: InvoiceThemeColors.primaryPurpleLight,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            SizedBox(
-              height: 120.h,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: false),
-                  titlesData: FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: spots,
-                      isCurved: true,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4E03D0), Color(0xFF7C3AED)],
-                      ),
-                      barWidth: 3,
-                      dotData: FlDotData(show: false),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: [
-                            InvoiceThemeColors.primaryPurple
-                                .withValues(alpha: 0.3),
-                            const Color(0xFF7C3AED).withValues(alpha: 0.0),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Hidden when there is only one shape: a switcher that
+                    // switches to itself is a dead control.
+                    if (spendingAvailable.length > 1 && spendingNext != null)
+                      Padding(
+                        padding: EdgeInsets.only(right: 10.w),
+                        child: ExpenditureChartCta(
+                          next: spendingNext,
+                          // Opens the picker marking the active shape, exactly
+                          // as the dashboard card does.
+                          onTap: () => showExpenditureChartInfoSheet(
+                            context,
+                            type: spendingType,
+                            categories: const [],
+                            currencySymbol: '₦',
+                            periodTitle: selectedPeriod,
+                            dateRange: '',
+                            transactionCount: trendPoints.length,
+                            totalSpent: trendPoints.fold<double>(
+                                0, (sum, p) => sum + p.amount),
+                            available: spendingAvailable,
+                            onSelect: (picked) =>
+                                setState(() => _spendingChartType = picked),
+                          ),
+                          onLongPress: () => setState(
+                              () => _spendingChartType = spendingNext),
                         ),
+                      ),
+                    Text(
+                      'See Details',
+                      style: TextStyle(
+                        color: InvoiceThemeColors.primaryPurpleLight,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
+            SizedBox(height: 16.h),
+            // One chart, six shapes — the same ExpenditureChart the dashboard
+            // card draws, so a shape added there appears here too and the two
+            // can never render the same series differently.
+            //
+            // Only the TREND shapes are offered: this series carries no
+            // category breakdown, and availableChartTypes drops pie/donut/
+            // radar when categoryCount is 0 rather than letting the user pick
+            // an empty pie.
+            SizedBox(
+              height: 120.h,
+              child: ExpenditureChart(
+                key: ValueKey(spendingType),
+                type: spendingType,
+                trend: trendPoints,
+                categories: const [],
+                currencySymbol: '₦',
+                bottomLabel: (d) => DateFormat('d MMM').format(d),
+                totalSpent: trendPoints.fold<double>(
+                    0, (sum, p) => sum + p.amount),
+              ),
+            )
           ],
         ),
       ),
