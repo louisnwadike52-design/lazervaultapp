@@ -216,8 +216,21 @@ class ReceiptLoaded extends ElectricityBillState {
 class ElectricityBillError extends ElectricityBillState {
   final String message;
 
-  ElectricityBillError({required this.message});
+  /// True when this came from work the USER DID NOT ASK FOR — the provider
+  /// list refreshing on open, a background sync, the recent-payments strip.
+  ///
+  /// Those failing is not an error the user can act on: the form is right
+  /// there and still works. Showing a red "Network error" over a usable
+  /// screen is how a weak connection gets reported as a broken app, and on
+  /// a Nigerian 3G cell it fires constantly.
+  ///
+  /// A failed PAYMENT is the opposite and must always be shouted about, so
+  /// this defaults to false — a new error path is loud until someone
+  /// deliberately quietens it.
+  final bool background;
+
+  ElectricityBillError({required this.message, this.background = false});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, background];
 }

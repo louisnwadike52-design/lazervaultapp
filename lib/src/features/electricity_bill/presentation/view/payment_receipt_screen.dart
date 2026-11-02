@@ -17,6 +17,7 @@ import '../widgets/electricity_rollover_preference_sheet.dart';
 import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../widgets/bill_receipt_qr_block.dart';
+import 'package:lazervault/core/network/network_timeouts.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
 
@@ -333,9 +334,11 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     if (!mounted) return;
     final cubit = context.read<ElectricityBillCubit>();
     final completer = Completer<void>();
+    var failed = false;
     late final StreamSubscription sub;
     sub = cubit.stream.listen((state) {
       if (state is ReceiptLoaded || state is ElectricityBillError) {
+        failed = state is ElectricityBillError;
         if (!completer.isCompleted) completer.complete();
         sub.cancel();
       }
@@ -343,12 +346,27 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     cubit.getPaymentReceipt(paymentId: payment.id);
     // Guard against states we never see (e.g. screen unmounts) with a
     // bounded wait — refresh indicator must eventually stop.
+    //
+    // This has to OUTLIVE the RPC deadline, not undercut it. At the previous
+    // 10s against an interactive deadline of 45s, the indicator always gave
+    // up while the request was still in flight: on a slow link the refresh
+    // appeared to fail and then the row silently changed under the user when
+    // the real answer arrived.
+    var timedOut = false;
     await completer.future.timeout(
-      const Duration(seconds: 10),
+      NetworkTimeouts.interactive + const Duration(seconds: 5),
       onTimeout: () {
+        timedOut = true;
         sub.cancel();
       },
     );
+    // Report the failure HERE. The cubit marks this error background so the
+    // home screen behind us stays quiet, which means this screen owes the
+    // user the feedback — otherwise a pull-to-refresh that failed is
+    // indistinguishable from one that found nothing new.
+    if (failed || timedOut) {
+      _softInfo('Not refreshed', 'Could not reach the network. Pull to retry.');
+    }
   }
 
   void _handleBack() {

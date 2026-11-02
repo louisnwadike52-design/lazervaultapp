@@ -59,7 +59,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
         ));
       } else if (result.hasError) {
         emit(ElectricityBillError(
-            message: getUserFriendlyErrorMessage(result.error)));
+            message: getUserFriendlyErrorMessage(result.error),
+            background: true));
       }
     }
   }
@@ -71,7 +72,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(ElectricityBillError(message: failure.message)),
+      (failure) => emit(ElectricityBillError(message: failure.message, background: true)),
       (providers) => emit(ProvidersLoaded(providers: providers)),
     );
   }
@@ -84,7 +85,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(ElectricityBillError(message: failure.message)),
+      (failure) => emit(ElectricityBillError(message: failure.message, background: true)),
       (_) => emit(ProvidersSynced()),
     );
   }
@@ -374,7 +375,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(ElectricityBillError(message: failure.message)),
+      (failure) => emit(ElectricityBillError(message: failure.message, background: true)),
       (payments) => emit(PaymentHistoryLoaded(payments: payments)),
     );
   }
@@ -387,7 +388,14 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(ElectricityBillError(message: failure.message)),
+      // background: the only callers are the receipt screen's pull-to-refresh
+      // and its websocket balance hook, both of which report failure
+      // themselves. Marked loud, this error travels to the STILL-MOUNTED
+      // listener on the home screen behind it and lands there as a red
+      // "Network error" seconds after the user walked back from the receipt.
+      (failure) => emit(
+        ElectricityBillError(message: failure.message, background: true),
+      ),
       (receipt) => emit(ReceiptLoaded(receipt: receipt)),
     );
   }

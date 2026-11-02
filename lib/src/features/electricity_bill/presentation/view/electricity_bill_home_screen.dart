@@ -188,7 +188,20 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                 // the standalone confirmation screen — removed so it can't hijack
                 // the streamlined single-page flow.
 
-                if (state is ElectricityBillError) {
+                // A FAILED BACKGROUND LOAD IS NOT AN ERROR THE USER CAN ACT ON.
+                //
+                // The provider list, the background sync and the recent-
+                // payments strip all refresh without being asked. On a weak
+                // connection they fail routinely, and each failure used to
+                // raise a red "Network error" over a screen whose form was
+                // sitting there working — including on RETURN FROM A RECEIPT,
+                // because this listener is still mounted and catches a state
+                // emitted while the user was on another screen.
+                //
+                // That is how poor reception gets reported as a broken app.
+                // A failed PAYMENT still shouts, because that one the user
+                // must know about.
+                if (state is ElectricityBillError && !state.background) {
                   Get.snackbar(
                     'Error',
                     state.message,

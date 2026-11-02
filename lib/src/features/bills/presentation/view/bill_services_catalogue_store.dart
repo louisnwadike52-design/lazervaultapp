@@ -1,3 +1,4 @@
+import 'package:lazervault/core/network/network_timeouts.dart';
 import 'package:lazervault/core/cache/session_page_store.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -110,16 +111,23 @@ class BillServicesCatalogue {
     return '';
   }
 
-  /// The network call, UNCHANGED from the hub's original: utility payments
-  /// rides the commerce gRPC client (same instance the data-bundle / betting
-  /// datasources use for GetDataPlans etc.), with the same 8s timeout.
+  /// The network call: utility payments rides the commerce gRPC client (the
+  /// same instance the data-bundle / betting datasources use for
+  /// GetDataPlans etc.).
+  ///
+  /// The outer guard deliberately sits ABOVE the channel's own per-request
+  /// deadline so the gRPC deadline is the one that decides. It was 8s, which
+  /// undercut a 30s deadline: on a congested Nigerian radio the catalogue the
+  /// user is actively waiting for was abandoned after eight seconds while the
+  /// response was still on its way, and the bill hub showed an empty list.
+  /// This guard exists only to stop an await hanging forever.
   static Future<List<BillServiceEntry>> fetch() async {
     final client =
         serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient');
     final options = await client.callOptions;
     final resp = await client.utilityPaymentsClient
         .getBillServices(pb.GetBillServicesRequest(), options: options)
-        .timeout(const Duration(seconds: 8));
+        .timeout(NetworkTimeouts.interactive);
     return [for (final s in resp.services) BillServiceEntry.fromProto(s)];
   }
 
