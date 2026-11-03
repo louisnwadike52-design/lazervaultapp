@@ -530,6 +530,29 @@ class FeatureFlags {
   static const String appStoreUrlAndroid = 'app_store_url_android';
   static const String appUpdateNotesKey = 'app_update_notes';
 
+  // ── Planned maintenance (operator-declared) ───────────────────────────────
+  // A DECLARED maintenance window, which is a different fact from the app
+  // DISCOVERING the backend is unreachable. The startup gate already shows a
+  // maintenance screen, but only by inferring one from a failed health probe —
+  // which cannot tell a planned deploy from a real outage, cannot be switched
+  // on before the work begins, and cannot be switched off until the probe
+  // recovers.
+  //
+  // Defaults OFF, and must: a flag that fails ON would black out the app the
+  // first time a settings fetch returned nothing.
+  //
+  // This is a NOTICE, not a kill switch. Every backend worker, reconciler,
+  // settlement sweep and provider webhook keeps running, so money already in
+  // flight still completes and is still reconciled.
+  static const String maintenanceModeEnabledKey = 'maintenance_mode_enabled';
+  static bool get maintenanceModeEnabled =>
+      _prefs?.getBool(maintenanceModeEnabledKey) ?? false;
+
+  /// Operator copy for the maintenance screen. Empty → the app's own wording.
+  static const String maintenanceMessageKey = 'maintenance_message';
+  static String get maintenanceMessage =>
+      (_prefs?.getString(maintenanceMessageKey) ?? '').trim();
+
   static SharedPreferences? _prefs;
 
   /// Session-pinned Send Funds flow decision (short vs long). Loaded from the
@@ -609,6 +632,7 @@ class FeatureFlags {
       // phone-OTP flow coherently.
       smsProviderActiveKey,
       smsOtpEnabledKey,
+      maintenanceModeEnabledKey,
       bvnPhoneNoticeEnabledKey,
       bulkSmsVisibleKey,
       cardAcceptanceVisibleKey,
@@ -707,6 +731,7 @@ class FeatureFlags {
       appMinBuildAndroid,
       appStoreUrlAndroid,
       appUpdateNotesKey,
+      maintenanceMessageKey,
       // Spray layout default is a string enum ('grid'|'sidebar'|'spotlight'),
       // so it is mirrored verbatim here rather than coerced to a bool above.
       spraymeDefaultLayoutMode,

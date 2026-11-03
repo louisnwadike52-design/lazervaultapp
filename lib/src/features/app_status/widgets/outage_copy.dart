@@ -40,6 +40,18 @@ enum OutageKind {
   /// What helps is naming it: the connection is too slow right now, and moving
   /// to better signal or Wi-Fi is the thing that will fix it.
   slowConnection,
+
+  /// An operator DECLARED a maintenance window from the dashboard.
+  ///
+  /// Separate from [server], which is INFERRED from a failed probe. That
+  /// inference can only begin once things are already broken, so it cannot be
+  /// switched on before planned work starts, cannot be switched off until the
+  /// probe recovers, and cannot tell a deliberate deploy from a real outage.
+  ///
+  /// Kept distinct because the two deserve different words. [server] is an
+  /// apology for something unexpected; this is a notice about something
+  /// intended, and it can carry the operator's own message.
+  plannedMaintenance,
 }
 
 /// The copy for one outage, chosen by kind and by where the user is standing.
@@ -66,8 +78,34 @@ class OutageCopy {
 
   /// [isSignUp] is true anywhere in the create-an-account flow, where the user
   /// has nothing with us yet.
+  /// Operator copy for [OutageKind.plannedMaintenance], set from the admin
+  /// dashboard (`maintenance_message`). Read through a settable hook rather
+  /// than reaching into FeatureFlags from here, so this file stays testable
+  /// without SharedPreferences and the copy can be exercised directly.
+  static String Function() operatorMessageSource = () => '';
+  static String get _operatorMessage => operatorMessageSource().trim();
+
   factory OutageCopy.of(OutageKind kind, {required bool isSignUp}) {
     switch (kind) {
+      case OutageKind.plannedMaintenance:
+        return OutageCopy(
+          icon: Icons.build_circle_rounded,
+          title: 'Back shortly',
+          // The same care [server] takes about what the user has at stake.
+          // During signup there is no account yet, so promising that "your
+          // money is safe" answers a question she never asked and implies she
+          // has something at risk. An operator message, when set, replaces the
+          // body entirely — it is written for the specific window.
+          message: _operatorMessage.isNotEmpty
+              ? _operatorMessage
+              : isSignUp
+                  ? 'We are doing some planned work right now. Nothing you have '
+                      'entered has been lost, please try again shortly.'
+                  : 'We are doing some planned work right now. Your money and '
+                      'data are safe, and anything already in progress will '
+                      'still go through. Please try again shortly.',
+          dismissible: false,
+        );
       case OutageKind.server:
         return OutageCopy(
           icon: Icons.construction_rounded,

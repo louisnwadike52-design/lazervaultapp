@@ -190,6 +190,11 @@ class EndpointRegistry {
     // for the fourth time in this file.
     'sms_provider_active',
     'sms_otp_enabled',
+    // Operator-declared maintenance. Requested here or it never reaches the
+    // app at all — the omission that made sms_provider_active fall back to its
+    // compiled default on every launch and the gating "work only by accident".
+    'maintenance_mode_enabled',
+    'maintenance_message',
     'bvn_phone_notice_enabled',
     'locale_non_ngn_money_actions',
     'locale_non_ngn_account_tabs',
@@ -467,8 +472,7 @@ class EndpointRegistry {
         }
       }
       if (resetReason.isNotEmpty) {
-        debugPrint(
-            '[EndpointRegistry] $resetReason, resetting endpoint cache');
+        debugPrint('[EndpointRegistry] $resetReason, resetting endpoint cache');
         _cache.clear();
         final stale = prefs
             .getKeys()

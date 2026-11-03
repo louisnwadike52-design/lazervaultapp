@@ -616,10 +616,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     // Defer the optional-update modal while the fraud freeze dialog owns the
     // screen — it'll resurface on the next check once the freeze is handled.
     if (_fraudModalActive) return;
-    final should =
-        await _updateCubit.service.shouldShowOptionalModal(info.latestBuild);
+    final should = await _updateCubit.service.shouldShowOptionalModal(info);
     if (!should || !mounted) return;
-    await _updateCubit.service.markOptionalModalSeen(info.latestBuild);
+    await _updateCubit.service.markOptionalModalSeen(info);
     if (!mounted) return;
     await showUpdateModal(
       context,

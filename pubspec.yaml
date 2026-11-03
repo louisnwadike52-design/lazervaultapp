@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.1+478
+version: 1.0.1+479
 environment:
   sdk: '>=3.0.0 <4.0.0'
 
@@ -140,6 +140,20 @@ dependencies:
   # (build-number change) and refresh the endpoint cache so stale cross-version /
   # cross-env URLs never stick.
   package_info_plus: ^8.0.0
+  # Play In-App Updates. ANDROID ONLY by design - Apple ships no equivalent, and
+  # every call throws a not-implemented PlatformException off Android, so callers
+  # must branch on the platform rather than catch (see StoreUpdateCheck).
+  #
+  # It asks the PLAY STORE whether a newer build is actually available to THIS
+  # device, which is the fact our admin-configured app_latest_build_android was
+  # only ever approximating. An operator cannot forget to update it and it cannot
+  # announce a build the store will not serve.
+  #
+  # NOT TESTABLE LOCALLY: the plugin only works for an app installed BY Play, so
+  # a debug or sideloaded build always reports no update. That is a property of
+  # the Play API, not a bug, and is why the admin-configured value is kept as a
+  # fallback rather than deleted.
+  in_app_update: ^5.0.0
   # Shorebird OTA code-push (RE-ADDED, flag-gated + additive). Plain store builds
   # stay the default and ship full self-contained binaries — Shorebird is only
   # engaged by the --shorebird / --patch deploy flags (see scripts/deploy_mobile.sh).

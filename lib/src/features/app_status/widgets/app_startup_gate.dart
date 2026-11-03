@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/server_status_service.dart';
@@ -182,6 +183,22 @@ class _AppStartupGateState extends State<AppStartupGate>
   /// no working data — an exhausted bundle, a captive portal, a broken APN —
   /// answers yes. So every one of those told the user our servers were down.
   Future<OutageKind?> _classifyOutage() async {
+    // A DECLARED window wins, and is checked BEFORE any probe.
+    //
+    // Probing first would defeat the point: during a planned deploy the backend
+    // is usually still answering, so the probe returns healthy and the notice
+    // the operator switched on would never appear. It also costs nothing — the
+    // flag is already in SharedPreferences from the settings poll, so this is a
+    // synchronous read, not a round trip.
+    //
+    // It does NOT stop money. The gate only runs on launch and resume and only
+    // outside an authenticated session (see _isPreLoginScreen), so it cannot
+    // interrupt a transfer somebody has already submitted, and every backend
+    // worker and reconciler keeps running behind it regardless.
+    if (FeatureFlags.maintenanceModeEnabled) {
+      return OutageKind.plannedMaintenance;
+    }
+
     final reach = await _serverStatus.checkReachability();
     if (!mounted) return null;
 
@@ -275,8 +292,7 @@ class _AppStartupGateState extends State<AppStartupGate>
       } else {
         if (_forcedInfo != null) setState(() => _forcedInfo = null);
         if (info.type == AppUpdateType.optional) {
-          final should =
-              await service.shouldShowOptionalModal(info.latestBuild);
+          final should = await service.shouldShowOptionalModal(info);
           if (should && mounted) {
             // Get.context, NOT this widget's context.
             //
@@ -319,7 +335,7 @@ class _AppStartupGateState extends State<AppStartupGate>
               // it as seen, the sheet never rendered, and the dashboard's
               // later check correctly declined to show it again. A prompt that
               // fails to appear must stay owed, not be spent.
-              await service.markOptionalModalSeen(info.latestBuild);
+              await service.markOptionalModalSeen(info);
             } catch (e) {
               debugPrint('[startup-gate] update sheet failed to show: $e');
             }

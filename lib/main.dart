@@ -3,6 +3,7 @@
 // via `--flavor`, so those checks are gone — see `currentAppEnvironment`.
 
 import 'package:lazervault/core/services/install_referrer_service.dart';
+import 'package:lazervault/src/features/app_status/widgets/outage_copy.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_entry_tile.dart';
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_session.dart';
@@ -351,6 +352,9 @@ void main() {
     // brand-new install the keys aren't cached yet, so flags hold their safe
     // OFF default until the first background refresh + next launch.
     await FeatureFlags.applyRemoteSnapshot(endpointRegistry.nonUrlSnapshot());
+    // The maintenance screen's operator copy. Wired here rather than read
+    // inside OutageCopy so that file needs no SharedPreferences to be tested.
+    OutageCopy.operatorMessageSource = () => FeatureFlags.maintenanceMessage;
     // AFTER the snapshot, deliberately: the chat's default accent is an
     // admin-set value that arrives with it, and initialising the preference
     // before that would read an empty default and show the fallback until
