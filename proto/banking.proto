@@ -191,6 +191,39 @@ service BankingService {
             get: "/api/v1/kyc/prove/status"
         };
     }
+    // Raise a correction against a verification HELD on a name mismatch.
+    //
+    // Names are immutable on this platform, so a customer whose verification
+    // is held on a misspelling has no self-service fix and the stated route
+    // is a support request. This is that request, parked on the verification
+    // an operator is already reviewing. It changes no name and grants no
+    // tier — a correction that cleared its own review would be an unreviewed
+    // approval, and the operator queue filters on the live comparator, so
+    // the row would vanish from it rather than show as approved.
+    rpc SubmitProveNameCorrection(SubmitProveNameCorrectionRequest) returns (SubmitProveNameCorrectionResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/kyc/prove/name-correction"
+            body: "*"
+        };
+    }
+    // Adopt the identity provider's spelling onto the profile, for a
+    // verification HELD because the two names disagree.
+    //
+    // THE REQUEST CARRIES NO NAME, deliberately. The value adopted is read
+    // from the stored verification row — what Mono returned from the record
+    // the customer just passed a facial match against — so this cannot
+    // become the free-text name edit the platform refuses. The customer is
+    // adopting the authoritative value, not asserting one.
+    //
+    // Review only. A `name_mismatch` refusal means the records had nothing in
+    // common, and copying a stranger's name onto a profile must never be a
+    // single tap.
+    rpc AdoptProveBVNName(AdoptProveBVNNameRequest) returns (AdoptProveBVNNameResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/kyc/prove/adopt-bvn-name"
+            body: "*"
+        };
+    }
 
     // Account Freeze/Unfreeze (Admin)
     rpc FreezeAccount(FreezeAccountRequest) returns (FreezeAccountResponse) {
@@ -1350,7 +1383,65 @@ message GetProveKYCStatusResponse {
     string session_state = 15;
     // Machine-readable reason for session_state=failed: "cancelled" | "expired"
     // | "data_mismatch" | "rejected" (best-effort; may be empty).
+    //
+    // Also set on a PENDING session for an identity-name decision, which is
+    // the one reason that is not terminal: "name_review" (held, a human
+    // decides) or "name_mismatch" (refused, the BVN is someone else's).
     string failure_reason = 16;
+    // The two names behind a "name_review", so the app can render them as a
+    // labelled comparison rather than quoting them inside `message`.
+    //
+    // POPULATED FOR "name_review" ONLY. On a "name_mismatch" they are
+    // deliberately left EMPTY: nothing in the two records agreed, so we have
+    // evidence the asker is not the BVN holder, and echoing that person's
+    // full name back would turn a refusal into a disclosure channel. The app
+    // must therefore treat both as optional and fall back to `message`.
+    string bvn_name = 17;
+    string profile_name = 18;
+    // True once the customer has raised a name correction on this held
+    // verification. The app swaps its submit affordance for "we have it and
+    // someone is reviewing it" — without this the only feedback was the
+    // request vanishing, so a customer could not tell it had been received
+    // and would send it again.
+    bool name_correction_received = 19;
+}
+
+message SubmitProveNameCorrectionRequest {
+    // Resolved from the caller's token; present for parity with the other
+    // KYC requests and ignored when the token carries an identity.
+    string user_id = 1;
+    // Which record the customer says is wrong:
+    //   "profile_misspelled" — ours has a typo; correct_name is the fix.
+    //   "bvn_outdated"       — the BVN record is stale (married name, legal
+    //                          change) and ours is already right.
+    string claim = 2;
+    // The spelling the customer asserts. Required for "profile_misspelled",
+    // unused for "bvn_outdated".
+    string correct_name = 3;
+    // The customer's own words. Operators read this.
+    string note = 4;
+}
+
+message SubmitProveNameCorrectionResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    // Shown verbatim by the app, so every refusal says something the
+    // customer can act on.
+    string message = 4;
+}
+
+message AdoptProveBVNNameRequest {
+    // Resolved from the caller's token. No name field: see the RPC comment.
+    string user_id = 1;
+}
+
+message AdoptProveBVNNameResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    // Shown verbatim by the app.
+    string message = 4;
 }
 
 message Transaction {

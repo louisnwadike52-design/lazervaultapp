@@ -50,6 +50,7 @@ class Account extends $pb.GeneratedMessage {
     $core.int? kycTier,
     $core.bool? allowInternationalTransfers,
     $core.String? virtualAccountHolderName,
+    $core.double? restrictedBalance,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -85,6 +86,7 @@ class Account extends $pb.GeneratedMessage {
       result.allowInternationalTransfers = allowInternationalTransfers;
     if (virtualAccountHolderName != null)
       result.virtualAccountHolderName = virtualAccountHolderName;
+    if (restrictedBalance != null) result.restrictedBalance = restrictedBalance;
     return result;
   }
 
@@ -137,6 +139,8 @@ class Account extends $pb.GeneratedMessage {
     ..a<$core.int>(28, _omitFieldNames ? '' : 'kycTier', $pb.PbFieldType.O3)
     ..aOB(29, _omitFieldNames ? '' : 'allowInternationalTransfers')
     ..aOS(30, _omitFieldNames ? '' : 'virtualAccountHolderName')
+    ..a<$core.double>(
+        31, _omitFieldNames ? '' : 'restrictedBalance', $pb.PbFieldType.OD)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -440,6 +444,30 @@ class Account extends $pb.GeneratedMessage {
   $core.bool hasVirtualAccountHolderName() => $_has(29);
   @$pb.TagNumber(30)
   void clearVirtualAccountHolderName() => $_clearField(30);
+
+  /// The ONBOARDING GRANT still unspent — money we gave the customer, which
+  /// must be spent ON the platform and may never be paid out.
+  ///
+  /// It is NOT a flat floor. Once they spend the grant on airtime (the entire
+  /// point of giving it) their balance is below the grant amount, and a flat
+  /// rule would then trap money they deposited themselves. So this DEPLETES as
+  /// they buy, and withdrawable = available_balance - restricted_balance:
+  ///
+  ///   grant 2,000, balance 2,000          -> restricted 2,000, withdrawable 0
+  ///    + deposits 1,000 (balance 3,000)   -> restricted 2,000, withdrawable 1,000
+  ///    + buys 500 airtime (balance 2,500) -> restricted 1,500, withdrawable 1,000
+  ///
+  /// Their own money is withdrawable throughout; the grant never is. Carried on
+  /// Account so a payout path can judge the floor from the account it already
+  /// fetched, rather than every payout service learning the grant rules.
+  @$pb.TagNumber(31)
+  $core.double get restrictedBalance => $_getN(30);
+  @$pb.TagNumber(31)
+  set restrictedBalance($core.double value) => $_setDouble(30, value);
+  @$pb.TagNumber(31)
+  $core.bool hasRestrictedBalance() => $_has(30);
+  @$pb.TagNumber(31)
+  void clearRestrictedBalance() => $_clearField(31);
 }
 
 /// ===== Account Summary Model (for carousel/list views) =====
@@ -462,6 +490,7 @@ class AccountSummary extends $pb.GeneratedMessage {
     $core.String? bankName,
     $core.String? bankCode,
     $core.String? virtualAccountHolderName,
+    $fixnum.Int64? restrictedBalance,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -482,6 +511,7 @@ class AccountSummary extends $pb.GeneratedMessage {
     if (bankCode != null) result.bankCode = bankCode;
     if (virtualAccountHolderName != null)
       result.virtualAccountHolderName = virtualAccountHolderName;
+    if (restrictedBalance != null) result.restrictedBalance = restrictedBalance;
     return result;
   }
 
@@ -521,6 +551,9 @@ class AccountSummary extends $pb.GeneratedMessage {
     ..aOS(14, _omitFieldNames ? '' : 'bankName')
     ..aOS(15, _omitFieldNames ? '' : 'bankCode')
     ..aOS(16, _omitFieldNames ? '' : 'virtualAccountHolderName')
+    ..a<$fixnum.Int64>(
+        17, _omitFieldNames ? '' : 'restrictedBalance', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -703,6 +736,27 @@ class AccountSummary extends $pb.GeneratedMessage {
   $core.bool hasVirtualAccountHolderName() => $_has(15);
   @$pb.TagNumber(16)
   void clearVirtualAccountHolderName() => $_clearField(16);
+
+  /// The unspent ONBOARDING GRANT, in MINOR units like every other balance on
+  /// this message (Account carries the same figure in major — the two messages
+  /// differ in unit, which is why this cannot simply be read off that one).
+  ///
+  /// Here so a money-OUT screen can tell the customer what is not withdrawable
+  /// BEFORE they pick an amount. The server already refuses the payout and
+  /// explains why, but by then they have chosen a recipient, typed a figure
+  /// and been told no.
+  ///
+  /// Depletes as they spend on the platform, so withdrawable is
+  /// available_balance - restricted_balance and their own deposits stay
+  /// movable throughout. 0 for everyone without a grant.
+  @$pb.TagNumber(17)
+  $fixnum.Int64 get restrictedBalance => $_getI64(16);
+  @$pb.TagNumber(17)
+  set restrictedBalance($fixnum.Int64 value) => $_setInt64(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasRestrictedBalance() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearRestrictedBalance() => $_clearField(17);
 }
 
 /// ===== Get User Accounts Summary (for dashboard carousel) =====
@@ -12320,6 +12374,7 @@ class HoldFundsRequest extends $pb.GeneratedMessage {
     $core.String? serviceName,
     $core.String? idempotencyKey,
     $core.bool? enforceSpendingLimit,
+    $core.bool? externalPayout,
   }) {
     final result = create();
     if (accountId != null) result.accountId = accountId;
@@ -12333,6 +12388,7 @@ class HoldFundsRequest extends $pb.GeneratedMessage {
     if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
     if (enforceSpendingLimit != null)
       result.enforceSpendingLimit = enforceSpendingLimit;
+    if (externalPayout != null) result.externalPayout = externalPayout;
     return result;
   }
 
@@ -12360,6 +12416,7 @@ class HoldFundsRequest extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'serviceName')
     ..aOS(9, _omitFieldNames ? '' : 'idempotencyKey')
     ..aOB(10, _omitFieldNames ? '' : 'enforceSpendingLimit')
+    ..aOB(11, _omitFieldNames ? '' : 'externalPayout')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -12475,6 +12532,24 @@ class HoldFundsRequest extends $pb.GeneratedMessage {
   $core.bool hasEnforceSpendingLimit() => $_has(9);
   @$pb.TagNumber(10)
   void clearEnforceSpendingLimit() => $_clearField(10);
+
+  /// external_payout marks a hold as money leaving for an EXTERNAL BANK, which
+  /// is what the per-user withdrawal allowance meters.
+  ///
+  /// SEPARATE FROM enforce_spending_limit on purpose, though today's external
+  /// transfers set both. That flag also arms the personal daily/monthly caps,
+  /// and banking-service's withdrawals have never been metered by them —
+  /// reusing it to get the allowance check would have switched those caps on
+  /// for every withdrawal as a side effect, refusing payouts that work today.
+  /// Two questions, two fields.
+  @$pb.TagNumber(11)
+  $core.bool get externalPayout => $_getBF(10);
+  @$pb.TagNumber(11)
+  set externalPayout($core.bool value) => $_setBool(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasExternalPayout() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearExternalPayout() => $_clearField(11);
 }
 
 class HoldFundsResponse extends $pb.GeneratedMessage {

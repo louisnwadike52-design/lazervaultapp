@@ -1767,6 +1767,15 @@ const GetProveKYCStatusResponse$json = {
     {'1': 'reference', '3': 14, '4': 1, '5': 9, '10': 'reference'},
     {'1': 'session_state', '3': 15, '4': 1, '5': 9, '10': 'sessionState'},
     {'1': 'failure_reason', '3': 16, '4': 1, '5': 9, '10': 'failureReason'},
+    {'1': 'bvn_name', '3': 17, '4': 1, '5': 9, '10': 'bvnName'},
+    {'1': 'profile_name', '3': 18, '4': 1, '5': 9, '10': 'profileName'},
+    {
+      '1': 'name_correction_received',
+      '3': 19,
+      '4': 1,
+      '5': 8,
+      '10': 'nameCorrectionReceived'
+    },
   ],
 };
 
@@ -1781,7 +1790,76 @@ final $typed_data.Uint8List getProveKYCStatusResponseDescriptor = $convert.base6
     'ZXNzYWdlEigKEGRhaWx5X2xpbWl0X2tvYm8YCyABKANSDmRhaWx5TGltaXRLb2JvEh0KCmJ2bl'
     '9tYXNrZWQYDCABKAlSCWJ2bk1hc2tlZBIdCgpuaW5fbWFza2VkGA0gASgJUgluaW5NYXNrZWQS'
     'HAoJcmVmZXJlbmNlGA4gASgJUglyZWZlcmVuY2USIwoNc2Vzc2lvbl9zdGF0ZRgPIAEoCVIMc2'
-    'Vzc2lvblN0YXRlEiUKDmZhaWx1cmVfcmVhc29uGBAgASgJUg1mYWlsdXJlUmVhc29u');
+    'Vzc2lvblN0YXRlEiUKDmZhaWx1cmVfcmVhc29uGBAgASgJUg1mYWlsdXJlUmVhc29uEhkKCGJ2'
+    'bl9uYW1lGBEgASgJUgdidm5OYW1lEiEKDHByb2ZpbGVfbmFtZRgSIAEoCVILcHJvZmlsZU5hbW'
+    'USOAoYbmFtZV9jb3JyZWN0aW9uX3JlY2VpdmVkGBMgASgIUhZuYW1lQ29ycmVjdGlvblJlY2Vp'
+    'dmVk');
+
+@$core.Deprecated('Use submitProveNameCorrectionRequestDescriptor instead')
+const SubmitProveNameCorrectionRequest$json = {
+  '1': 'SubmitProveNameCorrectionRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'claim', '3': 2, '4': 1, '5': 9, '10': 'claim'},
+    {'1': 'correct_name', '3': 3, '4': 1, '5': 9, '10': 'correctName'},
+    {'1': 'note', '3': 4, '4': 1, '5': 9, '10': 'note'},
+  ],
+};
+
+/// Descriptor for `SubmitProveNameCorrectionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List submitProveNameCorrectionRequestDescriptor =
+    $convert.base64Decode(
+        'CiBTdWJtaXRQcm92ZU5hbWVDb3JyZWN0aW9uUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2'
+        'VySWQSFAoFY2xhaW0YAiABKAlSBWNsYWltEiEKDGNvcnJlY3RfbmFtZRgDIAEoCVILY29ycmVj'
+        'dE5hbWUSEgoEbm90ZRgEIAEoCVIEbm90ZQ==');
+
+@$core.Deprecated('Use submitProveNameCorrectionResponseDescriptor instead')
+const SubmitProveNameCorrectionResponse$json = {
+  '1': 'SubmitProveNameCorrectionResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `SubmitProveNameCorrectionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List submitProveNameCorrectionResponseDescriptor =
+    $convert.base64Decode(
+        'CiFTdWJtaXRQcm92ZU5hbWVDb3JyZWN0aW9uUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3'
+        'VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgD'
+        'IAEoCVIMZXJyb3JNZXNzYWdlEhgKB21lc3NhZ2UYBCABKAlSB21lc3NhZ2U=');
+
+@$core.Deprecated('Use adoptProveBVNNameRequestDescriptor instead')
+const AdoptProveBVNNameRequest$json = {
+  '1': 'AdoptProveBVNNameRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `AdoptProveBVNNameRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adoptProveBVNNameRequestDescriptor =
+    $convert.base64Decode(
+        'ChhBZG9wdFByb3ZlQlZOTmFtZVJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklk');
+
+@$core.Deprecated('Use adoptProveBVNNameResponseDescriptor instead')
+const AdoptProveBVNNameResponse$json = {
+  '1': 'AdoptProveBVNNameResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdoptProveBVNNameResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adoptProveBVNNameResponseDescriptor = $convert.base64Decode(
+    'ChlBZG9wdFByb3ZlQlZOTmFtZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQ'
+    'oKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVy'
+    'cm9yTWVzc2FnZRIYCgdtZXNzYWdlGAQgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use transactionDescriptor instead')
 const Transaction$json = {

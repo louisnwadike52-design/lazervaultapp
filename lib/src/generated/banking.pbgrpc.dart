@@ -247,6 +247,43 @@ class BankingServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getProveKYCStatus, request, options: options);
   }
 
+  /// Raise a correction against a verification HELD on a name mismatch.
+  ///
+  /// Names are immutable on this platform, so a customer whose verification
+  /// is held on a misspelling has no self-service fix and the stated route
+  /// is a support request. This is that request, parked on the verification
+  /// an operator is already reviewing. It changes no name and grants no
+  /// tier — a correction that cleared its own review would be an unreviewed
+  /// approval, and the operator queue filters on the live comparator, so
+  /// the row would vanish from it rather than show as approved.
+  $grpc.ResponseFuture<$0.SubmitProveNameCorrectionResponse>
+      submitProveNameCorrection(
+    $0.SubmitProveNameCorrectionRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$submitProveNameCorrection, request,
+        options: options);
+  }
+
+  /// Adopt the identity provider's spelling onto the profile, for a
+  /// verification HELD because the two names disagree.
+  ///
+  /// THE REQUEST CARRIES NO NAME, deliberately. The value adopted is read
+  /// from the stored verification row — what Mono returned from the record
+  /// the customer just passed a facial match against — so this cannot
+  /// become the free-text name edit the platform refuses. The customer is
+  /// adopting the authoritative value, not asserting one.
+  ///
+  /// Review only. A `name_mismatch` refusal means the records had nothing in
+  /// common, and copying a stranger's name onto a profile must never be a
+  /// single tap.
+  $grpc.ResponseFuture<$0.AdoptProveBVNNameResponse> adoptProveBVNName(
+    $0.AdoptProveBVNNameRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adoptProveBVNName, request, options: options);
+  }
+
   /// Account Freeze/Unfreeze (Admin)
   $grpc.ResponseFuture<$0.FreezeAccountResponse> freezeAccount(
     $0.FreezeAccountRequest request, {
@@ -850,6 +887,17 @@ class BankingServiceClient extends $grpc.Client {
       '/banking.BankingService/GetProveKYCStatus',
       ($0.GetProveKYCStatusRequest value) => value.writeToBuffer(),
       $0.GetProveKYCStatusResponse.fromBuffer);
+  static final _$submitProveNameCorrection = $grpc.ClientMethod<
+          $0.SubmitProveNameCorrectionRequest,
+          $0.SubmitProveNameCorrectionResponse>(
+      '/banking.BankingService/SubmitProveNameCorrection',
+      ($0.SubmitProveNameCorrectionRequest value) => value.writeToBuffer(),
+      $0.SubmitProveNameCorrectionResponse.fromBuffer);
+  static final _$adoptProveBVNName = $grpc.ClientMethod<
+          $0.AdoptProveBVNNameRequest, $0.AdoptProveBVNNameResponse>(
+      '/banking.BankingService/AdoptProveBVNName',
+      ($0.AdoptProveBVNNameRequest value) => value.writeToBuffer(),
+      $0.AdoptProveBVNNameResponse.fromBuffer);
   static final _$freezeAccount =
       $grpc.ClientMethod<$0.FreezeAccountRequest, $0.FreezeAccountResponse>(
           '/banking.BankingService/FreezeAccount',
@@ -1382,6 +1430,24 @@ abstract class BankingServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetProveKYCStatusRequest.fromBuffer(value),
         ($0.GetProveKYCStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SubmitProveNameCorrectionRequest,
+            $0.SubmitProveNameCorrectionResponse>(
+        'SubmitProveNameCorrection',
+        submitProveNameCorrection_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SubmitProveNameCorrectionRequest.fromBuffer(value),
+        ($0.SubmitProveNameCorrectionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdoptProveBVNNameRequest,
+            $0.AdoptProveBVNNameResponse>(
+        'AdoptProveBVNName',
+        adoptProveBVNName_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdoptProveBVNNameRequest.fromBuffer(value),
+        ($0.AdoptProveBVNNameResponse value) => value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.FreezeAccountRequest, $0.FreezeAccountResponse>(
             'FreezeAccount',
@@ -2111,6 +2177,24 @@ abstract class BankingServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetProveKYCStatusResponse> getProveKYCStatus(
       $grpc.ServiceCall call, $0.GetProveKYCStatusRequest request);
+
+  $async.Future<$0.SubmitProveNameCorrectionResponse>
+      submitProveNameCorrection_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.SubmitProveNameCorrectionRequest> $request) async {
+    return submitProveNameCorrection($call, await $request);
+  }
+
+  $async.Future<$0.SubmitProveNameCorrectionResponse> submitProveNameCorrection(
+      $grpc.ServiceCall call, $0.SubmitProveNameCorrectionRequest request);
+
+  $async.Future<$0.AdoptProveBVNNameResponse> adoptProveBVNName_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AdoptProveBVNNameRequest> $request) async {
+    return adoptProveBVNName($call, await $request);
+  }
+
+  $async.Future<$0.AdoptProveBVNNameResponse> adoptProveBVNName(
+      $grpc.ServiceCall call, $0.AdoptProveBVNNameRequest request);
 
   $async.Future<$0.FreezeAccountResponse> freezeAccount_Pre(
       $grpc.ServiceCall $call,

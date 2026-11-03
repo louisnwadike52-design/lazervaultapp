@@ -7881,6 +7881,9 @@ class GetProveKYCStatusResponse extends $pb.GeneratedMessage {
     $core.String? reference,
     $core.String? sessionState,
     $core.String? failureReason,
+    $core.String? bvnName,
+    $core.String? profileName,
+    $core.bool? nameCorrectionReceived,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -7900,6 +7903,10 @@ class GetProveKYCStatusResponse extends $pb.GeneratedMessage {
     if (reference != null) result.reference = reference;
     if (sessionState != null) result.sessionState = sessionState;
     if (failureReason != null) result.failureReason = failureReason;
+    if (bvnName != null) result.bvnName = bvnName;
+    if (profileName != null) result.profileName = profileName;
+    if (nameCorrectionReceived != null)
+      result.nameCorrectionReceived = nameCorrectionReceived;
     return result;
   }
 
@@ -7932,6 +7939,9 @@ class GetProveKYCStatusResponse extends $pb.GeneratedMessage {
     ..aOS(14, _omitFieldNames ? '' : 'reference')
     ..aOS(15, _omitFieldNames ? '' : 'sessionState')
     ..aOS(16, _omitFieldNames ? '' : 'failureReason')
+    ..aOS(17, _omitFieldNames ? '' : 'bvnName')
+    ..aOS(18, _omitFieldNames ? '' : 'profileName')
+    ..aOB(19, _omitFieldNames ? '' : 'nameCorrectionReceived')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -8088,6 +8098,10 @@ class GetProveKYCStatusResponse extends $pb.GeneratedMessage {
 
   /// Machine-readable reason for session_state=failed: "cancelled" | "expired"
   /// | "data_mismatch" | "rejected" (best-effort; may be empty).
+  ///
+  /// Also set on a PENDING session for an identity-name decision, which is
+  /// the one reason that is not terminal: "name_review" (held, a human
+  /// decides) or "name_mismatch" (refused, the BVN is someone else's).
   @$pb.TagNumber(16)
   $core.String get failureReason => $_getSZ(15);
   @$pb.TagNumber(16)
@@ -8096,6 +8110,407 @@ class GetProveKYCStatusResponse extends $pb.GeneratedMessage {
   $core.bool hasFailureReason() => $_has(15);
   @$pb.TagNumber(16)
   void clearFailureReason() => $_clearField(16);
+
+  /// The two names behind a "name_review", so the app can render them as a
+  /// labelled comparison rather than quoting them inside `message`.
+  ///
+  /// POPULATED FOR "name_review" ONLY. On a "name_mismatch" they are
+  /// deliberately left EMPTY: nothing in the two records agreed, so we have
+  /// evidence the asker is not the BVN holder, and echoing that person's
+  /// full name back would turn a refusal into a disclosure channel. The app
+  /// must therefore treat both as optional and fall back to `message`.
+  @$pb.TagNumber(17)
+  $core.String get bvnName => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set bvnName($core.String value) => $_setString(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasBvnName() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearBvnName() => $_clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get profileName => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set profileName($core.String value) => $_setString(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasProfileName() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearProfileName() => $_clearField(18);
+
+  /// True once the customer has raised a name correction on this held
+  /// verification. The app swaps its submit affordance for "we have it and
+  /// someone is reviewing it" — without this the only feedback was the
+  /// request vanishing, so a customer could not tell it had been received
+  /// and would send it again.
+  @$pb.TagNumber(19)
+  $core.bool get nameCorrectionReceived => $_getBF(18);
+  @$pb.TagNumber(19)
+  set nameCorrectionReceived($core.bool value) => $_setBool(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasNameCorrectionReceived() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearNameCorrectionReceived() => $_clearField(19);
+}
+
+class SubmitProveNameCorrectionRequest extends $pb.GeneratedMessage {
+  factory SubmitProveNameCorrectionRequest({
+    $core.String? userId,
+    $core.String? claim,
+    $core.String? correctName,
+    $core.String? note,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (claim != null) result.claim = claim;
+    if (correctName != null) result.correctName = correctName;
+    if (note != null) result.note = note;
+    return result;
+  }
+
+  SubmitProveNameCorrectionRequest._();
+
+  factory SubmitProveNameCorrectionRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SubmitProveNameCorrectionRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SubmitProveNameCorrectionRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'claim')
+    ..aOS(3, _omitFieldNames ? '' : 'correctName')
+    ..aOS(4, _omitFieldNames ? '' : 'note')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SubmitProveNameCorrectionRequest clone() =>
+      SubmitProveNameCorrectionRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SubmitProveNameCorrectionRequest copyWith(
+          void Function(SubmitProveNameCorrectionRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as SubmitProveNameCorrectionRequest))
+          as SubmitProveNameCorrectionRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SubmitProveNameCorrectionRequest create() =>
+      SubmitProveNameCorrectionRequest._();
+  @$core.override
+  SubmitProveNameCorrectionRequest createEmptyInstance() => create();
+  static $pb.PbList<SubmitProveNameCorrectionRequest> createRepeated() =>
+      $pb.PbList<SubmitProveNameCorrectionRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SubmitProveNameCorrectionRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SubmitProveNameCorrectionRequest>(
+          create);
+  static SubmitProveNameCorrectionRequest? _defaultInstance;
+
+  /// Resolved from the caller's token; present for parity with the other
+  /// KYC requests and ignored when the token carries an identity.
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  /// Which record the customer says is wrong:
+  ///   "profile_misspelled" — ours has a typo; correct_name is the fix.
+  ///   "bvn_outdated"       — the BVN record is stale (married name, legal
+  ///                          change) and ours is already right.
+  @$pb.TagNumber(2)
+  $core.String get claim => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set claim($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasClaim() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearClaim() => $_clearField(2);
+
+  /// The spelling the customer asserts. Required for "profile_misspelled",
+  /// unused for "bvn_outdated".
+  @$pb.TagNumber(3)
+  $core.String get correctName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set correctName($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCorrectName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCorrectName() => $_clearField(3);
+
+  /// The customer's own words. Operators read this.
+  @$pb.TagNumber(4)
+  $core.String get note => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set note($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasNote() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNote() => $_clearField(4);
+}
+
+class SubmitProveNameCorrectionResponse extends $pb.GeneratedMessage {
+  factory SubmitProveNameCorrectionResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (errorCode != null) result.errorCode = errorCode;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  SubmitProveNameCorrectionResponse._();
+
+  factory SubmitProveNameCorrectionResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SubmitProveNameCorrectionResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SubmitProveNameCorrectionResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SubmitProveNameCorrectionResponse clone() =>
+      SubmitProveNameCorrectionResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SubmitProveNameCorrectionResponse copyWith(
+          void Function(SubmitProveNameCorrectionResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as SubmitProveNameCorrectionResponse))
+          as SubmitProveNameCorrectionResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SubmitProveNameCorrectionResponse create() =>
+      SubmitProveNameCorrectionResponse._();
+  @$core.override
+  SubmitProveNameCorrectionResponse createEmptyInstance() => create();
+  static $pb.PbList<SubmitProveNameCorrectionResponse> createRepeated() =>
+      $pb.PbList<SubmitProveNameCorrectionResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SubmitProveNameCorrectionResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SubmitProveNameCorrectionResponse>(
+          create);
+  static SubmitProveNameCorrectionResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => $_clearField(3);
+
+  /// Shown verbatim by the app, so every refusal says something the
+  /// customer can act on.
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => $_clearField(4);
+}
+
+class AdoptProveBVNNameRequest extends $pb.GeneratedMessage {
+  factory AdoptProveBVNNameRequest({
+    $core.String? userId,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    return result;
+  }
+
+  AdoptProveBVNNameRequest._();
+
+  factory AdoptProveBVNNameRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdoptProveBVNNameRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdoptProveBVNNameRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdoptProveBVNNameRequest clone() =>
+      AdoptProveBVNNameRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdoptProveBVNNameRequest copyWith(
+          void Function(AdoptProveBVNNameRequest) updates) =>
+      super.copyWith((message) => updates(message as AdoptProveBVNNameRequest))
+          as AdoptProveBVNNameRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdoptProveBVNNameRequest create() => AdoptProveBVNNameRequest._();
+  @$core.override
+  AdoptProveBVNNameRequest createEmptyInstance() => create();
+  static $pb.PbList<AdoptProveBVNNameRequest> createRepeated() =>
+      $pb.PbList<AdoptProveBVNNameRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdoptProveBVNNameRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdoptProveBVNNameRequest>(create);
+  static AdoptProveBVNNameRequest? _defaultInstance;
+
+  /// Resolved from the caller's token. No name field: see the RPC comment.
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+}
+
+class AdoptProveBVNNameResponse extends $pb.GeneratedMessage {
+  factory AdoptProveBVNNameResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (errorCode != null) result.errorCode = errorCode;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  AdoptProveBVNNameResponse._();
+
+  factory AdoptProveBVNNameResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdoptProveBVNNameResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdoptProveBVNNameResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdoptProveBVNNameResponse clone() =>
+      AdoptProveBVNNameResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdoptProveBVNNameResponse copyWith(
+          void Function(AdoptProveBVNNameResponse) updates) =>
+      super.copyWith((message) => updates(message as AdoptProveBVNNameResponse))
+          as AdoptProveBVNNameResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdoptProveBVNNameResponse create() => AdoptProveBVNNameResponse._();
+  @$core.override
+  AdoptProveBVNNameResponse createEmptyInstance() => create();
+  static $pb.PbList<AdoptProveBVNNameResponse> createRepeated() =>
+      $pb.PbList<AdoptProveBVNNameResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdoptProveBVNNameResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdoptProveBVNNameResponse>(create);
+  static AdoptProveBVNNameResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => $_clearField(3);
+
+  /// Shown verbatim by the app.
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => $_clearField(4);
 }
 
 class Transaction extends $pb.GeneratedMessage {

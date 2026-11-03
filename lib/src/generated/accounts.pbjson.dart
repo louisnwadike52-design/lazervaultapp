@@ -78,6 +78,13 @@ const Account$json = {
       '5': 9,
       '10': 'virtualAccountHolderName'
     },
+    {
+      '1': 'restricted_balance',
+      '3': 31,
+      '4': 1,
+      '5': 1,
+      '10': 'restrictedBalance'
+    },
   ],
 };
 
@@ -101,8 +108,8 @@ final $typed_data.Uint8List accountDescriptor = $convert.base64Decode(
     'luZ2xlVHJhbnNhY3Rpb25MaW1pdBIpChByZXNlcnZlZF9iYWxhbmNlGBsgASgBUg9yZXNlcnZl'
     'ZEJhbGFuY2USGQoIa3ljX3RpZXIYHCABKAVSB2t5Y1RpZXISQgodYWxsb3dfaW50ZXJuYXRpb2'
     '5hbF90cmFuc2ZlcnMYHSABKAhSG2FsbG93SW50ZXJuYXRpb25hbFRyYW5zZmVycxI9Cht2aXJ0'
-    'dWFsX2FjY291bnRfaG9sZGVyX25hbWUYHiABKAlSGHZpcnR1YWxBY2NvdW50SG9sZGVyTmFtZQ'
-    '==');
+    'dWFsX2FjY291bnRfaG9sZGVyX25hbWUYHiABKAlSGHZpcnR1YWxBY2NvdW50SG9sZGVyTmFtZR'
+    'ItChJyZXN0cmljdGVkX2JhbGFuY2UYHyABKAFSEXJlc3RyaWN0ZWRCYWxhbmNl');
 
 @$core.Deprecated('Use accountSummaryDescriptor instead')
 const AccountSummary$json = {
@@ -136,6 +143,13 @@ const AccountSummary$json = {
     {'1': 'bank_name', '3': 14, '4': 1, '5': 9, '10': 'bankName'},
     {'1': 'bank_code', '3': 15, '4': 1, '5': 9, '10': 'bankCode'},
     {
+      '1': 'restricted_balance',
+      '3': 17,
+      '4': 1,
+      '5': 4,
+      '10': 'restrictedBalance'
+    },
+    {
       '1': 'virtual_account_holder_name',
       '3': 16,
       '4': 1,
@@ -156,8 +170,9 @@ final $typed_data.Uint8List accountSummaryDescriptor = $convert.base64Decode(
     'cnZlZEJhbGFuY2USIQoMYWNjb3VudF9uYW1lGAsgASgJUgthY2NvdW50TmFtZRIpChB0cmVuZF'
     '9wZXJjZW50YWdlGAwgASgBUg90cmVuZFBlcmNlbnRhZ2USIQoMdHJlbmRfcGVyaW9kGA0gASgJ'
     'Ugt0cmVuZFBlcmlvZBIbCgliYW5rX25hbWUYDiABKAlSCGJhbmtOYW1lEhsKCWJhbmtfY29kZR'
-    'gPIAEoCVIIYmFua0NvZGUSPQobdmlydHVhbF9hY2NvdW50X2hvbGRlcl9uYW1lGBAgASgJUhh2'
-    'aXJ0dWFsQWNjb3VudEhvbGRlck5hbWU=');
+    'gPIAEoCVIIYmFua0NvZGUSLQoScmVzdHJpY3RlZF9iYWxhbmNlGBEgASgEUhFyZXN0cmljdGVk'
+    'QmFsYW5jZRI9Cht2aXJ0dWFsX2FjY291bnRfaG9sZGVyX25hbWUYECABKAlSGHZpcnR1YWxBY2'
+    'NvdW50SG9sZGVyTmFtZQ==');
 
 @$core.Deprecated('Use filterPayableUsersRequestDescriptor instead')
 const FilterPayableUsersRequest$json = {
@@ -3024,6 +3039,7 @@ const HoldFundsRequest$json = {
       '5': 8,
       '10': 'enforceSpendingLimit'
     },
+    {'1': 'external_payout', '3': 11, '4': 1, '5': 8, '10': 'externalPayout'},
   ],
 };
 
@@ -3035,7 +3051,8 @@ final $typed_data.Uint8List holdFundsRequestDescriptor = $convert.base64Decode(
     'gGIAEoCVIGcmVhc29uEiwKEmV4cGlyZXNfaW5fc2Vjb25kcxgHIAEoBVIQZXhwaXJlc0luU2Vj'
     'b25kcxIhCgxzZXJ2aWNlX25hbWUYCCABKAlSC3NlcnZpY2VOYW1lEicKD2lkZW1wb3RlbmN5X2'
     'tleRgJIAEoCVIOaWRlbXBvdGVuY3lLZXkSNAoWZW5mb3JjZV9zcGVuZGluZ19saW1pdBgKIAEo'
-    'CFIUZW5mb3JjZVNwZW5kaW5nTGltaXQ=');
+    'CFIUZW5mb3JjZVNwZW5kaW5nTGltaXQSJwoPZXh0ZXJuYWxfcGF5b3V0GAsgASgIUg5leHRlcm'
+    '5hbFBheW91dA==');
 
 @$core.Deprecated('Use holdFundsResponseDescriptor instead')
 const HoldFundsResponse$json = {
