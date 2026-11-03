@@ -12,6 +12,7 @@ import '../../domain/entities/network_provider.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import 'airtime_history_actions_sheet.dart';
+import 'package:lazervault/src/features/widgets/history/view_all_button.dart';
 
 /// Scope keys used to filter transactions on both the landing-page card
 /// and the history screen's pill filter.
@@ -148,18 +149,13 @@ class RecentTransactionsCard extends StatelessWidget {
             color: Colors.white,
           ),
         ),
-        GestureDetector(
+        // Shared button: the old GestureDetector-around-a-Text gave a hit
+        // area the size of the glyphs (~16dp tall), well under both platform
+        // minimums. See ViewAllButton.
+        ViewAllButton(
           onTap: () => Get.toNamed(
             AppRoutes.airtimeHistory,
             arguments: {'scope': scope},
-          ),
-          child: Text(
-            'View All',
-            style: GoogleFonts.inter(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFFA78BFA),
-            ),
           ),
         ),
       ],

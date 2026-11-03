@@ -346,6 +346,11 @@ class _AirtimeBeneficiariesScreenState
                 style:
                     TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ),
+          // DELIBERATELY NOT ViewAllButton. This is a TextButton in an
+          // AlertDialog's `actions`, so it already carries Material's padded
+          // 48dp tap target — the problem ViewAllButton solves does not exist
+          // here. Swapping it in would also break the action row, which lays
+          // out buttons, not arbitrary children.
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
@@ -608,11 +613,23 @@ class _AirtimeBeneficiariesScreenState
             value: b.networkName),
         BillDetailRow(
             icon: Icons.public, label: 'Country', value: b.countryCode),
-        BillDetailRow(
-          icon: Icons.repeat,
-          label: 'Top-ups',
-          value: '${b.topupCount} purchase${b.topupCount == 1 ? '' : 's'}',
-        ),
+        // "0 purchases" was the complaint, and it had two causes. The
+        // backend one is fixed: utility-payments' airtime purchase paths now
+        // upsert the contact's topup_count, which nothing ever did — airtime
+        // was the only bill type whose purchase path never touched its
+        // beneficiary table.
+        //
+        // This is the other half. A zero cannot tell "never topped up" apart
+        // from "topped up before the service started counting", so contacts
+        // that predate the fix would keep reading "0 purchases" until an
+        // operator backfill lands. Omitting the row says nothing rather than
+        // something false; once a count exists it appears.
+        if (b.topupCount > 0)
+          BillDetailRow(
+            icon: Icons.repeat,
+            label: 'Top-ups',
+            value: '${b.topupCount} purchase${b.topupCount == 1 ? '' : 's'}',
+          ),
         if (b.lastAmount != null)
           BillDetailRow(
             icon: Icons.payments_outlined,

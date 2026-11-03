@@ -12,6 +12,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import 'internet_history_actions_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/history/view_all_button.dart';
 
 /// Top-of-landing strip showing the 3 most recent internet purchases.
 /// Mirrors `DataBundlesHomeScreen._buildHistoryStripPlaceholder`:
@@ -108,16 +109,9 @@ class _InternetRecentTransactionsCardState
                 fontWeight: FontWeight.w600,
               ),
             ),
-            GestureDetector(
+            ViewAllButton(
               onTap: () => Get.toNamed(AppRoutes.internetBillHistory),
-              child: Text(
-                'View All',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFFA78BFA),
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              fontSize: 12.sp,
             ),
           ],
         ),

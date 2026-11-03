@@ -477,7 +477,10 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
                 if (b.lastAmount != null && b.lastAmount! > 0)
                   _detailRow('Last amount',
                       '\u20A6${b.lastAmount!.toStringAsFixed(2)}'),
-                _detailRow('Times used', b.topupCount.toString()),
+                // See data_beneficiaries_screen: an ambiguous zero is
+                // omitted rather than shown.
+                if (b.topupCount > 0)
+                  _detailRow('Times used', b.topupCount.toString()),
                 if (b.lastTopupAt != null && b.lastTopupAt!.isNotEmpty)
                   _detailRow('Last used', _formatIso(b.lastTopupAt)),
                 if (autos.isNotEmpty) ...[

@@ -15,6 +15,7 @@ import '../widgets/water_history_actions_sheet.dart';
 import '../widgets/water_quick_buy.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/src/features/widgets/history/view_all_button.dart';
 
 /// Water Bill landing screen.
 ///
@@ -209,16 +210,9 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
           children: [
             _buildSectionTitle('Recent Payments'),
             if (_payments.isNotEmpty)
-              GestureDetector(
+              ViewAllButton(
                 onTap: () => Get.toNamed(AppRoutes.waterBillHistory),
-                child: Text(
-                  'View All',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFFA78BFA),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                fontSize: 12.sp,
               ),
           ],
         ),

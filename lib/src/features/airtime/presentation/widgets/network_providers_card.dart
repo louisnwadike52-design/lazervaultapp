@@ -8,6 +8,7 @@ import '../../domain/entities/network_provider.dart';
 import '../../domain/entities/country.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/network_logo.dart';
+import 'package:lazervault/src/features/widgets/history/view_all_button.dart';
 
 /// Static Nigerian network providers for instant display (no API call needed).
 /// These are the canonical providers from our database — IDs and operator IDs
@@ -132,16 +133,12 @@ class NetworkProvidersCard extends StatelessWidget {
               ),
               BlocBuilder<AirtimeCubit, AirtimeState>(
                 builder: (context, state) {
-                  return GestureDetector(
+                  // Shared button: the bare GestureDetector gave a hit area
+                  // the size of the glyphs. This one opens a sheet rather than
+                  // a route, which changes nothing about the target.
+                  return ViewAllButton(
                     onTap: () => _showAllProvidersSheet(context, state),
-                    child: Text(
-                      'View All',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFFA78BFA),
-                      ),
-                    ),
+                    fontSize: 14.sp,
                   );
                 },
               ),

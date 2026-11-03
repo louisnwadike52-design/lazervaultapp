@@ -403,7 +403,12 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
                 if (b.lastAmount != null && b.lastAmount! > 0)
                   _detailRow('Last amount',
                       '\u20A6${b.lastAmount!.toStringAsFixed(2)}'),
-                _detailRow('Times used', b.topupCount.toString()),
+                // A zero here is AMBIGUOUS — it cannot tell "never used"
+                // apart from "used before the service started counting" — so
+                // the row is omitted rather than claiming a false zero on a
+                // contact the user has paid many times.
+                if (b.topupCount > 0)
+                  _detailRow('Times used', b.topupCount.toString()),
                 if (b.lastTopupAt != null && b.lastTopupAt!.isNotEmpty)
                   _detailRow('Last used', _formatIso(b.lastTopupAt)),
                 if (b.createdAt.isNotEmpty)

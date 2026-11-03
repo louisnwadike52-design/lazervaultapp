@@ -13,6 +13,8 @@ import '../../domain/entities/network_provider.dart';
 import '../utils/airtime_navigation_utils.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../widgets/recent_transactions_card.dart' show AirtimeScope;
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/widgets/history/history_scope_pills.dart';
 import '../widgets/airtime_history_actions_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'airtime_history_screen_widgets.dart';
@@ -41,7 +43,14 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
           arg == AirtimeScope.buy ||
           arg == AirtimeScope.intl ||
           arg == AirtimeScope.sell) {
-        _scope = arg!;
+        // RESOLVED AGAINST WHAT IS STILL SELECTABLE. A 'View All' link, a
+        // saved route or a notification can carry scope:'intl' from before the
+        // operator closed International — and with no International pill
+        // rendered there would be nothing to deselect it with, leaving the
+        // user on a filtered empty list they can only escape by leaving the
+        // screen. Falls back to All, which is the honest answer: the history
+        // is not hidden, that distinction simply no longer exists.
+        _scope = resolveHistoryScope(arg!, _pills, allScope: AirtimeScope.all);
       }
       // Seed the query filter from `phoneNumber` so deep-linking from the
       // saved-contacts "View Purchases" entry lands on a list filtered to
@@ -233,21 +242,53 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
     );
   }
 
+  /// The admin tunable's scope name for an [AirtimeScope] value.
+  ///
+  /// THE NAMES DIFFER AND THAT MATTERS: AirtimeScope uses 'intl', while the
+  /// setting key is `airtime_tab_international_enabled` and
+  /// FeatureFlags.airtimeTabAllowed expects 'international'. Passing 'intl'
+  /// straight through would hit the `_ => true` default in that switch and
+  /// report the tab ALLOWED no matter what the operator set — the pill would
+  /// never disappear and the bug would look like the tunable not working.
+  static const Map<String, String> _tunableScope = {
+    AirtimeScope.buy: 'buy',
+    AirtimeScope.intl: 'international',
+    AirtimeScope.sell: 'sell',
+  };
+
+  /// The pills actually worth showing, from the SAME admin switches that gate
+  /// the landing tabs — so a scope closed there cannot linger as a filter here
+  /// that selects a permanently empty list.
+  List<String> get _pills => historyScopePills(
+        candidates: const [AirtimeScope.buy, AirtimeScope.intl, AirtimeScope.sell],
+        isAllowed: (s) => FeatureFlags.airtimeTabAllowed(_tunableScope[s] ?? s),
+        allScope: AirtimeScope.all,
+      );
+
+  static const Map<String, String> _pillLabels = {
+    AirtimeScope.all: 'All',
+    AirtimeScope.buy: 'Buy',
+    AirtimeScope.intl: 'International',
+    AirtimeScope.sell: 'Sell',
+  };
+
   Widget _buildScopePills() {
+    final pills = _pills;
+    // NO ROW AT ALL when only one real scope is active: "All" and that scope
+    // select identical rows, so the filter would be decoration implying a
+    // choice the user does not have. Zero height, not an empty strip.
+    if (pills.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 16.h),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            _buildPill(AirtimeScope.all, 'All', const Color(0xFF4E03D0)),
-            SizedBox(width: 8.w),
-            _buildPill(AirtimeScope.buy, 'Buy', const Color(0xFF4E03D0)),
-            SizedBox(width: 8.w),
-            _buildPill(
-                AirtimeScope.intl, 'International', const Color(0xFF4E03D0)),
-            SizedBox(width: 8.w),
-            _buildPill(AirtimeScope.sell, 'Sell', const Color(0xFF4E03D0)),
+            for (int i = 0; i < pills.length; i++) ...[
+              if (i > 0) SizedBox(width: 8.w),
+              _buildPill(pills[i], _pillLabels[pills[i]] ?? pills[i],
+                  const Color(0xFF4E03D0)),
+            ],
           ],
         ),
       ),

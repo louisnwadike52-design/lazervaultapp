@@ -12,6 +12,8 @@ import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
 import '../widgets/data_history_actions_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/widgets/history/history_scope_pills.dart';
 
 /// Full-list data purchase history. Powered by DataBundlesCubit's
 /// loadDataPurchaseHistory / cachedPurchases (SWR pattern, mirrors
@@ -54,7 +56,9 @@ class _DataBundlesHistoryScreenState extends State<DataBundlesHistoryScreen> {
     // Read scope + optional contact filter from Get.arguments.
     final args = Get.arguments as Map<String, dynamic>?;
     final s = args?['scope'] as String?;
-    if (s == 'intl' || s == 'local') _scope = s!;
+    // Resolved against what is still selectable, so a stale deep link cannot
+    // strand the user on a scope with no pill to deselect it.
+    if (s == 'intl' || s == 'local') _scope = resolveHistoryScope(s!, _pills);
 
     final phone = args?['phoneNumber'] as String?;
     if (phone != null && phone.isNotEmpty) {
@@ -339,19 +343,42 @@ class _DataBundlesHistoryScreenState extends State<DataBundlesHistoryScreen> {
       );
     }
 
+    final pills = _pills;
+    // NO ROW AT ALL when only Local is active: "All" and "Local" select
+    // identical rows, so the filter would be decoration implying a choice the
+    // user does not have — and "International" would select a permanently
+    // empty list for a product the platform does not sell yet.
+    if (pills.isEmpty) return const SizedBox.shrink();
+    const labels = {'all': 'All', 'local': 'Local', 'intl': 'International'};
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Row(
         children: [
-          chip('all', 'All'),
-          SizedBox(width: 8.w),
-          chip('local', 'Local'),
-          SizedBox(width: 8.w),
-          chip('intl', 'International'),
+          for (int i = 0; i < pills.length; i++) ...[
+            if (i > 0) SizedBox(width: 8.w),
+            chip(pills[i], labels[pills[i]] ?? pills[i]),
+          ],
         ],
       ),
     );
   }
+
+  /// The tunable's scope name for this screen's pill values.
+  ///
+  /// 'intl' here, 'international' in the setting key — the same mismatch the
+  /// airtime screen has, and the same trap: passing 'intl' to the gate would
+  /// miss the configured key entirely.
+  static const Map<String, String> _tunableScope = {
+    'local': 'local',
+    'intl': 'international',
+  };
+
+  /// From the SAME admin switch that gates the data landing tabs
+  /// (FeatureFlags.dataTabAllowed), so a closed scope cannot linger here.
+  List<String> get _pills => historyScopePills(
+        candidates: const ['local', 'intl'],
+        isAllowed: (s) => FeatureFlags.dataTabAllowed(_tunableScope[s] ?? s),
+      );
 
   Widget _buildRow(DataPurchaseEntity p) {
     // When the purchase phone matches a saved contact, lift the nickname

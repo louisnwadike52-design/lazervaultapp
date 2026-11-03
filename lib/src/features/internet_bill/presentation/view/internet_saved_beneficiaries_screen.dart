@@ -629,7 +629,11 @@ class _InternetSavedBeneficiariesScreenState
                 if (b.lastAmount != null && b.lastAmount! > 0)
                   _detailRow('Last amount',
                       '\u20A6${b.lastAmount!.toStringAsFixed(2)}'),
-                _detailRow('Times used', b.topupCount.toString()),
+                // See data_beneficiaries_screen: a zero cannot tell "never
+                // used" from "used before counting started", so it is omitted
+                // rather than shown as a false zero.
+                if (b.topupCount > 0)
+                  _detailRow('Times used', b.topupCount.toString()),
                 if (b.lastTopupAt != null && b.lastTopupAt!.isNotEmpty)
                   _detailRow('Last used', _formatIso(b.lastTopupAt)),
                 SizedBox(height: 8.h),

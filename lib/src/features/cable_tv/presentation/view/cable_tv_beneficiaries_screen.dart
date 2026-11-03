@@ -315,7 +315,10 @@ class _CableTVBeneficiariesScreenState
                   'Last amount',
                   '₦${b.lastAmount!.toStringAsFixed(2)}',
                 ),
-              _detailRow('Times renewed', b.topupCount.toString()),
+              // See data_beneficiaries_screen: an ambiguous zero is omitted
+              // rather than shown.
+              if (b.topupCount > 0)
+                _detailRow('Times renewed', b.topupCount.toString()),
               if (b.lastTopupAt != null && b.lastTopupAt!.isNotEmpty)
                 _detailRow('Last renewed', _formatIso(b.lastTopupAt)),
               _detailRow('Added on', _formatIso(b.createdAt)),

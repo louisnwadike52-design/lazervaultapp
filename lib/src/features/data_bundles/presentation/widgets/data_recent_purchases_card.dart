@@ -10,6 +10,7 @@ import '../../domain/entities/data_purchase_entity.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
 import 'data_history_actions_sheet.dart';
+import 'package:lazervault/src/features/widgets/history/view_all_button.dart';
 
 /// Filters the unified data history to what a given tab should surface.
 enum DataPurchaseScope { all, buy, intl }
@@ -135,16 +136,8 @@ class _DataRecentPurchasesCardState extends State<DataRecentPurchasesCard> {
             color: Colors.white,
           ),
         ),
-        GestureDetector(
+        ViewAllButton(
           onTap: () => Get.toNamed(AppRoutes.dataBundlesHistory),
-          child: Text(
-            'View All',
-            style: GoogleFonts.inter(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFFA78BFA),
-            ),
-          ),
         ),
       ],
     );

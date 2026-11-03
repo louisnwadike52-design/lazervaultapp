@@ -13,6 +13,7 @@ import '../../../../../core/widgets/bill_history_item.dart';
 import '../../domain/entities/cable_tv_payment_entity.dart';
 import 'cable_tv_history_actions_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/history/view_all_button.dart';
 
 /// Top-of-landing strip: 3 most recent cable TV purchases.
 /// Mirrors `InternetRecentTransactionsCard` / `DataRecentPurchasesCard`:
@@ -104,16 +105,10 @@ class _CableTVRecentTransactionsCardState
                 fontWeight: FontWeight.w600,
               ),
             ),
-            GestureDetector(
+            ViewAllButton(
               onTap: () => Get.toNamed(AppRoutes.cableTVHistory),
-              child: Text(
-                'View All',
-                style: GoogleFonts.inter(
-                  color: _primary,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              color: _primary,
+              fontSize: 12.sp,
             ),
           ],
         ),
