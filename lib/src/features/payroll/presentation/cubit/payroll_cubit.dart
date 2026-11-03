@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/src/core/errors/grpc_exceptions.dart';
 import 'package:lazervault/src/features/payroll/domain/entities/employee_entity.dart';
 import 'package:lazervault/src/features/payroll/domain/entities/pay_slip_entity.dart';
 import 'package:lazervault/src/features/payroll/domain/repositories/payroll_repository.dart';
@@ -27,13 +28,42 @@ class PayrollCubit extends Cubit<PayrollState> {
         // duplicate employee with a message that NAMES the person already on
         // the roster and which field matched ("Chris is already on this
         // payroll (matched by email)"). Replacing that with generic copy would
-        // throw away the only part an employer can act on. Listed explicitly
-        // rather than left to `default` so a later edit to the fallback cannot
-        // silently swallow it.
+        // throw away the only part an employer can act on.
+        //
+        // NOTE this branch is reached only when a RAW GrpcError arrives.
+        // retryWithBackoff rethrows raw only for unauthenticated and
+        // permissionDenied; everything else, alreadyExists included, it passes
+        // through mapGrpcError first and throws the mapped type. So the
+        // duplicate message really arrives as a GrpcException and is handled by
+        // _friendlyError below. Kept here anyway because a caller that does not
+        // go through retryWithBackoff would land here instead.
         return e.message ?? 'That employee is already on this payroll.';
       default:
         return e.message ?? 'An error occurred';
     }
+  }
+
+  /// Error copy for anything that is NOT a raw [GrpcError].
+  ///
+  /// This is the live path for most failures. The repository wraps every call
+  /// in retryWithBackoff, which converts a GrpcError into one of the
+  /// [GrpcException] subtypes via mapGrpcError before throwing — so by the time
+  /// a duplicate-employee rejection reaches the cubit it is a GrpcException
+  /// carrying the server's message, not a GrpcError.
+  ///
+  /// [GrpcException.message] is read explicitly rather than relying on its
+  /// `toString()` override returning the bare message. That override is what
+  /// made this work before, which meant the single most useful message in the
+  /// payroll flow depended on a `toString()` three files away continuing to be
+  /// written that way. A plain `e.toString()` here would start rendering
+  /// "Instance of 'ServerException'" the day someone adds a type prefix to it.
+  String _friendlyError(Object e) {
+    if (e is GrpcError) return _friendlyGrpcError(e);
+    if (e is GrpcException) {
+      final m = e.message.trim();
+      if (m.isNotEmpty) return m;
+    }
+    return e.toString();
   }
 
   // ---------------------------------------------------------------------------
@@ -63,7 +93,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -79,7 +109,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -130,7 +160,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -182,7 +212,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -198,7 +228,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -221,7 +251,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -244,7 +274,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -279,7 +309,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -301,7 +331,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -317,7 +347,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -353,7 +383,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -379,7 +409,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -395,7 +425,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -421,7 +451,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 
@@ -443,7 +473,7 @@ class PayrollCubit extends Cubit<PayrollState> {
       emit(PayrollError(message: _friendlyGrpcError(e)));
     } catch (e) {
       if (isClosed) return;
-      emit(PayrollError(message: e.toString()));
+      emit(PayrollError(message: _friendlyError(e)));
     }
   }
 }

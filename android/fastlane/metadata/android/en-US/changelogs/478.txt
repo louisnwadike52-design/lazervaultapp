@@ -1,0 +1,8 @@
+Maintenance build - no new features.
+
+Payroll screens now show the server's actual reason when something fails, instead of a generic message.
+
+Worth testing:
+• Add an employee already on the payroll - it should name the person and what matched.
+• Try the same person as 0803... vs +234803...
+• Re-adding someone marked Terminated should still work.
