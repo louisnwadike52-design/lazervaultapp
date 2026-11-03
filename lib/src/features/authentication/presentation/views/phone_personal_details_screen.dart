@@ -7,9 +7,10 @@ import 'package:lazervault/src/features/authentication/cubit/phone_passcode_cubi
 import 'package:lazervault/src/features/authentication/presentation/widgets/phone_flow_scaffold.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/legal_consent_text.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
+import 'package:lazervault/src/features/authentication/domain/signup_steps.dart';
 
-/// Step 4 of 5: collect the user's name, date of birth and optional
-/// username/referral. Email moved to its OWN step (step 5,
+/// Name, date of birth and optional username/referral. Email moved to its OWN
+/// step (the last one,
 /// [PhoneEmailVerificationScreen]) where it is entered AND verified. These
 /// details are just stashed on the cubit here; the account is created on the
 /// email step once the email is supplied. After step 5 the flow continues to
@@ -101,8 +102,8 @@ class _PhonePersonalDetailsScreenState
     return PhoneFlowScaffold(
       title: 'Your details',
       subtitle: 'We use these to personalise and secure your account.',
-      step: 4,
-      totalSteps: 5,
+      step: signupStepNumber(SignupStep.personalDetails),
+      totalSteps: signupStepTotal(SignupStep.personalDetails),
       primaryLabel: 'Continue',
       onPrimary: _onContinue,
       children: [

@@ -103,8 +103,17 @@ class SignupSwitchAccountCta extends StatelessWidget {
 
     await SignupStateService(serviceLocator<FlutterSecureStorage>())
         .abandonForAccountSwitch();
+    // THE LOGIN SCREEN THE PLATFORM IS ACTUALLY CONFIGURED FOR.
+    //
+    // Was hardcoded to phonePasscodeLogin, which is only correct in
+    // phone_passcode mode. With `auth_mode` set to email_password — an admin
+    // switch — abandoning a resumed signup landed the user on a phone+passcode
+    // login their account cannot use. `freshLoginEntry` reads the mode, and
+    // FRESH is the right half of that pair: the draft has just been cleared,
+    // so there is no cached identity for the passcode lock to unlock.
+    //
     // offAllNamed: the signup steps behind this one must not stay on the stack,
     // or the back gesture walks straight back into the flow just abandoned.
-    Get.offAllNamed(AppRoutes.phonePasscodeLogin);
+    Get.offAllNamed(AppRoutes.freshLoginEntry);
   }
 }

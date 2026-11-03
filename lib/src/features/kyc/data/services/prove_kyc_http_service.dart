@@ -1,4 +1,6 @@
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:lazervault/core/services/access_token_shape.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -57,6 +59,9 @@ class ProveKycStatus {
     required this.message,
     this.sessionState = '',
     this.failureReason = '',
+    this.bvnName = '',
+    this.profileName = '',
+    this.nameCorrectionReceived = false,
   });
   final bool verified;
   final int tier;
@@ -72,11 +77,39 @@ class ProveKycStatus {
 
   /// When [sessionState] is 'failed': 'cancelled' | 'expired' |
   /// 'data_mismatch' | 'rejected'.
+  ///
+  /// Also set while [sessionState] is 'pending' for the one non-terminal
+  /// case — an identity-name decision: 'name_review' (held, a human decides)
+  /// or 'name_mismatch' (refused).
   final String failureReason;
+
+  /// The name on the BVN record, and the name on this profile.
+  ///
+  /// POPULATED FOR 'name_review' ONLY. A 'name_mismatch' leaves them empty on
+  /// purpose: nothing in the two records agreed, so the server has evidence
+  /// the asker is not the BVN holder and will not echo that person's name
+  /// back. Treat both as optional and fall back to [message].
+  final String bvnName;
+  final String profileName;
+
+  /// True once a correction is on file for this held verification, so the app
+  /// stops asking for one.
+  final bool nameCorrectionReceived;
 
   bool get isMaxTier => tier >= 3;
   bool get sessionFailed => sessionState == 'failed';
   bool get sessionPending => sessionState == 'pending';
+
+  /// A name disagreement is being reviewed by a human, and we can show the
+  /// customer exactly what differs.
+  ///
+  /// Requires BOTH names: the server omits them for a refusal, and an older
+  /// server that does not send them at all must degrade to [message] rather
+  /// than render a comparison with two blanks in it.
+  bool get nameUnderReview =>
+      failureReason == 'name_review' &&
+      bvnName.isNotEmpty &&
+      profileName.isNotEmpty;
 }
 
 /// Thrown for any Prove KYC failure, with a clean user-facing message.
@@ -279,6 +312,83 @@ class ProveKycHttpService {
         code: _pick(data, 'error_code', 'errorCode'),
       );
     }
+    return parseStatusPayload(data);
+  }
+
+  /// Adopt the BVN record's spelling onto the profile.
+  ///
+  /// SENDS NO NAME. The value is read server-side from the stored
+  /// verification row — what Mono returned from the record the customer just
+  /// passed a facial match against — so this cannot become the free-text name
+  /// edit the platform refuses. There is deliberately no parameter here for a
+  /// caller to put one in.
+  Future<String> adoptBvnName() async {
+    final res = await http
+        .post(
+          Uri.parse('$_base/adopt-bvn-name'),
+          headers: await _headers(),
+          body: jsonEncode(const <String, dynamic>{}),
+        )
+        .timeout(const Duration(seconds: 30));
+    final data = _decode(res);
+    if (res.statusCode != 200 || data['success'] != true) {
+      throw ProveKycException(
+        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode),
+        code: _pick(data, 'error_code', 'errorCode'),
+      );
+    }
+    AppLogger.event('kyc_prove', 'bvn_name.adopted',
+        screen: 'kyc_verification');
+    return (data['message'] ?? '').toString();
+  }
+
+  /// Raise a correction against a verification HELD on a name mismatch.
+  ///
+  /// Names are immutable on this platform, so this does NOT change one — it
+  /// parks the customer's account of the disagreement on the verification an
+  /// operator is already reviewing.
+  ///
+  /// THE SERVER'S REFUSALS ARE THE UX. "Enter the correct spelling", "you
+  /// just sent this", "we already have it and someone is reviewing it" — each
+  /// is the only thing the customer can act on, so they are surfaced verbatim
+  /// via [ProveKycException] rather than collapsed into one generic failure.
+  Future<String> submitNameCorrection({
+    required String claim,
+    String correctName = '',
+    String note = '',
+  }) async {
+    final res = await http
+        .post(
+          Uri.parse('$_base/name-correction'),
+          headers: await _headers(),
+          body: jsonEncode({
+            'claim': claim,
+            'correct_name': correctName,
+            'note': note,
+          }),
+        )
+        .timeout(const Duration(seconds: 30));
+    final data = _decode(res);
+    if (res.statusCode != 200 || data['success'] != true) {
+      throw ProveKycException(
+        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode),
+        code: _pick(data, 'error_code', 'errorCode'),
+      );
+    }
+    AppLogger.event('kyc_prove', 'name_correction.sent',
+        screen: 'kyc_verification', fields: {'claim': claim});
+    return (data['message'] ?? '').toString();
+  }
+
+  /// The map → model step of [status], split out so it can be tested without
+  /// an HTTP round trip.
+  ///
+  /// Pure: no network, no state. Extracted rather than reimplemented in the
+  /// test, because a second copy of the casing fallbacks would be a second
+  /// thing to keep in step — and the field this was added for
+  /// (`nameUnderReview`) decides whether the UI shows another person's name.
+  @visibleForTesting
+  static ProveKycStatus parseStatusPayload(Map<String, dynamic> data) {
     return ProveKycStatus(
       verified: data['verified'] == true,
       tier: _asInt(data['tier']),
@@ -293,16 +403,24 @@ class ProveKycHttpService {
           (data['sessionState'] ?? data['session_state'] ?? '').toString(),
       failureReason:
           (data['failureReason'] ?? data['failure_reason'] ?? '').toString(),
+      // Both casings, like every field above: grpc-gateway's marshaller can
+      // be configured either way and this client must not care which.
+      bvnName: (data['bvnName'] ?? data['bvn_name'] ?? '').toString(),
+      profileName:
+          (data['profileName'] ?? data['profile_name'] ?? '').toString(),
+      nameCorrectionReceived: (data['nameCorrectionReceived'] ??
+              data['name_correction_received']) ==
+          true,
     );
   }
 
-  int _asInt(Object? v) {
+  static int _asInt(Object? v) {
     if (v is int) return v;
     if (v is num) return v.toInt();
     return int.tryParse(v?.toString() ?? '') ?? 0;
   }
 
-  List<String> _asStringList(Object? v) {
+  static List<String> _asStringList(Object? v) {
     if (v is List) return v.map((e) => e.toString()).toList();
     return const [];
   }

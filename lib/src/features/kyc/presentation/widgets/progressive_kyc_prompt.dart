@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utilities/safe_back_button.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -126,10 +127,11 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Get.back(),
-        ),
+        // Null when there is nothing to pop — AppBar then renders no leading
+        // widget at all, rather than an arrow that does nothing. This screen
+        // is pushed today, but it is one `offAllNamed` away from being a
+        // root, and that is not visible from here.
+        leading: maybeBackButton(context, color: Colors.black),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

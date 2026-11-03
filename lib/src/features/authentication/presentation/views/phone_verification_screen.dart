@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
@@ -184,12 +184,26 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
     }
   }
 
-  /// Whether "Skip for now" is offered. The admin toggle decides. The screen
-  /// is still SHOWN to an unverified number when the toggle is off — the
-  /// toggle governs skippability, not visibility — so a holder who deferred
-  /// the SMS at signup is reminded on each login until it is done.
-  bool get _allowSkip =>
-      !widget.fromSettings && !FeatureFlags.isPhoneVerificationRequired;
+  /// Whether "Skip for now" is offered.
+  ///
+  /// SKIP IS AN ESCAPE HATCH, NOT A CHOICE. Operator directive: when the SMS
+  /// provider is ACTIVE and this screen is showing, there is no skip — the
+  /// code is on its way, and the two honest paths are to enter it or to use a
+  /// different number. Offering a third was reading as an invitation to dodge
+  /// verification the platform had just decided to require.
+  ///
+  /// It stays for the one case that genuinely needs it: the provider being
+  /// unavailable while the screen is open. `phoneVerificationStepRoute` keeps
+  /// the step out of the journey when SMS is off, so that is not the usual
+  /// entry — but an admin can switch the provider off while a user sits here
+  /// (the settings poll refreshes the flag), and the first flag snapshot can
+  /// resolve after the route. Both leave a screen waiting for a code that will
+  /// never arrive, and skip is the only way out of it.
+  ///
+  /// `isPhoneVerificationRequired` still vetoes: when the backend will reject
+  /// an unverified signup there is no skip path to offer, whatever SMS is
+  /// doing.
+  bool get _allowSkip => !widget.fromSettings && SmsPolicy.showOtpSkip;
 
   void _skipVerification() {
     // Phone verification is always skippable during onboarding — the user can
@@ -243,20 +257,25 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                 borderRadius: 12.r,
                 duration: const Duration(seconds: 3),
               );
-            } else if (state is PhoneVerificationInProgress) {
-              if (state.errorMessage.isNotEmpty) {
-                Get.snackbar(
-                  'Error',
-                  state.errorMessage,
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.redAccent,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(16.w),
-                  borderRadius: 12.r,
-                  duration: const Duration(seconds: 3),
-                );
-              }
             }
+            // NO SNACKBAR FOR PhoneVerificationInProgress.
+            //
+            // THE DOUBLE TOAST. Every failing path in PhoneVerificationCubit
+            // emits TWO states in a row — PhoneVerificationFailure to
+            // announce it, then PhoneVerificationInProgress carrying the SAME
+            // string in `errorMessage` to restore the form for another try.
+            // All four sites are paired that way (requestPhoneVerification and
+            // verifyPhoneNumber, each on both the failure and the
+            // success:false branch), and `errorMessage` is never set without a
+            // Failure immediately before it — `resendVerificationCode` sets
+            // `successMessage`, not this.
+            //
+            // This listener handled both, so one refusal produced one toast
+            // per state: the user saw the identical message twice, from the
+            // top, on every error. The Failure branch above is the
+            // announcement; the InProgress state is the FORM state, and its
+            // errorMessage is there to be rendered beside the input, not
+            // thrown again.
           },
           child: BlocBuilder<PhoneVerificationCubit, PhoneVerificationState>(
             builder: (context, state) {

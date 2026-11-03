@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/two_factor_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 
 /// Screen for setting up two-factor authentication
 class TwoFactorSetupScreen extends StatefulWidget {
@@ -308,8 +309,23 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
           child: Column(
             children: TwoFactorMethodInfo.availableMethods.map((method) {
               final isSelected = _selectedMethod == method.method;
+              // SMS 2FA IS UNSELECTABLE WITH NO ACTIVE PROVIDER.
+              //
+              // two_factor_settings_screen already gates this; SETUP did not,
+              // so a user enrolling for the first time could pick SMS, be sent
+              // a code that cannot arrive, and end up locked out of the very
+              // factor they just chose. Enrolment is the worst place to allow
+              // it, because there is no previously-working factor to fall back
+              // to.
+              //
+              // DISABLED, NOT HIDDEN — the same judgement the settings screen
+              // records: a method that vanishes reads as the feature being
+              // broken, while "unavailable right now" is a fact the user can
+              // act on by choosing another.
+              final smsBlocked = method.method == TwoFactorMethod.sms &&
+                  !SmsPolicy.canUseSmsTwoFactor;
               return InkWell(
-                onTap: _setupData == null
+                onTap: (_setupData == null && !smsBlocked)
                     ? () {
                         setState(() => _selectedMethod = method.method);
                       }
@@ -371,7 +387,9 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              method.name,
+                              smsBlocked
+                                  ? '${method.name} — unavailable'
+                                  : method.name,
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
@@ -382,12 +400,20 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                             ),
                             SizedBox(height: 4.h),
                             Text(
-                              method.description,
+                              // Say WHY it cannot be chosen. A tile that
+                              // simply does not respond to a tap reads as a
+                              // broken screen; the reason is a fact the user
+                              // can act on by choosing another method.
+                              smsBlocked
+                                  ? SmsPolicy.unavailableReason
+                                  : method.description,
                               style: TextStyle(
                                 fontSize: 13.sp,
-                                color: isSelected
-                                    ? Colors.blue.shade700
-                                    : Colors.grey.shade600,
+                                color: smsBlocked
+                                    ? Colors.orange.shade800
+                                    : isSelected
+                                        ? Colors.blue.shade700
+                                        : Colors.grey.shade600,
                               ),
                             ),
                           ],

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_passcode_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_passcode_state.dart';
@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/authentication/presentation/widgets/phon
 import 'package:lazervault/src/features/widgets/resend_code_button.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/src/features/widgets/verification_decorations.dart';
+import 'package:lazervault/src/features/authentication/domain/signup_steps.dart';
 
 /// Step 2: enter the 6-digit SMS OTP. Supports SMS autofill (via
 /// [VerificationCodeInput]) and a resend with cooldown driven by the
@@ -75,15 +76,26 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
         return PhoneFlowScaffold(
           title: 'Verify your number',
           subtitle: 'Enter the 6-digit code we sent to ${cubit.phone}.',
-          step: 2,
-          totalSteps: 5,
+          step: signupStepNumber(SignupStep.phoneOtp),
+          totalSteps: signupStepTotal(SignupStep.phoneOtp),
           primaryLabel: 'Verify',
           isLoading: isLoading,
           onPrimary: isLoading ? null : _verify,
-          // Skip is offered ONLY when the admin hasn't made phone verification
-          // required. When required, the backend also rejects an unverified
-          // SignupWithPhone, so there is no skip path.
-          secondaryAction: FeatureFlags.isPhoneVerificationRequired
+          // SKIP IS AN ESCAPE HATCH, NOT A CHOICE — see
+          // phone_verification_screen's `_allowSkip`, which this mirrors.
+          //
+          // Operator directive: with the SMS provider ACTIVE and this screen
+          // showing, there is no skip. The code is on its way; the honest paths
+          // are to enter it or to use a different number.
+          //
+          // Kept for the one case that needs it: the provider going
+          // unavailable while the screen is open (an admin switching it off
+          // mid-flow, or the first flag snapshot resolving after the route),
+          // which leaves a screen waiting for a code that will never arrive.
+          // `isPhoneVerificationRequired` still vetoes, because then the
+          // backend rejects an unverified SignupWithPhone and there is no skip
+          // path to offer at all.
+          secondaryAction: !SmsPolicy.showOtpSkip
               ? null
               : TextButton(
                   onPressed: isLoading

@@ -10,6 +10,7 @@ import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/domain/phone_verification_step.dart';
 import 'package:lazervault/core/services/login_flow_resolver.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -25,6 +26,7 @@ import 'package:sms_autofill/sms_autofill.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/legal_consent_text.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
 part 'sign_up_widgets.dart';
 
 class SignUp extends StatefulWidget {
@@ -531,14 +533,21 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               // Navigate based on PRIMARY contact type
               // Note: No "Account Created" snackbar here since email is sent after ID verification
               if (primaryType == PrimaryContactType.phone) {
-                // Phone OTP — skippable unless the admin requires phone verification.
-                Get.offAllNamed(AppRoutes.phoneVerification, arguments: {
-                  'phoneNumber': phoneNumber,
-                  'codeSent': true,
-                  'expiresIn': 600,
-                  'isRequired': FeatureFlags.isPhoneVerificationRequired,
-                  'secondaryEmail': hasSecondaryEmail ? email : null,
-                });
+                // Phone OTP — skippable unless the admin requires phone
+                // verification.
+                //
+                // Via phoneVerificationStepRoute so a phone-primary signup
+                // does not open an OTP screen while no provider can deliver
+                // the code; it falls through to email verification when an
+                // address exists, so the new account still verifies ONE
+                // contact instead of none.
+                final next = phoneVerificationStepRoute(
+                  phoneNumber: phoneNumber,
+                  codeSent: true,
+                  isRequired: FeatureFlags.isPhoneVerificationRequired,
+                  secondaryEmail: hasSecondaryEmail ? email : null,
+                );
+                Get.offAllNamed(next.name, arguments: next.args);
               } else {
                 // Email OTP (email is primary) — skippable unless the admin
                 // requires email verification.
@@ -777,6 +786,17 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                           ),
                         ],
                       ),
+                      // A WAY OUT OF A RESUMED SIGNUP, distinct from the
+                      // "Sign In" link beside it.
+                      //
+                      // That link PUSHES login and leaves the local draft
+                      // intact — right on a first run ("I'll sign in instead,
+                      // keep my place"), and a dead end on a resume: back
+                      // returns into the abandoned signup and the next cold
+                      // start resumes straight into it again. This clears the
+                      // draft and replaces the stack. Renders nothing unless
+                      // this launch actually resumed one.
+                      const SignupSwitchAccountCta(bottomPadding: 0),
                     ],
                   ),
                 ),

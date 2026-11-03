@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/domain/phone_verification_step.dart';
 import 'package:lazervault/src/core/config/app_environment.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/widgets/verification_decorations.dart';
@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
 part 'email_verification_screen_widgets.dart';
 
 class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
@@ -158,21 +159,22 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
     // entry. (The standalone AddPhoneNumber screen has been removed.) If
     // the phone is somehow missing — defensive only — fall through to
     // passcode setup so the user isn't stranded.
-    final preExistingPhone = widget.secondaryPhone;
-    if (preExistingPhone != null && preExistingPhone.isNotEmpty) {
-      // Phone verification is skippable (parity with email verify) — the
-      // user can defer SMS OTP to Settings if their network refuses to
-      // deliver the code right now. They still proceed to passcode setup.
-      Get.offAllNamed(AppRoutes.phoneVerification, arguments: {
-        'phoneNumber': preExistingPhone,
-        'codeSent': false, // request OTP fresh — page sends on load
-        'expiresIn': 600,
-        'isRequired': false,
-        'secondaryEmail': null,
-      });
-    } else {
-      Get.offAllNamed(AppRoutes.passcodeSetup);
-    }
+    //
+    // Phone verification is skippable (parity with email verify) — the user
+    // can defer SMS OTP to Settings if their network refuses to deliver the
+    // code right now. They still proceed to passcode setup.
+    //
+    // ROUTED THROUGH phoneVerificationStepRoute so this hop cannot show an
+    // OTP screen while no provider is active: `codeSent: false` means the
+    // screen requests a code ON LOAD, so an undeliverable channel turns this
+    // into a dead end rather than a skippable step. It also covers the
+    // missing-phone case the old `else` handled.
+    final next = phoneVerificationStepRoute(
+      phoneNumber: widget.secondaryPhone,
+      codeSent: false, // request OTP fresh — page sends on load
+      isRequired: false,
+    );
+    Get.offAllNamed(next.name, arguments: next.args);
   }
 
   void _skipVerification() {
@@ -481,6 +483,16 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                               'Check your inbox and spam folder for the 6-digit verification code. The code expires in 15 minutes.',
                         ),
                         SizedBox(height: 32.h),
+                        // A WAY OUT OF A RESUMED SIGNUP.
+                        //
+                        // main.dart parks an email-flow draft at `email_verify`
+                        // on THIS screen, and the only back affordance here is
+                        // gated on `fromSettings` — so a resumed signup had no
+                        // exit at all. Renders nothing on a first run or from
+                        // Settings: the widget is gated on
+                        // wasResumedThisLaunch.
+                        if (!widget.fromSettings)
+                          const SignupSwitchAccountCta(bottomPadding: 8),
                       ],
                     ),
                   ),

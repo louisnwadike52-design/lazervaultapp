@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/login_flow_resolver.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 const _phone = FeatureFlags.authModePhonePasscode; // 'phone_passcode'
 const _email = FeatureFlags.authModeEmailPassword; // 'email_password'
@@ -288,6 +289,36 @@ void main() {
       await LoginFlowResolver.setExplicit('???');
       expect(FeatureFlags.loginFlow, _phone);
       expect(secure['preferred_login_method'], _phone);
+    });
+  });
+
+  // ── Where "abandon this resumed signup" sends you ──────────────────────
+  //
+  // SignupSwitchAccountCta hardcoded phonePasscodeLogin, which is only right
+  // in phone_passcode mode. With `auth_mode` set to email_password — an admin
+  // switch — leaving a resumed signup landed the user on a phone+passcode
+  // login their account cannot use. It now uses freshLoginEntry.
+  group('freshLoginEntry follows the configured mode', () {
+    test('phone_passcode mode → the full phone + passcode login', () async {
+      await LoginFlowResolver.setExplicit(_phone);
+      expect(AppRoutes.freshLoginEntry, AppRoutes.phonePasscodeLogin);
+    });
+
+    test('email_password mode → the email sign-in', () async {
+      await LoginFlowResolver.setExplicit(_email);
+      expect(AppRoutes.freshLoginEntry, AppRoutes.emailSignIn);
+    });
+
+    // FRESH, not loginEntry: the draft has just been cleared, so there is no
+    // cached identity for the passcode LOCK screen to unlock. Landing there
+    // would be the dead end its own doc comment warns about.
+    test('it is never the passcode lock, which needs a cached identity',
+        () async {
+      for (final mode in [_phone, _email]) {
+        await LoginFlowResolver.setExplicit(mode);
+        expect(AppRoutes.freshLoginEntry, isNot(AppRoutes.passcodeLogin),
+            reason: 'mode $mode resolved to the passcode lock');
+      }
     });
   });
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -158,8 +159,13 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   /// so a stale value can never let a request through early.
   static const int _resendCooldownSeconds = 60;
 
+  /// Whether a code can actually reach this customer on this challenge's
+  /// channel. See the skip affordance below for why it decides visibility.
+  bool get _codeCanBeDelivered => widget.method != 'sms' || SmsPolicy.available;
+
   bool get _canResend =>
-      _resendDeadline == null || !DateTime.now().isBefore(_resendDeadline!);
+      !_resendChannelClosed &&
+      (_resendDeadline == null || !DateTime.now().isBefore(_resendDeadline!));
 
   void _restartTicker(int seconds) {
     _ticker?.cancel();
@@ -386,6 +392,17 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   /// so the screen stops pretending the boxes are useful.
   bool _terminal = false;
 
+  /// The delivery channel itself cannot send another code, while the code
+  /// ALREADY in the user's hands remains valid.
+  ///
+  /// Deliberately NOT [_terminal]. Terminal means "the boxes are useless, sign
+  /// in again"; this means the opposite — typing the code they already have is
+  /// the one thing that still works, and only the resend affordance is dead.
+  /// The server refuses the resend BEFORE replacing the stored code precisely
+  /// so that stays true, so blanking the session here would throw away a
+  /// working credential.
+  bool _resendChannelClosed = false;
+
   void _handleFailure(String message, {String code = ''}) {
     final m = message.toLowerCase();
     final looksNetwork = isNetworkError(message) ||
@@ -433,6 +450,25 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
           _errorText = message.isNotEmpty
               ? message
               : 'Please wait a moment before asking for another code.';
+        });
+        return;
+      case 'STEP_UP_CHANNEL_UNAVAILABLE':
+        // The provider cannot deliver another SMS. Without this case the code
+        // fell through to the generic branch below and told the user "That
+        // code is incorrect" — which is both false and actively misleading,
+        // since the code they hold is fine and the thing that failed was the
+        // resend.
+        //
+        // So: relay the server's reason, hide the resend affordance, and leave
+        // the boxes live.
+        _ticker?.cancel();
+        setState(() {
+          _submitting = false;
+          _resendChannelClosed = true;
+          _errorText = message.isNotEmpty
+              ? message
+              : 'We cannot send another code to your phone right now. '
+                  'If you already have a code, enter it below.';
         });
         return;
       case 'OTP_USED':
@@ -551,10 +587,27 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
               // challenge, which is the only time it is offered. Listening
               // means it appears the moment the snapshot lands instead of
               // staying hidden for that whole session.
+              //
+              // AND ONLY WHEN THE CODE CANNOT ACTUALLY ARRIVE.
+              //
+              // Skip is an ESCAPE HATCH, not a preference: it exists because
+              // a code the customer can never receive is a dead end. Once a
+              // channel is genuinely delivering, offering to skip the step
+              // undermines the step — the honest instruction is "enter the
+              // code", and there is a resend beside it for a code that is
+              // slow.
+              //
+              // Deliverability, not the SMS switch alone: this challenge can
+              // be issued over EMAIL (adaptive_otp.go defaults to it and only
+              // falls to SMS for a phone-only account), and email is always
+              // deliverable. So the hatch appears only for an SMS challenge
+              // with no active provider — which is also the only combination
+              // that can strand someone.
               ValueListenableBuilder<int>(
                 valueListenable: EndpointRegistry.instance.changeTick,
                 builder: (context, _, __) =>
-                    EndpointRegistry.instance.otpSkipButtonVisible
+                    EndpointRegistry.instance.otpSkipButtonVisible &&
+                            !_codeCanBeDelivered
                         ? _buildSkipButton()
                         : const SizedBox.shrink(),
               ),

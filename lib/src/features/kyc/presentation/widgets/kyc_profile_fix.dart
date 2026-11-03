@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import 'package:lazervault/src/features/profile/presentation/view/change_phone_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/support/presentation/support_tickets_screen.dart';
 
 /// WHEN KYC FAILS BECAUSE OF *OUR* PROFILE DATA, SAY WHERE TO FIX IT.
 ///
@@ -24,7 +25,25 @@ import 'package:lazervault/core/types/app_routes.dart';
 /// sentence rather than re-deriving the rule in the app: banking-service owns
 /// what "valid" means for each provider, and a second copy here would drift
 /// the first time a corridor changed.
-enum KycProfileField { phone, email, name, none }
+enum KycProfileField {
+  phone,
+  email,
+  name,
+
+  /// Nothing the customer can change will clear this — it needs a human.
+  ///
+  /// THE CASE THIS EXISTS FOR: "this BVN is already linked to another
+  /// account". It classified as [none], so the dialog offered Cancel and
+  /// **Try Again**, and trying again submits the same BVN against the same
+  /// row and fails identically — the exact loop the rest of this file was
+  /// written to stop, just with a different cause. A BVN belonging to an
+  /// existing account is either a genuine duplicate (one person, two
+  /// accounts) or someone using a number that is not theirs, and both are
+  /// decisions, not retries.
+  support,
+
+  none,
+}
 
 /// Which profile field a refusal is really about, or [KycProfileField.none]
 /// when it is a provider/network failure the user cannot fix from Settings.
@@ -37,7 +56,15 @@ KycProfileField kycProfileFieldFor(String? rawMessage) {
   final m = (rawMessage ?? '').toLowerCase();
   if (m.isEmpty) return KycProfileField.none;
 
-  // Phone first: its messages are the most specific, and the Nigerian-number
+  // ALREADY-LINKED FIRST, before the field matchers. The message names an
+  // "account", not a field, and retrying it can never succeed — so it must
+  // not fall through to a Try Again, nor be captured by a later matcher.
+  if (m.contains('already linked') ||
+      (m.contains('already') && m.contains('another account'))) {
+    return KycProfileField.support;
+  }
+
+  // Phone next: its messages are the most specific, and the Nigerian-number
   // one also contains the word "number", which nothing else does.
   if (m.contains('phone')) return KycProfileField.phone;
   if (m.contains('email')) return KycProfileField.email;
@@ -57,6 +84,8 @@ String kycProfileFixLabel(KycProfileField field) {
       return 'Update email';
     case KycProfileField.name:
       return 'Update profile';
+    case KycProfileField.support:
+      return 'Contact support';
     case KycProfileField.none:
       return 'Try Again';
   }
@@ -78,6 +107,15 @@ Future<bool> openKycProfileFix(KycProfileField field) async {
     case KycProfileField.phone:
       final changed = await Get.to(() => const ChangePhoneScreen());
       return changed == true;
+    case KycProfileField.support:
+      // The in-app ticket screen — the one destination that can actually
+      // resolve a BVN already bound to another account. Pushed directly
+      // because it has no named route.
+      //
+      // Returns false: no auto-retry, because nothing the customer did here
+      // changed who owns that BVN.
+      await Get.to(() => const SupportTicketsScreen());
+      return false;
     case KycProfileField.name:
     case KycProfileField.email:
       await Get.toNamed(AppRoutes.profileSettings);

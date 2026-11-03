@@ -47,9 +47,33 @@ class PhoneFlowScaffold extends StatelessWidget {
   /// (e.g. the OTP "Skip for now").
   final Widget? secondaryAction;
 
-  /// Whether to show the back button (default true). The first slide passes
+  /// Whether to show the back button.
+  ///
+  /// NULL (the default) means DERIVE IT, and that is the important case.
+  /// A hardcoded `true` was the wrong default: six screens in this flow took
+  /// it, and several of them are reached by `Get.offNamed` or as the boot
+  /// `initialRoute`, where the stack is empty and there is nothing to pop. The
+  /// customer got an arrow that did nothing — reported from the "Create a
+  /// passcode" step, which with no SMS provider is entered via
+  /// `Get.offNamed` from phone entry (the OTP step is removed from the
+  /// journey, so nothing pushed it) and on a cold-boot resume from main.dart.
+  /// The same screen reached by `Get.toNamed` from the OTP step CAN go back,
+  /// so it is genuinely per-entry, not per-screen — which is exactly why no
+  /// screen can answer it with a constant.
+  ///
+  /// Derived as `onBack != null || Navigator.canPop(context)`: a custom
+  /// handler may navigate without popping (the phone step clears the whole
+  /// route), so it counts as a working back even on an empty stack.
+  ///
+  /// Pass `false` explicitly to suppress it on a screen that COULD pop but
+  /// must not — [login_otp_screen] is a step-up security gate and does this.
+  /// Pass `true` only if you know better than the navigator.
+  ///
+  /// The original comment below still applies to the explicit cases.
+  ///
+  /// The first slide passes
   /// false — its [footer] login link is the way out.
-  final bool showBack;
+  final bool? showBack;
 
   /// Custom back handler for BOTH the app-bar back button AND the Android
   /// system back gesture. When null (default) back pops the route (Get.back).
@@ -85,7 +109,7 @@ class PhoneFlowScaffold extends StatelessWidget {
     this.onPrimary,
     this.isLoading = false,
     this.secondaryAction,
-    this.showBack = true,
+    this.showBack,
     this.darkBackground = false,
     this.footer,
     this.showHeadingLogo = true,
@@ -131,7 +155,7 @@ class PhoneFlowScaffold extends StatelessWidget {
             SafeArea(
               child: Column(
                 children: [
-                  _buildTopBar(),
+                  _buildTopBar(context),
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
@@ -239,9 +263,26 @@ class PhoneFlowScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildTopBar() {
-    // Back button (white, over the curve/photo) — or a small spacer when hidden.
-    if (!showBack) return SizedBox(height: 48.h);
+  /// Whether a back arrow would actually do anything from here.
+  ///
+  /// SHOW NOTHING RATHER THAN SOMETHING INERT. A dead control is worse than
+  /// an absent one: the customer taps it, nothing happens, and they conclude
+  /// the app is broken at the exact moment they are deciding whether to trust
+  /// it with money.
+  bool _backIsPossible(BuildContext context) {
+    final explicit = showBack;
+    if (explicit != null) return explicit;
+    // A custom handler may navigate without popping, so it counts even when
+    // the stack is empty.
+    if (onBack != null) return true;
+    return Navigator.of(context).canPop();
+  }
+
+  Widget _buildTopBar(BuildContext context) {
+    // Back button (white, over the curve/photo) — or a small spacer when
+    // hidden, so the layout below does not jump between screens that have one
+    // and screens that do not.
+    if (!_backIsPossible(context)) return SizedBox(height: 48.h);
     return SizedBox(
       height: 48.h,
       child: Align(

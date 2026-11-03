@@ -20,6 +20,8 @@ import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../data/services/prove_kyc_http_service.dart';
 import '../../domain/repositories/kyc_repository.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_profile_fix.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_name_comparison.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_name_correction_sheet.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_gate_exit_cta.dart';
 
 /// Dark-theme palette (matches the rest of the app — see the platform conventions).
@@ -148,10 +150,26 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: _textPrimary),
-          onPressed: _onBack,
-        ),
+        // NO ARROW WHERE BACK CANNOT WORK.
+        //
+        // transaction_pin_setup_screen ends onboarding with
+        // `Get.offAllNamed(AppRoutes.kycBVNVerification)`, which makes this
+        // screen the navigation ROOT — and `_onBack` ends in `Get.back()`. So
+        // the arrow was drawn, tapped, and did nothing, at the exact moment the
+        // customer is deciding whether to trust the app with money.
+        //
+        // The screen already reasons about this case everywhere else
+        // (`_isOnboardingRoot`, the skip CTA, `KycGateExitCta`); the app bar
+        // was the one place that did not. Guarded on canPop rather than on
+        // `_onBack != null`: `_onBack` IS a pop, it just clears a pending
+        // deposit first.
+        automaticallyImplyLeading: false,
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: _textPrimary),
+                onPressed: _onBack,
+              )
+            : null,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -532,7 +550,29 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
               ),
             ],
           ),
-          if (status.message.isNotEmpty) ...[
+          // A HELD NAME DECISION GETS THE COMPARISON INSTEAD OF THE PARAGRAPH.
+          //
+          // The server's `message` already contains both names, and still
+          // does — builds older than proto fields 17/18 depend on that and
+          // there is no floor on how old an install can be. Where the
+          // structured names ARE present, two labelled rows answer the
+          // customer's actual question (which one is wrong?) far better than
+          // a sentence they have to parse, so the card replaces the message
+          // rather than printing both and saying it twice.
+          if (status.nameUnderReview)
+            KycNameComparison(
+              bvnName: status.bvnName,
+              profileName: status.profileName,
+              textPrimary: _textPrimary,
+              textSecondary: _textSecondary,
+              accent: _accent,
+              divider: _divider,
+              surface: _card,
+              correctionReceived: status.nameCorrectionReceived,
+              onAdoptBvnName: () => _adoptBvnName(status),
+              onRaiseCorrection: () => _raiseNameCorrection(status),
+            )
+          else if (status.message.isNotEmpty) ...[
             SizedBox(height: 6.h),
             Text(
               status.message,
@@ -1300,7 +1340,29 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   /// (e.g. Tier 3 liveness) from Settings. This replaces the old onboarding-root
   /// binary so a tier-1 user who quit signup is re-gated (non-skippable) on the
   /// next login, while a Prove-verified user is never force-blocked.
-  bool get _allowSkip => _reachedTier2;
+  bool get _allowSkip => _reachedTier2 || _heldForReview;
+
+  /// True when the verification is HELD on a name review — done on the
+  /// customer's side, waiting on ours.
+  ///
+  /// WHY THIS OPENS THE GATE. Below Tier 2 the step is compulsory, which is
+  /// right for someone who has not submitted. A held review is not that
+  /// person: they completed a Prove session, passed its facial check, and a
+  /// human now has to compare two spellings — which can take days. With skip
+  /// gated on Tier 2 alone, and the tier deliberately withheld while a name
+  /// decision is outstanding (see proveNameDecisionHoldsTier), such a
+  /// customer was pinned to this screen with no skip, nothing to pop back to,
+  /// and only "Sign in as someone else" — locked out of the app for a delay
+  /// that is entirely ours.
+  ///
+  /// IT GRANTS NOTHING. The tier stays at 1, so every money gate still reads
+  /// an unverified holder and the limits are unchanged; this only decides
+  /// whether they may put the screen down while they wait.
+  ///
+  /// A REFUSAL IS EXCLUDED on purpose. `name_mismatch` means the two records
+  /// had nothing in common — the evidence says this is not their BVN — so
+  /// that holder stays gated, with the correction sheet as their route.
+  bool get _heldForReview => _status?.nameUnderReview ?? false;
 
   /// Finish a successful/complete verification: clear the onboarding flag and
   /// route to the right place (dashboard when at the onboarding root, otherwise
@@ -1523,6 +1585,101 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       return;
     }
     _showErrorDialog(title, message, showSkip: _fromSignup && _allowSkip);
+  }
+
+  /// Take the BVN record's spelling onto the profile, in one tap.
+  ///
+  /// Confirmed first, because it rewrites the name on the account — but NOT
+  /// treated as risky beyond that: the customer cannot choose the value, only
+  /// accept the one the provider already returned. The dialog therefore shows
+  /// them exactly what the name will become rather than asking them to trust
+  /// a verb.
+  Future<void> _adoptBvnName(ProveKycStatus status) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Use your BVN name?'),
+        content: Text(
+          'Your profile name will become:\n\n${status.bvnName}\n\n'
+          'This is the name on the BVN record you just verified against. '
+          'Your verification continues automatically.',
+          style: TextStyle(fontSize: 13.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Use this name'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      final message = await _prove.adoptBvnName();
+      if (!mounted) return;
+      _toast(
+        message.isNotEmpty ? message : 'Your name now matches your BVN record.',
+        color: _success,
+      );
+      // The server re-runs the gate as part of the call, so this re-read
+      // picks up the resulting verified state rather than guessing at it.
+      await _refreshStatusQuietly();
+    } on ProveKycException catch (e) {
+      if (!mounted) return;
+      _toast(e.message, color: _danger);
+    } catch (_) {
+      if (!mounted) return;
+      _toast('We could not update your name just now. Please try again.',
+          color: _danger);
+    }
+  }
+
+  /// Raise the customer's account of a held name mismatch.
+  ///
+  /// NOT A RENAME. Names are immutable here, so there is nothing for the app
+  /// to write — this records what the customer says is wrong, against the
+  /// verification an operator is already reviewing. An earlier version of
+  /// this card offered "Update my profile name" and sent them to a Settings
+  /// field that silently discards the edit; that was the dead end
+  /// kyc_profile_fix.dart exists to prevent.
+  Future<void> _raiseNameCorrection(ProveKycStatus status) async {
+    final result = await showKycNameCorrectionSheet(
+      context,
+      bvnName: status.bvnName,
+      profileName: status.profileName,
+    );
+    // Dismissed is NOT an empty submission — send nothing at all.
+    if (result == null || !mounted) return;
+    try {
+      final message = await _prove.submitNameCorrection(
+        claim: result.claim,
+        correctName: result.correctName,
+        note: result.note,
+      );
+      if (!mounted) return;
+      _toast(
+        message.isNotEmpty
+            ? message
+            : 'Thanks — we\'ve sent this to the review team.',
+        color: _success,
+      );
+      // Re-read so the card switches to "we have your correction" from the
+      // server's own answer rather than optimistically from this screen.
+      await _refreshStatusQuietly();
+    } on ProveKycException catch (e) {
+      if (!mounted) return;
+      // The server's refusals ARE the guidance here ("you just sent this",
+      // "we already have it") — shown verbatim.
+      _toast(e.message, color: _danger);
+    } catch (_) {
+      if (!mounted) return;
+      _toast('We could not send that just now. Please try again.',
+          color: _danger);
+    }
   }
 
   void _toast(String message, {required Color color}) {

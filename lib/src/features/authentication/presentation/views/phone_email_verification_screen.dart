@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/widgets/resend_code_button.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/src/features/widgets/verification_decorations.dart';
 import 'package:lazervault/src/features/authentication/domain/signup_phone_rules.dart';
+import 'package:lazervault/src/features/authentication/domain/signup_steps.dart';
 
 /// Step 5 (final signup step) of the phone+passcode flow: collect the email AND
 /// verify it inline. Two phases on one slide:
@@ -139,8 +140,8 @@ class _PhoneEmailVerificationScreenState
           subtitle: inCode
               ? 'Enter the 6-digit code we sent to ${_maskEmail(_emailCtrl.text.trim())}.'
               : 'We\'ll send a code to confirm it\'s really you, so make sure it\'s valid.',
-          step: 5,
-          totalSteps: 5,
+          step: signupStepNumber(SignupStep.emailVerification),
+          totalSteps: signupStepTotal(SignupStep.emailVerification),
           // Email phase: allow back to edit the stashed details. Code phase: the
           // account already exists, so block back to avoid a re-create attempt.
           showBack: !inCode,

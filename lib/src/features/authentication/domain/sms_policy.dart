@@ -37,6 +37,31 @@ class SmsPolicy {
   /// that will never arrive and left to work out that skipping is correct.
   static bool get showSignupOtpStep => available;
 
+  /// Whether the phone-OTP screen should offer "Skip for now".
+  ///
+  /// SKIP IS AN ESCAPE HATCH, NOT A CHOICE. Operator directive: with the SMS
+  /// provider ACTIVE and the OTP screen showing, there is no skip — the code is
+  /// on its way, and the honest paths are to enter it or to use a different
+  /// number. A third option read as an invitation to dodge a step the platform
+  /// had just decided to require.
+  ///
+  /// It stays for the one case that genuinely needs it: the provider being
+  /// unavailable while the screen is open. [showSignupOtpStep] keeps the step
+  /// out of the journey when SMS is off, so that is not the usual entry — but
+  /// an admin can switch the provider off while a user sits there (the settings
+  /// poll refreshes the flag), and the first flag snapshot can resolve after
+  /// the route. Both leave a screen waiting for a code that will never arrive.
+  ///
+  /// `isPhoneVerificationRequired` vetoes either way: when the backend rejects
+  /// an unverified signup there is no skip path to offer at all.
+  ///
+  /// Lives here rather than on the screens because there are TWO of them — the
+  /// phone-passcode signup's `phone_otp_screen` and the email flow's
+  /// `phone_verification_screen` — and this module exists precisely so two
+  /// screens asking the same question cannot answer it differently.
+  static bool get showOtpSkip =>
+      !available && !FeatureFlags.isPhoneVerificationRequired;
+
   /// Whether a login may be stepped up with an SMS code.
   ///
   /// Matters beyond tidiness: accounts created while SMS was off have
@@ -55,6 +80,27 @@ class SmsPolicy {
 
   /// Whether passcode/PIN recovery may send an SMS code.
   static bool get canRecoverBySms => available;
+
+  /// Whether the user may verify (or change) their phone number from settings.
+  ///
+  /// BOTH of those flows are SMS all the way down — "Verify Phone Number" opens
+  /// an OTP screen, and changing a number sends a code to the NEW one before
+  /// applying the change — so with no provider they are dead ends reached from
+  /// a tile that looks live. Worse than a missing feature: the user taps
+  /// "Verify", waits for a code that was never sent, and concludes the app is
+  /// broken.
+  ///
+  /// Shown-but-disabled rather than hidden, for the same reason as
+  /// [canUseSmsTwoFactor]: "Not verified" sitting next to a vanished verify
+  /// button reads as a bug the user cannot act on, whereas a stated reason is
+  /// a fact they can.
+  static bool get canVerifyPhoneNumber => available;
+
+  /// Whether a phone number may be changed. Separate getter from
+  /// [canVerifyPhoneNumber] despite resolving the same way today, because the
+  /// two are different user intents and a future provider could plausibly
+  /// support one without the other (a number change is a higher-risk write).
+  static bool get canChangePhoneNumber => available;
 
   /// Whether to tell the user their number must match their BVN.
   ///

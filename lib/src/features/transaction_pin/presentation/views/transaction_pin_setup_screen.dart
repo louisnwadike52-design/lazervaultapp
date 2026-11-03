@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -717,6 +718,16 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
                                 ),
                               ),
                             SizedBox(height: 24.h),
+                            // A WAY OUT OF A RESUMED SIGNUP.
+                            //
+                            // signup_resume parks a half-finished signup on
+                            // THIS screen, and nothing here offered an exit:
+                            // a second person on a shared handset, or the same
+                            // person who changed their mind, was asked to set
+                            // a transaction PIN for an account they have no
+                            // interest in. Renders nothing on a first run —
+                            // the widget is gated on wasResumedThisLaunch.
+                            const SignupSwitchAccountCta(bottomPadding: 8),
                           ],
                         ),
                       ],

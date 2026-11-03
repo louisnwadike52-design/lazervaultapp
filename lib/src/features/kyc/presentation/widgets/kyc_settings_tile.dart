@@ -118,11 +118,17 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
               },
               title: const Text('Identity Verification'),
               subtitle: Text(
-                _subtitle(tier, verified, isMax),
+                kycTileSubtitle(_status),
                 style: TextStyle(
-                  color: verified
+                  // Green when done, amber when it needs attention or is
+                  // pending — grey reads as "nothing happening here", which
+                  // a held verification very much is not.
+                  color: kycTileSubtitleIsSettled(_status)
                       ? const Color(0xFF4CAF50)
-                      : const Color(0xFF9E9E9E),
+                      : (_status?.nameUnderReview ?? false) ||
+                              (_status?.failureReason.isNotEmpty ?? false)
+                          ? const Color(0xFFFF9800)
+                          : const Color(0xFF9E9E9E),
                   fontSize: responsiveController.isMobile ? 12.sp : 14,
                 ),
               ),
@@ -165,13 +171,64 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
       ),
     );
   }
-
-  String _subtitle(int tier, bool verified, bool isMax) {
-    if (isMax) return 'Fully verified - Tier 3, highest limits';
-    // Tier 2: one step (NIN + liveness) from the top — point them at Tier 3.
-    if (verified)
-      return 'Verified - Tier $tier. Upgrade to Tier 3 for unlimited limits';
-    if (tier == 1) return 'Tier 1 - add your second ID to raise limits';
-    return 'Verify your identity to unlock higher limits';
-  }
 }
+
+/// What this tile says about where the customer stands.
+///
+/// THE HELD CASE USED TO READ "Tier 1 - add your second ID to raise
+/// limits", which is wrong in the way that costs money. That customer has
+/// ALREADY finished a verification; it is sitting with a human because the
+/// BVN name only partly matched. They have no second ID to add, and doing
+/// what the tile told them starts another Mono Prove session — a fresh
+/// session fee, landing on the same hold.
+///
+/// It is also the Settings entry CONTRADICTING the onboarding entry: the
+/// verification screen shows the full held state with both names and a way
+/// to respond, while Settings said "not verified yet". Same account, same
+/// moment, two different stories — the same settings-vs-onboarding
+/// divergence that produced the Connect/Prove name-check gap.
+///
+/// Static and total: every branch returns, and the status carries
+/// everything needed, so there is no state this can fail to describe.
+String kycTileSubtitle(ProveKycStatus? status) {
+  final tier = status?.tier ?? 0;
+  final verified = status?.verified ?? false;
+  final isMax = status?.isMaxTier ?? false;
+
+  // VERIFIED WINS over any stale failure note. A customer who later earned
+  // a tier must never be told their old attempt is under review.
+  if (isMax) return 'Fully verified - Tier 3, highest limits';
+  if (verified) {
+    return 'Verified - Tier $tier. Upgrade to Tier 3 for unlimited limits';
+  }
+
+  // Done on their side, waiting on ours. Say so, and do NOT invite a
+  // second session.
+  if (status?.nameUnderReview ?? false) {
+    return status!.nameCorrectionReceived
+        ? 'Being reviewed - we have your correction'
+        : 'Being reviewed - we will update you shortly';
+  }
+  switch (status?.failureReason) {
+    case 'name_mismatch':
+      return 'Couldn\'t verify that BVN - tap to try again';
+    case 'cancelled':
+      return 'Verification cancelled - tap to finish it';
+    case 'expired':
+      return 'Verification expired - tap to start again';
+  }
+  // Still in flight: a session is open and the result has not landed.
+  if ((status?.sessionPending ?? false) && tier < 2) {
+    return 'Verification in progress';
+  }
+
+  if (tier == 1) return 'Tier 1 - add your second ID to raise limits';
+  return 'Verify your identity to unlock higher limits';
+}
+
+/// Amber while something needs attention or is pending, green once done.
+///
+/// Grey read as "nothing happening here", which is the one thing a held
+/// verification is not.
+bool kycTileSubtitleIsSettled(ProveKycStatus? status) =>
+    (status?.verified ?? false) || (status?.isMaxTier ?? false);

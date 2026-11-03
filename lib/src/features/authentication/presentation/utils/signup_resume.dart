@@ -78,6 +78,30 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
   bool phoneVerificationRequired = false,
   bool phoneVerified = true,
 
+  /// Whether a phone OTP can actually be DELIVERED.
+  ///
+  /// Separate from [phoneVerificationRequired], which only decides whether the
+  /// screen carries "Skip for now". This decides whether the screen is shown at
+  /// all, and the two are not the same question.
+  ///
+  /// THE BUG THIS FIXES. The gate below was `phone.isNotEmpty && !phoneVerified`
+  /// and nothing more. With no active SMS provider, signup SKIPS the OTP step
+  /// (phone_passcode_cubit.dart) and mints the account with
+  /// phone_verified = false — so this gate then fired on EVERY login, for
+  /// precisely the users who were never offered the step. They got a verify-
+  /// phone screen for a code that cannot be sent, skipped it (the skip
+  /// deliberately does not set the flag), and were asked again next login,
+  /// forever.
+  ///
+  /// `SmsPolicy.showLoginOtpStep` was written for exactly this and had no
+  /// consumers. Passed in rather than read here so this resolver stays pure and
+  /// testable, which is the same reason phoneVerificationRequired is a
+  /// parameter.
+  ///
+  /// Defaults TRUE so an existing caller keeps today's behaviour and only a
+  /// surface that knows the policy changes it.
+  bool phoneOtpDeliverable = true,
+
   /// Admin toggle for email, same shape. Email is ALSO gated server-side at
   /// login when required, so by the time this runs a required-and-unverified
   /// email is rare; the gate here is belt-and-braces plus the signup-parked
@@ -156,9 +180,13 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
     );
   }
 
-  // 4. Phone. Only when there is a number to send a code to — with none,
-  // blocking would strand the user with no way forward.
-  if ((phone?.isNotEmpty ?? false) && !phoneVerified) {
+  // 4. Phone. Three conditions, all necessary:
+  //   - there IS a number (with none, blocking strands the user);
+  //   - it is not already verified;
+  //   - and a code can actually be delivered. Asking someone to verify by SMS
+  //     when no SMS provider is active is a dead end they cannot clear, and it
+  //     recurs every login because skipping does not set the flag.
+  if ((phone?.isNotEmpty ?? false) && !phoneVerified && phoneOtpDeliverable) {
     final next = after(phoneDone: true);
     return (
       name: AppRoutes.phoneVerification,

@@ -14,9 +14,13 @@ import 'package:lazervault/src/features/authentication/presentation/widgets/phon
 import 'package:lazervault/src/features/authentication/presentation/widgets/device_phone_hint.dart';
 import 'package:lazervault/src/features/widgets/locked_country_phone_input.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/bvn_phone_notice.dart';
+import 'package:lazervault/src/features/authentication/domain/signup_steps.dart';
 
-/// Step 1 of the phone+passcode signup: enter a phone number (country picker +
-/// national number) and request an SMS OTP.
+/// First step of the phone+passcode signup: enter a phone number (country
+/// picker + national number) and, WHEN AN SMS PROVIDER IS ACTIVE, request an
+/// OTP. With none, the next step is removed from the sequence entirely rather
+/// than skipped — see domain/signup_steps.dart — so the progress bar has no
+/// hole in it.
 class PhoneEntryScreen extends StatefulWidget {
   const PhoneEntryScreen({super.key});
 
@@ -184,8 +188,8 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
           subtitle:
               'Welcome to Lazervault, let\'s get started! Enter your phone '
               'number and we\'ll send a 6-digit code to verify it\'s you.',
-          step: 1,
-          totalSteps: 5,
+          step: signupStepNumber(SignupStep.phoneEntry),
+          totalSteps: signupStepTotal(SignupStep.phoneEntry),
           // First slide → no back button; the floating "Log in" footer is the
           // way out (to the canonical passcode login).
           showBack: false,

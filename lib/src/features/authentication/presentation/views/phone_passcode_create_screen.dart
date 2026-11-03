@@ -11,6 +11,7 @@ import 'package:lazervault/core/widgets/passcode_keypad.dart';
 import 'package:lazervault/core/widgets/shake_widget.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_passcode_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/phone_flow_scaffold.dart';
+import 'package:lazervault/src/features/authentication/domain/signup_steps.dart';
 
 /// Step 3: create + confirm a 6-digit passcode (same length as the existing
 /// [PasscodeSetupScreen]). The keypad drives the flow — no sticky CTA. On a
@@ -107,8 +108,8 @@ class _PhonePasscodeCreateScreenState extends State<PhonePasscodeCreateScreen> {
       subtitle: _confirmMode
           ? 'Enter your passcode again to confirm.'
           : 'Set a 6-digit passcode for quick, secure login.',
-      step: 3,
-      totalSteps: 5,
+      step: signupStepNumber(SignupStep.passcode),
+      totalSteps: signupStepTotal(SignupStep.passcode),
       children: [
         SizedBox(height: 20.h),
         ShakeWidget(

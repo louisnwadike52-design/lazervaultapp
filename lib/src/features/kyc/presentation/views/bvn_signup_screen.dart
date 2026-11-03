@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utilities/safe_back_button.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,6 +13,7 @@ import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/data_reconciliation_dialog.dart';
 
 /// Mandatory BVN capture in the signup flow — sits AFTER the personal-info /
 /// transaction-PIN steps and BEFORE dashboard access.
@@ -134,11 +136,75 @@ class _BVNSignupViewState extends State<_BVNSignupView> {
     Get.offAllNamed(next);
   }
 
+  /// Ask the customer whether the BVN belongs to them, then act on the answer.
+  ///
+  /// THE BVN IS THE AUTHORITY and the profile name is the editable side — you
+  /// cannot change your BVN from this app. So "yes, that's me" offers to bring
+  /// the PROFILE into line, never the other way round.
+  ///
+  /// DISMISSING IS NOT CONSENT. ConfirmBVNName approves the verification for
+  /// BOTH actions it accepts — they differ only in whether the name is
+  /// rewritten. There is no "reject" action, so a customer who closes the
+  /// sheet because the BVN is not theirs must result in NO call at all.
+  /// Treating a dismissal as either action would grant a tier against someone
+  /// else's identity.
+  Future<void> _handleNameConfirmation(NameConfirmationRequired state) async {
+    final cubit = context.read<KYCCubit>();
+    final action = await showDataReconciliationDialog(
+      context,
+      verifiedName: state.verifiedName,
+      profileName: state.profileName,
+      matchScore: state.matchScore,
+    );
+    if (!mounted) return;
+
+    if (action == null) {
+      // Dismissed. Leave the verification where it is and say what happened,
+      // rather than leaving the screen silent the way it was before.
+      setState(() {
+        _submitting = false;
+        _inlineError =
+            'We could not match the name on that BVN to your profile. '
+            'Check your name in Settings, or use a BVN registered to you.';
+      });
+      AppLogger.event('kyc_bvn_signup', 'name_confirmation_dismissed',
+          level: 'warn', screen: 'bvn_signup');
+      return;
+    }
+
+    AppLogger.event('kyc_bvn_signup', 'name_confirmation_$action',
+        screen: 'bvn_signup');
+    await cubit.confirmBVNName(
+      verificationId: state.verificationId,
+      action: action,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<KYCCubit, KYCState>(
       listener: (context, state) {
         if (state is IDVerificationSuccess) {
+          _onVerified();
+        } else if (state is NameConfirmationRequired) {
+          // THE MISSING WIRE.
+          //
+          // Every other piece of this journey already existed: auth-service
+          // scores the BVN name against the profile and returns `confirm` in
+          // the 50-80% band, the proto carries it, the datasource parses it,
+          // the cubit emits this state, and showDataReconciliationDialog is a
+          // finished 312-line sheet returning exactly the two action strings
+          // the backend accepts.
+          //
+          // Nothing listened for the state. A customer whose BVN name only
+          // partly matched reached this screen and it simply stopped — no
+          // sheet, no error, no way forward. The work was all done and the
+          // journey still dead-ended.
+          _handleNameConfirmation(state);
+        } else if (state is BVNNameConfirmed) {
+          // Either action APPROVES the verification server-side; they differ
+          // only in whether the profile name is rewritten to the BVN's. So a
+          // confirmation is a successful verification.
           _onVerified();
         } else if (state is KYCError) {
           setState(() {
@@ -202,11 +268,17 @@ class _BVNSignupViewState extends State<_BVNSignupView> {
       padding: EdgeInsets.fromLTRB(8.w, 8.h, 16.w, 0),
       child: Row(
         children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back_ios_new,
-                size: 18.sp, color: Colors.black87),
-            onPressed: _submitting ? null : () => Get.back(),
-          ),
+          // A SPACER, not a dead arrow, when back is impossible — this sits
+          // in a Row, so the header must keep its height either way.
+          // Disabled (not hidden) mid-submit: the arrow staying put while it
+          // greys out reads as "wait", whereas vanishing reads as a glitch.
+          maybeBackButton(
+                context,
+                icon: Icons.arrow_back_ios_new,
+                color: Colors.black87,
+                onBack: _submitting ? null : () => Get.back(),
+              ) ??
+              SizedBox(width: 48.w),
           const Spacer(),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),

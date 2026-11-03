@@ -8,6 +8,7 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/signup_resume.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_login_prompt.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 
 /// THE ONE CALL EVERY SUCCESSFUL LOGIN MAKES.
 ///
@@ -106,6 +107,12 @@ void goAfterLogin(
       kycTier: user.kycTier,
     ),
     phoneVerificationRequired: FeatureFlags.isPhoneVerificationRequired,
+    // Whether an OTP can be DELIVERED at all. Read here beside the other flags
+    // so the resolver stays pure. Without it the verify-phone screen was shown
+    // on EVERY login to users signup never asked — with no SMS provider signup
+    // skips the step and leaves phone_verified false, and skipping the screen
+    // deliberately does not set the flag, so it recurred forever.
+    phoneOtpDeliverable: SmsPolicy.showLoginOtpStep,
     // `User.verified` mirrors the proto's phone_verified (see
     // UserModel.fromAuthProto) — not a general "is this account verified".
     phoneVerified: user.verified,
