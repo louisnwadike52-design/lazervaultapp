@@ -13,7 +13,6 @@ import 'package:lazervault/src/features/authentication/cubit/phone_passcode_stat
 import 'package:lazervault/src/features/authentication/presentation/widgets/phone_flow_scaffold.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/device_phone_hint.dart';
 import 'package:lazervault/src/features/widgets/locked_country_phone_input.dart';
-import 'package:lazervault/src/features/authentication/presentation/widgets/bvn_phone_notice.dart';
 import 'package:lazervault/src/features/authentication/domain/signup_steps.dart';
 
 /// First step of the phone+passcode signup: enter a phone number (country
@@ -243,10 +242,25 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
               onChanged: (e164) => _e164Phone = e164,
               onCountryTap: () => _openCountryPicker(activeCountries),
             ),
-            // Directly under the field, so it is read while the number is
-            // being typed rather than after. Renders nothing when switched
-            // off, so no conditional is needed around it.
-            const BvnPhoneNotice(),
+            // REMOVED from signup: the BVN-phone notice.
+            //
+            // It told every new user "use the phone number registered on your
+            // BVN ... a number that does not match your BVN will fail
+            // verification later". That last claim is not true. Nothing in
+            // this platform compares the submitted number to the BVN's, and
+            // Mono Prove's own FAQ only says you "should ensure" the number is
+            // BVN-linked - it does not say verification fails otherwise.
+            //
+            // Not every Nigerian number is linked to a BVN, so for many people
+            // this demanded something they could not supply, on the very first
+            // screen of signup, about a check that happens much later. The
+            // guidance now lives at the KYC step where it is actually
+            // actionable, worded as a preference rather than a requirement.
+            //
+            // The BvnPhoneNotice widget and its bvn_phone_notice_enabled
+            // setting are intentionally left in place, so an operator can
+            // reinstate it from the dashboard if a provider ever does make it
+            // a hard requirement.
             if (DevicePhoneHint.isSupported) ...[
               SizedBox(height: 8.h),
               Align(

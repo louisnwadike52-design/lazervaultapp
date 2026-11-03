@@ -453,12 +453,42 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       ));
     }
     if (emailOk && !phoneIsNG) {
+      // BLOCKING, not informational — and it says so now.
+      //
+      // This used to promise "during the secure check you'll enter the
+      // Nigerian phone number linked to your BVN", which was not true on two
+      // counts. Mono Prove requires a valid NG mobile ON THE INITIATE PAYLOAD
+      // (an empty one is a 400, "phone should not be empty"), so banking-service
+      // refuses BEFORE Mono is ever reached and asks the user to update their
+      // profile. There is no in-widget step to enter it at. The customer was
+      // told to wait for a prompt that never came, then hit a wall.
+      //
+      // So it is styled as the blocker it is and carries the same "go fix it"
+      // action as the email notice directly above, which has the identical
+      // shape: verification cannot start until the profile is right.
+      //
+      // It does NOT claim the number must be the one on their BVN. Not every
+      // Nigerian number is BVN-linked; Mono's FAQ only says you "should
+      // ensure" it is, and nothing here compares the two.
       notices.add(_buildNoticeCard(
         icon: Icons.phone_iphone_rounded,
-        color: _accent,
-        title: 'Have your Nigerian number ready',
-        body: 'Your profile phone isn\'t a Nigerian number. During the secure '
-            'check you\'ll enter the Nigerian phone number linked to your BVN.',
+        color: _warning,
+        title: 'Add a Nigerian phone number',
+        body: 'Verifying a Nigerian identity needs a Nigerian mobile number on '
+            'your profile. Add or fix it, then come back to verify. One linked '
+            'to your BVN is best if you have it, but it doesn\'t have to be.',
+        actionLabel: 'Update phone',
+        // openKycProfileFix, not a trip through Settings. It is the
+        // purpose-built path this screen already uses for a failed check
+        // (see the error dialog below), it lands directly on
+        // ChangePhoneScreen, and it reports whether the number actually
+        // changed - so a user who fixes it is put straight back into
+        // verification instead of having to find their way here again.
+        onAction: () async {
+          final changed = await openKycProfileFix(KycProfileField.phone);
+          if (!mounted) return;
+          if (changed) setState(() {});
+        },
       ));
     }
     if (notices.isEmpty) return const SizedBox.shrink();
@@ -1196,7 +1226,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
             title = 'Details didn\'t match';
             if (body.isEmpty) {
               body =
-                  'The details you entered (like date of birth and phone number) must exactly match your BVN record. Please check them and try again.';
+                  'Check that your name, date of birth and BVN/NIN are exactly as they appear on your BVN record, then try again.';
             }
         }
         break;

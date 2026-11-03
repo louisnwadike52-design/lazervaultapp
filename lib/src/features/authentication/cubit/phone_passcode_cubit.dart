@@ -200,10 +200,41 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(PhonePasscodeFailure(
-        failure.message,
-        alreadyRegistered: _isAlreadyRegistered(failure.message),
-      )),
+      (failure) async {
+        // THE SERVER IS THE AUTHORITY ON WHETHER SMS CAN BE DELIVERED.
+        //
+        // The SmsPolicy check above is an optimisation: it keeps the step out
+        // of the journey using a flag snapshot that SharedPreferences caches
+        // and a background poll refreshes. That snapshot can be WRONG - stale
+        // from before an operator switched the provider off, or written true
+        // by a settings payload the backend no longer agrees with. When it is,
+        // we ask for a code, auth-service refuses with ErrSmsUnavailable, and
+        // the old behaviour was to show that refusal as a hard error on the
+        // first screen of signup. A customer hit exactly that on 2026-11-03.
+        //
+        // So the refusal is treated as what it actually is - the authoritative
+        // answer to "can you send a code" - and we take the same branch the
+        // flag would have taken. Nothing is lost: the account is created with
+        // phone_verified=false, the number is still collected and still goes
+        // to KYC, and it can be verified later once a provider is live.
+        //
+        // Matched on the message because RequestSignupPhoneOTPResponse carries
+        // no machine-readable code; adding one is a proto change. The phrase
+        // is stable and documented on the server side at the refusal.
+        if (_isSmsUnavailable(failure.message)) {
+          try {
+            await _storage.write(key: _draftPhoneKey, value: phone);
+            await _storage.write(key: _draftCountryKey, value: countryCode);
+          } catch (_) {/* best-effort, mirrors the OTP success path */}
+          if (isClosed) return;
+          await skipPhoneVerification();
+          return;
+        }
+        emit(PhonePasscodeFailure(
+          failure.message,
+          alreadyRegistered: _isAlreadyRegistered(failure.message),
+        ));
+      },
       (otp) async {
         // Persist phone/country for best-effort resume.
         await _storage.write(key: _draftPhoneKey, value: phone);
@@ -218,6 +249,19 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
         ));
       },
     );
+  }
+
+  /// Whether a refusal means "no SMS provider", rather than a real failure.
+  ///
+  /// Deliberately narrow. It must not swallow a rate limit ("please wait N
+  /// seconds"), an already-registered number, or a transport error - those are
+  /// all states the user can act on, and skipping verification for them would
+  /// hide a genuine problem and create accounts that should not exist.
+  bool _isSmsUnavailable(String message) {
+    final m = message.toLowerCase();
+    return m.contains('cannot send a code to your phone') ||
+        m.contains('sms delivery is disabled') ||
+        m.contains('no active sms provider');
   }
 
   bool _isAlreadyRegistered(String message) =>
