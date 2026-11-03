@@ -1215,6 +1215,17 @@ class _SelectRecipientsState extends State<SelectRecipients>
         transferType: isInternal ? 'internal' : 'external',
         destinationBankCode: isInternal ? null : r.sortCode,
         availableBalanceMajor: active.availableBalance,
+        // The unspent onboarding grant, so the sheet can label the part of
+        // that balance which cannot leave Lazervault before the user types an
+        // amount. 0 for a wallet with no grant, which renders nothing.
+        restrictedBalanceMajor: active.restrictedBalance,
+        // The sheet's only call site, and it was not passing this — so the
+        // client-side check always resolved the GLOBAL floor even when a
+        // per-wallet override existed. The server knows the type and enforces
+        // the right figure, so the symptom was the user reaching the server's
+        // refusal instead of the sheet's dialog, never a transfer going
+        // through that should not have. The type is right here; pass it.
+        sourceAccountType: active.accountType,
         // Clean, compact source label — just the account name/type (no number or
         // mask); the header shows it beside the recipient with the balance below.
         sourceAccountLabel:

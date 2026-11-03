@@ -193,6 +193,154 @@ void main() {
     });
   });
 
+  // ===========================================================================
+  // THE ONBOARDING GRANT
+  //
+  // Locked against Policy.WithRestricted and the grant branch of
+  // Policy.RefusalMessage in microservices/shared/minbalance (and its
+  // TestTheGrantRefusalDoesNotSoundLikeConfiscation). Two sides of one rule, so
+  // if either moves one of the two suites must fail.
+  // ===========================================================================
+  group('withRestricted', () {
+    const grant = 200000; // ₦2,000 in kobo
+
+    test('the greater of the two binds, never the sum', () {
+      // ₦1,500 floor + ₦2,000 grant means ₦2,000 must stay, NOT ₦3,500. They
+      // are independent reasons to retain money; adding them would hold back
+      // money for a reason that does not exist.
+      final p = enforced.withRestricted(grant);
+      expect(p.minimumMinor, grant);
+      expect(p.grantRestricted, isTrue);
+    });
+
+    test('the floor wins when it is the larger, and is not blamed on a bonus',
+        () {
+      final p = enforced.withRestricted(50000);
+      expect(p.minimumMinor, floor);
+      expect(p.grantRestricted, isFalse,
+          reason: 'the floor binds here, so the copy must not blame the bonus');
+    });
+
+    test('a grant arms a policy whose floor is switched off', () {
+      // The restriction follows the money, not the operator's setting. This is
+      // the case every money-out flow relies on: the floor is usually off.
+      final p = off.withRestricted(grant);
+      expect(p.enforced, isTrue);
+      expect(p.minimumMinor, grant);
+      expect(p.grantRestricted, isTrue);
+    });
+
+    test('no grant changes nothing', () {
+      expect(off.withRestricted(0).enforced, isFalse);
+      expect(off.withRestricted(-100).enforced, isFalse);
+      expect(enforced.withRestricted(0).minimumMinor, floor);
+    });
+
+    test("an admin's floor message does not leak into a grant refusal", () {
+      // The admin's sentence describes the FLOOR. When the grant binds it
+      // states the wrong number for the wrong reason.
+      const withCopy = MinBalancePolicy(
+        enforced: true,
+        minimumMinor: floor,
+        message: 'Keep ₦1,500 in your wallet.',
+      );
+      expect(withCopy.withRestricted(grant).message, isEmpty);
+    });
+  });
+
+  group('reservedForGrantMinor', () {
+    const grant = 200000;
+
+    test('is the grant when the grant is what binds', () {
+      expect(
+        off.withRestricted(grant).reservedForGrantMinor(300000),
+        grant,
+      );
+    });
+
+    test('is zero when the operator floor is what binds', () {
+      // The label must never call the operator's floor a bonus.
+      expect(enforced.withRestricted(50000).reservedForGrantMinor(300000), 0);
+      expect(enforced.reservedForGrantMinor(300000), 0);
+    });
+
+    test('never exceeds the balance it is labelling', () {
+      // A restriction larger than the wallet would otherwise print a figure
+      // the customer does not have — ₦2,000 of a ₦500 balance.
+      expect(off.withRestricted(grant).reservedForGrantMinor(50000), 50000);
+    });
+
+    test('is zero on an unknown balance', () {
+      expect(off.withRestricted(grant).reservedForGrantMinor(0), 0);
+    });
+  });
+
+  group('the grant refusal copy', () {
+    const grant = 200000;
+
+    String copy({required int maxSendableMinor, MinBalanceAction? action}) =>
+        minBalanceMessage(
+          currencySymbol: '₦',
+          minimumMinor: grant,
+          maxSendableMinor: maxSendableMinor,
+          grantRestricted: true,
+          action: action ?? MinBalanceAction.transfer,
+        );
+
+    test('names the bonus rather than a minimum balance', () {
+      // Telling someone their wallet "must keep ₦2,000" when the ₦2,000 is a
+      // bonus WE gave them reads as their own money being withheld.
+      final m = copy(maxSendableMinor: 0);
+      expect(m.toLowerCase(), contains('bonus'));
+      expect(m, contains('₦2,000'));
+      expect(m, isNot(contains('needs to keep')));
+    });
+
+    test('says what the bonus is good for', () {
+      expect(copy(maxSendableMinor: 0).toLowerCase(), contains('airtime'));
+    });
+
+    test('offers the customer their own money when they have some', () {
+      // ₦3,000 balance, ₦2,000 grant -> ₦1,000 of their own is payable.
+      final m = copy(maxSendableMinor: 100000);
+      expect(m, contains('₦1,000'));
+      expect(m.toLowerCase(), contains('your own money'));
+    });
+
+    test('offers nothing when nothing can be moved', () {
+      // "you can transfer up to ₦0" reads as a bug, so it must not appear.
+      expect(copy(maxSendableMinor: 0), isNot(contains('₦0')));
+    });
+
+    test('reads as English for every action', () {
+      // The server's version of this sentence spliced the action verb in as
+      // "can't be %sn out", which rendered "can't be TRANSFERN out" on the
+      // more common of the two flows. Every other assertion here passed on
+      // that, because they all check WHAT the copy says and none checked
+      // whether it is a sentence. So check the splice directly.
+      for (final action in MinBalanceAction.values) {
+        final m = copy(maxSendableMinor: 0, action: action).toLowerCase();
+        for (final mangled in ['transfern', 'withdrawn out', 'transfer out']) {
+          expect(m, isNot(contains(mangled)),
+              reason: '${action.noun} copy contains "$mangled": $m');
+        }
+      }
+    });
+
+    test('an admin message still replaces the whole sentence', () {
+      expect(
+        minBalanceMessage(
+          currencySymbol: '₦',
+          minimumMinor: grant,
+          maxSendableMinor: 0,
+          adminMessage: 'Custom wording.',
+          grantRestricted: true,
+        ),
+        'Custom wording.',
+      );
+    });
+  });
+
   group('the money format matches the server', () {
     // formatMinorForCopy mirrors FormatMinor in microservices/shared/minbalance.
     // These are the SAME cases that package's Go test pins, so a change on

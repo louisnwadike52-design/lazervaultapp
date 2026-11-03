@@ -53,6 +53,7 @@ import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/insufficient_funds_sheet.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_outcome_notice.dart';
 import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/grant_restriction_notice.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
 
 class InitiateSendFunds extends StatefulWidget {
@@ -752,6 +753,59 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     );
   }
 
+  /// THE BONUS LABEL, in the same slot and shape as the frozen banner above.
+  ///
+  /// The card selector prints each wallet's available balance and said nothing
+  /// about the part of it that cannot leave Lazervault. Every layer behind
+  /// this screen enforced that correctly; the screen itself implied the
+  /// opposite, and the customer found out after choosing a recipient and
+  /// typing an amount.
+  ///
+  /// Placed under the SELECTOR rather than beside one card's figure because
+  /// the user can swipe between wallets here: a label attached to a card would
+  /// have to be rendered per card at 12pt inside a 150px tile, where it is
+  /// unreadable. Under the selector it always describes the wallet currently
+  /// chosen.
+  ///
+  /// Returns `SizedBox.shrink()` for the ordinary no-grant case, matching the
+  /// frozen banner's contract so the parent needs no conditional.
+  Widget _buildGrantNoticeBanner(AccountCardsSummaryState accountState) {
+    final summaries = switch (accountState) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
+    if (selectedCardIndex < 0 || selectedCardIndex >= summaries.length) {
+      return const SizedBox.shrink();
+    }
+    final account = summaries[selectedCardIndex];
+    // EXTERNAL PAYOUTS ONLY, the same scope as the check at submit.
+    //
+    // An internal send really can move the whole balance (the restriction
+    // lifts by BALANCE, not by service — see the submit-time comment), so a
+    // banner saying part of it is not sendable would be false. And until a
+    // recipient is chosen the leg type is unknown; `_recipient == null` is
+    // read as not-yet-external rather than guessed, so the banner appears when
+    // the bank is known to be an outside one and not before.
+    final isExternal =
+        _recipient != null && !BrandBank.isOurs(_recipient!.bankName);
+    if (!isExternal) return const SizedBox.shrink();
+    // The operator's FLOOR is deliberately not resolved here: this banner
+    // speaks only about the bonus, and `grantRestrictionNotice` renders
+    // nothing when the floor is what binds.
+    final notice = grantRestrictionNotice(
+      context: context,
+      policy: const MinBalancePolicy(enforced: false)
+          .withRestricted((account.restrictedBalance * 100).round()),
+      availableMinor: (account.availableBalance * 100).round(),
+      currencySymbol: _getCurrencySymbol(account.currency),
+      // This screen is dark, like the withdraw balance card.
+      tone: GrantNoticeTone.onDark,
+    );
+    if (notice == null) return const SizedBox.shrink();
+    return Padding(padding: EdgeInsets.only(top: 12.h), child: notice);
+  }
+
   Widget _buildQuickAmounts(AccountCardsSummaryState accountState) {
     // Get currency symbol from selected account
     String currencySymbol = '₦'; // Default to Naira
@@ -1206,9 +1260,24 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // The account type comes straight off the account this transfer is being
     // sent FROM — the same local the balance above was read from — so the
     // per-wallet floor resolves precisely here rather than best-effort.
-    final minBalancePolicy = MinBalancePolicy.resolve(
-      accountType: selectedAccount.accountType,
-    );
+    // The floor PLUS the customer's unspent onboarding grant, greater of the
+    // two binding (never the sum — they are independent reasons to retain
+    // money). banking-service and core-payments both fold the grant in on
+    // exactly this path, so without it an external transfer passed here and
+    // was refused server-side after the PIN.
+    //
+    // BOTH RULES ARE EXTERNAL-ONLY, which is why the whole policy sits inside
+    // the gate rather than only the floor. A Lazervault-to-Lazervault send is
+    // on-platform use: the release latch (1 Nov 2026) makes falling to a low
+    // balance the only way out of the restriction, so gating internal sends
+    // would strand a customer who only transfers. The server has no grant
+    // check on the internal rail, so gating it here would refuse a send the
+    // backend allows — and the user would never reach the server to find out.
+    final minBalancePolicy = isExternalTransfer
+        ? MinBalancePolicy.resolve(accountType: selectedAccount.accountType)
+            .withRestricted(
+                (selectedAccount.restrictedBalance * 100).round())
+        : const MinBalancePolicy(enforced: false);
     // EXTERNAL PAYOUTS ONLY. The floor exists so a retained balance is SPENT
     // ON the platform, so a Lazervault-to-Lazervault send is the thing it is
     // encouraging, not something to block. The server was narrowed to
@@ -1216,11 +1285,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // would refuse an internal transfer the backend would have allowed, which
     // is the worse half of the bug — the user never even reaches the server to
     // find out it was permitted.
-    if (isExternalTransfer &&
-        minBalancePolicy.blocks(
-          availableMinor: availableMinorForFloor,
-          spendMinor: spendMinorForFloor,
-        )) {
+    // No `isExternalTransfer &&` here any more: the scope lives in how the
+    // policy was BUILT above, so there is one place to read it rather than a
+    // gate here that has to be kept in step with that one. An internal send
+    // yields `enforced: false`, for which `blocks` is always false.
+    if (minBalancePolicy.blocks(
+      availableMinor: availableMinorForFloor,
+      spendMinor: spendMinorForFloor,
+    )) {
       showMinBalanceRefusal(
         context,
         currencySymbol: currencySymbol,
@@ -3190,6 +3262,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                     SizedBox(height: 8.h),
                                     _buildCardSelector(accountState),
                                     _buildFrozenSourceBanner(accountState),
+                                    _buildGrantNoticeBanner(accountState),
                                   ],
                                 ),
                                 SizedBox(height: 16.h),

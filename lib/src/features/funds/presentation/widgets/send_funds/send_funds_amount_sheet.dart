@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/insufficient_funds_sheet.dart';
 import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/grant_restriction_notice.dart';
 part 'send_funds_amount_sheet_widgets.dart';
 
 /// Short-flow amount entry — a bottom sheet that collects the transfer amount
@@ -29,6 +30,17 @@ class SendFundsAmountSheet extends StatefulWidget {
   final String transferType; // "internal" | "external"
   final String? destinationBankCode;
   final double availableBalanceMajor;
+
+  /// The source wallet's UNSPENT ONBOARDING GRANT, in major units.
+  ///
+  /// Not a floor and not a hold — it is money we gave the customer that may be
+  /// spent on the platform but never paid out. It is here so the sheet can
+  /// LABEL it beside the balance before an amount is typed, which is the one
+  /// part of the restriction the customer previously could not see.
+  ///
+  /// Defaults to 0, so a caller that does not know (or a wallet with no grant,
+  /// which is almost all of them) renders nothing extra.
+  final double restrictedBalanceMajor;
 
   /// The source wallet's account type, when the caller knows it.
   ///
@@ -58,6 +70,7 @@ class SendFundsAmountSheet extends StatefulWidget {
     required this.transferType,
     required this.transferCubit,
     required this.availableBalanceMajor,
+    this.restrictedBalanceMajor = 0,
     this.sourceAccountType,
     required this.sourceAccountLabel,
     this.destinationBankCode,
@@ -329,21 +342,13 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
     // The server re-checks and is authoritative — this exists so the user
     // learns it here, with the figures, rather than at the PIN sheet.
     final availableMinor = (widget.availableBalanceMajor * 100).round();
-    final minBalance =
-        MinBalancePolicy.resolve(accountType: widget.sourceAccountType);
-    // EXTERNAL PAYOUTS ONLY, matching the server. The floor keeps a balance on
-    // the platform, so a Lazervault-to-Lazervault send is what it encourages
-    // rather than something to stop. core-payments was narrowed to
-    // `isExternalTransfer` on 30 Oct 2026; the long flow
-    // (initiate_send_funds.dart) carries the same gate. Without it the sheet
-    // refuses an internal send the backend would have allowed, and the user
-    // never reaches the server to find out.
-    final isExternalForFloor = widget.transferType == 'external';
-    if (isExternalForFloor &&
-        minBalance.blocks(
-          availableMinor: availableMinor,
-          spendMinor: minor + feeMinor,
-        )) {
+    // Scope lives in _retainedBalancePolicy, which is off entirely for an
+    // internal send — so there is no external gate to keep in step here.
+    final minBalance = _retainedBalancePolicy;
+    if (minBalance.blocks(
+      availableMinor: availableMinor,
+      spendMinor: minor + feeMinor,
+    )) {
       showMinBalanceRefusal(
         context,
         currencySymbol: _symbol,
@@ -370,8 +375,12 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
         },
       );
       // The field stays visibly in an error state behind and after the sheet,
-      // matching how the insufficient-funds refusal above behaves.
-      setState(() => _error = 'Your wallet must keep a minimum balance');
+      // matching how the insufficient-funds refusal above behaves. The line
+      // names whichever rule actually bound — calling a bonus restriction a
+      // "minimum balance" contradicts the sheet the user just read.
+      setState(() => _error = minBalance.grantRestricted
+          ? 'More than your own money — your bonus stays on Lazervault'
+          : 'Your wallet must keep a minimum balance');
       return;
     }
     // Pass the raw note. Turning a category into narration is
@@ -386,6 +395,42 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
       category: _category,
       recurring: _recurring,
     ));
+  }
+
+  /// True when this send is a payout to another bank.
+  ///
+  /// The single place the scope of BOTH retained-balance rules is decided, so
+  /// the blocking check and the label cannot end up disagreeing about it.
+  bool get _isExternalPayout => widget.transferType == 'external';
+
+  /// The retained-balance policy for this send: the operator's floor with the
+  /// customer's unspent onboarding grant folded in, greater of the two
+  /// binding.
+  ///
+  /// EXTERNAL PAYOUTS ONLY — BOTH RULES.
+  ///
+  /// The floor is external-only because it exists to keep a balance on the
+  /// platform, so a Lazervault-to-Lazervault send is what it encourages rather
+  /// than something to stop.
+  ///
+  /// THE GRANT IS EXTERNAL-ONLY TOO, which is easy to get backwards: parts of
+  /// accounts-service describe an internal send as taking the money off the
+  /// platform in one hop. That reasoning was SUPERSEDED on 1 Nov 2026 by the
+  /// release latch — the restriction now lifts once the balance has fallen to
+  /// a threshold, the test is the BALANCE not the service, and internal sends
+  /// count as on-platform use like any other. Gating them would leave a
+  /// customer who only ever transfers permanently unable to withdraw their own
+  /// deposits, which is the trap the latch exists to prevent. The server has
+  /// no grant check on the internal rail (TransferBalance) at all, so a client
+  /// gate here would refuse a send the backend allows — the worse half of the
+  /// bug, because the user never reaches the server to find out.
+  ///
+  /// Returns a policy that `blocks` always answers false for on an internal
+  /// send, so no call site needs a gate of its own.
+  MinBalancePolicy get _retainedBalancePolicy {
+    if (!_isExternalPayout) return const MinBalancePolicy(enforced: false);
+    return MinBalancePolicy.resolve(accountType: widget.sourceAccountType)
+        .withRestricted((widget.restrictedBalanceMajor * 100).round());
   }
 
   @override
@@ -566,6 +611,33 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // THE BONUS LABEL, above the amount field.
+                        //
+                        // Here rather than in the header, where the balance
+                        // itself lives: that column is right-aligned and
+                        // capped at 120.w for the account name, and two lines
+                        // of explanation do not fit beside it. This is the
+                        // first thing in the scrollable body, so it is read
+                        // immediately before the figure it qualifies.
+                        //
+                        // EXTERNAL ONLY, like the check itself. On an
+                        // internal send the whole balance really is sendable,
+                        // so "₦1,000 free to transfer" would be false — and
+                        // naming the bonus at all on that flow would advertise
+                        // the send-to-a-friend route the operator has accepted
+                        // but has no reason to signpost.
+                        ...() {
+                          final notice = grantRestrictionNotice(
+                            context: context,
+                            policy: _retainedBalancePolicy,
+                            availableMinor:
+                                (widget.availableBalanceMajor * 100).round(),
+                            currencySymbol: _symbol,
+                          );
+                          return notice == null
+                              ? const <Widget>[]
+                              : <Widget>[notice, SizedBox(height: 14.h)];
+                        }(),
                         Text('Amount',
                             style: GoogleFonts.inter(
                                 color: SendFundsAmountSheet._textSecondary,

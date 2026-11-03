@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfe
 import 'package:uuid/uuid.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/grant_restriction_notice.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
 
 class BatchTransferReviewScreen extends StatefulWidget {
@@ -344,9 +345,23 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
       final hasExternalLeg = recipients.any((r) => r.isExternal);
       final spendMinor = ((externalAmount + (_totalFee ?? 0.0)) * 100).round();
 
-      final minBalance = MinBalancePolicy.resolve(
-        accountType: selectedAccount?.accountType,
-      );
+      // The floor PLUS the sender's unspent onboarding grant, greater of the
+      // two binding. `payment_batch.go` folds the grant in on exactly this
+      // check, and accounts-service refuses the per-item HOLD regardless, so
+      // without it an external leg passed here and was refused after the PIN.
+      //
+      // ARMED ON THE EXTERNAL LEG ONLY, like the floor it joins. Internal
+      // recipients are on-platform use and must never be the reason a batch is
+      // refused — the same rule the external-leg spend above exists to honour.
+      // `withRestricted` can arm a policy whose floor is off, which is correct
+      // here: the grant follows the money, not the operator's setting, and the
+      // hold-time check enforces it whether or not a floor is configured.
+      final minBalance = hasExternalLeg
+          ? MinBalancePolicy.resolve(
+              accountType: selectedAccount?.accountType,
+            ).withRestricted(
+              ((selectedAccount?.restrictedBalance ?? 0) * 100).round())
+          : const MinBalancePolicy(enforced: false);
       if (hasExternalLeg &&
           minBalance.blocks(
             availableMinor: availableMinor,
@@ -554,7 +569,15 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
           // Source account card
           if (selectedAccount != null)
-            _buildSourceAccountCard(selectedAccount, grandTotal),
+            _buildSourceAccountCard(
+              selectedAccount,
+              grandTotal,
+              // The bonus label only applies to the external legs — internal
+              // recipients can receive it freely. Computed here, where the
+              // recipient list already is, rather than read again inside the
+              // card.
+              hasExternalLeg: recipients.any((r) => r.isExternal),
+            ),
 
           if (selectedAccount != null) SizedBox(height: 20.h),
 
@@ -667,7 +690,11 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     );
   }
 
-  Widget _buildSourceAccountCard(AccountSummaryEntity account, double total) {
+  Widget _buildSourceAccountCard(
+    AccountSummaryEntity account,
+    double total, {
+    bool hasExternalLeg = false,
+  }) {
     final hasInsufficientBalance = total > account.availableBalance;
 
     return Container(
@@ -802,6 +829,32 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
               ),
             ),
           ],
+          // THE BONUS LABEL, under the balance it qualifies.
+          //
+          // A batch is how a wallet actually gets emptied, so this is the
+          // screen where an unlabelled balance is most expensive: the refusal
+          // would otherwise arrive at the last step before the PIN, after
+          // every recipient and amount has been entered, and there is no
+          // "send max" to offer because there is no single amount to rewrite.
+          //
+          // External legs only, and it sits BELOW the insufficient-balance
+          // banner on purpose — if the wallet cannot cover the batch at all
+          // that is the louder and truer problem, and the bonus is beside the
+          // point (the same ordering the check itself uses).
+          ...() {
+            if (!hasExternalLeg) return const <Widget>[];
+            final notice = grantRestrictionNotice(
+              context: context,
+              policy: const MinBalancePolicy(enforced: false)
+                  .withRestricted((account.restrictedBalance * 100).round()),
+              availableMinor: (account.availableBalance * 100).round(),
+              currencySymbol: _currencySymbol,
+              tone: GrantNoticeTone.onDark,
+            );
+            return notice == null
+                ? const <Widget>[]
+                : <Widget>[SizedBox(height: 12.h), notice];
+          }(),
         ],
       ),
     );

@@ -25,6 +25,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/grant_restriction_notice.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
 import 'package:lazervault/src/features/funds/presentation/view/withdrawal_receipt_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/withdrawal_history_screen.dart';
@@ -144,6 +145,33 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           widget.selectedCard['type'] ??
           '')
       .toString();
+
+  /// The UNSPENT ONBOARDING GRANT on this wallet, in major units.
+  ///
+  /// Read off the same card the balance is, defensively and in both naming
+  /// conventions — this screen is reached from the carousel, the details
+  /// sheet and a deep link, and those maps have not always agreed on casing.
+  /// Absent reads as 0, which is the honest default: a wallet we cannot prove
+  /// has a grant must not be labelled as having one.
+  double get _restrictedBalance {
+    final v = widget.selectedCard['restrictedBalance'] ??
+        widget.selectedCard['restricted_balance'] ??
+        0;
+    if (v is num) return v.toDouble();
+    return double.tryParse(v.toString()) ?? 0;
+  }
+
+  /// The retained-balance policy for this withdrawal: the operator's floor
+  /// with the customer's grant folded in, greater of the two binding.
+  ///
+  /// A withdrawal is ALWAYS an external payout, so unlike the transfer sheets
+  /// there is no internal case to scope out — both rules apply unconditionally
+  /// here. Mirrors `withdrawal_initiate.go`, which resolves the floor and then
+  /// calls `WithRestricted(sourceAccount.RestrictedBalance)` on exactly this
+  /// path.
+  MinBalancePolicy get _retainedBalancePolicy =>
+      MinBalancePolicy.resolve(accountType: _sourceAccountType)
+          .withRestricted((_restrictedBalance * 100).round());
 
   /// Identity of the ACTIVE Lazervault account being debited (the "Available to
   /// withdraw" figure is THIS account's wallet balance, not a linked-bank balance).
@@ -509,7 +537,12 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     // as it does to a transfer. The server refuses it regardless — this exists so
     // the user finds out before spending a PIN attempt, with a dialog that says
     // the retained balance is still theirs to spend.
-    final floor = MinBalancePolicy.resolve(accountType: _sourceAccountType);
+    // The floor PLUS the grant. banking-service folds the grant in on this
+    // exact path and accounts-service enforces it authoritatively at the hold,
+    // so a client check without it would pass a withdrawal the backend then
+    // refuses — after the PIN sheet, which is the one place this check exists
+    // to get ahead of.
+    final floor = _retainedBalancePolicy;
     final availableMinor = (_availableBalance * 100).round();
     final feeMinor = (_fee * 100).round();
     if (floor.blocks(
@@ -949,6 +982,30 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               color: Colors.white.withValues(alpha: 0.78),
             ),
           ),
+          // THE BONUS LABEL, inside the balance card and directly under the
+          // figure it qualifies.
+          //
+          // The card's heading says "Available to withdraw" over a number that
+          // was not, in fact, all withdrawable. That was the whole defect:
+          // every enforcement layer behind this screen was right and the
+          // screen itself stated the opposite. Putting the label anywhere else
+          // would leave the contradiction on the card.
+          //
+          // onDark tone — this sits on a saturated gradient, where the light
+          // palette is unreadable.
+          ...() {
+            final notice = grantRestrictionNotice(
+              context: context,
+              policy: _retainedBalancePolicy,
+              availableMinor: (_availableBalance * 100).round(),
+              currencySymbol: _currencySymbol,
+              action: MinBalanceAction.withdrawal,
+              tone: GrantNoticeTone.onDark,
+            );
+            return notice == null
+                ? const <Widget>[]
+                : <Widget>[SizedBox(height: 12.h), notice];
+          }(),
         ],
       ),
     );

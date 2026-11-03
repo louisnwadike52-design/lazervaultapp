@@ -100,6 +100,20 @@ enum TransactionServiceType {
   reversal('Reversal', Icons.replay_outlined, Color(0xFF6B7280)),
   fee('Fee', Icons.receipt, Color(0xFF9CA3AF)),
 
+  // MONEY WE GAVE THE CUSTOMER — the welcome bonus and the tester allocation.
+  //
+  // Added because both were resolving to `unknown` and rendering the grey
+  // help-outline glyph beside a correctly-titled row, and belonged to no
+  // category filter. The title chain was fixed first and this was missed:
+  // titling and service-type resolution are separate paths, and only the
+  // former had a branch for these categories.
+  //
+  // One type for both: they are the same kind of money to the customer
+  // (restricted, spend-on-platform), the icon and colour should match, and the
+  // TITLE already distinguishes them ("Welcome Bonus" vs "Tester Allocation").
+  // A gift icon rather than a deposit's plus — it was given, not paid in.
+  grant('Bonus', Icons.card_giftcard_rounded, Color(0xFFF59E0B)),
+
   unknown('Unknown', Icons.help_outline, Color(0xFF9CA3AF));
 
   final String displayName;

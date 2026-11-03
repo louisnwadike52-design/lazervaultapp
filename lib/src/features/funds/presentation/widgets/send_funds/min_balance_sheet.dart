@@ -33,6 +33,7 @@ String minBalanceMessage({
   required int maxSendableMinor,
   String adminMessage = '',
   MinBalanceAction action = MinBalanceAction.transfer,
+  bool grantRestricted = false,
 }) {
   if (adminMessage.trim().isNotEmpty) return adminMessage.trim();
 
@@ -40,6 +41,34 @@ String minBalanceMessage({
   // sentence reaches older builds as a snackbar and must read the same as this
   // dialog. See its doc comment for the format that won.
   final floor = '$currencySymbol${formatMinorForCopy(minimumMinor)}';
+
+  // THE BONUS IS NOT A FLOOR, and must not be described as one.
+  //
+  // Both constraints retain money, so they share this sheet — but their
+  // REASONS are opposite. The operator's floor is a rule about the customer's
+  // own balance. The grant is money we gave them, conditionally. Saying "your
+  // wallet needs to keep at least ₦2,000" to someone we handed ₦2,000 reads as
+  // their own savings being held hostage, which is the complaint this branch
+  // exists to prevent. Mirrors the grant branch of `Policy.RefusalMessage` in
+  // microservices/shared/minbalance so the dialog and the server's snackbar
+  // backstop say the same thing.
+  if (grantRestricted) {
+    if (maxSendableMinor <= 0) {
+      // "moved out", with no action verb. The server's version of this
+      // sentence spliced the verb in and rendered "can't be transfern out";
+      // the verb-free wording is correct for a transfer and a withdrawal
+      // alike, and both sides now use it.
+      return 'Your $floor welcome bonus is for spending on Lazervault, so it '
+          "can't be moved out.\n\n"
+          'Use it for airtime, data, bills, gift cards or crypto — and '
+          'anything you add yourself stays free to move.';
+    }
+    final own = '$currencySymbol${formatMinorForCopy(maxSendableMinor)}';
+    return 'Your $floor welcome bonus is for spending on Lazervault, so you '
+        'can ${action.verb} up to $own of your own money right now.\n\n'
+        'The bonus itself works for airtime, data, bills, gift cards and '
+        'crypto.';
+  }
 
   if (maxSendableMinor <= 0) {
     // Nothing can be sent, so do NOT offer "you can transfer up to ₦0" —
@@ -95,13 +124,19 @@ Future<void> showMinBalanceRefusal(
   await showServerRefusal(
     context,
     links: links,
-    title: 'Minimum wallet balance',
+    // The title names the actual reason. "Minimum wallet balance" over a
+    // bonus explanation is the same confiscation reading the body text goes
+    // out of its way to avoid, restated in bold at the top.
+    title: policy.grantRestricted
+        ? 'Your welcome bonus'
+        : 'Minimum wallet balance',
     message: minBalanceMessage(
       currencySymbol: currencySymbol,
       minimumMinor: policy.minimumMinor,
       maxSendableMinor: maxSendable,
       adminMessage: policy.message,
       action: action,
+      grantRestricted: policy.grantRestricted,
     ),
     // Two facts, both of which the customer needs and neither of which the
     // main sentence should carry: that nothing was taken (the first worry on
@@ -109,9 +144,15 @@ Future<void> showMinBalanceRefusal(
     // floor is on what REMAINS, so every naira deposited is a naira that can
     // leave — which is not obvious and is the difference between "this app
     // is holding my money" and "I need to add some first".
-    hint: 'Nothing has been sent. Adding money raises how much you can '
-        '${action.verb} — the limit is on what stays in your wallet, not on '
-        'what you put in.',
+    hint: policy.grantRestricted
+        // For the grant the reassurance is different and more important: the
+        // bonus does not touch their own money. Repeating the floor's "the
+        // limit is on what stays in your wallet" here would imply it does.
+        ? 'Nothing has been sent. The bonus never blocks your own money — '
+            'anything you add is free to ${action.verb} out straight away.'
+        : 'Nothing has been sent. Adding money raises how much you can '
+            '${action.verb} — the limit is on what stays in your wallet, not '
+            'on what you put in.',
     // Only offered when it would do something. `showServerRefusal` renders no
     // button when the label is null, which is the honest state here.
     // The verb matches the flow: "Withdraw ₦475 instead" on the withdraw

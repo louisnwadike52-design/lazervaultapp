@@ -302,6 +302,30 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     }
   }
 
+  /// The principal of an external transfer, when the merge resolved one.
+  ///
+  /// Read from metadata rather than a field because UnifiedTransaction carries
+  /// a single `amount` by design — the ledger figure. See
+  /// external_transfer_merge.dart for why both halves have to survive.
+  double? get _externalPrincipal => _metaDouble('external_principal');
+
+  /// The fee the SENDER paid, derived in the merge as ledger − payment.
+  double? get _externalFee => _metaDouble('external_fee');
+
+  double? _metaDouble(String key) {
+    final v = tx.metadata?[key];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  /// Money, in this transaction's own currency.
+  ///
+  /// Deliberately the same formatting as the headline amount so a reader is
+  /// not comparing "₦1,123.00" against "1123.0" two lines apart.
+  String _fmtMoney(double v) =>
+      '$_currencySymbol${NumberFormat('#,##0.00').format(v)}';
+
   String get _currencySymbol {
     switch (tx.currency.toUpperCase()) {
       case 'NGN':
@@ -826,6 +850,30 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       if (bankName != null && bankName.isNotEmpty)
         _DetailEntry('Bank', bankName,
             logoBankName: bankName, logoBankCode: bankCode),
+      // EXTERNAL TRANSFER: WHAT WAS SENT, WHAT IT COST, WHAT LEFT.
+      //
+      // The headline figure for an external transfer is the LEDGER amount —
+      // principal plus fee, the money that actually left the account. That is
+      // right for the sender's balance, and wrong as the only number on a
+      // receipt they hand to the payee: a 200 transfer with a 23 fee showed a
+      // single "223", telling the recipient 223 arrived when 200 did.
+      // (Measured on prod 2026-11-02: every external transfer stored as
+      // principal + 23.)
+      //
+      // mergeExternalTransfers now carries both halves, so the breakdown is
+      // stated rather than inferred. Rendered only when a fee actually exists
+      // — a zero-fee transfer gets no extra rows.
+      //
+      // THE FEE ROW IS SUPPRESSED ON AN INCOMING COPY, for the same reason the
+      // metadata fee keys are: a fee is the SENDER's cost, and showing it to
+      // the beneficiary bills them for something they never paid.
+      if (_externalPrincipal != null)
+        _DetailEntry('Amount sent', _fmtMoney(_externalPrincipal!)),
+      if (_externalFee != null && tx.flow != TransactionFlow.incoming)
+        _DetailEntry('Fee', _fmtMoney(_externalFee!)),
+      if (_externalPrincipal != null && _externalFee != null &&
+          tx.flow != TransactionFlow.incoming)
+        _DetailEntry('Total paid', _fmtMoney(_externalPrincipal! + _externalFee!)),
       if (tx.description != null && !_isPlaceholderValue(tx.description!))
         _DetailEntry('Description', _cleanDescription(tx.description!)),
       if (tx.displayReference != null)
@@ -906,6 +954,9 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     const baseHiddenKeys = {
       'scheduledAt', 'status',
       'balance_before', 'balance_after',
+      // Rendered above as designed Amount sent / Fee / Total paid rows.
+      // Without this they also appear raw ("External principal  200.0").
+      'external_principal', 'external_fee',
       'bank_name', 'destination_bank_name', 'recipient_bank_name',
       'bank_code', 'destination_bank_code',
       'recipient_name', 'counterparty_name',

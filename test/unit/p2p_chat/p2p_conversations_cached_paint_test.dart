@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/core/cache/session_page_store.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_conversation_entity.dart';
+import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_paged.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_page_store.dart';
@@ -29,6 +30,20 @@ P2PConversationEntity _conv(String id, {int unread = 0}) =>
       otherUserId: 'peer-$id',
       otherUserName: 'Peer $id',
       unreadCount: unread,
+    );
+
+/// The cubit reads `listConversationsPaged`, not `listConversations`: it needs
+/// the server's own total to know a second page exists. These tests stubbed the
+/// LIST variant, so mocktail matched nothing, returned null, and every one of
+/// them failed with "type 'Null' is not a subtype of
+/// type `Future<P2PPaged<P2PConversationEntity>>`" — a stale stub, not a
+/// regression in the cubit.
+P2PPaged<P2PConversationEntity> _paged(List<P2PConversationEntity> rows) =>
+    P2PPaged<P2PConversationEntity>(
+      items: rows,
+      total: rows.length,
+      page: 1,
+      limit: 20,
     );
 
 Future<void> _settle() async {
@@ -66,10 +81,12 @@ void main() {
     P2PConversationsPageStore.put('u1',
         conversations: [_conv('old', unread: 2)], requests: const []);
 
-    final convs = Completer<List<P2PConversationEntity>>();
+    final convs = Completer<P2PPaged<P2PConversationEntity>>();
     final reqs = Completer<List<P2PConversationEntity>>();
     final unread = Completer<int>();
-    when(() => repo.listConversations()).thenAnswer((_) => convs.future);
+    when(() => repo.listConversationsPaged(
+        page: any(named: 'page'),
+        limit: any(named: 'limit'))).thenAnswer((_) => convs.future);
     when(() => repo.listIncomingRequests()).thenAnswer((_) => reqs.future);
     when(() => repo.getUnreadCount()).thenAnswer((_) => unread.future);
 
@@ -86,7 +103,7 @@ void main() {
     expect(painted.totalUnread, 2);
 
     // Conversations land first: the list repaints NOW, unread still pending.
-    convs.complete([_conv('fresh', unread: 1)]);
+    convs.complete(_paged([_conv('fresh', unread: 1)]));
     await _settle();
     expect((cubit.state as P2PConversationsLoaded).conversations.single.id,
         'fresh');
@@ -107,14 +124,18 @@ void main() {
   });
 
   test('a refresh in which both lists fail keeps the painted list', () async {
-    when(() => repo.listConversations()).thenAnswer((_) async => [_conv('a')]);
+    when(() => repo.listConversationsPaged(
+            page: any(named: 'page'), limit: any(named: 'limit')))
+        .thenAnswer((_) async => _paged([_conv('a')]));
     when(() => repo.listIncomingRequests()).thenAnswer((_) async => []);
     when(() => repo.getUnreadCount()).thenAnswer((_) async => 0);
     await cubit.loadConversations();
     expect(
         (cubit.state as P2PConversationsLoaded).conversations.single.id, 'a');
 
-    when(() => repo.listConversations()).thenThrow(Exception('down'));
+    when(() => repo.listConversationsPaged(
+        page: any(named: 'page'),
+        limit: any(named: 'limit'))).thenThrow(Exception('down'));
     when(() => repo.listIncomingRequests()).thenThrow(Exception('down'));
     when(() => repo.getUnreadCount()).thenThrow(Exception('down'));
     await cubit.loadConversations(silent: true);
@@ -129,7 +150,9 @@ void main() {
       'page remembered for another user is never painted', () async {
     P2PConversationsPageStore.put('someone-else',
         conversations: [_conv('theirs')], requests: const []);
-    when(() => repo.listConversations()).thenAnswer((_) async => []);
+    when(() => repo.listConversationsPaged(
+        page: any(named: 'page'),
+        limit: any(named: 'limit'))).thenAnswer((_) async => _paged(const []));
     when(() => repo.listIncomingRequests()).thenAnswer((_) async => []);
     when(() => repo.getUnreadCount()).thenAnswer((_) async => 0);
 

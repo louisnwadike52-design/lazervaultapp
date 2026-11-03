@@ -37,6 +37,7 @@ class MinBalancePolicy {
     required this.enforced,
     this.minimumMinor = 0,
     this.message = '',
+    this.grantRestricted = false,
   });
 
   /// True when transfers that would breach the floor must be refused.
@@ -47,6 +48,60 @@ class MinBalancePolicy {
 
   /// Admin-supplied copy. Empty means "use the built-in wording".
   final String message;
+
+  /// True when the binding constraint is the customer's UNSPENT ONBOARDING
+  /// GRANT rather than the operator's floor.
+  ///
+  /// It changes only the WORDING. Telling someone their wallet "must keep
+  /// ₦2,000" when the real reason is a bonus we gave them reads as their own
+  /// money being withheld — the opposite of what happened, and the support
+  /// ticket this flag exists to avoid. Mirrors `Policy.GrantRestricted` in
+  /// microservices/shared/minbalance.
+  final bool grantRestricted;
+
+  /// Folds the customer's UNSPENT ONBOARDING GRANT into the floor.
+  ///
+  /// Mirrors `Policy.WithRestricted` on the server, including the two rules
+  /// that are easy to get wrong:
+  ///
+  /// THE GREATER OF THE TWO BINDS, never the sum. A ₦1,500 platform floor and
+  /// a ₦2,000 unspent grant mean ₦2,000 must stay, not ₦3,500 — they are
+  /// independent reasons to retain money, not additive ones. Adding them would
+  /// hold back money for a reason that does not exist.
+  ///
+  /// IT CAN ARM A POLICY THAT WAS OTHERWISE OFF, and that is correct: the
+  /// grant restriction does not depend on the operator's floor being switched
+  /// on. It follows the money, not the setting. So
+  /// `const MinBalancePolicy(enforced: false).withRestricted(n)` is the
+  /// grant-only policy, which is what the flows use where the operator's floor
+  /// does not apply (see [blocks]).
+  ///
+  /// The admin's floor copy describes the FLOOR, so when the grant is what
+  /// actually binds that sentence states the wrong number for the wrong
+  /// reason. It is dropped, exactly as the server drops it.
+  MinBalancePolicy withRestricted(int restrictedMinor) {
+    if (restrictedMinor <= 0) return this;
+    if (!enforced || restrictedMinor > minimumMinor) {
+      return MinBalancePolicy(
+        enforced: true,
+        minimumMinor: restrictedMinor,
+        message: '',
+        grantRestricted: true,
+      );
+    }
+    return this;
+  }
+
+  /// The grant portion of [availableMinor] — what cannot be moved out.
+  ///
+  /// Zero unless the grant is the binding constraint, so a caller can use it
+  /// to label a balance without first asking which rule won. Clamped to the
+  /// balance: a restriction larger than the wallet would otherwise print a
+  /// figure the customer does not have.
+  int reservedForGrantMinor(int availableMinor) {
+    if (!grantRestricted || minimumMinor <= 0 || availableMinor <= 0) return 0;
+    return minimumMinor > availableMinor ? availableMinor : minimumMinor;
+  }
 
   static const String _gate = 'feature_transfer_below_minimum';
 
