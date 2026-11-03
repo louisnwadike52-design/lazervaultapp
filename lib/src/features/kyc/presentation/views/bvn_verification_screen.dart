@@ -232,7 +232,25 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                 SizedBox(height: 16.h),
                 Center(
                   child: TextButton(
-                    onPressed: _skipForNow,
+                    // A HELD HOLDER IS NOT SKIPPING, AND MUST NOT BE SENT
+                    // THROUGH THE SKIP PATH.
+                    //
+                    // `_allowSkip` admits `_heldForReview` so the button shows
+                    // while an operator compares two names. `_skipForNow`'s
+                    // authority guard is `!_reachedTier2`, which REFUSES such a
+                    // holder — so the button appeared, was tapped, and answered
+                    // "Verification required". A control that is present and
+                    // inert is worse than an absent one, and this one appeared
+                    // at the exact moment the customer is waiting on us.
+                    //
+                    // It must not simply be admitted into _skipForNow either:
+                    // that writes has_skipped_kyc and calls skipKYCUpgrade,
+                    // which persists a tier server-side. The hold GRANTS
+                    // NOTHING by design — see _heldForReview — so the deferral
+                    // is its own path, writing nothing.
+                    onPressed: _heldForReview && !_reachedTier2
+                        ? _deferWhileUnderReview
+                        : _skipForNow,
                     style: TextButton.styleFrom(
                       foregroundColor: _accent,
                       padding: EdgeInsets.symmetric(
@@ -246,7 +264,12 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Skip for now',
+                          // "Skip" is the wrong word for a holder whose check
+                          // is RUNNING: nothing is being skipped, they are
+                          // being let go of the screen while they wait.
+                          _heldForReview && !_reachedTier2
+                              ? 'Continue for now'
+                              : 'Skip for now',
                           style: GoogleFonts.inter(
                             fontSize: 15.sp,
                             color: _accent,
@@ -1505,6 +1528,29 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   /// the skip: if the network is down we still advance onboarding (the local
   /// `has_skipped_kyc` flag prevents a loop, and the tier reconciles on the next
   /// authenticated KYC status read).
+  /// Lets a holder whose name decision is OUTSTANDING put the screen down.
+  ///
+  /// Deliberately NOT [_skipForNow]. That path writes `has_skipped_kyc`, calls
+  /// `skipKYCUpgrade` (which persists a tier server-side) and deletes
+  /// `kyc_onboarding_pending`. All three are wrong here: the hold grants
+  /// nothing, the tier stays at 1, every money gate still reads an unverified
+  /// holder, and the review is still outstanding — so the gate must come back
+  /// on the next launch, where this same deferral will be available again.
+  /// Reminded, never sealed in.
+  ///
+  /// The one thing it keeps from [_skipForNow] is dropping an in-flight
+  /// deposit: leaving this screen for the dashboard must not auto-resume a
+  /// deposit the holder never completed.
+  Future<void> _deferWhileUnderReview() async {
+    serviceLocator<PendingDeposit>().clear();
+    if (!mounted) return;
+    if (_isOnboardingRoot) {
+      Get.offAllNamed(AppRoutes.dashboard);
+    } else {
+      Get.back(result: false);
+    }
+  }
+
   Future<void> _skipForNow() async {
     // KYC is COMPULSORY below Tier 2 — there is no skip until the BVN is inserted
     // (which mints the virtual account). This is the authority guard: even if a

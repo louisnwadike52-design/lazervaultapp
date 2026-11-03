@@ -503,6 +503,59 @@ void main() {
           AppRoutes.transactionPinSetup);
     });
 
+    test('an undeliverable phone OTP is not asked for at all', () {
+      // THE BUG. With no active SMS provider, signup SKIPS the phone step and
+      // mints the account with phone_verified = false. This gate then fired on
+      // EVERY login for exactly those users: a verify-phone screen for a code
+      // nobody can send, whose "Skip for now" deliberately does not set the
+      // flag — so it came back next login, forever.
+      final undeliverable = resolvePostLoginRoute(
+        step: null,
+        status: 'complete',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        phoneVerified: false,
+        phoneOtpDeliverable: false,
+        kyc: KycLoginGate.none,
+      );
+      expect(undeliverable.name, isNot(AppRoutes.phoneVerification),
+          reason: 'no SMS provider means the step cannot be completed, so it '
+              'must not be shown');
+      expect(undeliverable.name, AppRoutes.dashboard);
+
+      // REQUIRING it changes nothing: you cannot mandate a step you cannot
+      // deliver. Without this the "required" path would still strand the user.
+      final requiredButUndeliverable = resolvePostLoginRoute(
+        step: null,
+        status: 'complete',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        phoneVerified: false,
+        phoneVerificationRequired: true,
+        phoneOtpDeliverable: false,
+        kyc: KycLoginGate.none,
+      );
+      expect(requiredButUndeliverable.name, AppRoutes.dashboard);
+
+      // And the ordinary case is untouched — when SMS works, still ask.
+      final deliverable = resolvePostLoginRoute(
+        step: null,
+        status: 'complete',
+        email: 'a@b.com',
+        phone: '+2348012345678',
+        hasPasscode: true,
+        hasTransactionPin: true,
+        phoneVerified: false,
+        phoneOtpDeliverable: true,
+        kyc: KycLoginGate.none,
+      );
+      expect(deliverable.name, AppRoutes.phoneVerification);
+    });
+
     test('the phone OTP is the only skippable step in the chain', () {
       // Phone: skippable when the admin has not made it mandatory.
       final phone = resolvePostLoginRoute(
