@@ -57,7 +57,9 @@ void main() {
     test('a policy with no amount never blocks', () {
       const halfSet = MinBalancePolicy(enforced: true, minimumMinor: 0);
       expect(
-          halfSet.blocks(availableMinor: 250000, spendMinor: 100000), isFalse);
+        halfSet.blocks(availableMinor: 250000, spendMinor: 100000),
+        isFalse,
+      );
     });
   });
 
@@ -73,7 +75,9 @@ void main() {
     test('clamps to zero rather than going negative', () {
       // A negative headroom rendered as an amount would read as a bug.
       expect(
-          enforced.maxSendableMinor(availableMinor: 150000, feeMinor: 2500), 0);
+        enforced.maxSendableMinor(availableMinor: 150000, feeMinor: 2500),
+        0,
+      );
       expect(enforced.maxSendableMinor(availableMinor: 50000), 0);
     });
 
@@ -171,8 +175,11 @@ void main() {
         minimumMinor: floor,
         maxSendableMinor: 97500,
       );
-      expect(send, contains('transfer up to'),
-          reason: 'the default must stay a transfer for the send flows');
+      expect(
+        send,
+        contains('transfer up to'),
+        reason: 'the default must stay a transfer for the send flows',
+      );
 
       final draw = minBalanceMessage(
         currencySymbol: '₦',
@@ -213,13 +220,18 @@ void main() {
       expect(p.grantRestricted, isTrue);
     });
 
-    test('the floor wins when it is the larger, and is not blamed on a bonus',
-        () {
-      final p = enforced.withRestricted(50000);
-      expect(p.minimumMinor, floor);
-      expect(p.grantRestricted, isFalse,
-          reason: 'the floor binds here, so the copy must not blame the bonus');
-    });
+    test(
+      'the floor wins when it is the larger, and is not blamed on a bonus',
+      () {
+        final p = enforced.withRestricted(50000);
+        expect(p.minimumMinor, floor);
+        expect(
+          p.grantRestricted,
+          isFalse,
+          reason: 'the floor binds here, so the copy must not blame the bonus',
+        );
+      },
+    );
 
     test('a grant arms a policy whose floor is switched off', () {
       // The restriction follows the money, not the operator's setting. This is
@@ -252,10 +264,7 @@ void main() {
     const grant = 200000;
 
     test('is the grant when the grant is what binds', () {
-      expect(
-        off.withRestricted(grant).reservedForGrantMinor(300000),
-        grant,
-      );
+      expect(off.withRestricted(grant).reservedForGrantMinor(300000), grant);
     });
 
     test('is zero when the operator floor is what binds', () {
@@ -321,8 +330,11 @@ void main() {
       for (final action in MinBalanceAction.values) {
         final m = copy(maxSendableMinor: 0, action: action).toLowerCase();
         for (final mangled in ['transfern', 'withdrawn out', 'transfer out']) {
-          expect(m, isNot(contains(mangled)),
-              reason: '${action.noun} copy contains "$mangled": $m');
+          expect(
+            m,
+            isNot(contains(mangled)),
+            reason: '${action.noun} copy contains "$mangled": $m',
+          );
         }
       }
     });
@@ -358,8 +370,11 @@ void main() {
         -150000: '-1,500',
       };
       cases.forEach((minor, want) {
-        expect(formatMinorForCopy(minor), want,
-            reason: 'formatMinorForCopy($minor)');
+        expect(
+          formatMinorForCopy(minor),
+          want,
+          reason: 'formatMinorForCopy($minor)',
+        );
       });
     });
   });
@@ -400,9 +415,13 @@ void main() {
         AppServiceName.escrow,
         AppServiceName.lockFunds,
       ]) {
-        expect(kGrantSpendableServices, isNot(contains(payout)),
-            reason: '$payout moves money out and must not be offered as a '
-                'way to spend a restricted balance');
+        expect(
+          kGrantSpendableServices,
+          isNot(contains(payout)),
+          reason:
+              '$payout moves money out and must not be offered as a '
+              'way to spend a restricted balance',
+        );
       }
     });
 
@@ -410,9 +429,51 @@ void main() {
       // A missing icon falls back to a generic grid glyph, which in a list of
       // four looks like a rendering bug rather than a service.
       for (final s in kGrantSpendableServices) {
-        expect(s.displayName.trim(), isNotEmpty,
-            reason: '$s has no display name to label the row with');
+        expect(
+          s.displayName.trim(),
+          isNotEmpty,
+          reason: '$s has no display name to label the row with',
+        );
       }
+    });
+  });
+
+  // THE TRANSFERABLE SWITCH REACHES FLUTTER WITH NO FLUTTER CHANGE.
+  //
+  // `onboarding_grant_transferable` works by not raising restricted_balance at
+  // credit time, so every app surface that labels or gates grant money derives
+  // from that live figure rather than from a flag of its own. These pin that
+  // property — if someone later makes the notice depend on a grant flag the
+  // app downloads separately, the two can disagree and the customer is told
+  // their money is locked when it is not.
+  group('a transferable grant is invisible to the restriction UI', () {
+    test('no restricted balance means no bonus label at all', () {
+      // What accounts-service produces when the switch is on: the grant is
+      // credited, the balance rises, restricted_balance stays 0.
+      const policy = MinBalancePolicy(enforced: false);
+      expect(
+        policy.withRestricted(0).reservedForGrantMinor(200000),
+        0,
+        reason: 'a free grant must not be labelled as reserved',
+      );
+    });
+
+    test('a restricted balance still labels the bonus', () {
+      // And the switch off: 1,000 of a 2,000 balance is the bonus.
+      final p = const MinBalancePolicy(enforced: false).withRestricted(100000);
+      expect(p.reservedForGrantMinor(200000), 100000);
+    });
+
+    test('the label never exceeds the wallet', () {
+      // A restriction larger than the balance would print money the customer
+      // does not have — e.g. after a refund reversal.
+      final p = const MinBalancePolicy(enforced: false).withRestricted(100000);
+      expect(p.reservedForGrantMinor(40000), 40000);
+    });
+
+    test('an empty wallet is labelled zero, not negative', () {
+      final p = const MinBalancePolicy(enforced: false).withRestricted(100000);
+      expect(p.reservedForGrantMinor(0), 0);
     });
   });
 }
