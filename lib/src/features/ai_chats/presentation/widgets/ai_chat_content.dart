@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:lazervault/core/utils/receipt_fonts.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'dart:io';
 
 import 'package:csv/csv.dart';
@@ -867,8 +868,7 @@ class _AiChatContentState extends State<AiChatContent>
   void _showExportFormatSheet() {
     Widget tile(String label, String sub, IconData icon, ChatExportFormat fmt) {
       return ListTile(
-        leading:
-            Icon(icon, color: _accent.primary, size: 22.sp),
+        leading: Icon(icon, color: _accent.primary, size: 22.sp),
         title: Text(label,
             style: TextStyle(
                 color: Colors.white,
@@ -1109,8 +1109,7 @@ class _AiChatContentState extends State<AiChatContent>
                     child: Row(
                       children: [
                         Icon(Icons.tune_rounded,
-                            color: _accent.primary,
-                            size: 22.sp),
+                            color: _accent.primary, size: 22.sp),
                         SizedBox(width: 10.w),
                         Text('AI Settings',
                             style: TextStyle(
@@ -1256,8 +1255,16 @@ class _AiChatContentState extends State<AiChatContent>
                           'Quick Suggestions',
                           'Show suggestion chips at the bottom',
                           Icons.lightbulb_outline_rounded,
-                          _settings.quickSuggestions,
+                          // Shows what is ACTUALLY happening right now — the
+                          // admin default when untouched — so the switch can
+                          // never contradict the screen behind it.
+                          _settings.quickSuggestionsVisible(EndpointRegistry
+                              .instance.aiChatSuggestionsVisible),
                           (v) {
+                            // Touching it records an EXPLICIT choice, which
+                            // from then on outranks the platform default in
+                            // both directions. That is what makes it the
+                            // customer's setting rather than a hint.
                             setModalState(() => _settings.quickSuggestions = v);
                             setState(() {});
                           },
@@ -1383,16 +1390,12 @@ class _AiChatContentState extends State<AiChatContent>
               children: [
                 Icon(icons[i],
                     size: 16.sp,
-                    color: isActive
-                        ? _accent.primary
-                        : Colors.white54),
+                    color: isActive ? _accent.primary : Colors.white54),
                 SizedBox(width: 6.w),
                 Text(
                   labels[i],
                   style: TextStyle(
-                    color: isActive
-                        ? _accent.primary
-                        : Colors.white70,
+                    color: isActive ? _accent.primary : Colors.white70,
                     fontSize: 13.sp,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                   ),
@@ -1544,18 +1547,15 @@ class _AiChatContentState extends State<AiChatContent>
           height: 8.w,
           margin: EdgeInsets.only(right: 4.w),
           decoration: BoxDecoration(
-            color: isTyping
-                ? _accent.primary
-                : InvoiceThemeColors.successGreen,
+            color: isTyping ? _accent.primary : InvoiceThemeColors.successGreen,
             shape: BoxShape.circle,
           ),
         ),
         Text(
           isTyping ? 'Typing...' : 'Online',
           style: TextStyle(
-              color: isTyping
-                  ? _accent.primary
-                  : InvoiceThemeColors.successGreen,
+              color:
+                  isTyping ? _accent.primary : InvoiceThemeColors.successGreen,
               fontSize: 12.sp),
         ),
       ],
@@ -1605,8 +1605,8 @@ class _AiChatContentState extends State<AiChatContent>
               color: _accent.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.lock_rounded,
-                color: _accent.primary, size: 48.sp),
+            child:
+                Icon(Icons.lock_rounded, color: _accent.primary, size: 48.sp),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -1798,9 +1798,8 @@ class _AiChatContentState extends State<AiChatContent>
           child: Icon(
             icon,
             size: 15.sp,
-            color: active
-                ? _accent.primary
-                : Colors.white.withValues(alpha: 0.38),
+            color:
+                active ? _accent.primary : Colors.white.withValues(alpha: 0.38),
           ),
         ),
       ),
@@ -2261,8 +2260,7 @@ class _AiChatContentState extends State<AiChatContent>
             bottomLeft: Radius.circular(4.r),
             bottomRight: Radius.circular(18.r),
           ),
-          border: Border.all(
-              color: _accent.primary.withValues(alpha: 0.25)),
+          border: Border.all(color: _accent.primary.withValues(alpha: 0.25)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2456,20 +2454,17 @@ class _AiChatContentState extends State<AiChatContent>
                       padding:
                           EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: _accent.primary
-                            .withValues(alpha: 0.12),
+                        color: _accent.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
-                            color: _accent.primary
-                                .withValues(alpha: 0.35)),
+                            color: _accent.primary.withValues(alpha: 0.35)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (btn.icon != null && btn.icon!.isNotEmpty) ...[
                             Icon(Icons.arrow_forward_rounded,
-                                color: _accent.primary,
-                                size: 14.sp),
+                                color: _accent.primary, size: 14.sp),
                             SizedBox(width: 4.w),
                           ],
                           Text(btn.label,
@@ -2523,8 +2518,7 @@ class _AiChatContentState extends State<AiChatContent>
                       height: 8.h,
                       width: 8.w,
                       decoration: BoxDecoration(
-                          color: _accent.primary
-                              .withValues(alpha: opacity),
+                          color: _accent.primary.withValues(alpha: opacity),
                           shape: BoxShape.circle),
                     );
                   },
@@ -2549,8 +2543,19 @@ class _AiChatContentState extends State<AiChatContent>
       child: Column(
         children: [
           // Show suggestions if enabled and message list is effectively empty or text field empty
-          if (_settings.quickSuggestions &&
-              (messages.isEmpty || _messageController.text.isEmpty))
+          // Resolved against the ADMIN DEFAULT, never read raw: the field is
+          // null until the customer chooses, and null means "follow the
+          // platform".
+          //
+          // The `...[ ]` spread is not cosmetic. This was a braceless `if`
+          // followed by `SizedBox(height: 8.h)`, and a braceless if in a
+          // collection takes only the NEXT element — so that spacer rendered
+          // unconditionally and left an 8.h gap above the input even with the
+          // chips hidden. Grouping them makes the whole block conditional,
+          // which is what it always read as.
+          if (_settings.quickSuggestionsVisible(
+                  EndpointRegistry.instance.aiChatSuggestionsVisible) &&
+              (messages.isEmpty || _messageController.text.isEmpty)) ...[
             // A SINGLE SHORT ROW, not a band across the screen.
             //
             // This was 40.h tall with 16/8 padding and a 12.h margin — 52.h of
@@ -2587,8 +2592,8 @@ class _AiChatContentState extends State<AiChatContent>
                           suggestionText,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              color: Colors.white, fontSize: 11.5.sp),
+                          style:
+                              TextStyle(color: Colors.white, fontSize: 11.5.sp),
                         ),
                       ),
                     ),
@@ -2597,6 +2602,7 @@ class _AiChatContentState extends State<AiChatContent>
               ),
             ),
             SizedBox(height: 8.h),
+          ],
           if (_isRecording)
             _buildRecordingIndicator()
           else
@@ -2918,10 +2924,7 @@ class _AiChatContentState extends State<AiChatContent>
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
           gradient: isEnabled
-              ? LinearGradient(colors: [
-                  _accent.primary,
-                  _accent.secondary
-                ])
+              ? LinearGradient(colors: [_accent.primary, _accent.secondary])
               : null,
           color: isEnabled ? null : Colors.grey,
           shape: BoxShape.circle,
@@ -3016,7 +3019,20 @@ class _AiChatContentState extends State<AiChatContent>
           FocusScope.of(context).unfocus();
         },
         child: Container(
-          margin: EdgeInsets.only(bottom: bottomLift),
+          // PADDING, NOT MARGIN — this is the white band at the bottom.
+          //
+          // A margin pushes this Container UP by bottomLift and paints
+          // nothing in the space it vacates, because a decoration covers the
+          // padding box, never the margin. So 72.h of whatever sits BEHIND
+          // this widget was exposed along the bottom edge — the host
+          // scaffold's light background, showing as a white strip under the
+          // nav bar on both platforms.
+          //
+          // Padding lifts the child by exactly the same amount while the
+          // Container itself still occupies the full height, so the dark
+          // background paints all the way down and there is nothing to show
+          // through. Identical layout, no hole.
+          padding: EdgeInsets.only(bottom: bottomLift),
           decoration:
               const BoxDecoration(color: InvoiceThemeColors.primaryBackground),
           child: Scaffold(

@@ -58,6 +58,12 @@ Future<void> openAccountDetailsSheet(BuildContext context,
     'balance': acct.balance,
     'availableBalance': acct.availableBalance,
     'reservedBalance': acct.reservedBalance,
+    // The unspent onboarding grant, so a money-out screen reached from this
+    // sheet can label the part of the balance that cannot leave. Kept in step
+    // with the carousel's own cardArguments — the two maps feed the same
+    // screens and a field present in one and absent in the other shows up as
+    // the label appearing on some routes and not others.
+    'restrictedBalance': acct.restrictedBalance,
     'accountNumber': acct.accountNumber ?? '',
     'accountNumberMasked': '•••• ${acct.accountNumberLast4}',
     'bankName': acct.bankName ?? '',

@@ -699,6 +699,17 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             : 'savings',
         'currency': sourceCurrency,
         'balance': sourceBalance,
+        // AVAILABLE, not just total. The withdraw screen falls back to
+        // 'balance' when this key is absent, and `balance` INCLUDES held and
+        // clearing funds — so the fifth payout entry point was quoting
+        // "Available to withdraw" over a figure that is not available. Both
+        // come off the same proto message, in minor units like every balance
+        // on AccountSummary.
+        'availableBalance': sourceAccount.availableBalance.toDouble() / 100,
+        // The unspent onboarding grant, so the bonus label appears here too
+        // rather than only on the routes that go through the carousel.
+        'restrictedBalance':
+            sourceAccount.restrictedBalance.toDouble() / 100,
         'accountNumber': acctNum.isNotEmpty ? acctNum : maskedNum,
         'accountNumberMasked': maskedNum,
         'bankName': 'Lazervault',

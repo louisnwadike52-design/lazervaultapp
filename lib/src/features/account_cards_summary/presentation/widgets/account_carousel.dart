@@ -782,6 +782,12 @@ class _AccountCarouselState extends State<AccountCarousel> {
       'balance': currentBalance,
       'availableBalance': availableBalance,
       'reservedBalance': account.reservedBalance,
+      // The UNSPENT onboarding grant. Carried into every money-out flow this
+      // map feeds (Deposit, Withdraw, the send sheets) so they can LABEL the
+      // non-withdrawable part of the balance before the user picks an amount,
+      // instead of the server refusing them after they have chosen a recipient
+      // and typed a figure. 0 for everyone without a grant.
+      'restrictedBalance': account.restrictedBalance,
       // Real NUBAN ONLY. When no real Flutterwave NUBAN is provisioned yet
       // (backend sends an empty account_number → accountNumber == null), pass an
       // EMPTY string — NEVER the masked last4 masquerading as a copyable deposit
@@ -1818,6 +1824,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
       'balance': _getAccountBalance(account),
       'availableBalance': _getAvailableBalance(account),
       'reservedBalance': account.reservedBalance,
+      // Same reason as the personal card above: the money-out flows need the
+      // grant to label it. A business wallet can carry one too.
+      'restrictedBalance': account.restrictedBalance,
       'accountNumber':
           account.accountNumber ?? '•••• ${account.accountNumberLast4}',
       'accountNumberMasked': '•••• ${account.accountNumberLast4}',

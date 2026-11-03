@@ -68,6 +68,7 @@ import 'dart:async';
 import 'package:lazervault/core/services/chat_theme_preference.dart';
 import 'package:lazervault/core/utils/kyc_completion.dart';
 import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
+import 'package:lazervault/src/features/authentication/domain/phone_verification_step.dart';
 import 'package:lazervault/src/features/presentation/views/notification_feed_store.dart';
 part 'main_widgets.dart';
 
@@ -882,7 +883,22 @@ String? _getRouteForSignupStep(String? step) {
     case 'email_verify':
       return AppRoutes.emailVerification; // Resume email verification
     case 'phone_verify':
-      return AppRoutes.phoneVerification; // Resume phone verification
+      // Resume phone verification — UNLESS no provider can deliver a code.
+      //
+      // This is the bug's actual home. The sibling map above
+      // (_getRouteForPhoneSignupStep) checks SmsPolicy before resuming onto
+      // the OTP screen; this one did not, so an email-flow draft parked at
+      // `phone_verify` resumed onto a screen that requests a code on load,
+      // got refused by the server's SMS gate, and stranded the customer on
+      // "we could not send a code" with nothing to tap.
+      //
+      // Forward is safe HERE (unlike the phone flow, where it would skip a
+      // token guard): both call sites gate on an INCOMPLETE signup, which by
+      // definition has no passcode yet, so passcode setup is the real next
+      // step rather than a screen the user has already completed.
+      return phoneOtpStepAvailable
+          ? AppRoutes.phoneVerification
+          : onwardFromPhoneVerification().name;
     case 'passcode_setup':
       return AppRoutes.passcodeSetup; // Resume passcode setup
     case 'complete':

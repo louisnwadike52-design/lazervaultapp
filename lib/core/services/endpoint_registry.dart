@@ -167,6 +167,30 @@ class EndpointRegistry {
     // nonUrlSnapshot() only emits keys in this set, so the flag would
     // never reach the app and would sit on its code default for ever.
     'uplift_remove_cta_visible',
+    // ── SMS / phone-OTP master switches ──────────────────────────────────
+    //
+    // THE WHOLE SMS CHAIN WAS DEAD HERE. Every other link was built —
+    // admin-gateway allowlists and validates these three keys, its bulk read
+    // serves them, FeatureFlags.applyRemoteSnapshot hydrates them, SmsPolicy
+    // reads them, and the signup progress, 2FA tile, phone-verify tile and
+    // phone-change flow all render from SmsPolicy — but the keys were missing
+    // from THIS set, and nonUrlSnapshot() emits only what is named here.
+    //
+    // So the operator's value was dropped between the registry cache and
+    // FeatureFlags, and `smsProviderActive` fell back to its hardcoded `false`
+    // on every launch. The gating all WORKED, but only by accident: the
+    // default happens to be the same as the current posture. The moment an
+    // operator turned SMS back on, the app would never have seen it — the
+    // signup OTP step would stay removed, SMS two-factor would stay disabled,
+    // and "Verify Phone Number" would stay greyed out, permanently, with the
+    // dashboard showing the feature enabled.
+    //
+    // Found by feature_flag_chain_is_complete_test, which is the only reason
+    // it was found at all. It is the same omission intl_payout_enabled had,
+    // for the fourth time in this file.
+    'sms_provider_active',
+    'sms_otp_enabled',
+    'bvn_phone_notice_enabled',
     'locale_non_ngn_money_actions',
     'locale_non_ngn_account_tabs',
     'session_inactivity_logout_seconds',
@@ -196,6 +220,8 @@ class EndpointRegistry {
     'splitbill_sendfunds_entry_visible',
     // Shows the "Skip for now" affordance on the new-device OTP screen.
     'auth_otp_skip_button_visible',
+    // The central chatbot's suggestion chips — see aiChatSuggestionsVisible.
+    'ai_chat_suggestions_visible',
     // Flutter feature flags (admin-toggled). Cached here like every other
     // admin knob; FeatureFlags.applyRemoteSnapshot reads them at boot.
     'dashboard_cards_section_visible',
@@ -867,6 +893,25 @@ class EndpointRegistry {
   /// (`auth_adaptive_otp_enabled`); this only governs the way out of one.
   bool get otpSkipButtonVisible =>
       _get('auth_otp_skip_button_visible', 'false').trim().toLowerCase() ==
+      'true';
+
+  /// Whether the central chatbot shows its suggestion chips above the input.
+  ///
+  /// Admin-tunable via `ai_chat_suggestions_visible`; DEFAULTS TO OFF.
+  ///
+  /// Off by default because the chips are a first-run teaching aid and the
+  /// screen is one people keep open: once someone knows what the assistant
+  /// does, a permanent row of canned questions above the keyboard is a row of
+  /// space taken from the conversation. An operator can turn them back on
+  /// platform-wide for a cohort that needs the prompt.
+  ///
+  /// THIS IS ONLY THE DEFAULT. A customer who sets the toggle in the
+  /// chatbot's own AI Settings overrides it for themselves, permanently and
+  /// in either direction — see AiChatSettings.quickSuggestions, which is
+  /// deliberately nullable so "never chosen" is distinguishable from "chose
+  /// off".
+  bool get aiChatSuggestionsVisible =>
+      _get('ai_chat_suggestions_visible', 'false').trim().toLowerCase() ==
       'true';
 
   /// Raw read for any registered key — for places that store/read a key

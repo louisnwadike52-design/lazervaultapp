@@ -268,11 +268,36 @@ void main() {
       // A throw from connect() never reaches onError, so without this a bad
       // URI or missing route would never retry at all.
       final src = code(cubit);
-      final i = src.indexOf('void _connectWebSocket()');
-      final body = src.substring(i, src.indexOf('\n  int _wsReconnectAttempts', i));
+
+      // ANCHOR ON THE NAME ONLY, NOT THE SIGNATURE.
+      //
+      // This test used to look for 'void _connectWebSocket()'. The method
+      // later became `Future<void> _connectWebSocket() async` so the handshake
+      // could be awaited — which put a '>' where the test expected a space.
+      // indexOf returned -1, substring threw a RangeError, and the failure
+      // read as "the WebSocket does not retry" when the retry was present and
+      // correct the whole time. A stale anchor in a source-reading guard is
+      // worse than no guard: it accuses working code.
+      //
+      // So the anchor is the declaration's distinctive part, and it is
+      // ASSERTED before being used. A guard that cannot find what it inspects
+      // must say exactly that.
+      final i = src.indexOf('_connectWebSocket() async {');
+      expect(i, greaterThan(-1),
+          reason: 'could not find the _connectWebSocket declaration — this '
+              'guard needs updating, and the retry path needs checking by hand');
+      final end = src.indexOf('\n  int _wsReconnectAttempts', i);
+      expect(end, greaterThan(i),
+          reason: 'could not find the end of _connectWebSocket — this guard '
+              'needs updating');
+      final body = src.substring(i, end);
       final catchAt = body.indexOf('} catch (e) {');
-      expect(catchAt, greaterThan(-1));
-      expect(body.substring(catchAt), contains('_scheduleWebSocketReconnect()'));
+      expect(catchAt, greaterThan(-1),
+          reason: 'a synchronous throw from IOWebSocketChannel.connect never '
+              'reaches onError, so without a catch a bad URI or missing route '
+              'would never retry at all');
+      expect(body.substring(catchAt), contains('_scheduleWebSocketReconnect()'),
+          reason: 'the catch must schedule a reconnect, not just log');
     });
   });
 }

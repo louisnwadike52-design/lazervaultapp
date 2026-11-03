@@ -11,6 +11,7 @@ class AccountSummaryModel extends AccountSummaryEntity {
     required super.balance,
     super.availableBalance = 0,
     super.reservedBalance = 0,
+    super.restrictedBalance = 0, // Unspent onboarding grant (major units)
     required super.accountNumberLast4, // Keep entity field name
     super.accountNumber, // Full account number for deposits
     super.bankName, // Bank name for deposits
@@ -75,6 +76,11 @@ class AccountSummaryModel extends AccountSummaryEntity {
       balance: totalBalance,
       availableBalance: effectiveAvailable,
       reservedBalance: reservedBal,
+      // The unspent onboarding grant, in minor units like every other balance
+      // on AccountSummary. Money-out screens use it to say what cannot be
+      // withdrawn BEFORE the user picks an amount, rather than after the
+      // server refuses. 0 for everyone without a grant.
+      restrictedBalance: proto.restrictedBalance.toDouble() / 100.0,
       accountNumberLast4:
           extractLast4(proto.maskedAccountNumber), // Use maskedAccountNumber
       // Full virtual account details for deposits (Pay by Transfer) — exactly the

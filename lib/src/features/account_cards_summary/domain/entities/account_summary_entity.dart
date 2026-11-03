@@ -79,6 +79,20 @@ class AccountSummaryEntity extends Equatable {
   final double
       availableBalance; // Available for spending (balance - reserved - clearing)
   final double reservedBalance; // Funds in holds or clearing
+
+  /// The unspent ONBOARDING GRANT — money we gave the customer that must be
+  /// spent on the platform and can never be paid out.
+  ///
+  /// Carried onto the card so a money-OUT screen can say so BEFORE the user
+  /// commits an amount. The server already refuses the payout and explains
+  /// why, but by then they have chosen a recipient, typed a figure and been
+  /// told no — a worse experience than one line on the balance they are
+  /// about to spend from.
+  ///
+  /// Depletes as they buy, so withdrawable is availableBalance minus this and
+  /// their own deposits stay movable throughout. 0 for everyone with no grant,
+  /// which is almost everyone.
+  final double restrictedBalance;
   final String accountNumberLast4; // e.g., "7890"
   final String? accountNumber; // Full NUBAN account number for deposits
   final String? bankName; // Bank name (e.g., "Wema Bank", "VFD MFB")
@@ -158,6 +172,7 @@ class AccountSummaryEntity extends Equatable {
     required this.balance,
     this.availableBalance = 0,
     this.reservedBalance = 0,
+    this.restrictedBalance = 0,
     required this.accountNumberLast4,
     this.accountNumber,
     this.bankName,
@@ -189,6 +204,7 @@ class AccountSummaryEntity extends Equatable {
         'currency': currency,
         'balance': balance,
         'availableBalance': availableBalance,
+        'restrictedBalance': restrictedBalance,
         'reservedBalance': reservedBalance,
         'accountNumberLast4': accountNumberLast4,
         'accountNumber': accountNumber,
@@ -219,6 +235,8 @@ class AccountSummaryEntity extends Equatable {
         balance: (j['balance'] as num?)?.toDouble() ?? 0,
         availableBalance: (j['availableBalance'] as num?)?.toDouble() ?? 0,
         reservedBalance: (j['reservedBalance'] as num?)?.toDouble() ?? 0,
+        restrictedBalance:
+            (j['restrictedBalance'] as num?)?.toDouble() ?? 0,
         accountNumberLast4: j['accountNumberLast4'] as String? ?? '',
         accountNumber: j['accountNumber'] as String?,
         bankName: j['bankName'] as String?,
@@ -418,6 +436,7 @@ class AccountSummaryEntity extends Equatable {
     double? balance,
     double? availableBalance,
     double? reservedBalance,
+    double? restrictedBalance,
     String? accountNumberLast4,
     String? accountNumber,
     String? bankName,
@@ -446,6 +465,7 @@ class AccountSummaryEntity extends Equatable {
       balance: balance ?? this.balance,
       availableBalance: availableBalance ?? this.availableBalance,
       reservedBalance: reservedBalance ?? this.reservedBalance,
+      restrictedBalance: restrictedBalance ?? this.restrictedBalance,
       accountNumberLast4: accountNumberLast4 ?? this.accountNumberLast4,
       accountNumber: accountNumber ?? this.accountNumber,
       bankName: bankName ?? this.bankName,

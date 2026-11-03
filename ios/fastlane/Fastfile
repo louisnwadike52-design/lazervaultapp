@@ -159,6 +159,110 @@ WORKSPACE       = "Runner.xcworkspace"
 # Resolve the App Store Connect API key from the env. The key is the .p8 you
 # downloaded from https://appstoreconnect.apple.com/access/api once; we keep
 # the actual file out of the repo and reference it by path.
+# THE ONLY WAY A BINARY LEAVES THIS MACHINE FOR TESTFLIGHT.
+#
+# WHY A CHOKE POINT AND NOT A CHECK PER LANE. The first version of this gate
+# was a verify_no_private_api() call added to the two lanes being used that
+# day. That is the SAME shape of bug as the thing it was guarding: a step you
+# have to remember to invoke. Three of the six upload sites were left ungated,
+# and the worst of them was testflight_upload_existing — the lane whose entire
+# purpose is uploading an IPA built by hand outside the lane system, so it
+# never ran `pod install` and never got the source patch either. The one most
+# likely to ship the rejected symbol had no check at all.
+#
+# Routing every upload through here means a new lane cannot forget: there is no
+# bare upload_to_testflight left to copy. All six former call sites passed
+# identical options apart from `production`'s groups: ["External"], so this is
+# a consolidation, not a behaviour change.
+def ship_to_testflight(ipa:, groups: nil)
+  UI.user_error!('ship_to_testflight needs ipa:') if ipa.nil? || ipa.to_s.strip.empty?
+  verify_no_private_api(ipa)
+  params = {
+    api_key:                           asc_api_key,
+    ipa:                               ipa,
+    skip_waiting_for_build_processing: true,
+    # Do NOT auto-submit for external beta review. That review path runs
+    # `precheck`, which CANNOT validate in-app purchases under App-Store-Connect
+    # API-key auth and hard-fails the upload. Uploading the binary is enough:
+    # internal testers get it immediately; external review can be submitted from
+    # App Store Connect when desired. (A valid `pilot` option, unlike
+    # `run_precheck_before_submit`, which belongs to `deliver`.)
+    submit_beta_review:                false,
+    changelog:                         (`git log -1 --pretty=%s`.strip),
+  }
+  # Omitted, never passed as nil: internal TestFlight groups AUTO-receive every
+  # processed build, and the ASC API REJECTS an explicit build->internal-group
+  # assignment ("Builds cannot be assigned to this internal group") — which
+  # once made a lane exit 1 AFTER a successful upload.
+  params[:groups] = groups if groups && !groups.empty?
+  upload_to_testflight(params)
+end
+
+# FAIL THE RELEASE BEFORE THE UPLOAD, not in review a week later.
+#
+# scripts/patch_private_api.rb removes the selector from the plugin SOURCES and
+# then verifies the SOURCES. Apple rejects the BINARY, and those are different
+# claims — the patch runs from the Podfile's post_install, so an archive built
+# against an already-installed Pods tree never runs it, a cached framework can
+# outlive a source edit, and a prebuilt pod has no source to patch at all.
+#
+# App Review 2026-10-26 (submission 482b3afb-bd13-4d53-b20b-82161d72de59)
+# rejected this app for RPSystemBroadcastPickerView.buttonPressed:, which cost
+# a full review cycle. This makes shipping it again impossible rather than
+# unlikely.
+def verify_no_private_api(ipa_or_archive)
+  script = File.join(__dir__, '..', 'scripts', 'verify_no_private_api.rb')
+  unless File.exist?(script)
+    UI.user_error!("missing #{script} — the private-API binary check cannot be skipped silently")
+  end
+  # DO NOT GUESS WHERE THE ARTIFACT IS — ASK GYM.
+  #
+  # I got this wrong twice. gym writes `build/ios/ipa/Runner-*.ipa` relative to
+  # the XCODEPROJ directory (ios/), so the file lands at ios/build/ios/ipa/.
+  # It is NOT relative to FLUTTER_DIR (lazervaultapp/, where the flutter tool
+  # puts its own artifacts) and NOT relative to Dir.pwd, which inside a lane is
+  # ios/fastlane/, not ios/. Each wrong guess made this raise "nothing to
+  # verify" and abort a build that had genuinely succeeded — a worse failure
+  # than the ungated hole the check was added to close, because it breaks every
+  # release instead of letting one bad one through.
+  #
+  # So the FIRST source of truth is gym's own reported output path, which it
+  # publishes in lane_context after a successful build_app. The relative
+  # candidates below are only for a caller that passes a path by hand
+  # (testflight_upload_existing) where no build ran in this process.
+  from_gym = lane_context[SharedValues::IPA_OUTPUT_PATH] rescue nil
+  candidates = if ipa_or_archive.to_s.start_with?('/')
+                 [ipa_or_archive.to_s]
+               else
+                 [
+                   from_gym,
+                   # ios/ — the xcodeproj dir, which is what gym resolves against.
+                   File.expand_path(ipa_or_archive, File.expand_path('..', __dir__)),
+                   File.expand_path(ipa_or_archive, Dir.pwd),
+                   File.expand_path(ipa_or_archive, FLUTTER_DIR)
+                 ].compact
+               end
+  path = candidates.find { |c| File.exist?(c) }
+  if path.nil?
+    UI.user_error!(<<~MSG)
+      nothing to verify — no build artifact at any of:
+      #{candidates.map { |c| "  #{c}" }.join("\n")}
+      The private-API check cannot be skipped, so this is a hard stop. If the
+      build genuinely succeeded, the output path moved and this resolution
+      needs updating.
+    MSG
+  end
+  # Non-zero exit = the rejected symbol is in the binary. Hard stop: the whole
+  # point is that no upload happens after this returns false.
+  unless system('ruby', script, path)
+    UI.user_error!(<<~MSG)
+      A rejected private API is present in the built binary — upload ABORTED.
+      Output above names the file and the selector.
+        cd ios && pod install && <rebuild>
+    MSG
+  end
+end
+
 def asc_api_key
   key_id     = ENV["APP_STORE_CONNECT_KEY_ID"]
   issuer_id  = ENV["APP_STORE_CONNECT_ISSUER_ID"]
@@ -228,7 +332,20 @@ platform :ios do
   end
 
   desc "Sync iOS code-signing via fastlane match. Run once on this machine."
-  lane :sync_signing do
+  # `force: true` REGENERATES the provisioning profile instead of reusing the
+  # stored one. Needed when a capability is enabled on the App ID AFTER the
+  # profile was issued: a profile is a snapshot of the App ID's capabilities at
+  # issue time, so the stored one stays stale forever and exportArchive keeps
+  # refusing. That is what happened with NFC — the profile dated 9 Sep 2026 and
+  # NFC_TAG_READING was turned on later, so every build failed with
+  # "doesn't include the NFC Tag Reading capability" while the App ID had it.
+  #
+  # It regenerates the PROFILE only. The distribution CERTIFICATE is pulled
+  # from the match repo, not reissued, so no other machine's signing identity
+  # is revoked — that is `match nuke`, not this.
+  #
+  #   bundle exec fastlane sync_signing force:true
+  lane :sync_signing do |options|
     unless ENV["MATCH_GIT_URL"]
       UI.user_error!(<<~MSG)
         MATCH_GIT_URL not set. fastlane match stores certs/profiles in a
@@ -240,10 +357,16 @@ platform :ios do
         Then re-run this lane.
       MSG
     end
+    # api_key is NOT optional. Without it match falls back to Apple-ID
+    # (spaceship) auth and dies with "Missing username, and running in
+    # non-interactive shell" — which is also why `fastlane match appstore` must
+    # never be called straight from the CLI here. Every lane in this file goes
+    # through asc_api_key for the same reason.
     match(
       type: "appstore",
       app_identifier: [APP_IDENTIFIER],
       readonly: false,  # first run; flip to true on CI
+      force: options[:force] ? true : false,
       api_key: asc_api_key,
     )
   end
@@ -359,19 +482,7 @@ platform :ios do
   desc "Upload an existing IPA to TestFlight (skips rebuild). Useful when manually built in Xcode."
   lane :testflight_upload_existing do |options|
     ipa = options[:ipa] || UI.user_error!("Pass ipa:'<path>' to this lane")
-    upload_to_testflight(
-      api_key:                              asc_api_key,
-      ipa:                                  ipa,
-      skip_waiting_for_build_processing:    true,
-      # Do NOT auto-submit for external beta review. That review path runs
-      # `precheck`, which CANNOT validate in-app purchases under App-Store-Connect
-      # API-key auth and hard-fails the upload. Uploading the binary is enough:
-      # internal testers get it immediately; external review can be submitted from
-      # App Store Connect when desired. (This is a valid `pilot` option, unlike
-      # `run_precheck_before_submit`, which belongs to `deliver`.)
-      submit_beta_review:                   false,
-      changelog:                            (`git log -1 --pretty=%s`.strip),
-    )
+    ship_to_testflight(ipa: ipa)
   end
 
   desc "Quick alias for the staging lane (TestFlight internal group)"
@@ -450,23 +561,7 @@ platform :ios do
       xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true DART_OBFUSCATION=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
     )
     ipa_path = "build/ios/ipa/Runner-dev.ipa"
-    upload_to_testflight(
-      api_key:                              asc_api_key,
-      ipa:                                  ipa_path,
-      skip_waiting_for_build_processing:    true,
-      # Do NOT auto-submit for external beta review. That review path runs
-      # `precheck`, which CANNOT validate in-app purchases under App-Store-Connect
-      # API-key auth and hard-fails the upload. Uploading the binary is enough:
-      # internal testers get it immediately; external review can be submitted from
-      # App Store Connect when desired. (This is a valid `pilot` option, unlike
-      # `run_precheck_before_submit`, which belongs to `deliver`.)
-      submit_beta_review:                   false,
-      # No `groups:` — internal TestFlight groups (e.g. "Lazervault Admins")
-      # AUTO-receive every processed build; the ASC API rejects explicit
-      # build→internal-group assignment ("Builds cannot be assigned to this
-      # internal group"), which made the lane exit 1 AFTER a successful upload.
-      changelog:                            (`git log -1 --pretty=%s`.strip),
-    )
+    ship_to_testflight(ipa: ipa_path)
   end
 
   desc "Staging → TestFlight internal track (PROD build: prod backend/Firebase)"
@@ -511,27 +606,19 @@ platform :ios do
       xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true DART_OBFUSCATION=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
     )
     ipa_path = "build/ios/ipa/Runner-staging.ipa"
-    upload_to_testflight(
-      api_key:                              asc_api_key,
-      ipa:                                  ipa_path,
-      skip_waiting_for_build_processing:    true,
-      # Do NOT auto-submit for external beta review. That review path runs
-      # `precheck`, which CANNOT validate in-app purchases under App-Store-Connect
-      # API-key auth and hard-fails the upload. Uploading the binary is enough:
-      # internal testers get it immediately; external review can be submitted from
-      # App Store Connect when desired. (This is a valid `pilot` option, unlike
-      # `run_precheck_before_submit`, which belongs to `deliver`.)
-      submit_beta_review:                   false,
-      # No `groups:` — internal groups auto-receive processed builds (see dev lane).
-      changelog:                            (`git log -1 --pretty=%s`.strip),
-    )
+    ship_to_testflight(ipa: ipa_path)
   end
 
-  desc "Production → TestFlight (external) + App Store (no auto-submit)"
-  lane :production do |options|
-    swap_firebase_plist("prod")
-    setup_ci if ENV["CI"]
-    match(type: "appstore", readonly: true, api_key: asc_api_key) if ENV["MATCH_GIT_URL"]
+  # The prod IPA build, shared by :production and :prod_internal so the two
+  # cannot drift. Extracted verbatim from :production — same flutter
+  # invocation, same gym args (obfuscation, split debug info, tree-shaken
+  # icons, compression), same output path. Returns the IPA path.
+  #
+  # It exists because the only difference between shipping to external testers
+  # and shipping to internal ones is the UPLOAD, and duplicating this xcargs
+  # string to express that is how a build flag silently stops matching between
+  # the two tracks.
+  private_lane :build_prod_ipa do
     ver_name, ver_build = pubspec_version
     # OTA code-push REMOVED — always a plain gym build (no OTA code-push).
     flutter("build ios --release --no-codesign --dart-define=FLAVOR=prod --dart-define=FLUTTER_FLAVOR=prod")
@@ -545,21 +632,39 @@ platform :ios do
       output_name:      "Runner-prod.ipa",
       xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true DART_OBFUSCATION=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
     )
-    ipa_path = "build/ios/ipa/Runner-prod.ipa"
-    upload_to_testflight(
-      api_key:                              asc_api_key,
-      ipa:                                  ipa_path,
-      skip_waiting_for_build_processing:    true,
-      # Do NOT auto-submit for external beta review. That review path runs
-      # `precheck`, which CANNOT validate in-app purchases under App-Store-Connect
-      # API-key auth and hard-fails the upload. Uploading the binary is enough:
-      # internal testers get it immediately; external review can be submitted from
-      # App Store Connect when desired. (This is a valid `pilot` option, unlike
-      # `run_precheck_before_submit`, which belongs to `deliver`.)
-      submit_beta_review:                   false,
-      groups:                               ["External"],
-      changelog:                            (`git log -1 --pretty=%s`.strip),
-    )
+    ipa = "build/ios/ipa/Runner-prod.ipa"
+    ipa
+  end
+
+  desc "Production build → TestFlight INTERNAL testers only (no App Store version)"
+  # The prod BACKEND on the INTERNAL track — which is what the operator asks
+  # for, and which neither existing lane does:
+  #
+  #   :staging     internal track, but the STAGING backend;
+  #   :production  the prod backend, but adds the build to the EXTERNAL group
+  #                AND creates/points an App Store version at it.
+  #
+  # Neither extra step is a public release (submit_beta_review and
+  # submit_for_review are both false), but both reach further than "internal
+  # testing" and should be a deliberate choice, not a side effect of wanting a
+  # prod-env test build.
+  lane :prod_internal do
+    swap_firebase_plist("prod")
+    setup_ci if ENV["CI"]
+    match(type: "appstore", readonly: true, api_key: asc_api_key) if ENV["MATCH_GIT_URL"]
+    ship_to_testflight(ipa: build_prod_ipa)
+  end
+
+  desc "Production → TestFlight (external) + App Store (no auto-submit)"
+  lane :production do |options|
+    swap_firebase_plist("prod")
+    setup_ci if ENV["CI"]
+    match(type: "appstore", readonly: true, api_key: asc_api_key) if ENV["MATCH_GIT_URL"]
+    ipa_path = build_prod_ipa
+    # EXTERNAL testers. The only upload in this file that is not
+    # internal-only, and the reason ship_to_testflight takes a groups:
+    # option at all.
+    ship_to_testflight(ipa: ipa_path, groups: ["External"])
     # The binary was ALREADY uploaded by upload_to_testflight above; do NOT
     # re-upload it here (App Store Connect rejects a duplicate build:
     # "bundle version must be higher than the previously uploaded version").
@@ -602,13 +707,7 @@ platform :ios do
     ipa_path = resolve_ipa("build/ios/ipa/Runner-#{flavor}.ipa")
     UI.user_error!("Shorebird iOS release produced no IPA") unless ipa_path && File.exist?(ipa_path.start_with?("/") ? ipa_path : File.join(FLUTTER_DIR, ipa_path))
     UI.success("Built patch-capable IPA: #{ipa_path}")
-    upload_to_testflight(
-      api_key:                           asc_api_key,
-      ipa:                               ipa_path,
-      skip_waiting_for_build_processing: true,
-      submit_beta_review:                false,
-      changelog:                         (`git log -1 --pretty=%s`.strip),
-    )
+    ship_to_testflight(ipa: ipa_path)
   end
 
   # shorebird_patch: pushes a Dart-only OTA PATCH to the already-shipped release

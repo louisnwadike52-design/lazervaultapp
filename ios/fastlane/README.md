@@ -87,6 +87,14 @@ Dev → TestFlight internal track (PROD build: prod backend/Firebase)
 
 Staging → TestFlight internal track (PROD build: prod backend/Firebase)
 
+### ios prod_internal
+
+```sh
+[bundle exec] fastlane ios prod_internal
+```
+
+Production build → TestFlight INTERNAL testers only (no App Store version)
+
 ### ios production
 
 ```sh

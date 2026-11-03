@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -464,6 +465,18 @@ class _MyAccountViewState extends State<_MyAccountView> {
     // to a different one (someone who mistyped their number at signup must be
     // able to change it — auth-service RequestPhoneChange allows it regardless of
     // the current number's verified state).
+    // BOTH OPTIONS IN THIS SHEET ARE SMS ALL THE WAY DOWN — "Verify this
+    // number" opens the OTP screen, and "Use a different number" sends a code
+    // to the NEW one before applying the change. With no active provider the
+    // whole sheet is a dead end reached from a control that looks live, so say
+    // why instead of opening it. Settings' own phone tile already does exactly
+    // this (SmsPolicy.canVerifyPhoneNumber); these two surfaces were missed.
+    if (!SmsPolicy.canVerifyPhoneNumber && !SmsPolicy.canChangePhoneNumber) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(SmsPolicy.unavailableReason)),
+      );
+      return;
+    }
     final choice = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),

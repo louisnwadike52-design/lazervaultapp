@@ -596,6 +596,20 @@ class FeatureFlags {
       insuranceHostedEntrypointsEnabled,
       insuranceEnabled,
       localeGatingEnabled,
+      // SMS / phone-OTP master switches.
+      //
+      // Absent from this list until now, which made them unreachable: the
+      // admin could not write them (not allowlisted) and the app would not
+      // ingest them (not here). They were pinned at their compiled defaults,
+      // so the only way to restore phone OTP after an SMS provider came back
+      // was a release. Both halves are now wired.
+      //
+      // smsProviderActiveKey is the one to flip; the other two derive from it
+      // when unset (see their getters), so a single write restores the whole
+      // phone-OTP flow coherently.
+      smsProviderActiveKey,
+      smsOtpEnabledKey,
+      bvnPhoneNoticeEnabledKey,
       bulkSmsVisibleKey,
       cardAcceptanceVisibleKey,
       phoneBankingVisibleKey,
@@ -826,18 +840,29 @@ class FeatureFlags {
   /// Whether to tell the user, on the phone-number step, that the number must
   /// be the one on their BVN.
   ///
-  /// Defaults to the INVERSE of SMS availability, which is the behaviour the
-  /// operator asked for: while we cannot verify a number by SMS ourselves,
-  /// the number goes to our KYC partners unverified, so the user has to be
-  /// told it must match their BVN or their verification fails later — long
-  /// after they have forgotten what they typed. Once SMS verification is back
-  /// the notice is redundant and defaults away.
+  /// DEFAULTS ON, REGARDLESS OF SMS — changed 2026-11-02, and the reason is
+  /// Mono's own requirement rather than ours.
   ///
-  /// Still independently settable: an operator may want the notice regardless,
-  /// since the BVN match matters to KYC either way.
+  /// This used to default to the INVERSE of [smsProviderActive], on the
+  /// reasoning that the notice only existed to cover for our missing OTP and
+  /// became redundant once SMS returned. That is wrong: Mono Prove requires the
+  /// submitted number to be LINKED TO THE BVN and its FAQ says so outright —
+  /// "ensure the number you provide is registered, active, and is a number
+  /// linked to your BVN"
+  /// (https://support.mono.co/en/articles/11035147-faqs-on-mono-prove).
+  ///
+  /// So the constraint is permanent and has nothing to do with our SMS
+  /// provider. With SMS back on, an OTP would prove the customer HOLDS the
+  /// number while saying nothing about whether it is their BVN's number — and
+  /// KYC would still fail later, at which point they have long forgotten what
+  /// they typed. Defaulting the notice away on SMS restoration would silently
+  /// reintroduce that failure.
+  ///
+  /// Still independently settable, so an operator can suppress it if the copy
+  /// ever moves elsewhere in the flow.
   static const String bvnPhoneNoticeEnabledKey = 'bvn_phone_notice_enabled';
   static bool get bvnPhoneNoticeEnabled =>
-      _prefs?.getBool(bvnPhoneNoticeEnabledKey) ?? !smsProviderActive;
+      _prefs?.getBool(bvnPhoneNoticeEnabledKey) ?? true;
 
   // ── Locale gating readers ────────────────────────────────────────────────
 

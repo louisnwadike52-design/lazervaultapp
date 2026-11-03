@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 
 /// Change the signed-in user's phone number to a brand-new one.
 ///
@@ -11,6 +12,12 @@ import 'package:lazervault/src/features/authentication/domain/repositories/i_aut
 /// OTP → the change is applied server-side (auth-service RequestPhoneChange /
 /// VerifyPhoneChange). The number is only updated after verification, and the
 /// backend rejects a number already in use by another account.
+///
+/// ENTIRELY SMS-DEPENDENT, so it is gated on [SmsPolicy.canChangePhoneNumber].
+/// The gate is HERE rather than at the four call sites that open this screen
+/// (kyc_profile_fix, edit_profile_dialog and my_account twice) — gating each of
+/// those would leave the next one added unguarded, which is how a check comes
+/// to cover eight of nine paths.
 class ChangePhoneScreen extends StatefulWidget {
   const ChangePhoneScreen({super.key});
 
@@ -41,6 +48,14 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
   }
 
   Future<void> _requestChange() async {
+    // THE CHOKE POINT. Every entry point lands here, so one check covers them
+    // all. Without it the request is made, the backend queues an OTP to a
+    // provider that cannot send it, and the user sits on step 2 entering codes
+    // that were never generated.
+    if (!SmsPolicy.canChangePhoneNumber) {
+      _snack(SmsPolicy.unavailableReason, error: true);
+      return;
+    }
     final phone = _phoneController.text.trim();
     if (phone.isEmpty) {
       _snack('Enter your new phone number', error: true);
@@ -131,9 +146,16 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
                 fontSize: 16,
                 fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
-        const Text(
-          'We\'ll send a 6-digit code to the new number to confirm it\'s yours.',
-          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+        Text(
+          SmsPolicy.canChangePhoneNumber
+              ? 'We\'ll send a 6-digit code to the new number to confirm it\'s yours.'
+              : SmsPolicy.unavailableReason,
+          style: TextStyle(
+            color: SmsPolicy.canChangePhoneNumber
+                ? const Color(0xFF9CA3AF)
+                : const Color(0xFFFB923C),
+            fontSize: 13,
+          ),
         ),
         const SizedBox(height: 20),
         TextField(
@@ -143,8 +165,13 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
           decoration: _fieldDecoration('New phone', '+2348012345678'),
         ),
         const SizedBox(height: 24),
+        // Disabled outright when SMS cannot be delivered. The guard in
+        // _requestChange still stands — this only saves the user a tap on a
+        // button that cannot work; it is not the enforcement.
         _primaryButton(
-            _busy ? 'Sending…' : 'Send code', _busy ? null : _requestChange),
+          _busy ? 'Sending…' : 'Send code',
+          (_busy || !SmsPolicy.canChangePhoneNumber) ? null : _requestChange,
+        ),
       ],
     );
   }

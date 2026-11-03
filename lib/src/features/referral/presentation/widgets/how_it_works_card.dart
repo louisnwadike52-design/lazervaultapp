@@ -35,6 +35,29 @@ class HowItWorksCard extends StatelessWidget {
     return '${_getCurrencySymbol()}${(amount / 100).toStringAsFixed(0)}';
   }
 
+  /// "Both get rewarded" is only true when both actually are.
+  String get _rewardTitle =>
+      refereeReward > 0 ? 'Both get rewarded' : 'You get rewarded';
+
+  /// Names the referee only when they are paid.
+  ///
+  /// The referrer-only case is the live configuration, so it is the one that
+  /// has to read well: a plain statement of what the sharer earns, with no
+  /// mention of a friend who gets nothing.
+  String get _rewardDescription {
+    if (refereeReward > 0 && referrerReward > 0) {
+      return 'You get ${_formatAmount(referrerReward)}, '
+          'they get ${_formatAmount(refereeReward)} instantly!';
+    }
+    if (referrerReward > 0) {
+      return 'You get ${_formatAmount(referrerReward)} instantly!';
+    }
+    // Referee-only: possible if an operator funds the joiner and not the
+    // sharer. Still true, still worth saying, and never phrased as the
+    // sharer's reward.
+    return 'Your friend gets ${_formatAmount(refereeReward)} instantly!';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -69,13 +92,26 @@ class HowItWorksCard extends StatelessWidget {
             'Your friend creates an account with your code',
             Icons.person_add_rounded,
           ),
-          SizedBox(height: 10.h),
-          _buildStep(
-            '3',
-            'Both get rewarded',
-            'You get ${_formatAmount(referrerReward)}, they get ${_formatAmount(refereeReward)} instantly!',
-            Icons.celebration_rounded,
-          ),
+          // THE REWARD STEP ONLY EXISTS IF THERE IS A REWARD.
+          //
+          // It read "You get ₦200, they get ₦0 instantly!" in production,
+          // because the referee reward is legitimately zero on this
+          // programme. Announcing a reward of nothing is worse than saying
+          // nothing: it reads as a bug to a customer and as a broken promise
+          // to the friend they just sent it to.
+          //
+          // So the referee is named ONLY when they are actually paid, and
+          // when neither side earns anything the step is omitted entirely
+          // rather than inviting someone to share a code for no reward.
+          if (referrerReward > 0 || refereeReward > 0) ...[
+            SizedBox(height: 10.h),
+            _buildStep(
+              '3',
+              _rewardTitle,
+              _rewardDescription,
+              Icons.celebration_rounded,
+            ),
+          ],
         ],
       ),
     );

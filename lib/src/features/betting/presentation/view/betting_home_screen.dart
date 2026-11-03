@@ -9,6 +9,7 @@ import '../cubit/betting_cubit.dart';
 import '../cubit/betting_state.dart';
 import '../widgets/betting_quick_buy.dart';
 import 'betting_theme.dart';
+import 'package:lazervault/src/features/widgets/history/view_all_button.dart';
 
 /// Fund betting account hub — streamlined single-page flow.
 ///
@@ -157,19 +158,19 @@ class _BettingHomeScreenState extends State<BettingHomeScreen> {
           children: [
             _sectionTitle(
               'Recent',
-              trailing: GestureDetector(
+              // Label normalised from 'View all' to the shared 'View All' so
+              // all eight strips read identically — a shared widget whose copy
+              // differs per screen gives up the consistency it exists for.
+              //
+              // The async onTap is preserved verbatim, INCLUDING the mounted
+              // check: this one refreshes the list on return, so dropping it
+              // would setState on a disposed widget.
+              trailing: ViewAllButton(
                 onTap: () async {
                   await Get.toNamed(AppRoutes.bettingHistory);
                   if (mounted) setState(_loadRecent);
                 },
-                child: Text(
-                  'View all',
-                  style: TextStyle(
-                    color: _primary,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                color: _primary,
               ),
             ),
             SizedBox(height: 12.h),

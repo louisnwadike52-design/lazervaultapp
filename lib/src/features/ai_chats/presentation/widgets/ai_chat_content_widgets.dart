@@ -9,15 +9,37 @@ class AiChatSettings {
   String textSize; // small, medium, large
   bool showTimestamps;
   bool emojiUsage;
-  bool quickSuggestions;
+
+  /// The customer's own choice about the suggestion chips, or NULL when they
+  /// have never made one.
+  ///
+  /// NULLABLE ON PURPOSE — the three states are different things:
+  ///
+  ///   null  — never chosen: follow whatever the admin default says, and keep
+  ///           following it when an operator changes it.
+  ///   true  — chose ON: keep them even if the platform default is off.
+  ///   false — chose OFF: keep them hidden even if the platform turns them on.
+  ///
+  /// A plain bool could not express the first, so every customer was pinned
+  /// to the compiled default and an admin setting could never reach anybody.
+  /// Resolve it through [quickSuggestionsVisible], never read directly.
+  bool? quickSuggestions;
 
   AiChatSettings({
     this.responseStyle = 'balanced',
     this.textSize = 'medium',
     this.showTimestamps = true,
     this.emojiUsage = true,
-    this.quickSuggestions = true,
+    this.quickSuggestions,
   });
+
+  /// Whether to show the chips, given the platform default.
+  ///
+  /// The customer's explicit choice WINS, in both directions — that is what
+  /// makes it their setting rather than a suggestion. Once set it is sticky:
+  /// a later admin change does not quietly reverse a decision they made.
+  bool quickSuggestionsVisible(bool adminDefault) =>
+      quickSuggestions ?? adminDefault;
 
   double get fontSizeMultiplier => switch (textSize) {
         'small' => 0.85,
@@ -33,7 +55,16 @@ class AiChatSettings {
     await prefs.setString('${_prefix}text_size', textSize);
     await prefs.setBool('${_prefix}show_timestamps', showTimestamps);
     await prefs.setBool('${_prefix}emoji_usage', emojiUsage);
-    await prefs.setBool('${_prefix}quick_suggestions', quickSuggestions);
+    // REMOVE rather than write a bool when there is no choice, so "never
+    // chosen" survives a save of the other settings. Writing `false` here
+    // would silently convert every untouched user into an explicit opt-out
+    // the first time they changed their text size.
+    final choice = quickSuggestions;
+    if (choice == null) {
+      await prefs.remove('${_prefix}quick_suggestions');
+    } else {
+      await prefs.setBool('${_prefix}quick_suggestions', choice);
+    }
   }
 
   static Future<AiChatSettings> load() async {
@@ -43,7 +74,8 @@ class AiChatSettings {
       textSize: prefs.getString('${_prefix}text_size') ?? 'medium',
       showTimestamps: prefs.getBool('${_prefix}show_timestamps') ?? true,
       emojiUsage: prefs.getBool('${_prefix}emoji_usage') ?? true,
-      quickSuggestions: prefs.getBool('${_prefix}quick_suggestions') ?? true,
+      // No `?? true`: absent MEANS absent, and the admin default decides.
+      quickSuggestions: prefs.getBool('${_prefix}quick_suggestions'),
     );
   }
 }

@@ -18,6 +18,7 @@ import '../../../../../core/widgets/bill_history_item.dart';
 import '../widgets/electricity_history_actions_sheet.dart';
 import '../widgets/electricity_quick_buy.dart';
 import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/src/features/widgets/history/view_all_button.dart';
 
 class ElectricityBillHomeScreen extends StatefulWidget {
   const ElectricityBillHomeScreen({super.key});
@@ -500,16 +501,13 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              GestureDetector(
+              // Shared button: the bare GestureDetector-around-a-Text gave a
+              // hit area the size of the glyphs (~16dp tall), well under both
+              // platform minimums. See ViewAllButton.
+              ViewAllButton(
                 onTap: () => Get.toNamed(AppRoutes.electricityBillHistory),
-                child: Text(
-                  'View All',
-                  style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.primaryPurpleLight,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                color: InvoiceThemeColors.primaryPurpleLight,
+                fontSize: 12.sp,
               ),
             ],
           ),

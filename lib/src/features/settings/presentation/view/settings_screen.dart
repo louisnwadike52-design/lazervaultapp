@@ -38,6 +38,7 @@ import 'package:lazervault/src/features/authentication/cubit/email_verification_
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/phone_verification_screen.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_settings_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
@@ -1383,14 +1384,37 @@ class _SettingsViewState extends State<_SettingsView> {
           _navTile(
             icon: Icons.phone_android_outlined,
             title: 'Verify Phone Number',
+            // THIS TILE OPENED A DEAD END. PhoneVerificationScreen sends an SMS
+            // OTP, so with no provider active the user tapped "Verify", waited
+            // for a code nobody sent, and had no way to tell that from a
+            // broken app. The tile stays VISIBLE and states the reason instead
+            // of disappearing — "Not verified" next to a vanished verify
+            // button is the version they cannot act on.
             subtitle: phoneVerified
                 ? 'Your phone number is verified'
-                : 'Verify your phone number',
-            badge: phoneVerified ? 'Verified' : 'Not verified',
+                : SmsPolicy.canVerifyPhoneNumber
+                    ? 'Verify your phone number'
+                    : SmsPolicy.unavailableReason,
+            badge: phoneVerified
+                ? 'Verified'
+                : SmsPolicy.canVerifyPhoneNumber
+                    ? 'Not verified'
+                    : 'Unavailable',
             badgeColor: phoneVerified
                 ? const Color(0xFF10B981)
-                : const Color(0xFFFB923C),
+                : SmsPolicy.canVerifyPhoneNumber
+                    ? const Color(0xFFFB923C)
+                    : const Color(0xFF9CA3AF),
             onTap: () async {
+              if (!phoneVerified && !SmsPolicy.canVerifyPhoneNumber) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(SmsPolicy.unavailableReason),
+                    backgroundColor: Color(0xFFFB923C),
+                  ),
+                );
+                return;
+              }
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
