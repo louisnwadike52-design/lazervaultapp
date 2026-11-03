@@ -161,6 +161,56 @@ String? _firstNonEmpty(List<Object?> candidates) {
   return null;
 }
 
+/// The transfer fee recorded on [metadata], in the transaction's own MAJOR
+/// units, or 0 when none is recorded.
+///
+/// `external_fee` is listed first, and it is the key that was missing. An
+/// external transfer reaches the accounts-service ledger as a SINGLE debit of
+/// principal + fee, and `mergeExternalTransfers` is the only thing that can
+/// tell the two apart: it compares that ledger row against the core-payments
+/// payment row — the only side that knows the principal — and records both
+/// halves as `external_principal` / `external_fee`, in major units to match
+/// `UnifiedTransaction.amount`.
+///
+/// Reading only `Fee`/`fee` therefore found nothing on exactly those rows, so
+/// the fee came out as 0, the principal came out as the fee-inclusive debit,
+/// and the BENEFICIARY'S copy of every external transfer printed the figure
+/// the sender paid. That is the single thing the sender/recipient distinction
+/// exists to prevent.
+double _receiptFeeOf(Map<String, dynamic> metadata) {
+  final raw = _firstNonEmpty([
+    metadata['external_fee'],
+    metadata['Fee'],
+    metadata['fee'],
+  ]);
+  if (raw == null) return 0.0;
+  // Strip currency symbols and separators: these keys arrive as a number from
+  // the merge and as a formatted string from the realtime flows.
+  final cleaned = raw.replaceAll(RegExp(r'[^0-9.]'), '');
+  final v = double.tryParse(cleaned) ?? 0.0;
+  return v.isFinite && v > 0 ? v : 0.0;
+}
+
+/// What the beneficiary of [transaction] actually received.
+///
+/// Prefers `external_principal` when the merge recorded one: that figure is
+/// MEASURED — it is the payment row's own amount — whereas everything else
+/// here is derived by subtraction. A derived figure is only as good as the fee
+/// key it found, which is the failure this whole helper exists to close.
+double _receiptPrincipalOf(UnifiedTransaction transaction) {
+  final metadata = transaction.metadata ?? const <String, dynamic>{};
+  final exact = _firstNonEmpty([metadata['external_principal']]);
+  if (exact != null) {
+    final v = double.tryParse(exact.replaceAll(RegExp(r'[^0-9.]'), ''));
+    if (v != null && v.isFinite && v > 0) return v;
+  }
+  return TagPayPdfService.principalOfForTest(
+    transaction.amount,
+    _receiptFeeOf(metadata),
+    transaction.flow == TransactionFlow.incoming,
+  );
+}
+
 /// True when the value is a TagPay HANDLE rather than an account number.
 ///
 /// [_buildRecipientDetails] takes one "tag" slot that carries a handle for

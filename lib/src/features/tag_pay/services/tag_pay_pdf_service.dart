@@ -825,6 +825,21 @@ class TagPayPdfService {
   static double principalOfForTest(double amount, double fee, bool incoming) =>
       _principalOf(amount, fee, incoming);
 
+  /// Test seam for the METADATA-driven derivation, which is what actually runs.
+  ///
+  /// [principalOfForTest] covers the arithmetic; this covers the part that was
+  /// wrong — which key the fee is read from. An external transfer records its
+  /// fee as `external_fee`, and a lookup that knew only `Fee`/`fee` returned 0
+  /// and printed the sender's total on the beneficiary's copy.
+  @visibleForTesting
+  static double receiptPrincipalForTest(UnifiedTransaction transaction) =>
+      _receiptPrincipalOf(transaction);
+
+  /// Test seam for the fee lookup. See [receiptPrincipalForTest].
+  @visibleForTesting
+  static double receiptFeeForTest(Map<String, dynamic> metadata) =>
+      _receiptFeeOf(metadata);
+
   static double _principalOf(double amount, double fee, bool incoming) {
     if (incoming) return amount;
     if (!fee.isFinite || fee <= 0) return amount;
@@ -924,12 +939,8 @@ class TagPayPdfService {
     //
     // Provider-agnostic on purpose — Flutterwave, Nomba or anything else, the
     // rail never changes who paid the fee.
-    var feeAmount = double.tryParse(
-            _firstNonEmpty([metadata['Fee'], metadata['fee']])
-                    ?.replaceAll(RegExp(r'[^0-9.]'), '') ??
-                '0') ??
-        0.0;
-    var principalAmount = _principalOf(transaction.amount, feeAmount, incoming);
+    var feeAmount = _receiptFeeOf(metadata);
+    var principalAmount = _receiptPrincipalOf(transaction);
 
     // AN ESCROW LEG CARRIES ITS OWN FIGURES.
     //
@@ -1149,19 +1160,10 @@ class TagPayPdfService {
       // The share text must quote the same figure the document does. It read
       // "₦123.00 to GRACE C. ONWUANAKU" for a ₦100 transfer, and that line is
       // often all the recipient reads before deciding the amount is right.
-      // See _principalOf: an outgoing row is principal + fee in one debit.
-      final shareFee = double.tryParse((_firstNonEmpty([
-                    transaction.metadata?['Fee']?.toString(),
-                    transaction.metadata?['fee']?.toString(),
-                  ]) ??
-                  '0')
-              .replaceAll(RegExp(r'[^0-9.]'), '')) ??
-          0.0;
-      final amount = _amountFormat.format(_principalOf(
-        transaction.amount,
-        shareFee,
-        transaction.flow == TransactionFlow.incoming,
-      ));
+      // See _receiptPrincipalOf: an outgoing row is principal + fee in one
+      // debit, and the SAME helper the document uses derives this figure, so
+      // the share line and the PDF cannot quote different amounts.
+      final amount = _amountFormat.format(_receiptPrincipalOf(transaction));
 
       // An invoice payment is not a transfer: name it correctly and reference
       // the invoice number instead of "to <title>" (which produced the absurd

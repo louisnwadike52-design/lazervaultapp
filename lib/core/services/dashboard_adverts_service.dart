@@ -77,7 +77,11 @@ const List<DashboardAdvert> kSeedDashboardAdverts = <DashboardAdvert>[
     imageUrl:
         'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/9c1414e7-964b-4259-93c9-5eceaaa62cce.webp',
     link: '/crypto',
-    title: 'Buy and sell crypto',
+    // All four crypto services, not two. Send and swap are first-class here —
+    // swap_crypto_screen and the send flow are built, priced and live — and a
+    // slide that advertises only buy/sell tells users the app does less than
+    // it does.
+    title: 'Buy, sell, send and swap crypto',
     subtitle: 'Live rates, settled to your wallet',
     sort: 3,
   ),
