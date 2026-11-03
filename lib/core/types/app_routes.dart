@@ -204,6 +204,13 @@ abstract class AppRoutes {
   // New Transaction History Routes (Redesigned)
   static const String dashboardTransactionHistory = '/transactions/dashboard';
   static const String serviceTransactionHistory = '/transactions/service';
+  // Hydrating loader for a notification deep link that names a transaction by
+  // id/reference rather than carrying the record. Fetches the row, then
+  // REPLACES itself with the real receipt — or with the owning service's
+  // history when the id cannot be resolved. Never pushed from the UI; the
+  // notification resolver is its only caller.
+  // Arguments: {'id': String, 'serviceType': TransactionServiceType?}
+  static const String transactionDeepLink = '/transactions/open';
   // Backend-rendered account statement export (PDF / CSV uploaded to
   // storage-service; user gets a download URL). Distinct from the
   // existing local export sheet which renders client-side and shares

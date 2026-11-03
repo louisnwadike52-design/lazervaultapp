@@ -643,6 +643,7 @@ import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/service_transaction_history_screen.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/transaction_deep_link_screen.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/statement_export_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../gift_cards/presentation/view/gift_card_sale_receipt_screen.dart';
@@ -1635,6 +1636,30 @@ class AppRouter {
         return BlocProvider(
           create: (_) => serviceLocator<TransactionHistoryCubit>(),
           child: ServiceTransactionHistoryScreen(serviceType: serviceType),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    // The notification deep-link loader. Resolves an id/reference into the
+    // real receipt and replaces itself with it; falls back to the owning
+    // service's history when the record cannot be reached. No BlocProvider —
+    // it reads the repository directly and holds no list state.
+    //
+    // Tolerant about its arguments on purpose: this route is reached from a
+    // push payload, and a malformed argument must degrade to a history screen
+    // rather than throw inside a notification tap (which the user sees as the
+    // tap doing nothing).
+    GetPage(
+      name: AppRoutes.transactionDeepLink,
+      page: () {
+        final raw = Get.arguments;
+        final args = raw is Map ? raw : const <String, dynamic>{};
+        final id = args['id']?.toString().trim() ?? '';
+        final service = args['serviceType'];
+        return TransactionDeepLinkScreen(
+          transactionId: id,
+          serviceType:
+              service is TransactionServiceType ? service : null,
         );
       },
       transition: Transition.rightToLeft,

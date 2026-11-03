@@ -51,6 +51,34 @@ List<UnifiedTransaction> mergeExternalTransfers(
     // the payment row contributes the payee. Keeping the ledger row wholesale
     // left the user with "Transfer Sent / External transfer" and no recipient
     // anywhere, which is what made the two rows look unrelated.
+    // THE PRINCIPAL WAS BEING THROWN AWAY HERE.
+    //
+    // The ledger row's amount is principal PLUS fee — it is the money that
+    // left the account — and it rightly wins the headline. But the payment row
+    // is the ONLY place that knows the principal, and discarding it left the
+    // receipt unable to say what the payee actually received.
+    //
+    // Measured on prod 2026-11-02: external transfers stored as 223, 523, 973,
+    // 1123, 5023 — every one of them principal + a 23 fee, rendered as a
+    // single figure with no breakdown. A sender who shares that receipt is
+    // telling the recipient 223 arrived when 200 did.
+    //
+    // So both halves are carried forward and the receipt renders Amount sent /
+    // Fee / Total paid. Stored in MAJOR units, matching UnifiedTransaction
+    // .amount, because mixing naira and kobo in one metadata bag is how a
+    // receipt comes to show a 100x figure.
+    final total = existing.amount;
+    final principal = tx.amount;
+    final mergedMetadata = <String, dynamic>{
+      ...?existing.metadata,
+      // Only when the two sides genuinely disagree. When they match there is
+      // no fee to report and inventing a zero row adds noise to every receipt.
+      if (principal > 0 && total > principal) ...{
+        'external_principal': principal,
+        'external_fee': double.parse((total - principal).toStringAsFixed(2)),
+      },
+    };
+
     byKey[key] = existing.copyWith(
       counterpartyName: existing.counterpartyName?.isNotEmpty == true
           ? existing.counterpartyName
@@ -58,6 +86,7 @@ List<UnifiedTransaction> mergeExternalTransfers(
       counterpartyAccount: existing.counterpartyAccount?.isNotEmpty == true
           ? existing.counterpartyAccount
           : tx.counterpartyAccount,
+      metadata: mergedMetadata,
     );
   }
   return byKey.values.toList()

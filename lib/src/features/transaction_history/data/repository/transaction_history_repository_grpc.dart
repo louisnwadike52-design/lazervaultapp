@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 
 import 'package:lazervault/src/features/transaction_history/data/repository/external_transfer_merge.dart';
+import 'package:lazervault/src/features/transaction_history/data/repository/transaction_lookup.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
@@ -489,33 +490,133 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     }
   }
 
+  /// How many pages of history a by-id lookup walks before giving up, and how
+  /// wide each page is.
+  ///
+  /// A notification is about a RECENT event, and a receipt being polled sits at
+  /// the top of the list, so page one answers nearly every call. The walk
+  /// exists for the case where a handful of transactions landed after the one
+  /// the user tapped — not to search the whole ledger, which would turn one
+  /// receipt refresh into an unbounded fan of gRPC calls.
+  static const _lookupMaxPages = 3;
+  static const _lookupPageSize = 50;
+
+  /// Fetches one transaction by any identifier that names it.
+  ///
+  /// NETWORK FIRST, with the local cache only as the offline fallback. The sole
+  /// consumer is a REFRESH — the receipt screen's open, its pull-to-refresh and
+  /// its pending-status poll all land here — and a refresh answered out of a
+  /// five-minute cache is not a refresh. Reading the cache first is what made a
+  /// pending transfer's receipt poll every few seconds and never once change
+  /// status.
+  ///
+  /// [id] may be a ledger row id, a raw reference, a business reference, or the
+  /// `-CR` credit leg of either: `findTransaction` compares normalised forms,
+  /// so a deep link from any publisher resolves. Returns null when nothing in
+  /// the account's recent history matches — callers must treat that as "could
+  /// not reach the record", never as "the record says nothing happened".
   @override
   Future<UnifiedTransaction?> fetchTransactionById(String id) async {
+    final needle = id.trim();
+    if (needle.isEmpty) return null;
+
+    final accountId = accountManager.activeAccountId;
+    if (accountId == null) {
+      throw Exception('No active account selected');
+    }
+
     try {
-      // Try cache first
+      // Resolved once, awaiting the summaries if they have not loaded — that
+      // wait is the window in which a sync lookup silently answers "NGN".
+      final pageCurrency = (await ensureActiveAccountSnapshot())?.currency;
+
+      UnifiedTransaction? hit;
+      for (var page = 0; page < _lookupMaxPages && hit == null; page++) {
+        final response = await grpcClient.getTransactionHistory(
+          accountId: accountId,
+          locale: localeManager.currentLocale,
+          limit: _lookupPageSize,
+          offset: page * _lookupPageSize,
+        );
+        final rows = response.transactions
+            .map((t) => _convertFromProto(t, fallbackCurrency: pageCurrency))
+            .toList();
+        hit = findTransaction(rows, needle);
+        // A short page is the end of the ledger — walking further just asks
+        // the backend the same question with a bigger offset.
+        if (response.transactions.length < _lookupPageSize) break;
+      }
+
+      // The external-transfer supplement, for two different reasons.
+      //
+      // When the ledger had no match: a PENDING or FAILED external transfer
+      // never reaches the accounts-service ledger at all (only a hold CAPTURE
+      // writes a ledger row), so the record a "transfer failed" push points at
+      // exists in core-payments and nowhere else.
+      //
+      // When the ledger DID match: the payment row is the only side that knows
+      // the principal and the payee, and merging it in is what lets the receipt
+      // render "Amount sent / Fee / Total paid" instead of one combined figure.
+      // Without this the receipt opened from a deep link would disagree with
+      // the same receipt opened from history.
       try {
-        final cached = await cacheDataSource.getCachedTransaction(id);
-        if (cached != null) {
-          return cached;
+        final external = await _payments?.getExternalTransferHistory(
+              accountId: accountId,
+              limit: 200,
+            ) ??
+            const <UnifiedTransaction>[];
+        if (external.isNotEmpty) {
+          final merged = _mergeExternalTransfers(
+            hit == null
+                ? const <UnifiedTransaction>[]
+                : <UnifiedTransaction>[hit],
+            external,
+          );
+          hit = findTransaction(merged, needle) ?? hit;
         }
-      } catch (e) {
-        // Cache miss, continue to network
+      } catch (_) {
+        // Best-effort — never fail a lookup because the supplement is down.
       }
 
-      final accountId = accountManager.activeAccountId;
-      if (accountId == null) {
-        throw Exception('No active account selected');
+      if (hit != null) {
+        // Upsert the fresh row so an offline reopen still shows it. Harmless
+        // to the list cache: cacheTransactions replaces by id and deletes
+        // nothing, and every read here is network-first anyway.
+        try {
+          final userId = await storage.read(key: 'user_id');
+          if (userId != null) {
+            await cacheDataSource.cacheTransactions(
+              _accountScopedKey(userId, accountId),
+              <UnifiedTransaction>[hit],
+              _cacheTTL,
+            );
+          }
+        } catch (_) {}
+        return hit;
       }
 
-      // Note: The accounts-service doesn't have a getTransactionById endpoint
-      // We would need to fetch all transactions and filter, or add this endpoint
-      // For now, return null
-      return null;
+      // Nothing matched a live read. Fall back to the cache before answering
+      // null: the row may have aged out of the recent window the walk covers
+      // while still sitting in the local cache from when it was opened.
+      return await _cachedTransaction(needle);
     } catch (e) {
-      if (e.toString().contains('not found')) {
-        return null;
-      }
+      // Offline or a transport failure. A cached copy is a better answer than
+      // an error, because the caller is refreshing something it is already
+      // showing — and when there is no cached copy the original failure is
+      // still surfaced rather than silently becoming "not found".
+      final cached = await _cachedTransaction(needle);
+      if (cached != null) return cached;
+      if (e.toString().contains('not found')) return null;
       throw Exception('Failed to fetch transaction: $e');
+    }
+  }
+
+  /// The locally cached row for [needle], or null. Never throws.
+  Future<UnifiedTransaction?> _cachedTransaction(String needle) async {
+    try {
+      return await cacheDataSource.getCachedTransaction(needle);
+    } catch (_) {
+      return null;
     }
   }
 

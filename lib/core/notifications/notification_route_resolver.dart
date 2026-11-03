@@ -159,6 +159,71 @@ NotificationTarget _history(TransactionServiceType service) =>
       precision: TargetPrecision.serviceLanding,
     );
 
+/// A money receipt, reached by id when the payload carries one.
+///
+/// This is the upgrade [_history] always described in its own comment. The
+/// receipt screens in this domain render a hydrated entity and a push payload
+/// has only identifiers, so the mapping used to stop at the service's history
+/// list. `AppRoutes.transactionDeepLink` closes that: it is a loader that
+/// fetches the row by identifier and replaces itself with the real receipt,
+/// falling back to exactly [_history]'s destination when the id resolves to
+/// nothing. So this is never worse than a landing and usually exact.
+///
+/// Marked [TargetPrecision.record] because that is what the user gets. The
+/// landing is the loader's internal fallback, not this target's intent.
+NotificationTarget _receipt(
+  TransactionServiceType service,
+  Map<String, String> data,
+) {
+  final id = _transactionId(data);
+  if (id == null) return _history(service);
+  return NotificationTarget(
+    route: AppRoutes.transactionDeepLink,
+    arguments: {'id': id, 'serviceType': service},
+    precision: TargetPrecision.record,
+  );
+}
+
+/// Entity types whose `entity_id` names a MONEY MOVEMENT the ledger can be
+/// searched for.
+///
+/// Every other entity type — `split_bill`, `giftcard`, `linked_account`,
+/// `mandate`, `direct_debit`, `group_account` — carries that service's own
+/// primary key, which no amount of ledger searching will match. Spending four
+/// gRPC calls to discover that, on every tap, before landing where we would
+/// have landed anyway, is a slower version of the old behaviour.
+const _transactionEntityTypes = {
+  'transaction',
+  'transfer',
+  'deposit',
+  'withdrawal',
+  'payment',
+  'refund',
+  'exchange',
+  'reversal',
+};
+
+/// The identifier that names the transaction a money notification is about.
+///
+/// `reference` is listed before `entity_id` deliberately: it is set on every
+/// transfer, payment, deposit and withdrawal notification and it is the key
+/// the ledger, core-payments and the receipt all quote, whereas `entity_id`
+/// is whatever primary key the publishing service happened to have.
+String? _transactionId(Map<String, String> data) {
+  final direct = _first(data, const [
+    'transaction_id',
+    'reference',
+    'reference_id',
+  ]);
+  if (direct != null && _looksLikeId(direct)) return direct;
+
+  final entity = data['entity_id'];
+  if (entity == null || !_looksLikeId(entity)) return null;
+  final kind = (data['entity_type'] ?? '').trim().toLowerCase();
+  if (kind.isEmpty || _transactionEntityTypes.contains(kind)) return entity;
+  return null;
+}
+
 /// A plain landing page for a service with no per-record screen to reach.
 NotificationTarget _landing(String route, {Object? arguments}) =>
     NotificationTarget(

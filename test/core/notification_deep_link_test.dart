@@ -234,6 +234,73 @@ void main() {
       );
     });
 
+    test('a money event WITH a reference opens the receipt, not the list', () {
+      // The gap this closes: the payload names the record, so the user should
+      // land on the receipt. The loader route is how an id becomes a hydrated
+      // receipt — see TransactionDeepLinkScreen.
+      final t = NotificationRouteResolver.resolve('transfer.sent', {
+        'reference': 'TRF-abc123',
+        'amount': '200.00',
+        'currency': 'NGN',
+      })!;
+      expect(t.route, AppRoutes.transactionDeepLink);
+      expect(t.precision, TargetPrecision.record);
+      expect((t.arguments as Map)['id'], 'TRF-abc123');
+      expect(
+        (t.arguments as Map)['serviceType'],
+        TransactionServiceType.transfer,
+      );
+    });
+
+    test('transaction_id is preferred over reference', () {
+      final t = NotificationRouteResolver.resolve('deposit', {
+        'transaction_id': 'row-1',
+        'reference': 'DEP-9',
+      })!;
+      expect((t.arguments as Map)['id'], 'row-1');
+    });
+
+    test('entity_id is used only when entity_type names a money movement', () {
+      // A split_bill id would never match a ledger row, so spending the lookup
+      // on it is strictly worse than landing on the list immediately.
+      final notLedger = NotificationRouteResolver.resolve('withdrawal', {
+        'entity_id': 'sb-1',
+        'entity_type': 'split_bill',
+      })!;
+      expect(notLedger.route, AppRoutes.serviceTransactionHistory);
+      expect(notLedger.precision, TargetPrecision.serviceLanding);
+
+      final ledger = NotificationRouteResolver.resolve('withdrawal', {
+        'entity_id': 'wd-1',
+        'entity_type': 'transfer',
+      })!;
+      expect(ledger.route, AppRoutes.transactionDeepLink);
+
+      // No entity_type at all is the common older-publisher shape; the loader
+      // degrades to the list if it does not resolve, so trying is right.
+      final bare = NotificationRouteResolver.resolve('withdrawal', {
+        'entity_id': 'wd-2',
+      })!;
+      expect(bare.route, AppRoutes.transactionDeepLink);
+    });
+
+    test('a composite reference is refused rather than opened', () {
+      // `_looksLikeId` exists because a dedup suffix (`<uuid>:appdl:<date>`)
+      // is not something any screen can fetch.
+      final t = NotificationRouteResolver.resolve('deposit', {
+        'reference': 'DEP-9:appdl:2026-11-03',
+      })!;
+      expect(t.route, AppRoutes.serviceTransactionHistory);
+    });
+
+    test('the generic payment type reaches a record with no service type', () {
+      final t = NotificationRouteResolver.resolve('payment', {
+        'reference': 'PAY-7',
+      })!;
+      expect(t.route, AppRoutes.transactionDeepLink);
+      expect((t.arguments as Map).containsKey('serviceType'), isFalse);
+    });
+
     test('resolves every type notifications-service emits', () {
       // Taken from the `data["type"]` literals across
       // notifications-service/internal/service/handlers_*.go. A type that stops

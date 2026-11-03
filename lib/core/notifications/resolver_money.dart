@@ -3,26 +3,31 @@ part of 'notification_route_resolver.dart';
 /// Money movement: transfers, deposits, withdrawals, exchange, recurring
 /// transfers, batch payouts and refunds.
 ///
-/// Almost every destination here is a [TargetPrecision.serviceLanding]. That is
-/// deliberate and worth stating plainly: the receipt screens in this domain are
-/// built around hydrated entities — `sendFundReceipt` does
-/// `Get.arguments as Transaction` — and a push payload carries only
-/// `reference`, `amount`, `currency` and `status`. Constructing a half-populated
-/// `Transaction` to satisfy the cast would render a receipt with missing fees,
-/// missing counterparty details and a wrong running balance. On a money screen
-/// that is worse than one extra tap, so these land on the service's transaction
-/// history with the record newest-first instead.
+/// Destinations here go through [_receipt], which reaches the ACTUAL receipt
+/// whenever the payload names the record, and the service's history when it
+/// does not.
 ///
-/// The upgrade path is on the server, not here: once a payload carries the
-/// transaction id, swap the `_history(...)` for a `_record(...)`.
+/// This domain's receipts render a hydrated entity and a push payload carries
+/// only identifiers, which is why the mapping used to stop at the history list
+/// for everything. Rather than construct a half-populated entity — a receipt
+/// with missing fees, no counterparty and a wrong running balance, which on a
+/// money screen is worse than an extra tap — `_receipt` routes through a loader
+/// that fetches the row by reference and then becomes the real receipt. The
+/// fallback inside that loader is precisely the old `_history` destination, so
+/// a stale or unresolvable id degrades to the previous behaviour instead of
+/// dead-ending.
+///
+/// Non-ledger destinations — a recurring-transfer SCHEDULE, the exchange and
+/// RMB histories whose receipts take their own entity types — stay on their own
+/// routes below rather than going through the ledger loader.
 NotificationTarget? _resolveMoney(String type, Map<String, String> data) {
   // ---- Wallet-to-wallet transfers -----------------------------------------
   // transfer, transfer.sent, transfer.received, transfer.reversed
   if (_is(type, 'transfer')) {
     if (type == 'transfer.reversed') {
-      return _history(TransactionServiceType.reversal);
+      return _receipt(TransactionServiceType.reversal, data);
     }
-    return _history(TransactionServiceType.transfer);
+    return _receipt(TransactionServiceType.transfer, data);
   }
 
   // ---- Recurring / scheduled transfers ------------------------------------
@@ -47,16 +52,16 @@ NotificationTarget? _resolveMoney(String type, Map<String, String> data) {
 
   // ---- Account-level money in/out -----------------------------------------
   if (_is(type, 'deposit')) {
-    return _history(TransactionServiceType.deposit);
+    return _receipt(TransactionServiceType.deposit, data);
   }
   if (_is(type, 'withdrawal') || _is(type, 'withdraw')) {
-    return _history(TransactionServiceType.withdrawal);
+    return _receipt(TransactionServiceType.withdrawal, data);
   }
   if (_is(type, 'refund')) {
-    return _history(TransactionServiceType.refund);
+    return _receipt(TransactionServiceType.refund, data);
   }
   if (_is(type, 'fee')) {
-    return _history(TransactionServiceType.fee);
+    return _receipt(TransactionServiceType.fee, data);
   }
 
   // ---- Currency exchange ---------------------------------------------------
@@ -75,7 +80,7 @@ NotificationTarget? _resolveMoney(String type, Map<String, String> data) {
 
   // ---- Batch payouts -------------------------------------------------------
   if (_is(type, 'batch_transfer') || _is(type, 'batch')) {
-    return _history(TransactionServiceType.batchTransfer);
+    return _receipt(TransactionServiceType.batchTransfer, data);
   }
 
   // ---- Generic payment -----------------------------------------------------
@@ -85,6 +90,17 @@ NotificationTarget? _resolveMoney(String type, Map<String, String> data) {
   if (type == 'payment' || _is(type, 'payment')) {
     final method = (data['payment_method'] ?? '').toLowerCase();
     if (method.contains('card')) return _landing(AppRoutes.myAccount);
+    // No service to narrow to, so the loader's fallback is the all-services
+    // history — the same page this returned before. Passing a null service
+    // type is what selects it.
+    final id = _transactionId(data);
+    if (id != null) {
+      return NotificationTarget(
+        route: AppRoutes.transactionDeepLink,
+        arguments: {'id': id},
+        precision: TargetPrecision.record,
+      );
+    }
     return _landing(AppRoutes.dashboardTransactionHistory);
   }
 

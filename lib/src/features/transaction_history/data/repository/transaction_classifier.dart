@@ -463,6 +463,30 @@ String generateTransactionTitle(
   final categoryLower = category.toLowerCase();
   final typeLower = type.toLowerCase();
 
+  // MONEY WE GAVE THE CUSTOMER, named as such.
+  //
+  // Resolved FIRST because both categories are unambiguous and because
+  // neither was handled at all: they fell through every branch below to the
+  // closing `else`, so a grant appeared in history as a bare "Credit" —
+  // indistinguishable from an error, and the reason the operator asked
+  // "why can't I find that in his transaction history?".
+  //
+  // accounts-service stores the credit `type` verbatim as the CATEGORY
+  // (accounts_credit_debit.go: `Category: txType`), so these are the exact
+  // strings the two grant paths send:
+  //   onboarding_grant  — accounts-service grant_disbursement.go, on KYC tier-up
+  //   tester_allocation — admin-gateway prelaunch_funds_disburse.go, on the tick
+  //
+  // Both are restricted spend-on-platform money, so the label says bonus
+  // rather than deposit: calling it a deposit implies the customer put it
+  // there and can take it out, which is the opposite of true.
+  if (categoryLower.contains('onboarding_grant')) {
+    return 'Welcome Bonus';
+  }
+  if (categoryLower.contains('tester_allocation')) {
+    return 'Tester Allocation';
+  }
+
   // Gift-card SALE (selling a card for cash — a credit) is a distinct flow
   // keyed by its own category. Resolve it before the 'giftcard' domain below,
   // which can't tell a sale from a purchase-refund and would call it a refund.
@@ -541,6 +565,16 @@ TransactionServiceType inferServiceTypeFromCategory(
     String category, String type, String description, String reference,
     [String serviceName = '']) {
   final cat = category.toLowerCase();
+  // GRANTS FIRST, for the same reason generateTransactionTitle resolves them
+  // first: both categories are unambiguous, and neither matched any branch
+  // below — so they fell through to `unknown` and rendered the grey
+  // help-outline glyph next to a correctly-titled row. The exact strings come
+  // from accounts-service (`onboarding_grant`) and admin-gateway
+  // (`tester_allocation`), which store the credit type verbatim as the
+  // category.
+  if (cat.contains('onboarding_grant') || cat.contains('tester_allocation')) {
+    return TransactionServiceType.grant;
+  }
   // Disambiguate the shared 'hold_capture' bucket by content FIRST (via
   // service_name + description) so a crypto/FX/insurance/invoice/RMB/fee/
   // transfer capture isn't misclassified as a giftcard.

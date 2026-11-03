@@ -248,10 +248,10 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
     return _landing(AppRoutes.qrPaymentsHistory);
   }
   if (_is(type, 'id_pay') || _is(type, 'idpay')) {
-    return _history(TransactionServiceType.idPay);
+    return _receipt(TransactionServiceType.idPay, data);
   }
   if (_is(type, 'contactless')) {
-    return _history(TransactionServiceType.contactlessPay);
+    return _receipt(TransactionServiceType.contactlessPay, data);
   }
 
   // ---- Cards ---------------------------------------------------------------
