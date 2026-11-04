@@ -1,0 +1,5 @@
+Update checks now come straight from the Play Store, so you'll only be told about a version you can actually install.
+
+We can also show a proper notice during planned maintenance, instead of the app looking like something broke.
+
+No other changes.

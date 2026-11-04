@@ -1,0 +1,7 @@
+Signing up is smoother.
+
+If we can't text you a code, signup now continues instead of stopping with an error.
+
+We've also removed the "use the number on your BVN" notice - your number does not have to be linked to your BVN.
+
+And if your profile number isn't Nigerian, identity verification now lets you fix it right from that screen.
