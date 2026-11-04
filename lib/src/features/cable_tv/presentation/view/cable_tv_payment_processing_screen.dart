@@ -7,6 +7,10 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import 'package:lazervault/core/utils/ng_msisdn.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/cable_tv_provider_entity.dart';
 import '../../domain/entities/tv_package_entity.dart';
@@ -103,7 +107,7 @@ class _CableTVPaymentProcessingScreenState
             smartCardNumber: smartCardNumber,
             variationCode: package.variationCode,
             amount: package.amount,
-            phone: smartCardNumber,
+            phone: _contactPhone(),
             transactionId: transactionId,
             verificationToken: verificationToken,
             idempotencyKey: idempotencyKey,
@@ -116,6 +120,41 @@ class _CableTVPaymentProcessingScreenState
         });
       }
     }
+  }
+
+  /// The NOTIFICATION CONTACT for this purchase — the payer's own mobile.
+  ///
+  /// This used to pass `smartCardNumber`. A smart card is not a phone number,
+  /// and the value does not stay inside the payload: it is persisted to
+  /// `bill_payments.phone_number` (an indexed column the admin dashboard
+  /// filters on) and forwarded to the biller as the contact they would use to
+  /// reach the customer. It read as plausible because a 10-digit card
+  /// normalises into a 10-digit "mobile", so nothing rejected it.
+  ///
+  /// What it did reject was the purchase. VTUAgent — primary for cable since
+  /// 2026-10-21 — validates this field, and the backend had no phone worth
+  /// sending, so cable purchases failed pre-charge. The backend now
+  /// substitutes an operator-tunable platform contact when the value is not a
+  /// plausible mobile, which is why returning an empty string here is SAFE
+  /// and sending a card number is not.
+  ///
+  /// Quick-buy already collects and normalises a real number; the full flow
+  /// has no phone field, so the profile is the only honest source.
+  String _contactPhone() {
+    try {
+      final authState = context.read<AuthenticationCubit>().state;
+      if (authState is AuthenticationAuthenticated) {
+        final raw = authState.profile.user.phoneNumber;
+        if (raw != null && raw.trim().isNotEmpty) {
+          // Send the canonical 11-digit form, never the raw profile text —
+          // the profile may hold +234/234 spellings.
+          return normaliseNgMsisdn(raw) ?? '';
+        }
+      }
+    } catch (_) {
+      // AuthenticationCubit not provided on this route. Empty is handled.
+    }
+    return '';
   }
 
   int _stepIndexFromLabel(String label) {
