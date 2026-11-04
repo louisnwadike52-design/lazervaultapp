@@ -17,22 +17,34 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   final root = Directory('lib/src/features');
 
-  /// Files that render a "Redo" / "Repeat" control.
+  /// Files that render the repeat-transfer control.
+  ///
+  /// The label was "Redo" until 2026-11-04 and is now derived per direction
+  /// ("Send again" outgoing, "Send back" on money received), so matching the
+  /// old literal would find nothing and this suite would pass vacuously -
+  /// which the guard below exists to prevent. Discovery therefore keys on the
+  /// DERIVATION as well as the literals, so a future reword cannot silently
+  /// disarm it again.
   List<File> redoSurfaces() => root
       .listSync(recursive: true)
       .whereType<File>()
       .where((f) => f.path.endsWith('.dart'))
       .where((f) {
         final s = f.readAsStringSync();
-        return s.contains("'Redo'") || s.contains('"Redo"');
+        return s.contains("'Redo'") ||
+            s.contains('"Redo"') ||
+            s.contains("'Send again'") ||
+            s.contains("'Send back'") ||
+            s.contains('RepeatTransfer.ctaLabel') ||
+            s.contains('repeatLabel');
       })
       .toList();
 
-  test('there are Redo surfaces to check', () {
+  test('there are repeat-transfer surfaces to check', () {
     // If this ever finds nothing, the test below is passing vacuously.
     expect(redoSurfaces(), isNotEmpty,
-        reason: 'no Redo controls found — has the label been renamed? '
-            'Update this guard rather than deleting it.');
+        reason: 'no repeat-transfer controls found - has the label been '
+            'renamed again? Update this guard rather than deleting it.');
   });
 
   test('no Redo surface navigates to a send screen itself', () {

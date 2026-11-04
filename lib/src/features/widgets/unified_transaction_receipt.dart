@@ -131,7 +131,7 @@ class UnifiedTransactionReceipt extends StatefulWidget {
     // schedule a recurring one. "Repeat" reads like recurrence — which is what the
     // bill-reminder and plan-my-day sheets genuinely mean by it, so keeping the two
     // ideas under one word made both worse.
-    this.repeatLabel = 'Redo',
+    this.repeatLabel = 'Send again',
     this.repeatColor,
     this.onRefresh,
   });
@@ -871,9 +871,11 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         _DetailEntry('Amount sent', _fmtMoney(_externalPrincipal!)),
       if (_externalFee != null && tx.flow != TransactionFlow.incoming)
         _DetailEntry('Fee', _fmtMoney(_externalFee!)),
-      if (_externalPrincipal != null && _externalFee != null &&
+      if (_externalPrincipal != null &&
+          _externalFee != null &&
           tx.flow != TransactionFlow.incoming)
-        _DetailEntry('Total paid', _fmtMoney(_externalPrincipal! + _externalFee!)),
+        _DetailEntry(
+            'Total paid', _fmtMoney(_externalPrincipal! + _externalFee!)),
       if (tx.description != null && !_isPlaceholderValue(tx.description!))
         _DetailEntry('Description', _cleanDescription(tx.description!)),
       if (tx.displayReference != null)

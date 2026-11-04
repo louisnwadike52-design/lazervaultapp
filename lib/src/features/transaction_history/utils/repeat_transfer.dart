@@ -101,6 +101,20 @@ class RepeatTransfer {
     return (fee > 0 && fee < total) ? total - fee : total;
   }
 
+  /// The CTA wording, derived from the direction of the money.
+  ///
+  /// "Redo" only makes sense for a transfer the user THEMSELVES sent. On money
+  /// that arrived, there is nothing of theirs to redo - the action they are
+  /// starting is a NEW transfer, back to whoever paid them. Labelling that
+  /// "Redo" asks them to repeat someone else's action, which is both wrong and
+  /// slightly alarming on a screen about their money.
+  ///
+  /// Derived here rather than written at each call site because there are two
+  /// (the receipt screen and the history sheet) and they must not drift: the
+  /// sheet used to hardcode its own copy of the string.
+  static String ctaLabel({required bool isIncoming}) =>
+      isIncoming ? 'Send back' : 'Send again';
+
   /// True when there is enough on the row to rebuild a payee the send-funds
   /// form will ACCEPT.
   ///

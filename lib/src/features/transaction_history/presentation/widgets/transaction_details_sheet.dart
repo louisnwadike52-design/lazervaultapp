@@ -243,7 +243,6 @@ class TransactionDetailsSheet {
                 // rebuild a payee from, and the button would open an empty
                 // form — a dead control is worse than an absent one.
                 if (tx.serviceType == TransactionServiceType.transfer &&
-                    !isIncoming &&
                     RepeatTransfer.canRepeat(
                       counterpartyName: tx.counterpartyName,
                       counterpartyAccount: tx.counterpartyAccount,
@@ -281,7 +280,7 @@ class TransactionDetailsSheet {
                                 color: Colors.white, size: 18.sp),
                             SizedBox(width: 8.w),
                             Text(
-                              'Redo',
+                              RepeatTransfer.ctaLabel(isIncoming: isIncoming),
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w600,

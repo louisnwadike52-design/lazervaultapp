@@ -106,8 +106,16 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           // only when the row carries enough to rebuild a payee, so the button
           // is never present-but-dead.
           final isIncoming = tx.flow == TransactionFlow.incoming;
-          final canRepeat = !isIncoming &&
-              tx.serviceType == TransactionServiceType.transfer &&
+          // INCOMING IS ALLOWED NOW, under the same proof as outgoing.
+          //
+          // The action on a credit is "send money back to whoever paid me",
+          // which is a perfectly good thing to offer and was simply missing -
+          // the row was excluded outright, so a received payment had no action
+          // at all. canRepeat still decides: it is derived from recipientFrom,
+          // so it returns false when the sender's details are not enough to
+          // build a payee the send form will accept, and the button stays
+          // absent rather than present-but-dead.
+          final canRepeat = tx.serviceType == TransactionServiceType.transfer &&
               RepeatTransfer.canRepeat(
                 counterpartyName: tx.counterpartyName,
                 counterpartyAccount: tx.counterpartyAccount,
@@ -117,6 +125,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
             transaction: tx,
             fromHistory: true,
             onRefresh: _refresh,
+            repeatLabel: RepeatTransfer.ctaLabel(isIncoming: isIncoming),
             onRepeat: canRepeat
                 ? () => RepeatTransfer.open(
                       counterpartyName: tx.counterpartyName ?? '',
