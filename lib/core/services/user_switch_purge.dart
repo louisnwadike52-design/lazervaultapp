@@ -50,6 +50,8 @@ const List<String> kPerUserStorageKeys = [
   'kyc_onboarding_pending',
   'has_skipped_kyc',
   'chat_current_session_id',
+  // One person's address book must never boost another person's speech.
+  'voice_recipient_keyterms',
   'stored_phone',
   'stored_email',
   'user_email',

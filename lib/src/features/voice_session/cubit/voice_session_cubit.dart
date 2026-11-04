@@ -43,6 +43,7 @@ import 'package:lazervault/src/features/voice/models/voice_settings_models.dart'
     show CustomVoiceLiveState;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/services/voice_keyterms_cache.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -1597,6 +1598,21 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       // room metadata so the voice worker pins the agent to this conversation.
       if (conversationId != null && conversationId.isNotEmpty) {
         requestBody['conversationId'] = conversationId;
+      }
+      // The names this user actually sends money to, boosted in the
+      // recogniser. The gateway has ranked per-speaker terms above its own
+      // curated Nigerian-name lists since it was written and nothing ever
+      // supplied them, so every session ran on the guess — which is how
+      // "send money to Onah Praiz" became "praise honor".
+      //
+      // Read from a cache warmed by the recipient list the user has already
+      // loaded, NOT fetched here: these have to be in this request body, so a
+      // fetch would put a round-trip in front of the first word. An empty
+      // cache simply means the session runs on the curated terms, exactly as
+      // before.
+      final keyterms = await VoiceKeytermsCache.read();
+      if (keyterms.isNotEmpty) {
+        requestBody['recipientNames'] = keyterms;
       }
       // Per-screen active account pin (e.g. user picked a non-primary
       // source account on select_recipients before opening voice).

@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/core/services/voice_keyterms_cache.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/repositories/i_recipient_repository.dart';
@@ -47,7 +48,15 @@ class RecipientRepositoryImpl implements IRecipientRepository {
         );
       });
 
-      return Right(response.recipients.map(RecipientModel.fromProto).toList());
+      final recipients =
+          response.recipients.map(RecipientModel.fromProto).toList();
+      // Warm the recogniser hint as a side effect of a load that was happening
+      // anyway. The voice agent boosts these names in Deepgram, which is what
+      // stops "send money to Onah Praiz" becoming "praise honor" — and putting
+      // the fetch on the voice-start path instead would delay the first word.
+      // Fire and forget: a recogniser hint must never fail a recipient list.
+      VoiceKeytermsCache.remember(recipients.map((r) => r.name));
+      return Right(recipients);
     } catch (e) {
       return Left(
           Failure(message: 'Failed to get recipients: $e', statusCode: 500));
