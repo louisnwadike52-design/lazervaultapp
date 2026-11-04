@@ -153,7 +153,6 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
     AirtimeScreen.mountedCount++;
   }
 
-
   @override
   void dispose() {
     AirtimeScreen.dataChangedTick.removeListener(_onDataChangedTick);

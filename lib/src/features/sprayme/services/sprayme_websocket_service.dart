@@ -171,7 +171,7 @@ class SprayMeWebSocketService {
       await wsClose(_channel, context: 'sprayme');
       _isConnected = false;
       _isConnecting = false;
-  return;
+      return;
     }
 
     _isConnected = true;

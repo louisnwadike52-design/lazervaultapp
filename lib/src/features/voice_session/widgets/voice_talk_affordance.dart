@@ -203,9 +203,8 @@ class _VoiceTalkButtonState extends State<VoiceTalkButton>
   @override
   Widget build(BuildContext context) {
     final colour = widget.capturing ? widget.activeColor : widget.accent;
-    final label =
-        VoiceTalkMode.action(widget.mode,
-            capturing: widget.capturing, agentSpeaking: widget.agentSpeaking);
+    final label = VoiceTalkMode.action(widget.mode,
+        capturing: widget.capturing, agentSpeaking: widget.agentSpeaking);
 
     final core = AnimatedContainer(
       duration: const Duration(milliseconds: 150),

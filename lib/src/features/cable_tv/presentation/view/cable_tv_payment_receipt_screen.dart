@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
+import 'package:lazervault/core/widgets/bill_history_item.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -122,6 +124,13 @@ class _CableTVPaymentReceiptScreenState
           customerNumber: fresh.customerNumber,
           metadata: fresh.metadata,
           createdAt: fresh.createdAt,
+          // The refund signal is the whole point of a refresh on a failed
+          // row: the purchase failed, the money came back, and THAT is the
+          // status change the customer is pulling to see. Dropped here, the
+          // refresh un-refunded the payment - the history list said
+          // "Refunded" and this receipt, one tap and one refresh later, said
+          // "Failed" again.
+          refundSource: fresh.refundSource,
           // Preserve fields not returned by the history endpoint.
           newBalance: current.newBalance,
           renewalDate: current.renewalDate,
@@ -328,28 +337,24 @@ class _CableTVPaymentReceiptScreenState
     }
   }
 
-  String _formatStatus(String status) {
-    return status
-        .split('_')
-        .map((word) => word.isNotEmpty
-            ? word[0].toUpperCase() + word.substring(1).toLowerCase()
-            : '')
-        .join(' ');
-  }
+  /// The receipt's status words.
+  ///
+  /// This used to title-case the raw status column, which meant a
+  /// subscription the customer had already been refunded for read "Failed" —
+  /// on this screen AND in the text it shares — while the PDF of the same
+  /// receipt said "Refunded", because the PDF already used the canonical
+  /// rule. One payment, three renderings, two answers.
+  ///
+  /// [refundSource] must be passed wherever it is known. Without it the
+  /// refund cannot be seen and the old wrong answer comes back.
+  String _formatStatus(String status, {String? refundSource}) =>
+      billReceiptStatusLabel(status, refundSource: refundSource);
 
-  Color _statusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return const Color(0xFF10B981);
-      case 'pending':
-      case 'processing':
-        return const Color(0xFFFB923C);
-      case 'failed':
-        return const Color(0xFFEF4444);
-      default:
-        return const Color(0xFF9CA3AF);
-    }
-  }
+  /// Colour for the same status, from the same palette the history chips use,
+  /// so a row and its receipt cannot be different colours.
+  Color _statusColor(String status, {String? refundSource}) =>
+      BillHistoryItem.statusInfo(status, refundSource: refundSource)?.$1 ??
+      const Color(0xFF9CA3AF);
 
   @override
   Widget build(BuildContext context) {
@@ -576,8 +581,10 @@ class _CableTVPaymentReceiptScreenState
                               _buildDivider(),
                               _buildReceiptRow(
                                 'Status',
-                                _formatStatus(payment.status),
-                                valueColor: _statusColor(payment.status),
+                                _formatStatus(payment.status,
+                                    refundSource: payment.refundSource),
+                                valueColor: _statusColor(payment.status,
+                                    refundSource: payment.refundSource),
                               ),
                               if (payment.newBalance > 0) ...[
                                 _buildDivider(),
@@ -884,7 +891,7 @@ Customer: ${payment.customerName}
 Amount: ${_formatAmount(payment.amount)}
 Reference: ${payment.reference}
 Date: ${_formatDate(payment.createdAt)}
-Status: ${_formatStatus(payment.status)}
+Status: ${_formatStatus(payment.status, refundSource: payment.refundSource)}
 ---
 Powered by Lazervault''';
 

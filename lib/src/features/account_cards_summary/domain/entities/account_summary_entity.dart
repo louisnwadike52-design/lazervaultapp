@@ -235,8 +235,7 @@ class AccountSummaryEntity extends Equatable {
         balance: (j['balance'] as num?)?.toDouble() ?? 0,
         availableBalance: (j['availableBalance'] as num?)?.toDouble() ?? 0,
         reservedBalance: (j['reservedBalance'] as num?)?.toDouble() ?? 0,
-        restrictedBalance:
-            (j['restrictedBalance'] as num?)?.toDouble() ?? 0,
+        restrictedBalance: (j['restrictedBalance'] as num?)?.toDouble() ?? 0,
         accountNumberLast4: j['accountNumberLast4'] as String? ?? '',
         accountNumber: j['accountNumber'] as String?,
         bankName: j['bankName'] as String?,

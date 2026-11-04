@@ -11,6 +11,8 @@ import '../../services/airtime_pdf_service.dart';
 import '../utils/airtime_navigation_utils.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
+
 class AirtimeDetailsScreen extends StatefulWidget {
   const AirtimeDetailsScreen({super.key});
 
@@ -211,10 +213,25 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
   }
 
   Widget _buildStatusCard(AirtimeTransaction transaction) {
-    final isSuccess = transaction.status == AirtimeTransactionStatus.completed;
-    final isPending = transaction.status == AirtimeTransactionStatus.pending ||
-        transaction.status == AirtimeTransactionStatus.processing;
-    final isFailed = transaction.status == AirtimeTransactionStatus.failed;
+    // The refund test comes FIRST and keys on the canonical rule, not on the
+    // enum. A refunded top-up keeps the `failed` status — the backend does
+    // that on purpose, because the PURCHASE failed — so testing the enum
+    // first showed a red "Transaction failed", with the provider's failure
+    // reason underneath it, to a customer whose money was already back. The
+    // "Transaction was refunded" branch below was only ever reachable for the
+    // literal `refunded` enum, which our bill rails rarely write.
+    final isRefunded = isRefundLabel(billReceiptStatusLabel(
+      transaction.status.name,
+      refundSource: transaction.refundSignal,
+      isRefunded: transaction.status == AirtimeTransactionStatus.refunded,
+    ));
+    final isSuccess =
+        !isRefunded && transaction.status == AirtimeTransactionStatus.completed;
+    final isPending = !isRefunded &&
+        (transaction.status == AirtimeTransactionStatus.pending ||
+            transaction.status == AirtimeTransactionStatus.processing);
+    final isFailed =
+        !isRefunded && transaction.status == AirtimeTransactionStatus.failed;
 
     Color statusColor;
     IconData statusIcon;
@@ -235,7 +252,12 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     } else {
       statusColor = Color(0xFF6B46C1);
       statusIcon = Icons.refresh;
-      statusMessage = 'Transaction was refunded';
+      // Reached for a genuine refund now, not only for the literal enum —
+      // and never for an unrecognised status, which used to land here and
+      // claim a refund that may not have happened.
+      statusMessage = isRefunded
+          ? 'Transaction was refunded'
+          : 'Transaction status: ${billReceiptStatusLabel(transaction.status.name)}';
     }
 
     return Container(

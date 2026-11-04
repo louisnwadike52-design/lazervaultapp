@@ -97,6 +97,7 @@ void main() {
       expect(r?.code, '057');
     });
   });
+
   /// The production key names, pinned.
   ///
   /// Measured on `payments.payments` (transfers only) on 2026-09-30:
@@ -150,5 +151,4 @@ void main() {
       expect(r, isNull);
     });
   });
-
 }

@@ -566,7 +566,6 @@ class LockTypeSelector extends StatelessWidget {
   }
 }
 
-
 /// Shown when the plan list has not arrived.
 ///
 /// Two states, deliberately distinct: still loading is a spinner and says

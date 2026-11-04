@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
 
 /// Unified history item widget used across electricity, airtime, and data
 /// bundle history screens. Supports both compact (home strip) and full
@@ -18,7 +19,7 @@ class BillHistoryItem extends StatelessWidget {
     required this.amount,
     this.currencySymbol = '\u20A6',
     required this.status,
-    this.refundSource,
+    required this.refundSource,
     this.onTap,
     this.compact = false,
     this.trailing,
@@ -101,11 +102,33 @@ class BillHistoryItem extends StatelessWidget {
   /// when non-empty on a `failed` row it indicates the money was returned
   /// (auto-released hold, upstream auto-refund, admin reversal, etc.), so
   /// the chip is promoted from red "Failed" to gray "Refunded".
+  ///
+  /// It is REQUIRED on the constructor, deliberately, even though it is
+  /// nullable. It used to be optional, and nine of sixteen call sites simply
+  /// did not pass it — cable TV, internet, water, education and the airtime
+  /// tile — so a payment the customer had already been refunded for showed a
+  /// red "Failed" on those landings while the dashboard history, which did
+  /// pass it, showed "Refunded" for the same row. The backend was right; two
+  /// screens disagreed about one transaction.
+  ///
+  /// An omission that silently reads as "no refund" is indistinguishable from
+  /// a genuine failure, so the omission has to be impossible rather than
+  /// discouraged. Passing an explicit `null` is a visible decision a reviewer
+  /// can question; a missing argument was not.
   static (Color, String)? statusInfo(String status, {String? refundSource}) {
     final canonical = _canonical(status);
-    if (canonical == 'failed' &&
-        refundSource != null &&
-        refundSource.isNotEmpty) {
+
+    // The REFUND RULE is not re-implemented here. billReceiptStatusLabel owns
+    // it, and it exists because a refunded data purchase once read "Refunded"
+    // on the receipt screen and "Failed" in the shared PDF — the same
+    // transaction, two renderings, and the wrong one was the one the customer
+    // forwards. This widget had its own copy of that rule, which is the same
+    // divergence one layer up: a chip and a receipt for one payment, each
+    // deciding separately whether the money came back.
+    //
+    // Only the COLOUR is decided here, because colour is presentation.
+    if (isRefundLabel(
+        billReceiptStatusLabel(status, refundSource: refundSource))) {
       return (const Color(0xFF6B7280), 'Refunded');
     }
     switch (canonical) {

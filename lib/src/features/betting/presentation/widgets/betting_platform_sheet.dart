@@ -115,31 +115,31 @@ class _BettingPlatformSheetState extends State<_BettingPlatformSheet> {
             // it already has — but a search box over an empty catalogue is
             // an invitation to type into nothing.
             if (widget.platforms.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: BettingTheme.card,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: BettingTheme.divider),
-                ),
-                child: TextField(
-                  controller: _search,
-                  onChanged: (v) => setState(() => _query = v),
-                  style:
-                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
-                  decoration: InputDecoration(
-                    hintText: 'Search bookmakers',
-                    hintStyle: GoogleFonts.inter(
-                        color: BettingTheme.textSecondary, fontSize: 14.sp),
-                    prefixIcon: Icon(Icons.search,
-                        color: BettingTheme.textSecondary, size: 19.sp),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 13.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: BettingTheme.card,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: BettingTheme.divider),
+                  ),
+                  child: TextField(
+                    controller: _search,
+                    onChanged: (v) => setState(() => _query = v),
+                    style:
+                        GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                    decoration: InputDecoration(
+                      hintText: 'Search bookmakers',
+                      hintStyle: GoogleFonts.inter(
+                          color: BettingTheme.textSecondary, fontSize: 14.sp),
+                      prefixIcon: Icon(Icons.search,
+                          color: BettingTheme.textSecondary, size: 19.sp),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 13.h),
+                    ),
                   ),
                 ),
               ),
-            ),
             SizedBox(height: 8.h),
             Expanded(
               child: visible.isEmpty

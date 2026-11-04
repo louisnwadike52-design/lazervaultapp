@@ -296,6 +296,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
         date: h.createdAt,
         amount: h.amount,
         status: h.status,
+        refundSource: h.refundSource,
         onTap: () => Get.toNamed(
           AppRoutes.educationPinDetails,
           arguments: {'purchaseId': h.id},

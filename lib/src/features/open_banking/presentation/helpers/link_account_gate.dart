@@ -742,7 +742,8 @@ Future<void> showBankLinkNeedsKycDialog(BuildContext context, String message) {
               shape: BoxShape.circle,
               color: accent.withValues(alpha: 0.16),
             ),
-            child: Icon(Icons.verified_user_outlined, color: accent, size: 26.sp),
+            child:
+                Icon(Icons.verified_user_outlined, color: accent, size: 26.sp),
           ),
           SizedBox(height: 14.h),
           Text('Verify your identity first',

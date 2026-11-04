@@ -72,7 +72,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(ElectricityBillError(message: failure.message, background: true)),
+      (failure) => emit(
+          ElectricityBillError(message: failure.message, background: true)),
       (providers) => emit(ProvidersLoaded(providers: providers)),
     );
   }
@@ -85,7 +86,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(ElectricityBillError(message: failure.message, background: true)),
+      (failure) => emit(
+          ElectricityBillError(message: failure.message, background: true)),
       (_) => emit(ProvidersSynced()),
     );
   }
@@ -375,7 +377,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(ElectricityBillError(message: failure.message, background: true)),
+      (failure) => emit(
+          ElectricityBillError(message: failure.message, background: true)),
       (payments) => emit(PaymentHistoryLoaded(payments: payments)),
     );
   }

@@ -61,7 +61,8 @@ Future<void> showAssetWalletSheet(
   // etc.). The sheet stays decoupled from routing.
   VoidCallback? onViewDetails,
 }) async {
-  if (!await ensureCryptoTradeAllowed(context, operation: 'use your crypto wallet')) {
+  if (!await ensureCryptoTradeAllowed(context,
+      operation: 'use your crypto wallet')) {
     return;
   }
   if (!context.mounted) return;

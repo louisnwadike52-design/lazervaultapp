@@ -223,6 +223,7 @@ class _InternetHistoryScreenState extends State<InternetHistoryScreen> {
       amount: p.amount,
       currencySymbol: '\u20A6',
       status: p.status,
+      refundSource: p.refundSource,
       onTap: () => InternetHistoryActionsSheet.show(context, p),
     );
     if (!isFocused) return item;

@@ -776,7 +776,8 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     // and adaptive entirely rather than computing an order and overwriting
     // it, so the enforced path cannot accidentally inherit either.
     if (policy.enforcedForAll) {
-      final ordered = [...services]..sort((a, b) => a.serviceName.revenuePriority
+      final ordered = [...services]..sort((a, b) => a
+          .serviceName.revenuePriority
           .compareTo(b.serviceName.revenuePriority));
       return applyAdminOrder(ordered, policy, nameOf: (s) => s.serviceName);
     }
@@ -1388,7 +1389,8 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
               // is; coming back it is the way OUT, and at the start of the
               // last row it reads as a control instead of another service.
               final navIndex = navTileIndexOnPage(
-                servicesOnPage.length, _itemsPerRow,
+                servicesOnPage.length,
+                _itemsPerRow,
                 isLastPage: tileGoesBack,
               );
 
@@ -1415,8 +1417,8 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                     // only meaningful going forward. Counting from this page's
                     // own offset rather than page one's length, so the promise
                     // stays true on a middle page.
-                    final seenThrough = _serviceIndexAt(
-                            pageIndex, servicesOnPage.length - 1, moreTileShown) +
+                    final seenThrough = _serviceIndexAt(pageIndex,
+                            servicesOnPage.length - 1, moreTileShown) +
                         1;
 
                     return QuickServicesMoreTile(

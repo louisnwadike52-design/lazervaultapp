@@ -71,7 +71,8 @@ class KycLoginPrompt {
         context: context,
         barrierDismissible: true,
         barrierColor: Colors.black.withValues(alpha: 0.6),
-        builder: (ctx) => _KycPromptDialog(rejected: gate.state == KycState.rejected),
+        builder: (ctx) =>
+            _KycPromptDialog(rejected: gate.state == KycState.rejected),
       );
       return true;
     } catch (_) {
@@ -122,7 +123,9 @@ class _KycPromptDialog extends StatelessWidget {
                 color: _accent.withValues(alpha: 0.16),
               ),
               child: Icon(
-                rejected ? Icons.gpp_maybe_rounded : Icons.verified_user_outlined,
+                rejected
+                    ? Icons.gpp_maybe_rounded
+                    : Icons.verified_user_outlined,
                 color: _accent,
                 size: 26.sp,
               ),

@@ -54,7 +54,8 @@ List<String> historyScopePills({
 /// operator closed International. Without this the screen would open on a
 /// scope that has no pill to deselect it — a filtered, empty list the user
 /// cannot escape except by leaving the screen.
-bool scopeStillSelectable(String scope, List<String> pills, {String allScope = 'all'}) =>
+bool scopeStillSelectable(String scope, List<String> pills,
+        {String allScope = 'all'}) =>
     scope == allScope || pills.contains(scope);
 
 /// The scope a screen should actually use, given what it was asked for.
@@ -68,4 +69,6 @@ String resolveHistoryScope(
   List<String> pills, {
   String allScope = 'all',
 }) =>
-    scopeStillSelectable(requested, pills, allScope: allScope) ? requested : allScope;
+    scopeStillSelectable(requested, pills, allScope: allScope)
+        ? requested
+        : allScope;

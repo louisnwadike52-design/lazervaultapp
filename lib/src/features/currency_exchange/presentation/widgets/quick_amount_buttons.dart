@@ -69,42 +69,42 @@ class QuickAmountButtons extends StatelessWidget {
     return Row(
       children: [
         ...presets.map((amount) {
-        final isSelected = selectedAmount == amount;
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              right: (amount == presets.last && !showMax) ? 0 : 8,
-            ),
-            child: GestureDetector(
-              onTap: () => onAmountSelected(amount),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
-                      : const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
+          final isSelected = selectedAmount == amount;
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(
+                right: (amount == presets.last && !showMax) ? 0 : 8,
+              ),
+              child: GestureDetector(
+                onTap: () => onAmountSelected(amount),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF4E03D0)
-                        : const Color(0xFF2D2D2D),
+                        ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
+                        : const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF4E03D0)
+                          : const Color(0xFF2D2D2D),
+                    ),
                   ),
-                ),
-                child: Center(
-                  child: Text(
-                    _formatAmount(amount),
-                    style: TextStyle(
-                      color:
-                          isSelected ? const Color(0xFF4E03D0) : Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                  child: Center(
+                    child: Text(
+                      _formatAmount(amount),
+                      style: TextStyle(
+                        color:
+                            isSelected ? const Color(0xFF4E03D0) : Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
+          );
         }),
         if (showMax)
           Expanded(

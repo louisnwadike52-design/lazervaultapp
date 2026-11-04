@@ -70,6 +70,7 @@ class QuickServicesMoreTile extends StatefulWidget {
 
 class _QuickServicesMoreTileState extends State<QuickServicesMoreTile> {
   static const _brand = Color.fromARGB(255, 78, 3, 208);
+
   /// The dashboard's light accent — the same value the account card section
   /// and the voice glow use, so the nav tiles belong to that palette rather
   /// than introducing a darker one of their own.

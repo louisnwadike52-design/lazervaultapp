@@ -678,10 +678,10 @@ class _EnhancedRecipientSelectionBottomSheetState
               _searchQuery.isNotEmpty) {
             if (_isLoadingLazertag) {
               return SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-            child: const UserSearchSkeleton(showSectionHeader: false),
-          );
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                child: const UserSearchSkeleton(showSectionHeader: false),
+              );
             }
             return _buildEmptyState(
               icon: Icons.search_off,
@@ -749,10 +749,10 @@ class _EnhancedRecipientSelectionBottomSheetState
   Widget _buildLazertagTab(ScrollController scrollController) {
     if (_isLoadingLazertag) {
       return SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-            child: const UserSearchSkeleton(showSectionHeader: false),
-          );
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+        child: const UserSearchSkeleton(showSectionHeader: false),
+      );
     }
 
     if (_searchQuery.isEmpty) {
@@ -798,10 +798,10 @@ class _EnhancedRecipientSelectionBottomSheetState
       // Phone contacts are resolved against the directory, so this is the
       // same wait as a search and gets the same treatment.
       return SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-            child: const UserSearchSkeleton(showSectionHeader: false),
-          );
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+        child: const UserSearchSkeleton(showSectionHeader: false),
+      );
     }
 
     final filteredContacts = _filterContacts();

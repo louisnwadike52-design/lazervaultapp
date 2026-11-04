@@ -1658,8 +1658,7 @@ class AppRouter {
         final service = args['serviceType'];
         return TransactionDeepLinkScreen(
           transactionId: id,
-          serviceType:
-              service is TransactionServiceType ? service : null,
+          serviceType: service is TransactionServiceType ? service : null,
         );
       },
       transition: Transition.rightToLeft,

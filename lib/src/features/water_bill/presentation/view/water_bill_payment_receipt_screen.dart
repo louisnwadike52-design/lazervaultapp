@@ -14,6 +14,9 @@ import '../../services/water_bill_pdf_service.dart';
 import '../widgets/save_water_beneficiary_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
+import 'package:lazervault/core/widgets/bill_history_item.dart';
+
 class WaterBillPaymentReceiptScreen extends StatefulWidget {
   const WaterBillPaymentReceiptScreen({super.key});
 
@@ -196,23 +199,19 @@ class _WaterBillPaymentReceiptScreenState
     return DateFormat('MMM dd, yyyy - hh:mm a').format(date);
   }
 
-  String _formatStatus(WaterPaymentStatus status) {
-    return status.name[0].toUpperCase() + status.name.substring(1);
-  }
+  /// Both of these took the ENUM, which only ever holds the literal status
+  /// string. Our bill rails record a refund as `failed` PLUS a refund_source
+  /// — the entity's own `isRefunded` says exactly that — so the enum alone
+  /// reads "Failed", in failure red, on a receipt for money the customer
+  /// already has back. Takes the payment now, so the refund signal is in
+  /// scope at every call.
+  String _formatStatus(WaterPaymentEntity p) =>
+      billReceiptStatusLabel(p.status.name, refundSource: p.refundSource);
 
-  Color _statusColor(WaterPaymentStatus status) {
-    switch (status) {
-      case WaterPaymentStatus.completed:
-        return const Color(0xFF10B981);
-      case WaterPaymentStatus.pending:
-      case WaterPaymentStatus.processing:
-        return const Color(0xFFFB923C);
-      case WaterPaymentStatus.failed:
-        return const Color(0xFFEF4444);
-      case WaterPaymentStatus.refunded:
-        return const Color(0xFF9CA3AF);
-    }
-  }
+  Color _statusColor(WaterPaymentEntity p) =>
+      BillHistoryItem.statusInfo(p.status.name, refundSource: p.refundSource)
+          ?.$1 ??
+      const Color(0xFF9CA3AF);
 
   @override
   Widget build(BuildContext context) {
@@ -272,11 +271,9 @@ class _WaterBillPaymentReceiptScreenState
                         height: 80.w,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _statusColor(payment.status)
-                              .withValues(alpha: 0.15),
+                          color: _statusColor(payment).withValues(alpha: 0.15),
                           border: Border.all(
-                            color: _statusColor(payment.status)
-                                .withValues(alpha: 0.4),
+                            color: _statusColor(payment).withValues(alpha: 0.4),
                             width: 2,
                           ),
                         ),
@@ -286,7 +283,7 @@ class _WaterBillPaymentReceiptScreenState
                               : payment.isPending || payment.isProcessing
                                   ? Icons.schedule
                                   : Icons.error_outline,
-                          color: _statusColor(payment.status),
+                          color: _statusColor(payment),
                           size: 44.sp,
                         ),
                       ),
@@ -374,8 +371,8 @@ class _WaterBillPaymentReceiptScreenState
                             _buildDivider(),
                             _buildReceiptRow(
                               'Status',
-                              _formatStatus(payment.status),
-                              valueColor: _statusColor(payment.status),
+                              _formatStatus(payment),
+                              valueColor: _statusColor(payment),
                             ),
                           ],
                         ),
@@ -688,7 +685,7 @@ Customer Number: ${payment.customerNumber}
 Amount: ${_formatAmount(payment.amount)}
 Reference: ${payment.transactionReference ?? ''}
 Date: ${_formatDate(payment.createdAt)}
-Status: ${_formatStatus(payment.status)}
+Status: ${_formatStatus(payment)}
 ---
 Powered by Lazervault''';
       SharePlus.instance

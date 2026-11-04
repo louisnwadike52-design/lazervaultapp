@@ -307,6 +307,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
       date: _formatDate(p.createdAt),
       amount: p.amount,
       status: p.status,
+      refundSource: p.refundSource,
       onTap: () => _openActionsSheet(p),
       // Mirror the electricity-bill receipt: render a quick "Copy PIN"
       // affordance directly on the row when only one PIN was issued so
@@ -453,8 +454,12 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
     return s == 'completed' || s == 'success' || s == 'successful';
   }
 
+  /// Called statusInfo WITHOUT refundSource, so the one argument that
+  /// distinguishes a refund from a failure was omitted and every refunded PIN
+  /// purchase read "Failed".
   String _statusLabel(EducationHistoryEntity p) {
-    final info = BillHistoryItem.statusInfo(p.status);
+    final info =
+        BillHistoryItem.statusInfo(p.status, refundSource: p.refundSource);
     if (info != null) return info.$2;
     return p.status.isEmpty ? 'Unknown' : p.status;
   }

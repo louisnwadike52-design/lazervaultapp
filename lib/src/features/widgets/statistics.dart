@@ -2054,8 +2054,8 @@ class _StatisticsState extends State<Statistics>
                             onSelect: (picked) =>
                                 setState(() => _spendingChartType = picked),
                           ),
-                          onLongPress: () => setState(
-                              () => _spendingChartType = spendingNext),
+                          onLongPress: () =>
+                              setState(() => _spendingChartType = spendingNext),
                         ),
                       ),
                     Text(
@@ -2088,8 +2088,8 @@ class _StatisticsState extends State<Statistics>
                 categories: const [],
                 currencySymbol: '₦',
                 bottomLabel: (d) => DateFormat('d MMM').format(d),
-                totalSpent: trendPoints.fold<double>(
-                    0, (sum, p) => sum + p.amount),
+                totalSpent:
+                    trendPoints.fold<double>(0, (sum, p) => sum + p.amount),
               ),
             )
           ],

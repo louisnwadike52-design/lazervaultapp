@@ -41,8 +41,9 @@ int quickServicePerPage(int itemsPerPage) => itemsPerPage - 1;
 /// to slice its own list and all a test needs to check the shape.
 List<int> quickServicePageSizes(int count, int itemsPerPage) {
   if (count <= 0) return const [];
-  final perPage =
-      showsMoreTile(count, itemsPerPage) ? quickServicePerPage(itemsPerPage) : itemsPerPage;
+  final perPage = showsMoreTile(count, itemsPerPage)
+      ? quickServicePerPage(itemsPerPage)
+      : itemsPerPage;
   final sizes = <int>[];
   for (int i = 0; i < count; i += perPage) {
     sizes.add((i + perPage < count) ? perPage : count - i);
@@ -88,7 +89,8 @@ bool quickServiceTileGoesBack(int pageIndex, int pageCount) =>
 ///
 /// Returns the cell index the tile occupies. Services fill every other cell
 /// in order, so a caller maps grid index -> service by skipping this one.
-int navTileIndexOnPage(int servicesOnPage, int itemsPerRow, {required bool isLastPage}) {
+int navTileIndexOnPage(int servicesOnPage, int itemsPerRow,
+    {required bool isLastPage}) {
   if (!isLastPage || servicesOnPage <= 0 || itemsPerRow <= 0) {
     return servicesOnPage;
   }

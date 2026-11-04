@@ -260,7 +260,11 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
   /// the landing tabs — so a scope closed there cannot linger as a filter here
   /// that selects a permanently empty list.
   List<String> get _pills => historyScopePills(
-        candidates: const [AirtimeScope.buy, AirtimeScope.intl, AirtimeScope.sell],
+        candidates: const [
+          AirtimeScope.buy,
+          AirtimeScope.intl,
+          AirtimeScope.sell
+        ],
         isAllowed: (s) => FeatureFlags.airtimeTabAllowed(_tunableScope[s] ?? s),
         allScope: AirtimeScope.all,
       );

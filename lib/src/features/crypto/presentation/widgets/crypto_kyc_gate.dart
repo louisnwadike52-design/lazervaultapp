@@ -130,9 +130,8 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
     // of the several wordings the backend can send ('pending', 'in_review',
     // 'processing'), silently showing "verify now" to someone whose documents
     // were already with us — and inviting a second submission of them.
-    final inReview =
-        resolveKycState(status: _kycStatus, tier: _currentTier) ==
-            KycState.inReview;
+    final inReview = resolveKycState(status: _kycStatus, tier: _currentTier) ==
+        KycState.inReview;
     const accent = Color(0xFFFB923C);
     return Container(
       margin: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),

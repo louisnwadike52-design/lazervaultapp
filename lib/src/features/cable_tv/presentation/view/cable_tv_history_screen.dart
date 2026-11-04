@@ -247,6 +247,7 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
       date: p.createdAt,
       amount: p.amount,
       status: p.status,
+      refundSource: p.refundSource,
       onTap: () => CableTVHistoryActionsSheet.show(context, p),
     );
   }

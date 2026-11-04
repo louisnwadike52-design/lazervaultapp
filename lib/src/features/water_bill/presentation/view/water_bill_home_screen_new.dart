@@ -252,6 +252,7 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
       date: _relativeTime(p.createdAt),
       amount: p.amount,
       status: p.status.name,
+      refundSource: p.refundSource,
       onTap: () => _showHistoryActions(p),
     );
   }

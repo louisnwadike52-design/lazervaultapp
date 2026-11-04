@@ -213,6 +213,7 @@ Future<void> showExpenditureChartInfoSheet(
   required int transactionCount,
   required double totalSpent,
   required List<ExpenditureChartType> available,
+
   /// Called when the user picks a shape from the chip row. When supplied the
   /// chips become a PICKER rather than a legend: the active shape is already
   /// marked, so showing which one is current and letting the user change it
@@ -261,6 +262,7 @@ class _InfoSheet extends StatelessWidget {
   final int transactionCount;
   final double totalSpent;
   final List<ExpenditureChartType> available;
+
   /// When non-null the shape chips become a picker. See the sheet function.
   final ValueChanged<ExpenditureChartType>? onSelect;
 
@@ -316,7 +318,6 @@ class _InfoSheet extends StatelessWidget {
                 style: TextStyle(color: _dim, fontSize: 13.sp, height: 1.45),
               ),
               SizedBox(height: 18.h),
-
               _sectionTitle('This period'),
               SizedBox(height: 8.h),
               _row('Period', '$periodTitle · $dateRange'),
@@ -334,7 +335,6 @@ class _InfoSheet extends StatelessWidget {
                 'that wallet and its currency.',
                 style: TextStyle(color: _dim, fontSize: 11.5.sp, height: 1.4),
               ),
-
               if (categories.isNotEmpty) ...[
                 SizedBox(height: 20.h),
                 _sectionTitle('What the colours mean'),
@@ -351,7 +351,6 @@ class _InfoSheet extends StatelessWidget {
                 for (var i = 0; i < categories.length; i++)
                   _categoryRow(i, categories[i], total),
               ],
-
               SizedBox(height: 20.h),
               _sectionTitle('Chart shapes available'),
               SizedBox(height: 4.h),

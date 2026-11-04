@@ -13,6 +13,8 @@ import '../../domain/entities/water_payment_entity.dart';
 import '../../domain/entities/water_provider_entity.dart';
 import 'save_water_beneficiary_sheet.dart';
 
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
+
 /// Bottom sheet of actions available on a past water bill payment, in
 /// either the recent-transactions strip or the history list. Mirrors
 /// `CableTVHistoryActionsSheet` / `DataHistoryActionsSheet`:
@@ -272,10 +274,12 @@ class WaterHistoryActionsSheet {
     return providerCode.isNotEmpty ? providerCode : 'Water';
   }
 
-  static String _statusLabel(WaterPaymentEntity p) {
-    if (p.isCompleted) return 'Completed';
-    if (p.isFailed) return 'Failed';
-    if (p.isRefunded) return 'Refunded';
-    return 'Pending';
-  }
+  /// The ORDER was the bug. `isFailed` is the literal status and a refunded
+  /// row keeps `failed`, so it matched and returned before `isRefunded` — the
+  /// one test that reads refund_source — was ever reached. Every refunded
+  /// water payment said "Failed" here. Everything unrecognised also became
+  /// "Pending", which reads as "nearly there" over a refund_failed a human
+  /// still owes.
+  static String _statusLabel(WaterPaymentEntity p) =>
+      billReceiptStatusLabel(p.status.name, refundSource: p.refundSource);
 }

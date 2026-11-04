@@ -708,8 +708,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         'availableBalance': sourceAccount.availableBalance.toDouble() / 100,
         // The unspent onboarding grant, so the bonus label appears here too
         // rather than only on the routes that go through the carousel.
-        'restrictedBalance':
-            sourceAccount.restrictedBalance.toDouble() / 100,
+        'restrictedBalance': sourceAccount.restrictedBalance.toDouble() / 100,
         'accountNumber': acctNum.isNotEmpty ? acctNum : maskedNum,
         'accountNumberMasked': maskedNum,
         'bankName': 'Lazervault',

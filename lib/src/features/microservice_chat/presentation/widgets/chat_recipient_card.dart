@@ -406,7 +406,9 @@ class ChatRecipientCandidates extends StatelessWidget {
     final avatar = (c['avatar_url'] ?? '').toString().trim();
     // Never an empty row: a candidate with neither name nor handle would be
     // untappable and unexplainable, so the handle stands in and vice versa.
-    final title = name.isNotEmpty ? name : (username.isEmpty ? 'Recipient' : '@$username');
+    final title = name.isNotEmpty
+        ? name
+        : (username.isEmpty ? 'Recipient' : '@$username');
     final subtitle = name.isNotEmpty && username.isNotEmpty ? '@$username' : '';
 
     return InkWell(

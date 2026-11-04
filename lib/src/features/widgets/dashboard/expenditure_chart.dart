@@ -121,8 +121,10 @@ class ExpenditureChart extends StatelessWidget {
         ),
         titlesData: FlTitlesData(
           show: true,
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -237,8 +239,10 @@ class ExpenditureChart extends StatelessWidget {
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
           show: true,
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -262,8 +266,9 @@ class ExpenditureChart extends StatelessWidget {
             tooltipBorderRadius: BorderRadius.circular(8.r),
             getTooltipItem: (group, gi, rod, ri) {
               final i = group.x;
-              final label =
-                  (i >= 0 && i < trend.length) ? bottomLabel(trend[i].date) : '';
+              final label = (i >= 0 && i < trend.length)
+                  ? bottomLabel(trend[i].date)
+                  : '';
               return BarTooltipItem(
                 '$label\n${compactMoney(rod.toY, currencySymbol)}',
                 TextStyle(
@@ -329,8 +334,7 @@ class ExpenditureChart extends StatelessWidget {
                   // neighbours into illegibility, so small slices are left to
                   // the legend, which names every category regardless.
                   showTitle: categories[i].amount / total >= 0.08,
-                  title:
-                      '${(categories[i].amount / total * 100).round()}%',
+                  title: '${(categories[i].amount / total * 100).round()}%',
                   titleStyle: TextStyle(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w700,

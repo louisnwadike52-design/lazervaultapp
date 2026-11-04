@@ -166,6 +166,7 @@ class _CableTVRecentTransactionsCardState
       amount: p.amount,
       currencySymbol: '₦',
       status: p.status,
+      refundSource: p.refundSource,
       onTap: () => CableTVHistoryActionsSheet.show(context, _entityFor(p)),
     );
   }

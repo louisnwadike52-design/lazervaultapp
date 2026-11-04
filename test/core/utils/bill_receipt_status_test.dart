@@ -83,8 +83,10 @@ void main() {
 
   test('isRefundLabel agrees with the label, so badge and text cannot differ',
       () {
-    expect(isRefundLabel(billReceiptStatusLabel('failed',
-        refundSource: 'epins_failed')), isTrue);
+    expect(
+        isRefundLabel(
+            billReceiptStatusLabel('failed', refundSource: 'epins_failed')),
+        isTrue);
     expect(isRefundLabel(billReceiptStatusLabel('failed')), isFalse);
     expect(isRefundLabel(billReceiptStatusLabel('completed')), isFalse);
   });

@@ -290,6 +290,7 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
       // airtime/data pass). Use the enum's name — the widget lowercases
       // and maps to its own chip colour palette internally.
       status: payment.status.name,
+      refundSource: payment.refundSource,
       onTap: () => WaterHistoryActionsSheet.show(context, payment),
     );
   }

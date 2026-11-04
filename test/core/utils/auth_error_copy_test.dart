@@ -13,11 +13,13 @@ void main() {
     final c = authErrorCopy(raw);
 
     expect(c.suppressBanner, isTrue,
-        reason: 'the verification screen already says this; a banner covers it');
+        reason:
+            'the verification screen already says this; a banner covers it');
     expect(c.message.contains('email_not_verified'), isFalse,
         reason: 'the backend code reached the user');
     expect(c.title, isNot('Login Failed'),
-        reason: 'the passcode was correct — this is a next step, not a failure');
+        reason:
+            'the passcode was correct — this is a next step, not a failure');
   });
 
   test('no mapped message ever leaks a raw code or underscore token', () {
@@ -55,7 +57,12 @@ void main() {
   test('a wrong passcode does not reveal whether the account exists', () {
     final c = authErrorCopy('invalid_credentials');
     final m = c.message.toLowerCase();
-    for (final leak in ['no account', 'not found', 'does not exist', 'no user']) {
+    for (final leak in [
+      'no account',
+      'not found',
+      'does not exist',
+      'no user'
+    ]) {
       expect(m.contains(leak), isFalse, reason: 'enumeration hint: $leak');
     }
   });

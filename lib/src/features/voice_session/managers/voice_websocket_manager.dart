@@ -232,8 +232,12 @@ class VoiceWebSocketManager {
       if (_isConnected && _channel != null) {
         try {
           // Send ping to keep connection alive
-          wsSend(_channel, jsonEncode(
-              {'type': 'ping', 'timestamp': DateTime.now().toIso8601String()}));
+          wsSend(
+              _channel,
+              jsonEncode({
+                'type': 'ping',
+                'timestamp': DateTime.now().toIso8601String()
+              }));
         } catch (e) {
           onError?.call('Heartbeat failed: $e');
           _isConnected = false;

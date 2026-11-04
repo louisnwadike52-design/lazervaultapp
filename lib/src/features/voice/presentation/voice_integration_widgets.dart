@@ -107,10 +107,12 @@ class UniversalVoiceMode {
     }
 
     // Send connection confirmation
-    wsSend(_channel, jsonEncode({
-      'type': 'connect',
-      'session': _session!.toJson(),
-    }));
+    wsSend(
+        _channel,
+        jsonEncode({
+          'type': 'connect',
+          'session': _session!.toJson(),
+        }));
 
     print('Connected to Voice Agent Gateway in Universal Mode');
   }
@@ -186,11 +188,13 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    wsSend(_channel, jsonEncode({
-      'type': 'audio',
-      'audio_data': base64Encode(audioBytes),
-      'session_id': _session!.sessionId,
-    }));
+    wsSend(
+        _channel,
+        jsonEncode({
+          'type': 'audio',
+          'audio_data': base64Encode(audioBytes),
+          'session_id': _session!.sessionId,
+        }));
   }
 
   Future<void> sendTextMessage(String text) async {
@@ -198,11 +202,13 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    wsSend(_channel, jsonEncode({
-      'type': 'text',
-      'text': text,
-      'session_id': _session!.sessionId,
-    }));
+    wsSend(
+        _channel,
+        jsonEncode({
+          'type': 'text',
+          'text': text,
+          'session_id': _session!.sessionId,
+        }));
   }
 
   void disconnect() {
@@ -216,12 +222,14 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    wsSend(_channel, jsonEncode({
-      'type': 'submit_pin',
-      'pin': pin,
-      'session_id': _session!.sessionId,
-      'user_id': _session!.userId,
-    }));
+    wsSend(
+        _channel,
+        jsonEncode({
+          'type': 'submit_pin',
+          'pin': pin,
+          'session_id': _session!.sessionId,
+          'user_id': _session!.userId,
+        }));
   }
 
   Future<void> cancelPIN() async {
@@ -229,11 +237,13 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    wsSend(_channel, jsonEncode({
-      'type': 'cancel_pin',
-      'session_id': _session!.sessionId,
-      'user_id': _session!.userId,
-    }));
+    wsSend(
+        _channel,
+        jsonEncode({
+          'type': 'cancel_pin',
+          'session_id': _session!.sessionId,
+          'user_id': _session!.userId,
+        }));
   }
 
   // Callbacks for UI updates
@@ -345,11 +355,13 @@ class ServiceSpecificVoiceMode {
     }
 
     // Send connection confirmation
-    wsSend(_channel, jsonEncode({
-      'type': 'connect',
-      'session': _session!.toJson(),
-      'service_context': service,
-    }));
+    wsSend(
+        _channel,
+        jsonEncode({
+          'type': 'connect',
+          'session': _session!.toJson(),
+          'service_context': service,
+        }));
 
     print('Connected directly to $service voice agent (Port $port)');
   }
@@ -388,11 +400,13 @@ class ServiceSpecificVoiceMode {
       throw Exception('Not connected to agent');
     }
 
-    wsSend(_channel, jsonEncode({
-      'type': 'audio',
-      'audio_data': base64Encode(audioBytes),
-      'session_id': _session!.sessionId,
-    }));
+    wsSend(
+        _channel,
+        jsonEncode({
+          'type': 'audio',
+          'audio_data': base64Encode(audioBytes),
+          'session_id': _session!.sessionId,
+        }));
   }
 
   Future<void> sendTextMessage(String text) async {
@@ -400,11 +414,13 @@ class ServiceSpecificVoiceMode {
       throw Exception('Not connected to agent');
     }
 
-    wsSend(_channel, jsonEncode({
-      'type': 'text',
-      'text': text,
-      'session_id': _session!.sessionId,
-    }));
+    wsSend(
+        _channel,
+        jsonEncode({
+          'type': 'text',
+          'text': text,
+          'session_id': _session!.sessionId,
+        }));
   }
 
   void disconnect() {

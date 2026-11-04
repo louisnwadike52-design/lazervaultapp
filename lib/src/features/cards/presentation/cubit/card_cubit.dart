@@ -84,9 +84,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) => emit(CardCreated(card: card)),
       );
     } catch (e) {
@@ -130,9 +130,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) => emit(CardCreated(card: card)),
       );
     } catch (e) {
@@ -164,9 +164,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (cards) {
           final stats = _calculateStats(cards);
           emit(CardsLoaded(
@@ -207,9 +207,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) => emit(CardDetailsLoaded(card)),
       );
     } catch (e) {
@@ -241,9 +241,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) =>
             emit(CardUpdated(card: card, message: 'Card frozen successfully')),
       );
@@ -270,9 +270,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) => emit(
             CardUpdated(card: card, message: 'Card unfrozen successfully')),
       );
@@ -305,9 +305,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (_) => emit(const CardActionSuccess('Card cancelled successfully')),
       );
     } catch (e) {
@@ -339,9 +339,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) => emit(CardUpdated(card: card, message: 'Nickname updated')),
       );
     } catch (e) {
@@ -373,9 +373,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) =>
             emit(CardUpdated(card: card, message: 'Spending limit updated')),
       );
@@ -402,9 +402,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) =>
             emit(CardUpdated(card: card, message: 'Default card updated')),
       );
@@ -443,9 +443,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) => emit(CardCreated(
           card: card,
           message: 'Physical card requested successfully',
@@ -480,9 +480,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (_) => emit(const CardActionSuccess('Card PIN set successfully')),
       );
     } catch (e) {
@@ -508,9 +508,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (pin) => emit(CardPINRevealed(pin)),
       );
     } catch (e) {
@@ -536,9 +536,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) => emit(CardDetailsRevealed(card)),
       );
     } catch (e) {
@@ -570,9 +570,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) => emit(CardFunded(card: card, amount: amount)),
       );
     } catch (e) {
@@ -604,9 +604,9 @@ class CardCubit extends Cubit<CardState> {
         // dead-end sentence. CardError has carried this field all along and
         // nothing ever populated it.
         (failure) => emit(CardError(
-              message: failure.message,
-              errorCode: failure.statusCode?.toString(),
-            )),
+          message: failure.message,
+          errorCode: failure.statusCode?.toString(),
+        )),
         (card) => emit(CardWithdrawn(card: card, amount: amount)),
       );
     } catch (e) {

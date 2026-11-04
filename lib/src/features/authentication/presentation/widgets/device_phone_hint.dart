@@ -106,10 +106,10 @@ class DevicePhoneHint {
           : national;
 
   /// The countries this hint may resolve to: signup-available only.
-  static List<CountryConfig> get _selectableCountries => CountryConfigs
-      .activeCountries
-      .where((c) => c.isAvailableForSignup)
-      .toList();
+  static List<CountryConfig> get _selectableCountries =>
+      CountryConfigs.activeCountries
+          .where((c) => c.isAvailableForSignup)
+          .toList();
 
   /// Resolve an ISO country code to its config, falling back to the first
   /// SIGNUP country. Returns null only when there are none.

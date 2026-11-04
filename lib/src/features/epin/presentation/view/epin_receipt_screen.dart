@@ -14,6 +14,8 @@ import '../cubit/epin_cubit.dart';
 import '../cubit/epin_state.dart';
 import 'epin_theme.dart';
 
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
+
 /// Recharge-card receipt, restyled to match the Send-Funds (unified) receipt:
 /// an amount hero, a details card, a QR encoding the transaction reference, and
 /// working image (PNG) Download / Share that faithfully render the naira symbol,
@@ -383,6 +385,18 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
   }
 
   (String, Color) _statusChip(EPinOrder order) {
+    // `isFailed` deliberately includes `reversed`, which is a state where the
+    // money came BACK — so a reversed order was labelled "Failed" in failure
+    // red. The canonical rule reads reversed as Refunded, which is what the
+    // customer needs to know.
+    //
+    // KNOWN GAP, not fixable here: the EPinOrder proto carries no
+    // `refund_source`, though the row behind it is a bill_payments row that
+    // has the column — so the far more common refund shape (status `failed`
+    // PLUS a refund_source) is invisible to this screen. Surfacing it means
+    // adding a proto field, which is a contract change and needs sign-off.
+    final label = billReceiptStatusLabel(order.status);
+    if (isRefundLabel(label)) return (label, _warning);
     if (order.isFailed) return ('Failed', _error);
     if (order.isPending) return ('Awaiting verification', _warning);
     return ('Completed', _success);

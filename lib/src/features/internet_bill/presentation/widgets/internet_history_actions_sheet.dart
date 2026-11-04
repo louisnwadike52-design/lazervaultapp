@@ -16,6 +16,8 @@ import '../../domain/entities/internet_payment_entity.dart';
 import '../../domain/entities/internet_provider_entity.dart';
 import 'save_internet_beneficiary_sheet.dart';
 
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
+
 /// Bottom sheet of actions available on a past internet purchase in the
 /// recent transactions strip / history list. Mirrors
 /// `DataHistoryActionsSheet` — the same five actions, same semantics,
@@ -80,7 +82,7 @@ class InternetHistoryActionsSheet {
       context,
       title: accountNumber.isEmpty ? 'Internet purchase' : accountNumber,
       subtitle:
-          '\u20A6${p.amount.toStringAsFixed(2)} \u00B7 ${_statusLabel(p.status)}',
+          '\u20A6${p.amount.toStringAsFixed(2)} \u00B7 ${_statusLabel(p)}',
       actions: [
         BillHistoryAction(
           icon: Icons.receipt_long,
@@ -319,6 +321,11 @@ class InternetHistoryActionsSheet {
       createdAt: p.createdAt,
       newBalance: 0,
       renewalDate: '',
+      // Dropped here, this reconstruction silently un-refunded the payment:
+      // the sheet knew the money came back, and the receipt it opened did
+      // not, so the same row read "Refunded" in the list and "Failed" on the
+      // receipt one tap later.
+      refundSource: p.hasRefundSource() ? p.refundSource : '',
     );
   }
 
@@ -367,11 +374,12 @@ class InternetHistoryActionsSheet {
     }
   }
 
-  static String _statusLabel(String status) {
-    final s = status.toLowerCase();
-    if (s == 'completed') return 'Completed';
-    if (s == 'failed') return 'Failed';
-    if (s == 'refunded') return 'Refunded';
-    return 'Pending';
-  }
+  /// Took the status STRING only, so it could not see a refund recorded on a
+  /// row still stored as `failed` — the common case — and everything it did
+  /// not recognise became "Pending", including refund_failed, which reads as
+  /// "nearly there" over money a human still owes the customer.
+  static String _statusLabel(pb.BillPayment p) => billReceiptStatusLabel(
+        p.status,
+        refundSource: p.hasRefundSource() ? p.refundSource : null,
+      );
 }

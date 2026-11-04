@@ -13,6 +13,8 @@ import '../../domain/entities/data_purchase_entity.dart';
 import 'save_data_beneficiary_sheet.dart';
 import 'package:lazervault/core/utils/ng_network_prefixes.dart';
 
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
+
 class DataHistoryActionsSheet {
   DataHistoryActionsSheet._();
 
@@ -376,11 +378,13 @@ class DataHistoryActionsSheet {
   /// Returns `true` when the contact is already saved or was just saved
   /// successfully, `false` if the user dismissed the save sheet.
 
-  static String _statusLabel(DataPurchaseEntity p) {
-    if (p.isCompleted) return 'Completed';
-    if (p.isFailed) return 'Failed';
-    return 'Pending';
-  }
+  /// Three buckets for five states. DataPurchaseEntity.isFailed is already
+  /// refund-aware, so a refunded purchase was correctly NOT "Failed" — and
+  /// then fell through to "Pending", telling the customer their money was
+  /// still on its way when it had already arrived. The entity's own
+  /// displayStatus knows all five; this is the same rule, sourced once.
+  static String _statusLabel(DataPurchaseEntity p) =>
+      billReceiptStatusLabel(p.status, refundSource: p.refundSource);
 
   /// Best-effort country label for an intl row to show under the network
   /// column on the receipt — reads the country name out of the backend

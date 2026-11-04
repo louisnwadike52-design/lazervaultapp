@@ -22,6 +22,9 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
 import 'package:lazervault/core/utils/route_args.dart';
 
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
+import 'package:lazervault/core/widgets/bill_history_item.dart';
+
 class InternetPaymentReceiptScreen extends StatefulWidget {
   const InternetPaymentReceiptScreen({super.key});
 
@@ -132,6 +135,11 @@ class _InternetPaymentReceiptScreenState
         customerNumber: fresh.customerNumber,
         metadata: fresh.metadata,
         createdAt: fresh.createdAt,
+        // The refund signal is the whole point of a refresh on a failed row.
+        // Dropped here, the auto-refresher un-refunded the payment every
+        // poll: the history list said "Refunded" and this receipt said
+        // "Failed".
+        refundSource: fresh.refundSource,
         // Preserve fields not returned by the history endpoint.
         newBalance: current.newBalance,
         renewalDate: current.renewalDate,
@@ -351,14 +359,11 @@ class _InternetPaymentReceiptScreenState
     }
   }
 
-  String _formatStatus(String status) {
-    return status
-        .split('_')
-        .map((word) => word.isNotEmpty
-            ? word[0].toUpperCase() + word.substring(1).toLowerCase()
-            : '')
-        .join(' ');
-  }
+  /// Title-casing the raw status column told a customer "Failed" about money
+  /// already back in their account — here and in the shared text — while this
+  /// receipt's own PDF said "Refunded". billReceiptStatusLabel owns the rule.
+  String _formatStatus(String status, {String? refundSource}) =>
+      billReceiptStatusLabel(status, refundSource: refundSource);
 
   /// Whether the backend stopped this order because the package the customer
   /// chose is not listed by the gateway that would have fulfilled it.
@@ -398,18 +403,11 @@ class _InternetPaymentReceiptScreenState
     );
   }
 
-  Color _statusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return const Color(0xFF10B981);
-      case 'pending':
-        return const Color(0xFFFB923C);
-      case 'failed':
-        return const Color(0xFFEF4444);
-      default:
-        return const Color(0xFF9CA3AF);
-    }
-  }
+  /// Same palette as the history chips, so a row and its receipt cannot
+  /// disagree about either the word or the colour.
+  Color _statusColor(String status, {String? refundSource}) =>
+      BillHistoryItem.statusInfo(status, refundSource: refundSource)?.$1 ??
+      const Color(0xFF9CA3AF);
 
   @override
   Widget build(BuildContext context) {
@@ -681,8 +679,10 @@ class _InternetPaymentReceiptScreenState
                               _buildDivider(),
                               _buildReceiptRow(
                                 'Status',
-                                _formatStatus(payment.status),
-                                valueColor: _statusColor(payment.status),
+                                _formatStatus(payment.status,
+                                    refundSource: payment.refundSource),
+                                valueColor: _statusColor(payment.status,
+                                    refundSource: payment.refundSource),
                               ),
                               if (payment.newBalance > 0) ...[
                                 _buildDivider(),
@@ -972,7 +972,7 @@ Account Number: ${payment.customerNumber}
 Amount: ${_formatAmount(payment.amount)}
 Reference: ${payment.reference}
 Date: ${_formatDate(payment.createdAt)}
-Status: ${_formatStatus(payment.status)}
+Status: ${_formatStatus(payment.status, refundSource: payment.refundSource)}
 ---
 Powered by Lazervault''';
 

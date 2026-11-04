@@ -1275,8 +1275,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // backend allows — and the user would never reach the server to find out.
     final minBalancePolicy = isExternalTransfer
         ? MinBalancePolicy.resolve(accountType: selectedAccount.accountType)
-            .withRestricted(
-                (selectedAccount.restrictedBalance * 100).round())
+            .withRestricted((selectedAccount.restrictedBalance * 100).round())
         : const MinBalancePolicy(enforced: false);
     // EXTERNAL PAYOUTS ONLY. The floor exists so a retained balance is SPENT
     // ON the platform, so a Lazervault-to-Lazervault send is the thing it is

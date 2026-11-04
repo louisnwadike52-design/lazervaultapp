@@ -99,7 +99,8 @@ class QuickServicePolicy {
   factory QuickServicePolicy.current() {
     final orderOn = _notFalse(QuickServiceKeys.orderEnabled);
     return QuickServicePolicy(
-      orderedLeaders: orderOn ? _slugs(QuickServiceKeys.order, _defaultOrder) : const [],
+      orderedLeaders:
+          orderOn ? _slugs(QuickServiceKeys.order, _defaultOrder) : const [],
       dragLocked: _slugs(QuickServiceKeys.dragLocked, '').toSet(),
       dragEnabled: _notFalse(QuickServiceKeys.dragEnabled),
       // Default OFF: enforcing globally takes every user's arrangement away,

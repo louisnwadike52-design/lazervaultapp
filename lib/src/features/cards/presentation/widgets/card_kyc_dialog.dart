@@ -49,7 +49,8 @@ Future<void> showCardNeedsKycDialog(BuildContext context, String message) {
                 shape: BoxShape.circle,
                 color: accent.withValues(alpha: 0.16),
               ),
-              child: Icon(Icons.credit_card_rounded, color: accent, size: 26.sp),
+              child:
+                  Icon(Icons.credit_card_rounded, color: accent, size: 26.sp),
             ),
             SizedBox(height: 14.h),
             Text(

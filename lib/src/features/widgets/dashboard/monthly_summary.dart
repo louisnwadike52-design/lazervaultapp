@@ -525,9 +525,8 @@ class _MonthlySummaryState extends State<MonthlySummary> {
     // with no sweep: invisible in the pie, a dead spoke on the radar, and a
     // legend row claiming a colour the user cannot find.
     final slices = <ExpenditureSlice>[
-      for (final c
-          in (state.categoryAnalytics?.expenseCategories ??
-              <CategoryBreakdownItem>[]))
+      for (final c in (state.categoryAnalytics?.expenseCategories ??
+          <CategoryBreakdownItem>[]))
         if (c.amount > 0)
           ExpenditureSlice(name: c.categoryName, amount: c.amount),
     ];

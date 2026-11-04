@@ -15,6 +15,11 @@ class EducationHistoryEntity {
   final String phoneNumber;
   final String billersCode;
 
+  /// `bill_payments.refund_source`, non-empty when the money came back on a
+  /// row still stored as `failed`. Carried so the history chip and the receipt
+  /// can agree; see core/utils/bill_receipt_status.dart for the rule.
+  final String refundSource;
+
   const EducationHistoryEntity({
     required this.id,
     required this.providerId,
@@ -29,5 +34,6 @@ class EducationHistoryEntity {
     required this.pins,
     required this.phoneNumber,
     required this.billersCode,
+    this.refundSource = '',
   });
 }

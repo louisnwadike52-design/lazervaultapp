@@ -125,7 +125,8 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
           'networkColor': _argNetworkColor(),
           // Forwarded so the recipient step fills the number too — the
           // whole point of a repeat is that nothing has to be re-entered.
-          if (_args['phoneNumber'] is String) 'phoneNumber': _args['phoneNumber'],
+          if (_args['phoneNumber'] is String)
+            'phoneNumber': _args['phoneNumber'],
           'isRepeat': true,
         },
       );

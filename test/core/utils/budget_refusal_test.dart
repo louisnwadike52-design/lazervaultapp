@@ -15,7 +15,8 @@ void main() {
 
     test('the sentences a server might send instead of a code', () {
       expect(isBudgetRefusal('This payment exceeds your budget'), isTrue);
-      expect(isBudgetRefusal('You are over your budget for this month'), isTrue);
+      expect(
+          isBudgetRefusal('You are over your budget for this month'), isTrue);
       expect(isBudgetRefusal('Budget limit reached'), isTrue);
       expect(isBudgetRefusal('BUDGET EXCEEDED'), isTrue);
     });
@@ -45,7 +46,8 @@ void main() {
     // "budgeting" and "budget" are different words, and the AI Budgeting
     // feature's name appears in plenty of messages that are not refusals.
     test('a mention of budgeting is not a refusal', () {
-      expect(isBudgetRefusal('Open AI Budgeting to see your spending'), isFalse);
+      expect(
+          isBudgetRefusal('Open AI Budgeting to see your spending'), isFalse);
       expect(isBudgetRefusal('Could not load budgets'), isFalse);
     });
   });

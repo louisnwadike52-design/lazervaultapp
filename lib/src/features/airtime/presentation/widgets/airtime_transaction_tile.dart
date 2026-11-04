@@ -144,6 +144,7 @@ class AirtimeTransactionTile extends StatelessWidget {
         amount: transaction.amount,
         currencySymbol: transaction.currencySymbol,
         status: transaction.status.name,
+        refundSource: transaction.refundSignal,
         onTap: onTap ??
             () => AirtimeHistoryActionsSheet.show(context, transaction),
         trailing: trailing,

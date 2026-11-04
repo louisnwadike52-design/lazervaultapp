@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -348,9 +349,14 @@ class CableTVHistoryActionsSheet {
     }
   }
 
-  static String _statusLabel(CableTVPaymentEntity p) {
-    if (p.isCompleted) return 'Completed';
-    if (p.isFailed) return 'Failed';
-    return 'Pending';
-  }
+  /// Three outcomes was two too few.
+  ///
+  /// `isFailed` is true for a refunded row — the backend keeps it as `failed`
+  /// because the PURCHASE failed, which is correct — so this sheet told a
+  /// customer "Failed" about money already back in their account, while the
+  /// receipt PDF for the same payment said "Refunded". It also collapsed
+  /// processing, refund_pending and refund_failed into "Pending", which reads
+  /// as "nearly there" over a refund a human still owes them.
+  static String _statusLabel(CableTVPaymentEntity p) =>
+      billReceiptStatusLabel(p.status, refundSource: p.refundSource);
 }
