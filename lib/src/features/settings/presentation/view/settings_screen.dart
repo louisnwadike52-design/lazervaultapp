@@ -1672,17 +1672,27 @@ class _SettingsViewState extends State<_SettingsView> {
           update(sms: v);
         },
       ),
-      _switchTile(
-        icon: Icons.dark_mode_outlined,
-        title: 'Dark Mode',
-        subtitle: 'Use the dark theme',
-        value: dark,
-        onChanged: (v) {
-          // Switch the theme instantly + cache locally, then persist to server.
-          serviceLocator<ThemeController>().setDark(v);
-          update(dark: v);
-        },
-      ),
+      // Hidden unless an admin turns it on (theme_switch_visible, OFF by
+      // default). Not every surface is audited for light mode, so flipping
+      // this can land a user on a screen only ever designed dark —
+      // revealing the control is a deliberate act once that audit is done,
+      // not something that ships silently with a release.
+      //
+      // Hiding the switch does NOT change the theme: whatever the user or
+      // the server last set stays in force, so turning the control off
+      // cannot flip anybody's app underneath them.
+      if (FeatureFlags.themeSwitchEnabled)
+        _switchTile(
+          icon: Icons.dark_mode_outlined,
+          title: 'Dark Mode',
+          subtitle: 'Use the dark theme',
+          value: dark,
+          onChanged: (v) {
+            // Switch the theme instantly + cache locally, then persist to server.
+            serviceLocator<ThemeController>().setDark(v);
+            update(dark: v);
+          },
+        ),
       // Global chat feedback defaults. Each conversation can override these
       // from that peer's profile sheet; these are the fall-through values.
       _switchTile(

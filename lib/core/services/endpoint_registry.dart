@@ -167,6 +167,11 @@ class EndpointRegistry {
     // nonUrlSnapshot() only emits keys in this set, so the flag would
     // never reach the app and would sit on its code default for ever.
     'uplift_remove_cta_visible',
+    // Appearance + receipts. Both OFF by default and both must be transported,
+    // or the admin toggle saves a value the app never sees and the hardcoded
+    // default wins on every launch — silently, with nothing erroring.
+    'theme_switch_visible',
+    'receipt_format_sheet_visible',
     // ── SMS / phone-OTP master switches ──────────────────────────────────
     //
     // THE WHOLE SMS CHAIN WAS DEAD HERE. Every other link was built —

@@ -6,6 +6,8 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -1859,8 +1861,17 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     // two meaningfully different documents, and the sender genuinely may want
     // either — their own record, or the beneficiary's copy to hand over as
     // proof of payment.
+    // ONLY ASK WHEN THE TWO COPIES ACTUALLY DIFFER.
+    //
+    // The sender's and the recipient's copy are the same document except for
+    // one thing: the fee line, which is the sender's cost and must never
+    // appear on the beneficiary's. A Lazervault-to-Lazervault transfer carries
+    // no fee, so both copies render identically — and the sheet was asking the
+    // user to choose between two things that are the same, before every share.
+    final hasFee = (_externalFee ?? 0) > 0;
     final offerCopy = tx.serviceType == TransactionServiceType.transfer &&
-        tx.flow != TransactionFlow.incoming;
+        tx.flow != TransactionFlow.incoming &&
+        hasFee;
     if (offerCopy) {
       final copy = await _showReceiptCopySheet();
       if (copy == null || !mounted) return;
@@ -1875,9 +1886,16 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           ? ReceiptCopyType.recipient
           : ReceiptCopyType.sender;
     }
-    final format = await _showReceiptFormatSheet(actionLabel);
-    if (format == null || !mounted) return;
-    _chosenFormat = format;
+    // The format chooser is admin-gated and OFF by default
+    // (receipt_format_sheet_visible). PDF and JPG carry identical information,
+    // so the question has no wrong answer and most people do not want to be
+    // asked it — with the flag off the share goes straight out as the default
+    // format (_chosenFormat, PDF).
+    if (FeatureFlags.receiptFormatSheetEnabled) {
+      final format = await _showReceiptFormatSheet(actionLabel);
+      if (format == null || !mounted) return;
+      _chosenFormat = format;
+    }
     await action();
   }
 

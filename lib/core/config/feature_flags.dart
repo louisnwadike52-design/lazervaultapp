@@ -381,6 +381,24 @@ class FeatureFlags {
   static const String autoBiometricLoginEnabled =
       'auto_biometric_login_enabled';
 
+  // ── Appearance ────────────────────────────────────────────────────────────
+  // Whether Settings shows the light/dark theme switch at all.
+  //
+  // OFF by default: the app's surfaces are not all audited for light mode, so
+  // a user who flips it can land on a screen that was only ever designed dark.
+  // Turning it on is a deliberate act once that audit is done, not something
+  // that ships silently with a release.
+  static const String themeSwitchVisible = 'theme_switch_visible';
+
+  // ── Receipts ──────────────────────────────────────────────────────────────
+  // Whether sharing a transfer receipt offers the PDF / JPG format sheet.
+  //
+  // OFF by default: the sheet adds a choice most people do not want to make,
+  // between two formats that carry the same information. With it off the share
+  // goes straight out in the default format.
+  static const String receiptFormatSheetVisible =
+      'receipt_format_sheet_visible';
+
   // ── Insurance hosted-webview entry points (admin-toggled) ─────────────────
   // When ON, the in-app "Buy" and "Manage Plan" insurance entry points open
   // MyCover's universal hosted webview (insuranceHostedLink) in a themed
@@ -648,6 +666,8 @@ class FeatureFlags {
       phoneVerificationRequired,
       kycRequiredOnSignup,
       autoBiometricLoginEnabled,
+      themeSwitchVisible,
+      receiptFormatSheetVisible,
       appUpdateEnabledKey,
       crowdfundDonationAlertsVisible,
       upliftRemoveCtaVisible,
@@ -2226,6 +2246,24 @@ class FeatureFlags {
   /// logon" is on until an admin turns it off. Synchronous — call after [init].
   /// The passcode screen still requires the biometric to be enrolled AND opted
   /// into, so this is a convenience trigger, never an auth bypass.
+  /// Whether Settings shows the light/dark theme switch.
+  ///
+  /// Defaults to FALSE — hidden until an admin turns it on. An unreadable
+  /// config must not reveal a control whose other half (a fully light-audited
+  /// app) may not be ready; hiding is the safe direction here, unlike the
+  /// verification flags where hiding would lock people out.
+  static bool get themeSwitchEnabled {
+    return _prefs?.getBool(themeSwitchVisible) ?? false;
+  }
+
+  /// Whether a receipt share offers the PDF / JPG format sheet.
+  ///
+  /// Defaults to FALSE — share straight out in the default format. Same
+  /// reasoning: an unreadable config should not surface an extra choice.
+  static bool get receiptFormatSheetEnabled {
+    return _prefs?.getBool(receiptFormatSheetVisible) ?? false;
+  }
+
   static bool get autoBiometricLoginOnLaunch {
     return _prefs?.getBool(autoBiometricLoginEnabled) ?? true;
   }
