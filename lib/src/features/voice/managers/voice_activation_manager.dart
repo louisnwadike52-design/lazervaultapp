@@ -89,21 +89,52 @@ class VoiceActivationManager {
           ? VoiceEnrollmentCheck.enrolled
           : VoiceEnrollmentCheck.notEnrolled;
     }
-    try {
-      final status = await _voiceService.checkEnrollmentStatus(userId);
-      print(
-          'VoiceActivationManager: Enrollment status for $userId: ${status.isEnrolled}');
-      _enrollmentCache[userId] = _EnrollmentCacheEntry(status.isEnrolled);
-      return status.isEnrolled
-          ? VoiceEnrollmentCheck.enrolled
-          : VoiceEnrollmentCheck.notEnrolled;
-    } catch (e) {
-      // Transport error / 5xx / ambiguous — NOT a confirmed "not enrolled".
-      // Report as temporarily unavailable and DO NOT cache.
-      print(
-          'VoiceActivationManager: Enrollment check unavailable (transient): $e');
-      return VoiceEnrollmentCheck.unavailable;
+    // ONE RETRY, ON A BUDGET.
+    //
+    // This check normally answers in a few milliseconds — measured against prod
+    // on 2026-11-05, ten consecutive calls averaged 3ms. The failures are not
+    // slow, they are RARE AND TRANSIENT: the backend runs alongside the rest of
+    // the fleet on one machine, and a momentary load spike can push a 3ms call
+    // past the gateway's deadline and return a 504. A single blip then put
+    // "Voice is temporarily unavailable" in front of a user whose voice setup
+    // was perfectly fine.
+    //
+    // So a second attempt is almost free and almost always succeeds. What it
+    // must not do is double a LONG wait: if the first attempt already burned
+    // the budget (the gateway's own timeout is ~10s), retrying would leave the
+    // user staring at a spinner for twice as long for no better reason. The
+    // retry is therefore only taken when the first failure came back QUICKLY,
+    // which is exactly the case where another go is worth having.
+    const budget = Duration(seconds: 12);
+    const quickFailure = Duration(seconds: 3);
+    final started = DateTime.now();
+
+    for (var attempt = 1; attempt <= 2; attempt++) {
+      try {
+        final status = await _voiceService.checkEnrollmentStatus(userId);
+        print(
+            'VoiceActivationManager: Enrollment status for $userId: ${status.isEnrolled}');
+        _enrollmentCache[userId] = _EnrollmentCacheEntry(status.isEnrolled);
+        return status.isEnrolled
+            ? VoiceEnrollmentCheck.enrolled
+            : VoiceEnrollmentCheck.notEnrolled;
+      } catch (e) {
+        // Transport error / 5xx / ambiguous — NOT a confirmed "not enrolled".
+        // Never cached, so a blip can never strand someone as "not enrolled".
+        final elapsed = DateTime.now().difference(started);
+        final worthRetrying = attempt == 1 &&
+            elapsed < quickFailure &&
+            budget - elapsed > quickFailure;
+        print('VoiceActivationManager: Enrollment check failed '
+            '(attempt $attempt, ${elapsed.inMilliseconds}ms, '
+            'retry=$worthRetrying): $e');
+        if (!worthRetrying) {
+          return VoiceEnrollmentCheck.unavailable;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 350));
+      }
     }
+    return VoiceEnrollmentCheck.unavailable;
   }
 
   /// Check if user has enrolled voice. Kept for existing callers that only need
