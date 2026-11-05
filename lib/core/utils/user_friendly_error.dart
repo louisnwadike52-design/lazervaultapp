@@ -129,10 +129,30 @@ String _grpcErrorMessage(GrpcError error) {
       return 'This already exists. Please check and try again.';
     case StatusCode.resourceExhausted:
       return "You're doing that too quickly. Please wait a moment and try again.";
-    case StatusCode.invalidArgument:
-      return 'Please check your input and try again.';
     case StatusCode.failedPrecondition:
-      return "This action can't be completed right now. Please try again later.";
+    case StatusCode.invalidArgument:
+      // THESE TWO CODES CARRY THE SERVER'S OWN SENTENCE, AND IT MUST SURVIVE.
+      //
+      // Both used to collapse to a generic line. failedPrecondition is the
+      // code every deliberate, actionable business refusal uses - the
+      // onboarding-grant rule, the retained-balance floor, a family pool
+      // refusal, a disabled bill type - and the services word those
+      // carefully, some of them from admin-editable copy. Replacing
+      //
+      //   "Your NGN2,000.00 bonus is for spending on Lazervault, so you can
+      //    transfer up to NGN90.00 of your own money right now."
+      //
+      // with "This action can't be completed right now. Please try again
+      // later." threw away the only thing that told the user what to do, and
+      // then advised a retry that could never succeed. Reported from
+      // production as a tester who "can't do anything".
+      //
+      // friendly_error.dart and grpc_error_handler.dart both already pass
+      // these through; this mapper was the outlier, so which message a user
+      // saw depended on which cubit happened to catch the error. Routed via
+      // sanitizeUserFacingError so a real sentence shows while a raw
+      // rpc/JSON blob still collapses to the generic line.
+      return sanitizeUserFacingError(error.message);
     case StatusCode.cancelled:
       return 'Request was cancelled. Please try again.';
     default:

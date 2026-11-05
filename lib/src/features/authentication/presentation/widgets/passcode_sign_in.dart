@@ -1266,6 +1266,29 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                 onDigit: _onNumberPressed,
                                 onBackspace: _onBackspacePressed,
                                 disabled: isAuthenticating,
+                                // CONTRAST OVER A PHOTO, NOT OVER A COLOUR.
+                                //
+                                // The default fill is white at 15%, which is
+                                // fine on the settings screens where this
+                                // keypad sits on a solid surface. Here it sits
+                                // on a rotating photograph behind a 65% black
+                                // scrim, and a light fill on a light backdrop
+                                // vanishes: over a bright patch of wallpaper
+                                // the button measured about 1.3:1 against its
+                                // surroundings. Reported as "those buttons are
+                                // hard to see", and they were.
+                                //
+                                // A DARK fill inverts the relationship — it is
+                                // darker than the scrimmed photo wherever the
+                                // photo is bright — and the hairline border
+                                // keeps the key's shape defined over the dark
+                                // patches where a dark fill alone would merge.
+                                // Between them the key has an edge on every
+                                // frame of the rotation, and the white digit
+                                // gains contrast too (about 4.1:1 over bright
+                                // areas, up from 2.9:1).
+                                buttonColor: const Color(0x61000000),
+                                buttonBorderColor: const Color(0x4DFFFFFF),
                                 // The buffer lives on the cubit here, not in
                                 // this widget; read it from the same state
                                 // the dots are painted from so the two can

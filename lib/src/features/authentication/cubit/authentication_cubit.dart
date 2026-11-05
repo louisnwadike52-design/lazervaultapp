@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_sna
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
 import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/device_login_history.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -337,6 +338,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // phone login path that funnels through here).
       RemoteLogSink.instance.setUserId(profile.user.id);
 
+      // Remember that this identity has now signed in ON THIS INSTALL, so a
+      // future step-up challenge can tell a genuinely new device from a
+      // familiar one and stop calling every challenge a "new sign-in".
+      // Recorded here because this is the single funnel every successful login
+      // passes through. Fire-and-forget: it must never delay or fail a login.
+      unawaited(DeviceLoginHistory.remember(profile.user.email));
+      unawaited(DeviceLoginHistory.remember(profile.user.phoneNumber));
+
       await _storage.write(
         key: _accessTokenKey,
         value: profile.session.accessToken,
@@ -660,11 +669,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       }
       // Risk-based step-up: route to the OTP flow instead of an error.
       if (failure is StepUpRequiredFailure) {
+        // knownDevice decides only the WORDING of the challenge screen —
+        // the raw sign-in identifier typed on the login screen.
+        final knownDeviceHere =
+            await DeviceLoginHistory.hasSignedInBefore(email);
         emit(LoginStepUpRequired(
           stepUpToken: failure.stepUpToken,
           method: failure.stepUpMethod,
           destination: failure.destination,
           expiresInSeconds: failure.expiresInSeconds,
+          knownDevice: knownDeviceHere,
         ));
         return;
       }
@@ -716,11 +730,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         return;
       }
       if (failure is StepUpRequiredFailure) {
+        // knownDevice decides only the WORDING of the challenge screen —
+        // the identifier the passcode login submitted.
+        final knownDeviceHere =
+            await DeviceLoginHistory.hasSignedInBefore(email);
         emit(LoginStepUpRequired(
           stepUpToken: failure.stepUpToken,
           method: failure.stepUpMethod,
           destination: failure.destination,
           expiresInSeconds: failure.expiresInSeconds,
+          knownDevice: knownDeviceHere,
         ));
         return;
       }
@@ -890,11 +909,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         return;
       }
       if (failure is StepUpRequiredFailure) {
+        // OAuth: the identity is not known until the provider returns, so stay cautious.
+        const knownDeviceHere = false;
         emit(LoginStepUpRequired(
           stepUpToken: failure.stepUpToken,
           method: failure.stepUpMethod,
           destination: failure.destination,
           expiresInSeconds: failure.expiresInSeconds,
+          knownDevice: knownDeviceHere,
         ));
         return;
       }
@@ -3018,13 +3040,40 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
     final currentState = state as PasscodeLoginInProgress;
 
-    final storedPhone = await _storage.read(key: 'stored_phone');
+    // ACKNOWLEDGE THE SIXTH DIGIT BEFORE DOING ANY WORK.
+    //
+    // This used to emit `isAuthenticating` only after the secure-storage reads
+    // below. On Android every flutter_secure_storage read is a Keystore round
+    // trip, and there were three of them in series, so the keypad sat visibly
+    // dead between the last tap and the spinner — with nothing on screen to say
+    // the tap registered. Users read that as "the login is slow", and the
+    // natural response is to tap again. The work that follows did not get
+    // faster here; it just stopped being invisible.
+    if (isClosed) return;
+    emit(currentState.copyWith(isAuthenticating: true, clearError: true));
+
+    // The identifiers are independent, so read them CONCURRENTLY rather than
+    // paying three serial Keystore round trips. _userEmailKey is fetched up
+    // front as part of the same batch instead of being a fourth serial read on
+    // the (common) empty-stored_email path — one unused read costs nothing
+    // next to another round trip.
+    // Started BEFORE the awaits below so it rides alongside them rather than
+    // adding a fourth round trip. It is consumed inside the non-async fold
+    // callbacks further down, which cannot await, so it is resolved here.
+    final historyFuture = DeviceLoginHistory.snapshot();
+    final reads = await Future.wait([
+      _storage.read(key: 'stored_phone'),
+      _storage.read(key: 'stored_email'),
+      _storage.read(key: _userEmailKey),
+    ]);
+    final loginHistory = await historyFuture;
+    final storedPhone = reads[0];
     // stored_email FIRST: every login path rewrites it from the backend
     // profile, so it self-heals. The legacy user_email mirror is only a
     // fallback — preferring it let a stale copy outrank the healed value.
-    String? email = await _storage.read(key: 'stored_email');
+    String? email = reads[1];
     if (email == null || email.isEmpty) {
-      email = await _storage.read(key: _userEmailKey);
+      email = reads[2];
     }
 
     // INVARIANT: these cached identifiers must belong to the user this screen is
@@ -3046,9 +3095,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final usePhone = storedPhone != null && storedPhone.isNotEmpty;
 
     if (usePhone) {
-      print('🔐 Passcode login attempt - using PHONE: $storedPhone');
-      if (isClosed) return;
-      emit(currentState.copyWith(isAuthenticating: true, clearError: true));
+      // isAuthenticating was already emitted above, the moment the sixth digit
+      // landed — re-emitting it here would be a no-op rebuild.
+      // The identifier is NOT logged: this runs in release builds too, and a
+      // phone number in logcat is a PII leak readable by any app with log
+      // access on older Androids.
+      print('🔐 Passcode login attempt - using PHONE');
 
       final result = await _authRepository.loginWithPhonePasscode(
         phone: storedPhone,
@@ -3070,11 +3122,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           }
           // Risk-based step-up: route to the OTP flow instead of an error.
           if (failure is StepUpRequiredFailure) {
+            // Wording only. This IS the lock screen, so either cached
+            // identifier proves the person has signed in here before.
             emit(LoginStepUpRequired(
               stepUpToken: failure.stepUpToken,
               method: failure.stepUpMethod,
               destination: failure.destination,
               expiresInSeconds: failure.expiresInSeconds,
+              knownDevice: loginHistory.containsAny([storedPhone, email]),
             ));
             return;
           }
@@ -3102,17 +3157,27 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           ));
         },
         (profile) async {
-          print('🔐 Phone passcode login successful for: $storedPhone');
+          print('🔐 Phone passcode login successful');
+          // The session must be durable BEFORE success is announced — the next
+          // screen reads the tokens it writes.
           await _saveSession(profile);
-          await _storage.write(key: 'login_method', value: 'phone_passcode');
-          await _storage.write(key: 'stored_phone', value: storedPhone);
+          // `stored_phone` is deliberately NOT rewritten: its value here is the
+          // one just read from this same key a moment ago, so the write was a
+          // guaranteed no-op that still cost a Keystore round trip on the
+          // critical path between a correct passcode and the home screen.
+          // login_method is bookkeeping for the NEXT launch, so it does not
+          // gate this one.
+          unawaited(_storage
+              .write(key: 'login_method', value: 'phone_passcode')
+              .catchError((_) {}));
           emit(AuthenticationSuccess(profile));
         },
       );
       return;
     }
 
-    print('🔐 Passcode login attempt - Email from storage: $email');
+    // Email withheld for the same reason as the phone number above.
+    print('🔐 Passcode login attempt - using EMAIL');
 
     if (email == null || email.isEmpty) {
       _showErrorSnackbar(
@@ -3145,11 +3210,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           return;
         }
         if (failure is StepUpRequiredFailure) {
+          // Wording only — see the phone branch above.
           emit(LoginStepUpRequired(
             stepUpToken: failure.stepUpToken,
             method: failure.stepUpMethod,
             destination: failure.destination,
             expiresInSeconds: failure.expiresInSeconds,
+            knownDevice: loginHistory.containsAny([storedPhone, email]),
           ));
           return;
         }

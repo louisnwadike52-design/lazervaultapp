@@ -46,12 +46,18 @@ class LoginOtpScreen extends StatelessWidget {
   /// say, in which case the screen uses its fallback.
   final int expiresInSeconds;
 
+  /// Whether this identity has signed in on THIS INSTALL before. Wording only
+  /// — it never decides whether the challenge appears. Defaults to false so an
+  /// unconverted caller keeps the cautious copy.
+  final bool knownDevice;
+
   const LoginOtpScreen({
     super.key,
     required this.stepUpToken,
     required this.method,
     required this.destination,
     this.expiresInSeconds = 0,
+    this.knownDevice = false,
   });
 
   @override
@@ -63,6 +69,7 @@ class LoginOtpScreen extends StatelessWidget {
         method: method,
         destination: destination,
         expiresInSeconds: expiresInSeconds,
+        knownDevice: knownDevice,
       ),
     );
   }
@@ -73,12 +80,14 @@ class _LoginOtpView extends StatefulWidget {
   final String method;
   final String destination;
   final int expiresInSeconds;
+  final bool knownDevice;
 
   const _LoginOtpView({
     required this.stepUpToken,
     required this.method,
     required this.destination,
     required this.expiresInSeconds,
+    required this.knownDevice,
   });
 
   @override
@@ -103,7 +112,18 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   // admin-tunable auth_login_otp_ttl_seconds. The screen used to hardcode its
   // own 10 minutes and "mirror" the server by hand, so retuning the server
   // silently left every installed app counting down from the old number.
-  static const int _fallbackTtlSeconds = 90;
+  /// There is DELIBERATELY no fallback lifetime any more.
+  ///
+  /// This used to be 90 seconds, chosen to match the server at the time. The
+  /// server's TTL is admin-tunable and has since moved to five minutes, and
+  /// nothing made the two move together — so an app that never heard a TTL
+  /// confidently counted down from a number that was wrong by more than 3x.
+  /// A second hardcoded lifetime is exactly the drift the server field exists
+  /// to remove, so re-adding one here would recreate the bug.
+  ///
+  /// When the server does not state a lifetime the app now states none: it
+  /// shows no countdown rather than a guess, and never declares a code expired
+  /// on the strength of one. See [_lifetimeKnown].
 
   static const int _boxes = 6;
   final List<TextEditingController> _controllers =
@@ -111,7 +131,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   final List<FocusNode> _focusNodes = List.generate(_boxes, (_) => FocusNode());
 
   Timer? _ticker;
-  int _remaining = _fallbackTtlSeconds;
+  int _remaining = 0;
   bool _submitting = false;
   String? _errorText;
 
@@ -143,10 +163,36 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   /// re-reads the clock.
   DateTime? _deadline;
 
+  /// Whether the SERVER told us how long this code lives. Everything that
+  /// claims a deadline is gated on it.
+  bool _lifetimeKnown = false;
+
   void _startTicker() {
-    _restartTicker(widget.expiresInSeconds > 0
-        ? widget.expiresInSeconds
-        : _fallbackTtlSeconds);
+    if (widget.expiresInSeconds > 0) {
+      _restartTicker(widget.expiresInSeconds);
+      return;
+    }
+    // No server TTL. Run the resend cooldown only — the user still needs a way
+    // out if the code never arrives — but show no countdown and never expire
+    // the code locally, because we genuinely do not know when it dies.
+    _lifetimeKnown = false;
+    _deadline = null;
+    _remaining = 0;
+    _ticker?.cancel();
+    _resendDeadline =
+        DateTime.now().add(const Duration(seconds: _resendCooldownSeconds));
+    _ticker = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      if (_canResend) {
+        t.cancel();
+        setState(() {});
+        return;
+      }
+      setState(() {});
+    });
   }
 
   /// When a resend becomes possible. SEPARATE from the expiry deadline: the
@@ -168,6 +214,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
       (_resendDeadline == null || !DateTime.now().isBefore(_resendDeadline!));
 
   void _restartTicker(int seconds) {
+    _lifetimeKnown = true;
     _ticker?.cancel();
     _deadline = DateTime.now().add(Duration(seconds: seconds));
     // Never past the expiry: if the code dies first, resend is already offered
@@ -204,7 +251,10 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
     return left > 0 ? left : 0;
   }
 
-  bool get _expired => _remaining <= 0;
+  /// Expired only when the SERVER gave us a deadline and it has passed. With
+  /// no server TTL this stays false: locking the keypad and announcing "Code
+  /// expired" off a guess would strand someone holding a perfectly valid code.
+  bool get _expired => _lifetimeKnown && _remaining <= 0;
 
   String get _code => _controllers.map((c) => c.text).join();
 
@@ -630,6 +680,16 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   /// Why the user is seeing this at all. It used to be a bare shield glyph over
   /// a heading; saying "new device" is what actually reassures someone who did
   /// just sign in somewhere new — and warns someone who didn't.
+  ///
+  /// But it said exactly that EVERY time, including to someone unlocking the
+  /// phone they have used daily for months. A security banner that cries wolf
+  /// on every sign-in is worse than no banner: it teaches people to swipe past
+  /// the one warning that should stop them. So the claim is now made only when
+  /// this install has never signed this identity in before.
+  ///
+  /// The softer copy is still honest about what is happening — the server did
+  /// raise a challenge, for a risk reason the app is not told — it just does
+  /// not invent "new device" as the reason.
   Widget _buildWhyBanner() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
@@ -645,7 +705,9 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
-              'New sign-in detected on this device.',
+              widget.knownDevice
+                  ? 'Extra verification is needed to continue.'
+                  : 'New sign-in detected on this device.',
               style: TextStyle(
                 color: _ink,
                 fontSize: 13.sp,
@@ -667,8 +729,10 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         SizedBox(width: 8.w),
         Expanded(
           child: Text(
-            "Didn't request this? Don't share the code, close the app and "
-            'change your password.',
+            widget.knownDevice
+                ? "Didn't request this? Don't share the code with anyone."
+                : "Didn't request this? Don't share the code, close the app "
+                    'and change your password.',
             style:
                 TextStyle(color: _textSecondary, fontSize: 12.sp, height: 1.4),
           ),

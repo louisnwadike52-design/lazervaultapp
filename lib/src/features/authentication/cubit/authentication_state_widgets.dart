@@ -41,16 +41,30 @@ class LoginStepUpRequired extends AuthenticationState {
   /// Code lifetime in seconds as the server reported it. 0 = not supplied.
   final int expiresInSeconds;
 
+  /// Whether this identity has signed in on THIS INSTALL before.
+  ///
+  /// Drives only the wording of the challenge screen, never whether it is
+  /// shown — the server alone decides that. The screen used to assert "New
+  /// sign-in detected on this device" unconditionally, which was false for
+  /// anyone unlocking a phone they use daily and trains people to dismiss the
+  /// one warning that should never be dismissed.
+  ///
+  /// Defaults to FALSE so any path that has not been taught to resolve it
+  /// keeps the cautious wording. Over-warning is recoverable; under-warning
+  /// on a device that really is new is not.
+  final bool knownDevice;
+
   const LoginStepUpRequired({
     required this.stepUpToken,
     required this.method,
     required this.destination,
     this.expiresInSeconds = 0,
+    this.knownDevice = false,
   });
 
   @override
   List<Object?> get props =>
-      [stepUpToken, method, destination, expiresInSeconds];
+      [stepUpToken, method, destination, expiresInSeconds, knownDevice];
 }
 
 // 2FA required at login: the user has 2FA enabled. The login screen navigates to
