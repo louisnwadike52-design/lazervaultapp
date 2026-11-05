@@ -65,7 +65,22 @@ class _WebViewSheetState extends State<_WebViewSheet> {
           _loadTimer?.cancel();
           if (mounted) setState(() => _loading = false);
         },
-        onWebResourceError: (_) {
+        onWebResourceError: (error) {
+          // ONLY THE MAIN FRAME COUNTS.
+          //
+          // On Android this fires for EVERY failed resource, not just the
+          // document — a webfont, an analytics beacon, a favicon, anything the
+          // page pulls in. Treating all of them as fatal put the full-screen
+          // "Couldn't load this page" over pages that had rendered perfectly
+          // well: Help Center and Contact Us both return 200 and both failed
+          // here, because one subresource on each did not load.
+          //
+          // isForMainFrame is nullable — the platform does not always say. Only
+          // a definite `false` is treated as a subresource; an unknown keeps
+          // the old behaviour, because silently swallowing a real failure would
+          // leave the user on a blank sheet with no explanation, which is worse
+          // than a false alarm.
+          if (error.isForMainFrame == false) return;
           _loadTimer?.cancel();
           if (mounted) {
             setState(() {
