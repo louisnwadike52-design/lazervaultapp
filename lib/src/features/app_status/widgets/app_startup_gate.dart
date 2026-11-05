@@ -163,6 +163,48 @@ class _AppStartupGateState extends State<AppStartupGate>
 
   bool _isSignUpFlow() => _signUpRoutes.contains(Get.currentRoute);
 
+  /// Screens where the user is mid-way through typing a one-time code.
+  ///
+  /// NOTHING OPTIONAL MAY INTERRUPT THESE. Entering an OTP is the one flow in
+  /// the app that requires LEAVING it: the code is in a mail app or the SMS
+  /// shade, so the user must switch away and come back. That return is exactly
+  /// when `didChangeAppLifecycleState(resumed)` fires `_run()`.
+  ///
+  /// Before 2026-10-31 that was harmless here, because the optional-update
+  /// sheet was shown with this widget's own context — which sits ABOVE the
+  /// Navigator, so showModalBottomSheet could not find one and threw, and the
+  /// throw was swallowed by _run's catch-all. The sheet therefore never
+  /// appeared on an auth screen. Switching it to Get.context (deliberately, so
+  /// people on unsupported builds are told) made it land for the first time —
+  /// and the first screen it lands on is the one the user had to leave the app
+  /// to complete.
+  ///
+  /// From the user's side that reads as the app reloading and scattering the
+  /// screen on every return from their inbox, right as they try to paste a
+  /// code. A forced update still blocks, because an unsupported build genuinely
+  /// cannot be used; an OPTIONAL prompt can wait for literally any other
+  /// moment, and `shouldShowOptionalModal` is token-based so deferring it does
+  /// not consume it.
+  static const Set<String> _oneTimeCodeRoutes = <String>{
+    AppRoutes.emailVerification,
+    AppRoutes.phoneEmailVerification,
+    AppRoutes.phoneOtp,
+    AppRoutes.otpVerification,
+    AppRoutes.verifyPasswordResetOTP,
+  };
+
+  bool _isEnteringOneTimeCode() {
+    final r = Get.currentRoute;
+    if (_oneTimeCodeRoutes.contains(r)) return true;
+    // The login step-up screen is pushed with `Get.to(() => LoginOtpScreen(...))`
+    // (phone_passcode_login_screen.dart), so it has no AppRoutes constant —
+    // GetX names an anonymous route after the widget, giving `/LoginOtpScreen`.
+    // Matching the substring covers it and any future anonymously-pushed code
+    // screen, which is the direction this drifts: a named set alone would
+    // silently stop protecting a screen the moment someone pushes it that way.
+    return r.toLowerCase().contains('otp');
+  }
+
   // Distinguishes the USER's connectivity from a SERVER outage: if the device
   // itself has no network, a failed health probe is the user's problem (their
   // API calls will snackbar "no connection"), NOT maintenance. Unknown → assume
@@ -271,6 +313,24 @@ class _AppStartupGateState extends State<AppStartupGate>
             DateTime.now().difference(_outageDismissedAt!) < _dismissHold) {
           outage = null;
         }
+        // A TRANSIENT verdict must not cover a one-time-code entry.
+        //
+        // The user reached this screen and then left the app to fetch the code,
+        // so on return the radio is often still re-establishing — which is
+        // exactly when a reachability probe reports `connection` or
+        // `slowConnection`. Painting a full-screen Positioned.fill modal over
+        // the code field at that moment blocks the one action they came back to
+        // perform, for a problem that has usually already resolved.
+        //
+        // `server` and `plannedMaintenance` still show: those are OURS, they are
+        // not a false positive from a waking radio, and they genuinely explain
+        // why the code cannot be verified.
+        if (outage != null &&
+            _isEnteringOneTimeCode() &&
+            (outage == OutageKind.connection ||
+                outage == OutageKind.slowConnection)) {
+          outage = null;
+        }
         if (outage != _outage) setState(() => _outage = outage);
         if (outage != null) {
           return; // can't reach the backend on an auth screen — skip the
@@ -292,6 +352,14 @@ class _AppStartupGateState extends State<AppStartupGate>
       } else {
         if (_forcedInfo != null) setState(() => _forcedInfo = null);
         if (info.type == AppUpdateType.optional) {
+          // Never over a one-time-code entry. Token-based de-duplication means
+          // the prompt is NOT consumed by skipping it here: the next resume, or
+          // the pre-login poll, shows it once the user is off the code screen.
+          if (_isEnteringOneTimeCode()) {
+            debugPrint('[startup-gate] update sheet deferred: user is '
+                'entering a one-time code');
+            return;
+          }
           final should = await service.shouldShowOptionalModal(info);
           if (should && mounted) {
             // Get.context, NOT this widget's context.

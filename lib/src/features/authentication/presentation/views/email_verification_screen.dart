@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:lazervault/core/config/feature_flags.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,6 +16,7 @@ import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/email_otp_send_guard.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
 part 'email_verification_screen_widgets.dart';
 
@@ -43,7 +45,13 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
       }
       if (!mounted) return;
       context.read<EmailVerificationCubit>().initialize(_email);
-      context.read<EmailVerificationCubit>().updateVerificationCode('');
+      // NOT cleared here any more.
+      //
+      // This ran on every mount. On a RE-mount — the OS reclaimed the app while
+      // the user was in their mail client, or the widget subtree was replaced —
+      // the cubit survives, so this threw away digits the user had already
+      // entered and the screen appeared to reset itself. It was also a no-op on
+      // a genuinely fresh mount, where the code is already empty.
 
       if (widget.codeSent) {
         // Code was already sent before navigation - just show snackbar
@@ -59,10 +67,20 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
         );
         _startResendCooldown(60);
       } else {
-        // Code was NOT sent before navigation - send it in the background (non-blocking)
-        _sendVerificationEmailOnLoad();
-        // Start cooldown immediately while email is being sent
-        _startResendCooldown(60);
+        // Code was NOT sent before navigation — send it, UNLESS one was sent
+        // for this address moments ago.
+        //
+        // A re-mount of this screen used to auto-send unconditionally, and the
+        // server DELETES the previous row when it issues a new code — so a
+        // re-mount invalidated the very code the user had switched apps to go
+        // and read. See EmailOtpSendGuard.
+        if (await EmailOtpSendGuard.mayAutoSend(_email)) {
+          _sendVerificationEmailOnLoad();
+          unawaited(EmailOtpSendGuard.markSent(_email));
+        }
+        // Cooldown either way: a code IS live, so the button must stay disabled
+        // for the same period whether or not we just sent one.
+        if (mounted) _startResendCooldown(60);
       }
     });
   }
@@ -76,6 +94,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
     // by the BlocListener below (on the cubit's successMessage emit) — which
     // also covers the "Resend Code" button. Do NOT also show one here or two
     // snackbars (same meaning, different text) appear on load.
+    unawaited(EmailOtpSendGuard.markSent(_email));
     context
         .read<EmailVerificationCubit>()
         .resendVerificationEmail()
