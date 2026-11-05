@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 11 and below (android:fullBackupContent).
+
+  WHY ANYTHING IS EXCLUDED AT ALL: the backend now treats the DEVICE ID as the
+  identity that decides whether you are a known device — location is no longer
+  an authentication gate (see auth-service risk_engine.go). The app therefore
+  mirrors that id into plain app-private preferences so a Keystore hiccup
+  cannot silently rotate it and turn a familiar phone into a "new device".
+
+  That mirror must NOT travel in a backup. Restoring onto a DIFFERENT handset
+  would carry the id across and make a genuinely new device look already
+  trusted, which is the one outcome worse than an extra OTP. Excluding it means
+  a new phone mints a fresh id and is correctly challenged once.
+
+  The encrypted secure-storage file is excluded for the same reason, plus one
+  of its own: its Keystore key is device-bound and is never backed up, so a
+  restored copy is undecryptable anyway. flutter_secure_storage is configured
+  resetOnError, so that undecryptable blob is silently wiped on first read —
+  which is precisely how the device id used to be lost.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+    <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
+</full-backup-content>

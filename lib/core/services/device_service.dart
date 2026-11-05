@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 /// Service for managing device identification
@@ -31,6 +32,38 @@ class DeviceService {
       // Try to read from storage first
       String? deviceId = await _storage.read(key: _deviceIdKey);
 
+      // SECURE STORAGE LOST IT? ASK THE PLAIN MIRROR BEFORE MINTING A NEW ONE.
+      //
+      // The device id is now what the backend uses to decide whether you are a
+      // known device (risk_engine.go — location is no longer a gate), so a
+      // rotated id is not a cosmetic bug: it makes a phone the user has used
+      // for months look brand new and puts an email OTP in front of them.
+      //
+      // On ANDROID that was reachable without anything going wrong on the
+      // server. flutter_secure_storage is configured
+      // `encryptedSharedPreferences: true, resetOnError: true`; the Keystore
+      // key is device-bound and is NOT included in Android auto-backup, while
+      // the encrypted file IS. After a restore the file cannot be decrypted,
+      // resetOnError silently wipes it, and _stablePlatformId() returns null on
+      // Android (ANDROID_ID was removed for privacy) — so the next read minted
+      // a fresh UUID. The same happens on any Keystore invalidation.
+      //
+      // The id is an IDENTIFIER, not a credential: nothing is protected by its
+      // secrecy, and the server treats it as a claim it verifies with an OTP.
+      // So mirroring it in ordinary app-private preferences costs no security
+      // and removes the whole failure mode. The mirror must be excluded from
+      // auto-backup too, so restoring onto a DIFFERENT handset still yields a
+      // fresh id — a new phone genuinely is a new device.
+      if (deviceId == null || deviceId.isEmpty) {
+        deviceId = await _readMirroredDeviceId();
+        if (deviceId != null && deviceId.isNotEmpty) {
+          // Heal secure storage from the mirror so both agree again.
+          try {
+            await _storage.write(key: _deviceIdKey, value: deviceId);
+          } catch (_) {/* mirror alone is enough to stay stable */}
+        }
+      }
+
       if (deviceId == null || deviceId.isEmpty) {
         // Seed from a STABLE platform identifier where available (iOS
         // identifierForVendor) so a Keystore/secure-storage loss re-derives the
@@ -42,21 +75,48 @@ class DeviceService {
         await _storage.write(key: _deviceIdKey, value: deviceId);
       }
 
+      await _mirrorDeviceId(deviceId);
       _cachedDeviceId = deviceId;
       return deviceId;
     } catch (e) {
-      // Storage failed: still derive a STABLE id and try to persist it, so we
-      // don't hand out a brand-new random id (→ a new FCM token row → duplicate
-      // pushes) on every launch.
-      final fallback = (await _stablePlatformId()) ?? const Uuid().v4();
+      // Secure storage threw outright. The mirror is the whole reason this
+      // branch no longer rotates the id on Android.
+      final mirrored = await _readMirroredDeviceId();
+      final fallback =
+          mirrored ?? (await _stablePlatformId()) ?? const Uuid().v4();
       try {
         await _storage.write(key: _deviceIdKey, value: fallback);
       } catch (_) {
         // best-effort; cached below keeps it stable for this process at least
       }
+      await _mirrorDeviceId(fallback);
       _cachedDeviceId = fallback;
       return fallback;
     }
+  }
+
+  /// The plain, app-private mirror of [_deviceIdKey].
+  ///
+  /// Deliberately NOT encrypted: encryption is what made the primary copy
+  /// fragile, and this value is an identifier rather than a secret. Both
+  /// reads and writes are best-effort — a missing mirror simply means the
+  /// caller falls through to the behaviour that existed before it.
+  Future<String?> _readMirroredDeviceId() async {
+    try {
+      return (await SharedPreferences.getInstance()).getString(_deviceIdKey);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _mirrorDeviceId(String deviceId) async {
+    if (deviceId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getString(_deviceIdKey) != deviceId) {
+        await prefs.setString(_deviceIdKey, deviceId);
+      }
+    } catch (_) {/* best-effort */}
   }
 
   /// A stable per-device identifier from the OS, used only to SEED [_deviceIdKey]
