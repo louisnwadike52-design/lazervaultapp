@@ -19,7 +19,30 @@ import 'dart:ui' show Rect;
 class StatementFileService {
   final Dio _dio;
 
-  StatementFileService({Dio? dio}) : _dio = dio ?? Dio();
+  StatementFileService({Dio? dio}) : _dio = dio ?? _defaultClient();
+
+  /// A plain Dio WITH TIMEOUTS.
+  ///
+  /// This was `Dio()`, whose connect/receive timeouts both default to null —
+  /// meaning no limit at all. A download that stalled (a dropped connection
+  /// mid-body, a captive portal, a cold object store) therefore never
+  /// returned and never threw: the screen sat on `_isPreparingFile = true`
+  /// for ever, with no error and no way back except leaving the screen. From
+  /// the user's side that is indistinguishable from the feature being broken,
+  /// and it is reported as "download doesn't work".
+  ///
+  /// A statement is a small file fetched over the same tunnel as every other
+  /// call, so these are generous: they exist to turn a hang into a message,
+  /// not to police a slow connection. The caller already surfaces any throw
+  /// as a snackbar, so a timeout now tells the user what happened and leaves
+  /// the Retry affordance usable.
+  static Dio _defaultClient() => Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 20),
+          receiveTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 30),
+        ),
+      );
 
   /// Download [url] to a file named [filename] under the platform's documents
   /// directory and return the absolute local path.
