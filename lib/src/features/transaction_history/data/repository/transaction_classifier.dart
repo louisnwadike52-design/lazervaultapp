@@ -499,6 +499,15 @@ String generateTransactionTitle(
   // apart by service_name (see [classifyDomain]); any capture that isn't
   // giftcards previously fell through to the generic hold_capture→
   // "Gift Card Purchase" rule below.
+  // A NAMED BETTING OPERATOR BEATS THE DOMAIN, for the same reason it does in
+  // inferServiceTypeFromCategory: a wallet funded by bank transfer to the
+  // operator's collection account carries category 'transfer', so the domain
+  // resolves below and returns before the betting branch is ever reached. The
+  // counterparty name in the description is the only evidence of purpose.
+  if (mentionsBettingOperator(_textOf(description, category))) {
+    return typeLower == 'credit' ? 'Betting Refund' : 'Betting Wallet Funding';
+  }
+
   final domain = classifyDomain(category, description, reference, serviceName);
   final domainTitle = titleForDomain(domain, typeLower);
   if (domainTitle != null) return domainTitle;
@@ -511,7 +520,8 @@ String generateTransactionTitle(
         : 'Recharge Card Purchase';
   } else if (looksLikeBettingRef(reference) ||
       categoryLower.contains('betting') ||
-      _textOf(description, category).contains('betting')) {
+      _textOf(description, category).contains('betting') ||
+      mentionsBettingOperator(_textOf(description, category))) {
     return typeLower == 'credit' ? 'Betting Refund' : 'Betting Wallet Funding';
   } else if (categoryLower.contains('airtime')) {
     return typeLower == 'credit' ? 'Airtime Top-up' : 'Airtime Purchase';
@@ -575,6 +585,22 @@ TransactionServiceType inferServiceTypeFromCategory(
   if (cat.contains('onboarding_grant') || cat.contains('tester_allocation')) {
     return TransactionServiceType.grant;
   }
+  // A NAMED BETTING OPERATOR BEATS THE DOMAIN, and has to.
+  //
+  // Funding a betting wallet by bank transfer to the operator's collection
+  // account — what happens whenever the betting provider is unavailable —
+  // arrives with category 'transfer', so classifyDomain below resolves it to
+  // the transfer domain and returns immediately, never reaching the betting
+  // branch further down. The counterparty name in the description is the only
+  // evidence of what the money was for, so it must be read before the domain
+  // decides.
+  //
+  // Narrow on purpose: an explicitly named operator only. Everything else
+  // keeps the existing order.
+  if (mentionsBettingOperator(_textOf(description, category))) {
+    return TransactionServiceType.betting;
+  }
+
   // Disambiguate the shared 'hold_capture' bucket by content FIRST (via
   // service_name + description) so a crypto/FX/insurance/invoice/RMB/fee/
   // transfer capture isn't misclassified as a giftcard.
@@ -592,7 +618,8 @@ TransactionServiceType inferServiceTypeFromCategory(
     return TransactionServiceType.epin;
   } else if (looksLikeBettingRef(reference) ||
       cat.contains('betting') ||
-      _textOf(description, category).contains('betting')) {
+      _textOf(description, category).contains('betting') ||
+      mentionsBettingOperator(_textOf(description, category))) {
     return TransactionServiceType.betting;
   } else if (cat.contains('airtime')) {
     return TransactionServiceType.airtime;
@@ -705,6 +732,51 @@ bool looksLikeEPinRef(String reference) {
       r.startsWith('hold-epin') ||
       r.contains('-epin-') ||
       r.contains('epin');
+}
+
+/// Betting operators we fund wallets for.
+///
+/// Kept beside looksLikeBettingRef because the two answer the same question
+/// from different evidence, and only together do they cover what users do.
+///
+/// A funding that goes through the betting flow mints a `BET-...` reference
+/// and the reference rule catches it. But the same wallet can be funded by a
+/// plain bank transfer to the operator's collection account — which is what
+/// happens whenever the betting provider is unavailable — and that row is an
+/// ordinary `TRF-transfer_...` whose only trace of its purpose is the
+/// counterparty name sitting in the description:
+///
+///   "Transfer to SPORTY BET"   TRF-transfer_76af3b53-...   Type: Transfer
+///
+/// Read as a transfer it was titled "Transfer", filed away from the other
+/// betting rows, and offered a "Send again" button that would re-send money
+/// to a betting account with none of the checks the betting flow performs.
+const _bettingOperators = <String>{
+  'sportybet',
+  'bet9ja',
+  '1xbet',
+  'betking',
+  'betway',
+  'nairabet',
+  'msport',
+  'merrybet',
+};
+
+/// True when [text] names a betting operator.
+///
+/// Spaces and punctuation are stripped first, because the name arrives however
+/// the rail spelled it — "SPORTY BET", "Sporty-Bet" and "SPORTYBET" are one
+/// operator. Matched as a substring of the squashed text so "Transfer to
+/// SPORTY BET" is caught, and the names are specific enough ("sportybet", not
+/// "bet") that an unrelated payee is not swept up.
+bool mentionsBettingOperator(String? text) {
+  if (text == null || text.isEmpty) return false;
+  final squashed = text.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+  if (squashed.isEmpty) return false;
+  for (final op in _bettingOperators) {
+    if (squashed.contains(op)) return true;
+  }
+  return false;
 }
 
 /// Betting-wallet funding references are minted as `BET-...`.
