@@ -26,6 +26,13 @@ NotificationTarget? _resolveAccount(String type, Map<String, String> data) {
     if (event.contains('passcode')) {
       return _landing(AppRoutes.changePasscode);
     }
+    // 2fa.enabled / 2fa.disabled. These have their own settings screen, and the
+    // question the notification raises — "was that me?" — is answered there and
+    // nowhere else. Falling through to myAccount made a security change about a
+    // specific control open a page that does not show that control.
+    if (event.startsWith('2fa')) {
+      return _landing(AppRoutes.twoFactorSettings);
+    }
     if (event.contains('biometric') || event.contains('face')) {
       return _landing(AppRoutes.setFingerPrint);
     }
@@ -57,7 +64,16 @@ NotificationTarget? _resolveAccount(String type, Map<String, String> data) {
   // BudgetDetailScreen is driven by the shared BudgetCubit rather than by
   // arguments, so it cannot be addressed by id from here — the list is the
   // correct landing and the breached budget is the one flagged on it.
-  if (type.startsWith('budget')) {
+  //
+  // MATCHED BY NAME AS WELL AS PREFIX. HandleBudgetAlertNotification emits
+  // THREE alert types for this one feature and puts the alert type straight
+  // into `type`: budget_exceeded, threshold_reached and approaching_limit.
+  // Only the first begins with "budget", so the other two — the EARLY warnings,
+  // the ones a user can still act on — fell past this branch and dead-ended on
+  // the notifications feed, while the already-too-late one opened the budgets.
+  if (type.startsWith('budget') ||
+      type == 'threshold_reached' ||
+      type == 'approaching_limit') {
     return _landing(AppRoutes.budgetList);
   }
 
