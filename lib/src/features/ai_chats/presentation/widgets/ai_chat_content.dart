@@ -1479,8 +1479,16 @@ class _AiChatContentState extends State<AiChatContent>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                _accent.primary.withValues(alpha: 0.15 + 0.25 * scrolled),
-                _accent.secondary.withValues(alpha: 0.08 + 0.18 * scrolled),
+                // AT REST, NOT ONLY WHEN SCROLLED.
+                //
+                // These were 0.15 and 0.08, so at rest the accent was 15% and
+                // 8% over a near-black background — which does not read as
+                // purple, it reads as grey. Nova's header looked like an
+                // unstyled system sheet sitting on top of a purple app. The
+                // accent only became visible once the user scrolled, which is
+                // the one moment the header matters least.
+                _accent.primary.withValues(alpha: 0.55 + 0.20 * scrolled),
+                _accent.secondary.withValues(alpha: 0.34 + 0.16 * scrolled),
                 InvoiceThemeColors.primaryBackground,
               ],
             ),

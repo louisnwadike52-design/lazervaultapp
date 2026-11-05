@@ -51,11 +51,18 @@ class ChatThemePreference {
   /// one has been checked for contrast against the chat's dark surface —
   /// an accent nobody can read their own message on is not a theme.
   static const List<ChatAccent> accents = [
+    // The platform default, and it must be the DASHBOARD's purple.
+    //
+    // 0xFF7C3AED is the brand violet used across the app (the account-details
+    // share sheet, the card settings header, the open-banking card, the
+    // transaction escrow accent). The chat was using 0xFF8B5CF6 — a lighter
+    // violet from a different step of the ramp — so Nova read as a slightly
+    // off, washed-out relative of the dashboard rather than the same product.
     ChatAccent(
       id: 'purple',
       label: 'Purple',
-      primary: Color(0xFF8B5CF6),
-      secondary: Color(0xFFA78BFA),
+      primary: Color(0xFF7C3AED),
+      secondary: Color(0xFF8B5CF6),
     ),
     ChatAccent(
       id: 'indigo',
