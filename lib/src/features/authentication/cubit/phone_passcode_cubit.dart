@@ -10,7 +10,6 @@ import '../domain/entities/profile_entity.dart';
 import '../domain/repositories/i_auth_repository.dart';
 import 'phone_passcode_state.dart';
 import 'package:lazervault/src/features/authentication/domain/signup_phone_rules.dart';
-import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 
 /// Drives the dedicated "Phone Number + Passcode" authentication flow
 /// (signup + login). Mirrors the responsibilities the [AuthenticationCubit]
@@ -183,15 +182,25 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
     // account with no token and phone_verified=false, which is the same path
     // the manual "skip for now" link uses. The number is still collected,
     // still goes to KYC, and can be verified later when a provider is live.
-    if (!SmsPolicy.showSignupOtpStep) {
-      try {
-        await _storage.write(key: _draftPhoneKey, value: phone);
-        await _storage.write(key: _draftCountryKey, value: countryCode);
-      } catch (_) {/* best-effort, mirrors the OTP success path */}
-      await skipPhoneVerification();
-      return;
-    }
-
+    // ALWAYS ASK THE SERVER, EVEN WITH NO SMS PROVIDER.
+    //
+    // This used to return here when SmsPolicy said no code could be sent,
+    // skipping the request entirely. But RequestSignupPhoneOTP checks that the
+    // number is UNREGISTERED *before* it considers sending anything
+    // (auth_phone_verification.go: FindByPhone, then the resend cooldown, then
+    // the send). Skipping the call therefore skipped the only duplicate-phone
+    // check in the whole signup journey.
+    //
+    // What the user saw: they entered a number that already had an account,
+    // sailed past the phone step, and met "phone number already registered,
+    // please log in" on the EMAIL screen — a phone error on a screen with no
+    // phone field, two steps after the field that caused it. The number is
+    // rejected either way; the only question is whether they are told on the
+    // screen they can fix it on.
+    //
+    // Calling costs nothing when SMS is off: the server answers
+    // ErrSmsUnavailable without sending, and the failure branch below takes
+    // the same skip this early return used to.
     emit(const PhonePasscodeLoading());
 
     final result = await _authRepository.requestSignupPhoneOtp(
@@ -204,14 +213,14 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
       (failure) async {
         // THE SERVER IS THE AUTHORITY ON WHETHER SMS CAN BE DELIVERED.
         //
-        // The SmsPolicy check above is an optimisation: it keeps the step out
-        // of the journey using a flag snapshot that SharedPreferences caches
-        // and a background poll refreshes. That snapshot can be WRONG - stale
-        // from before an operator switched the provider off, or written true
-        // by a settings payload the backend no longer agrees with. When it is,
-        // we ask for a code, auth-service refuses with ErrSmsUnavailable, and
-        // the old behaviour was to show that refusal as a hard error on the
-        // first screen of signup. A customer hit exactly that on 2026-11-03.
+        // THE SERVER DECIDES, AND IT IS NOW THE ONLY THING THAT DECIDES.
+        //
+        // There used to be a SmsPolicy pre-check that kept this step out of the
+        // journey from a cached flag. It was removed: that snapshot can be
+        // wrong, and more importantly skipping the request also skipped the
+        // server's duplicate-phone check, which is the only one in signup —
+        // see the note above the loading emit. A customer hit the stale-flag
+        // half of that on 2026-11-03 and the duplicate half on 2026-11-05.
         //
         // So the refusal is treated as what it actually is - the authoritative
         // answer to "can you send a code" - and we take the same branch the
@@ -228,6 +237,14 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
             await _storage.write(key: _draftCountryKey, value: countryCode);
           } catch (_) {/* best-effort, mirrors the OTP success path */}
           if (isClosed) return;
+          // Leave the loading state FIRST. skipPhoneVerification() opens with
+          // `if (state is PhonePasscodeLoading) return;`, and the state is
+          // always Loading here because we emit it immediately before the
+          // request — so this branch silently did nothing and stranded the
+          // user on the phone screen with no error and no progress. It is the
+          // safety net for exactly the case that is live today (no SMS
+          // provider), and it could never fire.
+          emit(const PhonePasscodeInitial());
           await skipPhoneVerification();
           return;
         }
