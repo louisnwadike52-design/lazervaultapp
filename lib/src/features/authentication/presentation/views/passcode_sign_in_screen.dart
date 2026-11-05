@@ -34,9 +34,15 @@ class _PasscodeSignInScreenState extends State<PasscodeSignInScreen> {
       body: Stack(
         children: [
           // Full-bleed background that cross-fades to a new bundled photo
-          // every 5 seconds (compressed webp variants).
+          // every 10 seconds (compressed webp variants).
+          //
+          // Ten rather than seven: each swap costs a GPU texture upload on the
+          // raster thread, and this screen's whole job is to stay responsive
+          // while someone taps a passcode. A longer interval cuts that work by
+          // a third and leaves a wider quiet gap around each fade, at no cost
+          // to the effect.
           const Positioned.fill(
-            child: RotatingAuthBackground(interval: Duration(seconds: 7)),
+            child: RotatingAuthBackground(interval: Duration(seconds: 10)),
           ),
           // NOTE: the dark scrim for readability is rendered INSIDE PasscodeSignIn
           // (single light overlay) — no screen-level overlay here, otherwise the

@@ -160,15 +160,29 @@ class _RotatingAuthBackgroundState extends State<RotatingAuthBackground>
     final leaving = _index;
     final next = _nextIndex(_index);
     setState(() => _index = next);
-    // Preload the image after next so it's ready by the following tick.
-    _precache(_nextIndex(next));
-    // Drop the one we are fading AWAY from, but only once the cross-fade has
-    // finished — evicting mid-transition would blank the outgoing layer.
-    // Without this the cache grows to every variant the session has shown.
+
+    // BOTH the preload and the evict wait for the cross-fade to finish.
+    //
+    // Decoding happens off the main isolate (Flutter hands asset bytes to the
+    // engine's codec on a worker), but the finished bitmap still has to be
+    // uploaded to a GPU texture, and that lands on the RASTER thread — the
+    // same thread drawing this 900ms fade. Preloading the next photo the
+    // instant the previous one started fading put a multi-megabyte upload in
+    // the middle of the only animation on screen, which is the most visible
+    // moment it could possibly have picked. Moved behind the fade it has the
+    // whole remaining interval (seconds) to complete unobserved.
+    //
+    // The evict waits for the same reason plus one of its own: dropping the
+    // outgoing image mid-transition would blank the layer being faded out.
     Future.delayed(widget.fadeDuration + const Duration(milliseconds: 100), () {
       if (!mounted) return;
-      if (leaving == _index) return; // we came back to it; keep it
-      _providerFor(_order[leaving]).evict();
+      if (leaving != _index) {
+        // Not the one we are showing any more, so let it go. Without this the
+        // cache grows to every variant the session has shown.
+        _providerFor(_order[leaving]).evict();
+      }
+      // Ready well before the next tick, and no longer racing the animation.
+      _precache(_nextIndex(_index));
     });
   }
 
