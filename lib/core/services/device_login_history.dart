@@ -123,9 +123,18 @@ class DeviceLoginHistory {
     return DeviceLoginSnapshot._(await _read(storage ?? _defaultStorage));
   }
 
-  /// Forget every identity. Called when the app clears a user's cached
-  /// identifiers (a user switch or a stale-cache purge), so the next sign-in
-  /// on this install is treated as new — which it is.
+  /// Forget every identity.
+  ///
+  /// NOT called on a user switch, and it must not be. The history is keyed per
+  /// IDENTITY, which already gives a shared handset the right answer: user B
+  /// signing in for the first time is correctly told it is a new sign-in,
+  /// while user A, who has used this phone for months, is not. Clearing on a
+  /// switch would wipe A's entry too and greet them as new on their own
+  /// device — the exact false alarm this class exists to stop.
+  ///
+  /// Reserved for a deliberate "forget this device" / app-data reset. Nothing
+  /// calls it today; it exists so that reset has one correct way to do it
+  /// rather than reaching into the storage key.
   static Future<void> clear({FlutterSecureStorage? storage}) async {
     try {
       await (storage ?? _defaultStorage).delete(key: _key);

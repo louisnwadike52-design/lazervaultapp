@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/device_login_history.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/core/services/user_switch_purge.dart';
@@ -519,10 +520,15 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
     if (isClosed || state is PhonePasscodeLoading) return;
     emit(const PhonePasscodeLoading());
 
+    // Started before the await so it rides alongside the login call rather
+    // than adding a round trip, and resolved out here because the fold
+    // callbacks below are not async.
+    final knownDeviceFuture = DeviceLoginHistory.hasSignedInBefore(phone);
     final result = await _authRepository.loginWithPhonePasscode(
       phone: phone,
       passcode: passcode,
     );
+    final knownDevice = await knownDeviceFuture;
 
     if (isClosed) return;
     result.fold(
@@ -535,11 +541,15 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
           return;
         }
         if (failure is StepUpRequiredFailure) {
+          // Wording only — see PhoneLoginStepUpRequired.knownDevice. Resolved
+          // from whether THIS install has signed this identity in before, so a
+          // returning user is not told their own phone is a new device.
           emit(PhoneLoginStepUpRequired(
             stepUpToken: failure.stepUpToken,
             method: failure.stepUpMethod,
             destination: failure.destination,
             expiresInSeconds: failure.expiresInSeconds,
+            knownDevice: knownDevice,
           ));
           return;
         }

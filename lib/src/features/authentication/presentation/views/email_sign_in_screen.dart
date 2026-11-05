@@ -434,6 +434,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                     method: final method,
                     destination: final dest,
                     expiresInSeconds: final ttl,
+                    knownDevice: final known,
                   ):
                   // Risk-based step-up: collect the OTP. Same handoff as the
                   // 2FA branch — the OTP screen scopes the SAME app-wide
@@ -449,6 +450,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                         method: method,
                         destination: dest,
                         expiresInSeconds: ttl,
+                        knownDevice: known,
                       ))?.then((_) {
                     if (mounted) _navigated = false;
                   });

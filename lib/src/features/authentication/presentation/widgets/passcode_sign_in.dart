@@ -1001,6 +1001,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                 method: state.method,
                 destination: state.destination,
                 expiresInSeconds: state.expiresInSeconds,
+                knownDevice: state.knownDevice,
               ))?.then((_) {
             if (mounted) {
               _navigated = false;

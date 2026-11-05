@@ -126,16 +126,24 @@ class PhoneLoginStepUpRequired extends PhonePasscodeState {
   /// Code lifetime in seconds as the server reported it. 0 = not supplied.
   final int expiresInSeconds;
 
+  /// Whether this identity has signed in on THIS INSTALL before. Wording of
+  /// the challenge screen only — never whether it appears. Mirrors
+  /// [LoginStepUpRequired.knownDevice]; both exist because the phone-passcode
+  /// flow has its own state tree, and a field added to only one of them leaves
+  /// half the app still claiming every sign-in is from a new device.
+  final bool knownDevice;
+
   const PhoneLoginStepUpRequired({
     required this.stepUpToken,
     required this.method,
     required this.destination,
     this.expiresInSeconds = 0,
+    this.knownDevice = false,
   });
 
   @override
   List<Object?> get props =>
-      [stepUpToken, method, destination, expiresInSeconds];
+      [stepUpToken, method, destination, expiresInSeconds, knownDevice];
 }
 
 /// A failure; [message] is safe to surface to the user.

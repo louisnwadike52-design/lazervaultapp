@@ -241,6 +241,7 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
                 method: state.method,
                 destination: state.destination,
                 expiresInSeconds: state.expiresInSeconds,
+                knownDevice: state.knownDevice,
               ));
           return;
         }

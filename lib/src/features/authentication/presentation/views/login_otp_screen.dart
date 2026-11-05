@@ -94,7 +94,8 @@ class _LoginOtpView extends StatefulWidget {
   State<_LoginOtpView> createState() => _LoginOtpViewState();
 }
 
-class _LoginOtpViewState extends State<_LoginOtpView> {
+class _LoginOtpViewState extends State<_LoginOtpView>
+    with WidgetsBindingObserver {
   // This screen sits INSIDE the phone-login flow — it is the step immediately
   // after "Log in" — so it wears that flow's chrome (PhoneFlowScaffold: curved
   // background, back button, title/subtitle, pill CTA) rather than the dark
@@ -138,11 +139,42 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _startTicker();
+  }
+
+  /// Snap the countdown the moment the app comes back.
+  ///
+  /// This screen's whole purpose is to be left — the code arrives in email or
+  /// SMS, so the user backgrounds the app to go and read it. That is the
+  /// reported journey ("once I leave the app to check my email the code
+  /// expires"), and it is the one moment the timer must not lie.
+  ///
+  /// The deadline design already keeps it HONEST: every tick re-reads the
+  /// clock, so a suspended timer can never run the display slow. What it
+  /// cannot do is update the instant the user returns — a platform that
+  /// froze the timer leaves up to a full second of stale digits on screen
+  /// before the next tick lands, and on a code with seconds left that is the
+  /// difference between typing it and being told it died. Re-reading on
+  /// resume costs nothing and removes the gap.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) return;
+    final left = _secondsLeft();
+    if (left == _remaining) return;
+    setState(() => _remaining = left);
+    if (_lifetimeKnown && left <= 0) {
+      // Expired while we were away. Enter the expired state cleanly rather
+      // than leaving dead digits above a "get a new code" prompt.
+      _ticker?.cancel();
+      _clearBoxes(refocus: false);
+      setState(() => _errorText = null);
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
     for (final c in _controllers) {
       c.dispose();
