@@ -143,8 +143,19 @@ class _BettingReviewScreenState extends State<BettingReviewScreen>
       amount: _amount,
       currency: 'NGN',
       title: 'Confirm funding',
-      message:
-          'Confirm funding $_accountName on ${_platform!.name} with NGN ${_amount.toStringAsFixed(0)}',
+      // The account NAME is optional, and for most platforms absent.
+      //
+      // VTU.africa's betting verify does not return an account holder: it
+      // echoes the platform back in the Customer field, and
+      // resolveBetAccountName correctly refuses to pass that off as a person's
+      // name. So _accountName is usually empty — and interpolating it produced
+      // "Confirm funding  on SportyBet with NGN 1500", a gap where a name
+      // should be, on the one screen that asks the user to approve money
+      // leaving. The account ID always identifies the destination, so it
+      // carries the sentence when no name resolved.
+      message: _accountName.trim().isEmpty
+          ? 'Confirm funding $_accountUserid on ${_platform!.name} with NGN ${_amount.toStringAsFixed(0)}'
+          : 'Confirm funding $_accountName on ${_platform!.name} with NGN ${_amount.toStringAsFixed(0)}',
       showProcessingPhase: false,
       onPinValidated: (token) async {
         verificationToken = token;
@@ -301,8 +312,15 @@ class _BettingReviewScreenState extends State<BettingReviewScreen>
           _row('Platform', _platform!.name),
           SizedBox(height: 10.h),
           _row('Account', _accountUserid),
-          SizedBox(height: 10.h),
-          _row('Account name', _accountName),
+          // Only when one actually resolved. The receipt screen already guards
+          // this and the review screen did not, so every SportyBet funding
+          // showed an "Account name" row with nothing beside it — which reads
+          // as a failed lookup on the screen the user is about to approve a
+          // payment from.
+          if (_accountName.trim().isNotEmpty) ...[
+            SizedBox(height: 10.h),
+            _row('Account name', _accountName),
+          ],
           if (_saveAccount) ...[
             SizedBox(height: 12.h),
             Row(
