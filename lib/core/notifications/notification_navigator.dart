@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/services.dart';
@@ -7,6 +9,7 @@ import 'package:lazervault/core/config/feature_flags.dart';
 
 import 'package:lazervault/core/notifications/notification_route_resolver.dart';
 import 'package:lazervault/core/notifications/notification_target.dart';
+import 'package:lazervault/core/notifications/pending_deep_link_store.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -51,6 +54,14 @@ class PendingDeepLink {
   // under a live session are account-specific and cleared on teardown.
   bool _stashedUnderSession = false;
 
+  /// The user a session-captured target belongs to. A restored target with an
+  /// owner may only replay for that same user — otherwise, on a shared device,
+  /// one person's transfer notification would open for whoever logs in next.
+  String? _stashedOwnerUserId;
+
+  /// Guards against restoring twice (startup + a later trigger).
+  bool _restoreAttempted = false;
+
   /// How long a stashed target stays valid.
   ///
   /// A tap that has been waiting at the login gate for a day is no longer what
@@ -61,6 +72,67 @@ class PendingDeepLink {
 
   bool get hasPending => _take(peek: true) != null;
 
+  /// Reloads a stash the previous process left behind, then tries to route.
+  ///
+  /// Called once at startup. Does nothing when a target is already held in
+  /// memory — this process's own tap is fresher than the last one's leftovers.
+  Future<void> restore() async {
+    if (_restoreAttempted) return;
+    _restoreAttempted = true;
+    if (_pending != null) return;
+
+    final stored = await PendingDeepLinkStore.load();
+    if (stored == null) return;
+
+    // Same staleness rule as the in-memory stash: an intent that has been
+    // waiting longer than this is no longer what the user came back for.
+    if (DateTime.now().difference(stored.stashedAt) > _staleAfter) {
+      await PendingDeepLinkStore.clear();
+      return;
+    }
+
+    NotificationTarget? target;
+    if (stored.isLink) {
+      final parsed = NotificationLink.parse(stored.uri!);
+      if (parsed != null) {
+        target = NotificationRouteResolver.resolve(parsed.type, parsed.data);
+        // Unknown type in THIS build — same fallback handleOrFeed uses, so an
+        // older app meeting a newer server still shows what buzzed rather than
+        // dropping the restored tap silently.
+        target ??= const NotificationTarget(
+          route: AppRoutes.notificationsFeed,
+          precision: TargetPrecision.serviceLanding,
+        );
+      }
+    } else {
+      target = stored.toTarget();
+    }
+    if (target == null) {
+      await PendingDeepLinkStore.clear();
+      return;
+    }
+
+    _pending = target;
+    _stashedAt = stored.stashedAt;
+    _stashedOwnerUserId = stored.ownerUserId;
+    // A record with an owner was captured under a session, so sign-out
+    // teardown must drop it exactly as it would have in the original process.
+    _stashedUnderSession = stored.ownerUserId != null;
+    consumeAndNavigate();
+  }
+
+  /// The signed-in user's id, or null when there is no session.
+  String? _currentUserId() {
+    try {
+      final s = serviceLocator<AuthenticationCubit>().state;
+      if (s is AuthenticationSuccess) return s.profile.user.id;
+      if (s is AuthenticationAuthenticated) return s.profile.user.id;
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Resolves [type]/[data] and routes, or stashes for after login.
   ///
   /// Returns true when the notification had a destination at all — false means
@@ -69,8 +141,24 @@ class PendingDeepLink {
   bool handle(String type, Map<String, dynamic> data) {
     final target = NotificationRouteResolver.resolve(type, data);
     if (target == null) return false;
-    push(target);
+    // Carry the ORIGINAL pair alongside the resolved target so the stash can be
+    // persisted in link form and re-resolved after a restart. Preferred over
+    // persisting the target, whose arguments may hold a live object (the
+    // transaction deep link passes a TransactionServiceType enum).
+    push(target, sourceType: type, sourceData: _asStringMap(data));
     return true;
+  }
+
+  /// Flattens a push payload to the string map the canonical link form takes.
+  /// FCM data is already all-strings; a feed row may hold other scalars.
+  static Map<String, String> _asStringMap(Map<String, dynamic> data) {
+    final out = <String, String>{};
+    data.forEach((k, v) {
+      if (v == null) return;
+      final s = v.toString();
+      if (s.isNotEmpty) out[k] = s;
+    });
+    return out;
   }
 
   /// Same, from a `lazervault://n/...` or `https://lazervault.app/n/...` link.
@@ -105,11 +193,46 @@ class PendingDeepLink {
   }
 
   /// Stashes [target] and tries to route right away.
-  void push(NotificationTarget target) {
+  ///
+  /// [sourceType]/[sourceData] are the original notification pair when there was
+  /// one; passing them lets the stash persist in the re-resolvable link form.
+  void push(
+    NotificationTarget target, {
+    String? sourceType,
+    Map<String, String>? sourceData,
+  }) {
     _pending = target;
     _stashedAt = DateTime.now();
     _stashedUnderSession = _isAuthenticated();
+    _stashedOwnerUserId = _stashedUnderSession ? _currentUserId() : null;
+    unawaited(_persist(target, sourceType, sourceData));
     consumeAndNavigate();
+  }
+
+  /// Mirrors the stash to disk so it survives the app being killed during the
+  /// login detour. Fire-and-forget: a failed write costs the cross-restart
+  /// guarantee, never the tap.
+  Future<void> _persist(
+    NotificationTarget target,
+    String? sourceType,
+    Map<String, String>? sourceData,
+  ) async {
+    final at = _stashedAt;
+    if (at == null) return;
+    if (sourceType != null && sourceType.isNotEmpty) {
+      await PendingDeepLinkStore.saveLink(
+        type: sourceType,
+        data: sourceData ?? const {},
+        stashedAt: at,
+        ownerUserId: _stashedOwnerUserId,
+      );
+      return;
+    }
+    await PendingDeepLinkStore.saveRoute(
+      target: target,
+      stashedAt: at,
+      ownerUserId: _stashedOwnerUserId,
+    );
   }
 
   /// Routes the stashed target if it is now possible to. Safe to call from
@@ -120,6 +243,19 @@ class PendingDeepLink {
     if (Get.context == null) return; // navigator not mounted yet
     if (target.requiresAuth && !_isAuthenticated()) return;
     if (_onAuthOrLockRoute()) return; // wait until past the gate
+
+    // OWNERSHIP. A target captured under a session belongs to that user. On a
+    // shared device the next person to log in must never be shown the previous
+    // one's transfer, so a restored session-captured target is discarded rather
+    // than replayed when the signed-in user differs.
+    final owner = _stashedOwnerUserId;
+    if (owner != null && owner.isNotEmpty) {
+      final now = _currentUserId();
+      if (now != null && now != owner) {
+        clearAll();
+        return;
+      }
+    }
 
     final confirmed = _take();
     if (confirmed == null) return; // another caller won the race
@@ -188,6 +324,8 @@ class PendingDeepLink {
     _pending = null;
     _stashedAt = null;
     _stashedUnderSession = false;
+    _stashedOwnerUserId = null;
+    unawaited(PendingDeepLinkStore.clear());
   }
 
   /// Unconditional wipe (used by tests / a hard reset). Prefer [clear] for
@@ -196,6 +334,8 @@ class PendingDeepLink {
     _pending = null;
     _stashedAt = null;
     _stashedUnderSession = false;
+    _stashedOwnerUserId = null;
+    unawaited(PendingDeepLinkStore.clear());
   }
 
   /// Side effects that must happen before landing on certain destinations.
@@ -224,12 +364,20 @@ class PendingDeepLink {
     if (at != null && DateTime.now().difference(at) > _staleAfter) {
       _pending = null;
       _stashedAt = null;
+      _stashedUnderSession = false;
+      _stashedOwnerUserId = null;
+      unawaited(PendingDeepLinkStore.clear());
       return null;
     }
     if (!peek) {
       _pending = null;
       _stashedAt = null;
       _stashedUnderSession = false;
+      _stashedOwnerUserId = null;
+      // The disk copy must go with it. Leaving it behind would replay an
+      // already-consumed notification on the next cold start — yanking the
+      // user to a receipt they just closed.
+      unawaited(PendingDeepLinkStore.clear());
     }
     return target;
   }
@@ -249,6 +397,16 @@ class PendingDeepLink {
   /// authenticated state can flip to true while the passcode screen is still
   /// on top, and routing then would push the destination underneath the gate.
   bool _onAuthOrLockRoute() {
+    // A BLOCKING MODAL OWNS THE SCREEN.
+    //
+    // The fraud freeze and the forced-update prompt are dialogs, not routes, so
+    // no path check sees them — and the freeze is security-critical: the
+    // dashboard deliberately resolves it first and lets it own the screen.
+    // Pushing a receipt over it would both hide it and let the user navigate
+    // away from it. Deferring costs nothing, because the replay observer
+    // retries on didPop as soon as the dialog closes.
+    if (Get.isDialogOpen == true || Get.isBottomSheetOpen == true) return true;
+
     final r = Get.currentRoute;
     return r.startsWith('/auth/') ||
         r.startsWith('/kyc/') ||

@@ -23,6 +23,7 @@ import 'package:lazervault/core/services/signup_state_service.dart';
 // import + the clearIfBuildChanged() call together if a stale-state regression returns.
 // import 'package:lazervault/core/services/fresh_install_guard.dart';
 import 'package:lazervault/core/notifications/notification_navigator.dart';
+import 'package:lazervault/core/notifications/deep_link_replay_observer.dart';
 import 'package:lazervault/core/notifications/notification_target.dart';
 import 'package:lazervault/core/services/pending_chat_navigation.dart';
 import 'package:lazervault/core/services/chat_sound_settings.dart';
@@ -470,6 +471,18 @@ void main() {
       PendingDeepLink.instance.handleOrFeed(type, m.data);
     };
     unawaited(pushSvc.initialize());
+
+    // Reload a tapped notification the PREVIOUS process was killed holding.
+    //
+    // The stash was memory-only, which breaks the commonest signed-out
+    // journey: tap a transfer push, get the login gate, leave the app to read
+    // the email OTP, and have the OS reclaim the app while you are in your
+    // mail. The login this gate demands is precisely the one that sends the
+    // user out of the app, so the stash died exactly when it was needed.
+    //
+    // Ordered AFTER the push handler is wired so THIS process's own tap —
+    // which is fresher — always wins; restore() no-ops when one is held.
+    unawaited(PendingDeepLink.instance.restore());
 
     // Permissions + audio settings are fire-and-forget: they don't gate
     // anything on first frame (the permission check just logs on denial;
@@ -1158,7 +1171,11 @@ class _MyAppState extends State<MyApp> {
               // Lets a screen know it became visible again after a pushed route
               // popped — the only lifecycle signal Flutter gives for that. See
               // appRouteObserver.
-              navigatorObservers: [appRouteObserver],
+              // deepLinkReplayObserver retries a stashed notification target on
+              // every route change, so replay no longer depends on the
+              // dashboard being the first authenticated screen (it is not, when
+              // login lands on KYC, a forced update, or a fraud freeze).
+              navigatorObservers: [appRouteObserver, deepLinkReplayObserver],
               enableLog: true,
               logWriterCallback: localLogWriter,
               translations: CMSData(),
