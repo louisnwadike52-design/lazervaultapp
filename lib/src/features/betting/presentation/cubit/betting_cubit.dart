@@ -226,6 +226,18 @@ class BettingCubit extends Cubit<BettingState> {
         case StatusCode.failedPrecondition:
         case StatusCode.invalidArgument:
           return sanitizeUserFacingError(error.message);
+        case StatusCode.unavailable:
+          // The betting service sends UNAVAILABLE with a message written FOR
+          // the user, and it carries the one fact that decides what they do
+          // next: whether the problem is their account id or ours.
+          //
+          // This used to fall through to the default below, so the server's
+          // wording was discarded and everyone saw "Something went wrong.
+          // Please try again." A tester funded with NGN 2,000 read that under
+          // the Account / user ID field, concluded his id was wrong, and
+          // retried it repeatedly. The provider had actually answered
+          // "Supply a valid apikey" - our credential, nothing he could fix.
+          return sanitizeUserFacingError(error.message);
         default:
           return 'Something went wrong. Please try again.';
       }
