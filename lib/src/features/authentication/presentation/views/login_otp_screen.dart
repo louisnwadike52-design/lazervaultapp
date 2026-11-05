@@ -199,14 +199,14 @@ class _LoginOtpViewState extends State<_LoginOtpView>
   /// claims a deadline is gated on it.
   bool _lifetimeKnown = false;
 
-  void _startTicker() {
-    if (widget.expiresInSeconds > 0) {
-      _restartTicker(widget.expiresInSeconds);
-      return;
-    }
-    // No server TTL. Run the resend cooldown only — the user still needs a way
-    // out if the code never arrives — but show no countdown and never expire
-    // the code locally, because we genuinely do not know when it dies.
+  void _startTicker() => _restartTicker(widget.expiresInSeconds);
+
+  /// No server TTL: run the resend cooldown only.
+  ///
+  /// The user still needs a way out if the code never arrives, but the screen
+  /// shows no countdown and never expires the code locally, because it
+  /// genuinely does not know when the code dies.
+  void _startCooldownOnlyTicker() {
     _lifetimeKnown = false;
     _deadline = null;
     _remaining = 0;
@@ -246,6 +246,20 @@ class _LoginOtpViewState extends State<_LoginOtpView>
       (_resendDeadline == null || !DateTime.now().isBefore(_resendDeadline!));
 
   void _restartTicker(int seconds) {
+    // A NON-POSITIVE LIFETIME IS "THE SERVER DID NOT SAY", NOT "ZERO SECONDS".
+    //
+    // Both entry points can hand this a 0. The first build does when the login
+    // response omitted step_up_expires_in, and RESEND does whenever the resend
+    // response omits it — resendLoginOtp returns the server's number
+    // unexamined. Taking 0 literally set the deadline to NOW, so a code the
+    // server had just issued was announced as "Code expired." the instant it
+    // arrived, and the keypad locked. That is the same false claim this
+    // screen's whole TTL rework exists to remove, reached from the one path
+    // that does not read widget.expiresInSeconds.
+    if (seconds <= 0) {
+      _startCooldownOnlyTicker();
+      return;
+    }
     _lifetimeKnown = true;
     _ticker?.cancel();
     _deadline = DateTime.now().add(Duration(seconds: seconds));
