@@ -21,6 +21,11 @@ class FreshInstallGuard {
   static const String _kInstalledBuildKey =
       'fresh_install_guard.installed_build';
 
+  /// Must match DeviceService._deviceIdKey. Duplicated rather than imported to
+  /// keep this guard dependency-free — it runs before DI is wired. The pair is
+  /// pinned by fresh_install_guard_test.dart.
+  static const String _kDeviceIdKey = 'device_id';
+
   /// Clears all local storage when `version+build` differs from the last launch.
   /// Returns true if it wiped (new install/update), false if unchanged.
   static Future<bool> clearIfBuildChanged() async {
@@ -38,17 +43,47 @@ class FreshInstallGuard {
       const secure = FlutterSecureStorage(
         aOptions: AndroidOptions(encryptedSharedPreferences: true),
       );
+
+      // THE DEVICE IDENTITY IS NOT STALE STATE — CARRY IT ACROSS THE WIPE.
+      //
+      // This guard exists to purge leftover SESSION state: tokens, cached
+      // endpoints, feature flags. The device id is none of those. It is this
+      // installation's name, and the backend now decides "is this a known
+      // device" from it alone (auth-service risk_engine.go — location is no
+      // longer a gate).
+      //
+      // So wiping it does not clear stale state, it changes who the device IS:
+      // every user would be a brand-new device after an update and would be
+      // sent an email OTP. That is the cost this guard was already disabled
+      // for ("forced users to re-login ... on every app update"), and it would
+      // now land harder than when that note was written.
+      //
+      // Read before, restore after. The guard is currently a no-op at the call
+      // site, but it is deliberately kept for quick re-enabling, so it has to
+      // be correct the day someone does.
+      String? deviceId;
+      try {
+        deviceId = await secure.read(key: _kDeviceIdKey);
+      } catch (_) {/* fall through to the prefs copy */}
+      deviceId ??= prefs.getString(_kDeviceIdKey);
+
       try {
         await secure.deleteAll();
       } catch (_) {/* keychain quirks must not block */}
       await prefs.clear();
       // Re-stamp the current build AFTER clearing so the next launch is a no-op.
       await prefs.setString(_kInstalledBuildKey, current);
+      if (deviceId != null && deviceId.isNotEmpty) {
+        await prefs.setString(_kDeviceIdKey, deviceId);
+        try {
+          await secure.write(key: _kDeviceIdKey, value: deviceId);
+        } catch (_) {/* the prefs copy alone keeps the identity stable */}
+      }
 
       if (kDebugMode) {
         // ignore: avoid_print
         print('[FreshInstallGuard] build changed '
-            '(${stored?? "fresh install"} → $current), cleared local storage');
+            '(${stored ?? "fresh install"} → $current), cleared local storage');
       }
       return true;
     } catch (_) {
