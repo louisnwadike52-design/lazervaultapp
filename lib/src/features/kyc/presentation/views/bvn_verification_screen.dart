@@ -258,9 +258,10 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                           // which persists a tier server-side. The hold GRANTS
                           // NOTHING by design — see _heldForReview — so the deferral
                           // is its own path, writing nothing.
-                          onPressed: _heldForReview && !_reachedTier2
-                              ? _deferWhileUnderReview
-                              : _skipForNow,
+                          onPressed:
+                              (_heldForReview || _nameRefused) && !_reachedTier2
+                                  ? _deferWhileUnderReview
+                                  : _skipForNow,
                           style: TextButton.styleFrom(
                             foregroundColor: _accent,
                             padding: EdgeInsets.symmetric(
@@ -277,8 +278,9 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                                 // "Skip" is the wrong word for a holder whose check
                                 // is RUNNING: nothing is being skipped, they are
                                 // being let go of the screen while they wait.
-                                _heldForReview && !_reachedTier2
-                                    ? 'Continue for now'
+                                (_heldForReview || _nameRefused) &&
+                                        !_reachedTier2
+                                    ? 'Continue to dashboard'
                                     : 'Skip for now',
                                 style: GoogleFonts.inter(
                                   fontSize: 15.sp,
@@ -636,7 +638,64 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
               onAdoptBvnName: () => _adoptBvnName(status),
               onRaiseCorrection: () => _raiseNameCorrection(status),
             )
-          else if (status.message.isNotEmpty) ...[
+          else if (_nameRefused) ...[
+            // A REFUSAL NEEDS A NEXT STEP, NOT JUST A VERDICT.
+            //
+            // The server deliberately does not echo the BVN holder's name
+            // here, so there is no comparison to show and nothing for the
+            // customer to adopt or correct — both of those endpoints answer
+            // NO_HELD_REVIEW. All we can honestly do is say what happened,
+            // say who moves next, and point at the door.
+            SizedBox(height: 10.h),
+            Container(
+              padding: EdgeInsets.all(14.w),
+              decoration: BoxDecoration(
+                color: _card,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: _warning.withValues(alpha: 0.35)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded,
+                          size: 18.sp, color: _warning),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          'We could not match your name',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                            color: _textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    status.message.isNotEmpty
+                        ? status.message
+                        : 'The name on your profile did not match the name on '
+                            'your BVN record.',
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: _textSecondary, height: 1.45),
+                  ),
+                  SizedBox(height: 10.h),
+                  Text(
+                    'You can keep using Lazervault while this is sorted out. '
+                    'Tap “Continue to dashboard” below — your account stays on '
+                    'Tier 1 until the name is resolved, and you can try '
+                    'verification again any time from Settings.',
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: _textSecondary, height: 1.45),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (status.message.isNotEmpty) ...[
             SizedBox(height: 6.h),
             Text(
               status.message,
@@ -1404,7 +1463,41 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   /// (e.g. Tier 3 liveness) from Settings. This replaces the old onboarding-root
   /// binary so a tier-1 user who quit signup is re-gated (non-skippable) on the
   /// next login, while a Prove-verified user is never force-blocked.
-  bool get _allowSkip => _reachedTier2 || _heldForReview;
+  bool get _allowSkip => _reachedTier2 || _heldForReview || _nameRefused;
+
+  /// True when Prove REFUSED on the name rather than holding it for review.
+  ///
+  /// WHY THIS IS A THIRD WAY OUT, AND WHY THAT IS NOT A LOOSENING.
+  ///
+  /// A customer in this state has no action left on this screen. Every
+  /// self-service path refuses them, by design:
+  ///
+  ///   skip            — not Tier 2
+  ///   defer           — _heldForReview requires failureReason 'name_review'
+  ///                     AND both names; a REFUSAL deliberately omits them,
+  ///                     because the server has evidence the asker is not the
+  ///                     BVN holder and will not echo that person's name back
+  ///   correct my name — banking returns NO_HELD_REVIEW
+  ///   adopt BVN name  — banking returns NO_HELD_REVIEW
+  ///
+  /// So the screen told them to contact support and then kept them on it.
+  /// That is not compulsion, it is a trap, and it is a guaranteed drop-off:
+  /// reported by a customer who hit exactly this on 2026-11-06 after her name
+  /// did not match, tried changing it, and was told to contact support with
+  /// nowhere to go.
+  ///
+  /// The gate's purpose is to make a customer DO something they have not done.
+  /// Here there is nothing left for them to do — resolving it is ours. That is
+  /// the same reasoning that already admits _heldForReview, and this is the
+  /// same situation one step further along: held means we are deciding,
+  /// refused means we have decided and only support can move it.
+  ///
+  /// Nothing is granted. It routes through _deferWhileUnderReview, which
+  /// writes no skip flag, calls no skip RPC and changes no tier — they are
+  /// still Tier 1 and every money path still gates on that. They can simply
+  /// read the rest of the app, and retry verification from Settings when the
+  /// name is sorted out.
+  bool get _nameRefused => (_status?.failureReason ?? '') == 'name_mismatch';
 
   /// True when the verification is HELD on a name review — done on the
   /// customer's side, waiting on ours.

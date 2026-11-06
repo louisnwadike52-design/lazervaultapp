@@ -59,17 +59,37 @@ void main() {
     test('verification stays compulsory below Tier 2', () {
       // The exit must not have loosened the gate it exists beside.
       //
-      // The gate gained ONE more way out since this was written: a holder whose
-      // name decision is outstanding (`_heldForReview`) may put the screen
-      // down, because the delay is entirely ours. That is the whole allowance —
-      // asserted literally, so a third disjunct cannot be added without this
-      // failing and somebody having to justify it.
+      // The gate has TWO allowances beyond Tier 2, and both are one principle:
+      // the customer has nothing left to do, and the delay is ours.
+      //
+      //   _heldForReview — a name decision is outstanding; we are deciding.
+      //   _nameRefused   — we have DECIDED, against them, on the name.
+      //
+      // The second was added 2026-11-06 after a customer hit it. Prove refused
+      // on her name, and every self-service path then refused her too: no skip
+      // (not Tier 2), no defer (_heldForReview needs 'name_review' AND both
+      // names, and a refusal deliberately omits them), no correction and no
+      // BVN-name adoption (banking answers NO_HELD_REVIEW for both). The screen
+      // told her to contact support and then kept her on it. That is not
+      // compulsion, it is a trap, and a guaranteed drop-off.
+      //
+      // Neither grants anything: both route to _deferWhileUnderReview, which
+      // writes no skip flag, calls no skip RPC and moves no tier. That is the
+      // whole allowance — asserted literally, so a FOURTH disjunct cannot be
+      // added without this failing and somebody justifying it as this one is.
       expect(
-        screen.contains(
-            'bool get _allowSkip => _reachedTier2 || _heldForReview;'),
+        screenSquashed.contains(
+            'bool get _allowSkip => _reachedTier2 || _heldForReview || _nameRefused;'),
         isTrue,
-        reason: 'skip must stay gated on Tier 2, plus the name-review hold and '
-            'nothing else',
+        reason: 'skip must stay gated on Tier 2, plus the two name states '
+            'where the customer has no action left, and nothing else',
+      );
+      expect(
+        screenSquashed.contains(
+            "bool get _nameRefused => (_status?.failureReason ?? '') == 'name_mismatch';"),
+        isTrue,
+        reason: 'the refusal must come from the authoritative Prove reason and '
+            'default to false, so an unknown status stays compulsory',
       );
       // And the hold must be a SERVER state, not a local flag anyone can set.
       expect(
@@ -91,11 +111,14 @@ void main() {
     // exact moment the customer is waiting on us.
     test('a held holder gets a working deferral, not the skip path', () {
       expect(
-        screenSquashed.contains('onPressed: _heldForReview && !_reachedTier2 '
+        screenSquashed.contains(
+            'onPressed: (_heldForReview || _nameRefused) && !_reachedTier2 '
             '? _deferWhileUnderReview : _skipForNow,'),
         isTrue,
-        reason: 'a held holder must not be routed into _skipForNow, whose '
-            'authority guard refuses them',
+        reason: 'a held holder OR a name-refused customer must not be routed '
+            'into _skipForNow, whose authority guard (!_reachedTier2) refuses '
+            'them — the control would appear, be tapped, and answer '
+            '"Verification required" at the moment they are already stuck',
       );
     });
 
