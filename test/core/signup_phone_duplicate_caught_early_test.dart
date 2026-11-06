@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// The cubit returned early when SmsPolicy said no code could be sent, so with
 /// no SMS provider live — which is the case today — that check never ran.
 void main() {
+  _phoneScreenShowsIt();
   late String cubit;
 
   setUpAll(() {
@@ -70,5 +71,47 @@ void main() {
     expect(cubit.contains('_isAlreadyRegistered(failure.message)'), isTrue,
         reason: 'the phone screen needs to say "already registered, log in" '
             'rather than a generic error, or the user retries the same number');
+  });
+}
+
+/// The other half of the chain: the phone screen must be able to SHOW it.
+///
+/// Moving the check earlier is only useful if the phone screen renders the
+/// result. It already did — the handling was sitting there unreachable while
+/// the short-circuit skipped the call that produces it.
+void _phoneScreenShowsIt() {
+  late String entry;
+  late String emailStep;
+
+  setUpAll(() {
+    entry = File(
+            'lib/src/features/authentication/presentation/views/phone_entry_screen.dart')
+        .readAsStringSync();
+    emailStep = File(
+            'lib/src/features/authentication/presentation/views/phone_email_verification_screen.dart')
+        .readAsStringSync();
+  });
+
+  test('the phone screen handles alreadyRegistered specifically', () {
+    expect(entry.contains('state.alreadyRegistered'), isTrue,
+        reason: 'without this the duplicate shows as a generic error and the '
+            'user retries the same number');
+    expect(entry.contains('Account exists'), isTrue);
+  });
+
+  test('and offers a way out, not just a refusal', () {
+    // A dead end on "this number is taken" is how someone abandons signup.
+    expect(entry.contains('LoginFlowResolver.resolveLoginRoute()'), isTrue,
+        reason: 'the Log in action is what makes the refusal actionable');
+  });
+
+  test('the email step still owns the EMAIL duplicate', () {
+    // SignupWithPhone checks phone BEFORE email, which is why the phone error
+    // used to surface here. The email error legitimately belongs on this
+    // screen, because this is where submitSignup is called — that must not
+    // have been moved by the phone fix.
+    expect(emailStep.contains('submitSignup(email: email)'), isTrue,
+        reason: 'the email step must still submit, or the email duplicate '
+            'would surface somewhere else instead');
   });
 }

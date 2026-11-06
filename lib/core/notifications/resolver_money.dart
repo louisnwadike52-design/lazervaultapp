@@ -90,9 +90,34 @@ NotificationTarget? _resolveMoney(String type, Map<String, String> data) {
   if (type == 'payment' || _is(type, 'payment')) {
     final method = (data['payment_method'] ?? '').toLowerCase();
     if (method.contains('card')) return _landing(AppRoutes.myAccount);
-    // No service to narrow to, so the loader's fallback is the all-services
-    // history — the same page this returned before. Passing a null service
-    // type is what selects it.
+
+    // NARROW ON entity_type BEFORE GIVING UP ON A SERVICE.
+    //
+    // This passed no service type at all, and a null service type is exactly
+    // what makes TransactionDeepLinkScreen fall back to the ALL-SERVICES
+    // history. So whenever the record could not be loaded — an offline tap, a
+    // slow lookup past its six-second budget, a reference the ledger search
+    // misses — the user landed on the generic list and had to find the thing
+    // the notification was already about.
+    //
+    // The payload has carried entity_type all along (handlers_payment.go
+    // stamps it beside entity_id); it was simply not read here. With it, the
+    // fallback is that service's own history instead.
+    const byEntity = <String, TransactionServiceType>{
+      'transfer': TransactionServiceType.transfer,
+      'deposit': TransactionServiceType.deposit,
+      'withdrawal': TransactionServiceType.withdrawal,
+      'exchange': TransactionServiceType.exchange,
+      'refund': TransactionServiceType.refund,
+      'reversal': TransactionServiceType.reversal,
+    };
+    final entity = (data['entity_type'] ?? '').trim().toLowerCase();
+    final narrowed = byEntity[entity];
+    if (narrowed != null) return _receipt(narrowed, data);
+
+    // Genuinely unidentifiable: the all-services history is the honest
+    // landing, because a guessed service page is worse than a list that
+    // definitely contains the record.
     final id = _transactionId(data);
     if (id != null) {
       return NotificationTarget(

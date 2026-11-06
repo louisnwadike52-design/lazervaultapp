@@ -122,6 +122,40 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   // available, so use it to reach the right family before falling back to the
   // bills hub.
   if (_is(type, 'bill')) {
+    // BILL_TYPE FIRST — it is exact, where biller_name is a guess.
+    //
+    // notifications-service already knows which service a bill was for (it is
+    // what picks the copy) and now sends it. Before that the only
+    // discriminator was the biller's NAME, so this matched "electric", "dstv"
+    // and "water" and dropped everything else on the Bills hub: a tapped
+    // airtime, data, betting, education, internet or e-PIN notification never
+    // reached its own service.
+    //
+    // Each lands on that service's OWN history, which is where the record the
+    // notification is about actually is — the same choice electricity, cable
+    // and water already made, now applied to all of them rather than three.
+    final billType =
+        (data['bill_type'] ?? '').toLowerCase().replaceAll(RegExp(r'[^a-z]'), '');
+    const byType = <String, String>{
+      'airtime': AppRoutes.airtimeHistory,
+      'intlairtime': AppRoutes.airtimeHistory,
+      'data': AppRoutes.dataBundlesHistory,
+      'intldata': AppRoutes.dataBundlesHistory,
+      'cabletv': AppRoutes.cableTVHistory,
+      'electric': AppRoutes.electricityBillHistory,
+      'electricity': AppRoutes.electricityBillHistory,
+      'water': AppRoutes.waterBillHistory,
+      'internet': AppRoutes.internetBillHistory,
+      'education': AppRoutes.educationHistory,
+      'betting': AppRoutes.bettingHistory,
+      'epin': AppRoutes.epinOrders,
+      'airtimetocash': AppRoutes.airtimeToCash,
+    };
+    final byTypeRoute = byType[billType];
+    if (byTypeRoute != null) return _landing(byTypeRoute);
+
+    // Older payloads carry no bill_type. Keep the name heuristic so a push
+    // minted before this shipped still reaches the right family.
     final biller = (data['biller_name'] ?? '').toLowerCase();
     if (biller.contains('electric') || biller.contains('disco')) {
       return _landing(AppRoutes.electricityBillHistory);
