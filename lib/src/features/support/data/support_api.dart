@@ -123,6 +123,31 @@ class SupportApi {
     return SupportTicket.fromJson(jsonDecode(res.body)['ticket']);
   }
 
+  /// The reply-time promise shown on every support surface.
+  ///
+  /// Served by support-service from the same row the admin console writes,
+  /// so the wording the team commits to is exactly the wording the customer
+  /// reads. Deliberately NOT a constant in the app: it is a promise the
+  /// support team has to keep, and they must be able to change it over a
+  /// holiday or during an incident without waiting on an app-store review.
+  ///
+  /// Returns null on any failure — the notice is reassurance, not content,
+  /// and a support screen must never fail to open because a banner could
+  /// not be fetched.
+  Future<String?> responseSlaText() async {
+    try {
+      final res = await _send(() async => http.get(
+          _uri('/api/v1/support/settings'),
+          headers: await _headers()));
+      if (res.statusCode != 200) return null;
+      final v = jsonDecode(res.body)['response_sla_text'];
+      if (v is String && v.trim().isNotEmpty) return v.trim();
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<List<SupportTicket>> listTickets() async {
     final res = await _send(() async =>
         http.get(_uri('/api/v1/support/tickets'), headers: await _headers()));

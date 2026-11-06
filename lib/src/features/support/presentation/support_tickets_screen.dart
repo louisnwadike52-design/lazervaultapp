@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/support/presentation/support_sla_notice.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -46,6 +47,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
     _api = SupportApi(serviceLocator<SecureStorageService>());
     _tabs = TabController(length: 2, vsync: this);
     _load();
+    _loadSlaNotice();
     // Keep unread badges + statuses fresh while the hub is on screen (staff
     // replies land as unread counts). Silent — never disturbs the list state
     // on a transient failure.
@@ -277,6 +279,16 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
     );
   }
 
+  /// The server-set reply-time promise. Null until it arrives, and null for
+  /// good if it cannot be fetched — the banner is reassurance, not content,
+  /// and the ticket list must never fail to open because of it.
+  String? _slaText;
+
+  Future<void> _loadSlaNotice() async {
+    final t = await _api.responseSlaText();
+    if (mounted && t != null) setState(() => _slaText = t);
+  }
+
   Widget _buildList(List<SupportTicket> tickets, {required bool closedTab}) {
     return RefreshIndicator(
       color: _primary,
@@ -369,13 +381,30 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
         ],
       );
     }
+    // The notice scrolls WITH the list rather than pinning above it: on a
+    // short list a pinned banner takes a third of the screen to say
+    // something the customer only needs to read once.
+    //
+    // Only on the OPEN tab. A reply-time promise above a list of resolved
+    // tickets is answering a question nobody is asking there.
+    final showNotice = !closedTab && (_slaText?.trim().isNotEmpty ?? false);
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
       // Bottom inset keeps the FAB from covering the last ticket row.
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 96.h),
-      itemCount: tickets.length,
+      itemCount: tickets.length + (showNotice ? 1 : 0),
       separatorBuilder: (_, __) => SizedBox(height: 10.h),
-      itemBuilder: (_, i) => _ticketTile(tickets[i]),
+      itemBuilder: (_, i) {
+        if (showNotice && i == 0) {
+          return SupportSlaNotice(
+            text: _slaText,
+            background: _card,
+            accent: _primary,
+            textColor: _textSecondary,
+          );
+        }
+        return _ticketTile(tickets[i - (showNotice ? 1 : 0)]);
+      },
     );
   }
 

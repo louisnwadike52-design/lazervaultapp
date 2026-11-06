@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/support/presentation/support_sla_notice.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -63,6 +64,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     _api = SupportApi(serviceLocator<SecureStorageService>());
     _ticket = widget.ticket;
     _bootstrap();
+    _loadSlaNotice();
   }
 
   @override
@@ -265,17 +267,63 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       );
     }
     if (_messages.isEmpty) {
+      // The empty state is where the expectation matters most: there is no
+      // thread yet, so "when will someone answer" is the only question the
+      // screen can be asked.
       return Center(
-        child: Text('Say hello, our team will reply here and by email.',
-            style: TextStyle(color: _textSecondary, fontSize: 13.sp)),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Say hello, our team will reply here and by email.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: _textSecondary, fontSize: 13.sp)),
+              if ((_slaText?.trim().isNotEmpty ?? false)) ...[
+                SizedBox(height: 16.h),
+                SupportSlaNotice(
+                  text: _slaText,
+                  background: _card,
+                  accent: _primary,
+                  textColor: _textSecondary,
+                  margin: EdgeInsets.zero,
+                ),
+              ],
+            ],
+          ),
+        ),
       );
     }
+    // In a live thread the notice sits ABOVE the first message, so it reads
+    // as the start of the conversation rather than as something that just
+    // arrived. It scrolls away with the history, which is right: it is
+    // orientation, not a standing alert.
+    final showNotice = _slaText?.trim().isNotEmpty ?? false;
     return ListView.builder(
       controller: _scroll,
       padding: EdgeInsets.all(16.w),
-      itemCount: _messages.length,
-      itemBuilder: (_, i) => _bubble(_messages[i]),
+      itemCount: _messages.length + (showNotice ? 1 : 0),
+      itemBuilder: (_, i) {
+        if (showNotice && i == 0) {
+          return SupportSlaNotice(
+            text: _slaText,
+            background: _card,
+            accent: _primary,
+            textColor: _textSecondary,
+          );
+        }
+        return _bubble(_messages[i - (showNotice ? 1 : 0)]);
+      },
     );
+  }
+
+  /// Server-set reply-time promise; null until fetched, and null for good on
+  /// failure. The chat must open whether or not the banner can be loaded.
+  String? _slaText;
+
+  Future<void> _loadSlaNotice() async {
+    final t = await _api.responseSlaText();
+    if (mounted && t != null) setState(() => _slaText = t);
   }
 
   Widget _bubble(SupportMessage m) {
