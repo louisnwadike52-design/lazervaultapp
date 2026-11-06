@@ -625,7 +625,93 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
           // customer's actual question (which one is wrong?) far better than
           // a sentence they have to parse, so the card replaces the message
           // rather than printing both and saying it twice.
-          if (status.nameUnderReview)
+          // WE CHANGED THEIR NAME — SAY SO, AND LET THEM THROUGH.
+          //
+          // Checked BEFORE nameUnderReview: both arrive on failureReason and
+          // only the reason string separates them, so the resolved case must
+          // win or a customer who is already through sees a review card
+          // asking them to wait.
+          //
+          // The CTA is _finishVerified, not a bare navigation. That handler
+          // already carries every edge case this screen has: it clears
+          // kyc_onboarding_pending, resumes a deposit if that is where they
+          // came from (but never from the onboarding root), refreshes the
+          // auth profile so Settings does not show a stale Tier 1, refetches
+          // the accounts whose NUBANs verification has just minted, and then
+          // picks offAllNamed(dashboard) from the onboarding root versus
+          // Get.back(true) from Settings. Re-implementing any of that here
+          // would be a second, worse copy.
+          if (status.nameAutoAdopted) ...[
+            SizedBox(height: 10.h),
+            Container(
+              padding: EdgeInsets.all(14.w),
+              decoration: BoxDecoration(
+                color: _card,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: _success.withValues(alpha: 0.4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.check_circle_outline_rounded,
+                          size: 18.sp, color: _success),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          'We used the name on your BVN',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                            color: _textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10.h),
+                  // The two names, labelled, when the server sent them. It
+                  // omits one only in the degraded case, and then `message`
+                  // carries the same meaning in prose — so the fallback is
+                  // the message, never a row with a blank in it.
+                  if (status.profileName.isNotEmpty &&
+                      status.bvnName.isNotEmpty) ...[
+                    _adoptedNameRow('You entered', status.profileName, false),
+                    SizedBox(height: 6.h),
+                    _adoptedNameRow('Your BVN reads', status.bvnName, true),
+                    SizedBox(height: 10.h),
+                  ],
+                  Text(
+                    status.message.isNotEmpty
+                        ? status.message
+                        : 'Your identity is verified using the name on your '
+                            'BVN record.',
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: _textSecondary, height: 1.45),
+                  ),
+                  SizedBox(height: 14.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46.h,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _finishVerified,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: Text('Proceed to dashboard',
+                          style: GoogleFonts.inter(
+                              fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (status.nameUnderReview)
             KycNameComparison(
               bvnName: status.bvnName,
               profileName: status.profileName,
@@ -1498,6 +1584,33 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   /// read the rest of the app, and retry verification from Settings when the
   /// name is sorted out.
   bool get _nameRefused => (_status?.failureReason ?? '') == 'name_mismatch';
+
+  /// One labelled name row in the adoption notice.
+  ///
+  /// The adopted name is emphasised and the entered one is not, so a glance
+  /// answers "which one am I now?" without reading the sentence below it.
+  Widget _adoptedNameRow(String label, String value, bool emphasised) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 110.w,
+          child: Text(label,
+              style: GoogleFonts.inter(fontSize: 12.sp, color: _textSecondary)),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 12.sp,
+              color: emphasised ? _textPrimary : _textSecondary,
+              fontWeight: emphasised ? FontWeight.w700 : FontWeight.w400,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   /// True when the verification is HELD on a name review — done on the
   /// customer's side, waiting on ours.

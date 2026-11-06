@@ -110,6 +110,20 @@ class ProveKycStatus {
       failureReason == 'name_review' &&
       bvnName.isNotEmpty &&
       profileName.isNotEmpty;
+
+  /// We took the BVN's spelling and the customer is through.
+  ///
+  /// NOT a failure, despite arriving on [failureReason]: that is simply the
+  /// channel the status response already had, and adding a field would mean
+  /// a proto change older builds could not read. An older build sees an
+  /// unknown reason on a verified session and shows [message], which says
+  /// the same thing in prose — which is why the server keeps both names in
+  /// the message as well as in the fields.
+  ///
+  /// Unlike a review this does NOT require both names: the server degrades
+  /// its message when one is missing, and a customer who is through should
+  /// never be held back from the notice by a blank field.
+  bool get nameAutoAdopted => failureReason == 'name_auto_adopted';
 }
 
 /// Thrown for any Prove KYC failure, with a clean user-facing message.
