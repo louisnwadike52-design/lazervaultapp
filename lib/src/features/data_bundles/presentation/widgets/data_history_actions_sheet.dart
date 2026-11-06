@@ -10,6 +10,8 @@ import '../../../../../core/widgets/bill_history_actions_sheet.dart';
 import '../../data/datasources/data_beneficiary_remote_datasource.dart';
 import '../../domain/entities/data_beneficiary.dart';
 import '../../domain/entities/data_purchase_entity.dart';
+import '../view/data_bundles_home_screen.dart';
+import 'data_prefill.dart';
 import 'save_data_beneficiary_sheet.dart';
 import 'package:lazervault/core/utils/ng_network_prefixes.dart';
 
@@ -200,26 +202,56 @@ class DataHistoryActionsSheet {
               // which is THE SCREEN THE SHEET IS OPENED FROM and which ignores
               // these arguments entirely. So the action dismissed the sheet and
               // did nothing visible, which is exactly what was reported.
-              final (effCode, effName) = _effectiveNetwork(p, isIntl);
+              // REPEAT LANDS ON THE DATA PAGE, FILLED, ONE TAP FROM DONE.
+              //
+              // It used to go to the plan-SELECTION screen and auto-advance to
+              // the recipient screen, so a repeat was a two-screen walk even
+              // when it worked — and it usually did not work, for two reasons
+              // that were invisible from the UI:
+              //
+              //   * the bundle id came from `dataPlan` (the proto's
+              //     provider_id), which is EMPTY on all 61 production data
+              //     purchases — the plan id lives in metadata. So the match
+              //     never hit and the user got the full catalogue;
+              //   * the network fell back to the NCC ticker (`mtn`), but the
+              //     catalogue is keyed `mtn-data`, so the plan fetch asked for
+              //     a network that does not exist and came back empty.
+              //
+              // Both are read through the entity's resolvers now, and the
+              // destination is the one-page buy — the airtime behaviour the
+              // ask named.
+              final effCode = p.dataCatalogueNetwork;
+              final effName = _resolveNetworkName(effCode, p.networkName);
               if (effCode.isNotEmpty) {
+                final request = DataPrefillRequest(
+                  phone: p.phoneNumber,
+                  networkCode: effCode,
+                  planId: p.planVariationId,
+                );
+                if (DataBundlesHomeScreen.isOpen) {
+                  // The sheet is normally opened from the recent-purchases
+                  // card ON that screen. Prefill it in place instead of
+                  // stacking a second copy over the one being looked at.
+                  DataPrefillSignal.emit(request);
+                  // Safe to pop to: isOpen means the route IS in the stack, so
+                  // this cannot unwind past it. Usually a no-op — the sheet is
+                  // already dismissed and the data screen is right there.
+                  Get.until(
+                      (route) => route.settings.name == AppRoutes.dataBundlesHome);
+                  return;
+                }
                 Get.toNamed(
-                  AppRoutes.dataBundlesPlanSelection,
+                  AppRoutes.dataBundlesHome,
                   arguments: {
                     'network': effCode,
                     'networkName': effName,
                     'phoneNumber': p.phoneNumber,
                     'isRepeat': true,
-                    // The BUNDLE the user actually bought. Without it a
-                    // "repeat" dropped them on the full plan list with only
-                    // the carrier filled in, so the one thing they were
-                    // repeating — which bundle — was the thing they had to
-                    // choose again.
-                    //
                     // Matched against the LIVE plan list rather than rebuilt
-                    // from the history row, so a repeat always carries
-                    // today's price and a withdrawn bundle falls back to the
-                    // list instead of quoting a plan that no longer sells.
-                    'planId': p.dataPlan,
+                    // from the history row, so a repeat always carries today's
+                    // price and a withdrawn bundle leaves the picker open
+                    // instead of quoting a plan that no longer sells.
+                    'planId': p.planVariationId,
                   },
                 );
               } else {

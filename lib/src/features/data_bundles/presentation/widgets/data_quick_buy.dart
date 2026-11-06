@@ -19,6 +19,7 @@ import 'package:lazervault/core/widgets/bill_auto_recharge_create_sheet.dart';
 import 'package:lazervault/core/widgets/network_logo.dart';
 import 'package:lazervault/core/widgets/save_beneficiary_controls.dart';
 import 'package:lazervault/src/features/bills/presentation/widgets/bill_list_picker_sheet.dart';
+import 'data_prefill.dart';
 
 import '../widgets/rollover_preference_sheet.dart'
     show RolloverPreference, RolloverMode;
@@ -85,6 +86,16 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
       ValueNotifier(const BillListFetchState<DataPlanEntity>.idle());
   bool _fetchingPlans = false;
   DataPlanEntity? _plan;
+
+  /// The bundle a Repeat Purchase asked for, held until the plan list for its
+  /// network arrives.
+  ///
+  /// The plan cannot be selected at hand-off time: the catalogue is fetched
+  /// per network and a repeat usually arrives before (or instead of) any
+  /// fetch. So the id is parked here and resolved in the plans listener. It is
+  /// cleared on resolution AND on a network change, so a stale repeat can
+  /// never select a plan for a carrier the user has since switched away from.
+  String? _pendingPlanId;
   bool _saveContact = false;
   String? _saveNickname;
   bool _submitting = false;
@@ -116,6 +127,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
       if (s is DataPlansLoaded) {
         _fetchingPlans = false;
         _planState.value = BillListFetchState.loaded(s.plans);
+        _resolvePendingPlan(s.plans);
         setState(() {});
       } else if (s is DataBundlesError && _fetchingPlans) {
         // A generic error while a plans fetch is in flight = the fetch failed;
@@ -128,6 +140,80 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
     _phoneController.addListener(_onPhoneChanged);
     _prefillFromProfile();
     _loadSavedContacts();
+    // A Repeat Purchase tapped while THIS screen is already open arrives here
+    // rather than as route arguments, which only land at construction. See
+    // data_prefill.dart for why that mattered.
+    DataPrefillSignal.revision.addListener(_onPrefillRequested);
+  }
+
+  /// Apply a repeat hand-off to the live form.
+  ///
+  /// OVERWRITES, unlike the cold-open path, which fills only empty fields so
+  /// it cannot clobber something half-typed. Here the user has just tapped
+  /// "Repeat Purchase" on one specific transaction: replacing what is in the
+  /// form is the whole request, and leaving a stale number or bundle in place
+  /// would be the one outcome they definitely did not ask for.
+  void _onPrefillRequested() {
+    final req = DataPrefillSignal.pending;
+    if (req == null || !mounted) return;
+    DataPrefillSignal.consume();
+
+    final planId = req.planId?.trim();
+    final code = req.networkCode?.trim().toLowerCase();
+    final phone = _toLocalNg(req.phone ?? '');
+
+    // Park the bundle BEFORE the fetch is kicked off, so the plans listener
+    // can resolve it the moment the catalogue lands.
+    _pendingPlanId = (planId == null || planId.isEmpty) ? null : planId;
+
+    if (code != null && code.isNotEmpty && code != _networkCode) {
+      // Marked manual so the 350ms prefix detection that the phone write
+      // below schedules cannot immediately overwrite it — a repeat names the
+      // carrier explicitly and that must win.
+      setState(() {
+        _networkCode = code;
+        _networkManual = true;
+        _plan = null;
+      });
+      _reloadPlans();
+    } else if (code != null && code == _networkCode) {
+      // Same carrier: the catalogue may already be loaded, in which case the
+      // bundle resolves without another fetch.
+      final loaded = _planState.value.items;
+      if (loaded.isEmpty) {
+        _reloadPlans();
+      } else {
+        _resolvePendingPlan(loaded);
+      }
+    }
+
+    if (phone.isNotEmpty) {
+      _phoneController.text = phone; // listener → detection → plans
+      _phoneController.selection =
+          TextSelection.collapsed(offset: _phoneController.text.length);
+    }
+    if (mounted) setState(() {});
+  }
+
+  /// Select the bundle a repeat asked for, once its catalogue is known.
+  ///
+  /// A bundle that has been WITHDRAWN simply does not match, and the user is
+  /// left on the form with the picker to open — the honest outcome. Carrying
+  /// them forward with a plan rebuilt from the history row would quote a price
+  /// that is no longer on sale.
+  void _resolvePendingPlan(List<DataPlanEntity> plans) {
+    final wanted = _pendingPlanId;
+    if (wanted == null || wanted.isEmpty || plans.isEmpty) return;
+    for (final p in plans) {
+      if (p.variationId.trim().toLowerCase() == wanted.toLowerCase()) {
+        _pendingPlanId = null;
+        _plan = p;
+        return;
+      }
+    }
+    // The catalogue arrived and the bundle is not in it: stop waiting, or the
+    // next unrelated fetch would select it retroactively.
+    _pendingPlanId = null;
   }
 
   /// Best-effort read of the user's saved data contacts so we can flag an
@@ -161,6 +247,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
 
   @override
   void dispose() {
+    DataPrefillSignal.revision.removeListener(_onPrefillRequested);
     _detectDebounce?.cancel();
     _planSub?.cancel();
     _planState.dispose();
@@ -174,12 +261,39 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
     // own profile number.
     final args = Get.arguments;
     if (args is Map) {
+      // The carrier and the bundle, for a COLD-open repeat (the screen was
+      // not already in the stack, so there is nothing listening to the
+      // prefill signal and the values arrive as route arguments instead).
+      //
+      // Taken before the number so the explicit carrier is in place when the
+      // phone write schedules prefix detection; detection is a no-op while a
+      // manual pick stands for the same network.
+      final argNet = args['network'];
+      if (argNet is String && argNet.trim().isNotEmpty) {
+        _networkCode = _asCatalogueNetwork(argNet);
+        _networkManual = true;
+      }
+      final argPlan = args['planId'];
+      if (argPlan is String && argPlan.trim().isNotEmpty) {
+        _pendingPlanId = argPlan.trim();
+      }
+      if (_networkCode != null) {
+        _fetchingPlans = true;
+        _planState.value = const BillListFetchState<DataPlanEntity>.loading();
+        // `read` (not `watch`) is legal in initState, and the plans listener
+        // registered just above it will catch the result.
+        context.read<DataBundlesCubit>().getDataPlans(network: _networkCode!);
+      }
       final v = args['phoneNumber'];
       final argPhone = _toLocalNg(v is String ? v : '');
       if (argPhone.isNotEmpty && _phoneController.text.isEmpty) {
         _phoneController.text = argPhone; // listener triggers detection
         return;
       }
+      // No setState here. This runs SYNCHRONOUSLY from initState (everything
+      // above the first await does), and setState before the first build
+      // throws. The fields are read by the build that is about to happen
+      // anyway, so assignment is enough.
     }
     try {
       final raw = await serviceLocator<FlutterSecureStorage>()
@@ -189,6 +303,19 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
         _phoneController.text = local;
       }
     } catch (_) {/* best-effort */}
+  }
+
+  /// `MTN` / `mtn` / `mtn-data` → `mtn-data`. The catalogue is keyed by
+  /// `<carrier>-data` and 9mobile's key is `etisalat-data`, so the alias is
+  /// mapped rather than lowercased. Mirrors
+  /// DataPurchaseEntity._asCatalogueNetwork — a hand-off that arrives as
+  /// route arguments has not been through the entity.
+  String _asCatalogueNetwork(String raw) {
+    var v = raw.trim().toLowerCase();
+    if (v.isEmpty) return '';
+    if (v.endsWith('-data')) v = v.substring(0, v.length - 5);
+    if (v == '9mobile') v = 'etisalat';
+    return '$v-data';
   }
 
   String _toLocalNg(String input) {
@@ -238,6 +365,9 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
       _networkManual =
           false; // auto-detection (or clear) supersedes a manual pick
       _plan = null; // network changed → drop the stale plan
+      // …and the bundle a repeat was still waiting to select. Keeping it
+      // would select an MTN plan after the number turned out to be Glo.
+      _pendingPlanId = null;
     });
     if (code != null) {
       _fetchingPlans = true;
@@ -256,6 +386,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
       _networkCode = code;
       _networkManual = true;
       _plan = null;
+      _pendingPlanId = null; // the user is choosing; a parked repeat is stale
     });
     _fetchingPlans = true;
     _planState.value = const BillListFetchState<DataPlanEntity>.loading();

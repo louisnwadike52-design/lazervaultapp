@@ -28,6 +28,19 @@ part 'data_bundles_home_screen_widgets.dart';
 class DataBundlesHomeScreen extends StatefulWidget {
   const DataBundlesHomeScreen({super.key});
 
+  /// How many data screens are currently in the stack.
+  ///
+  /// Repeat Purchase reads this to choose between prefilling the screen the
+  /// user is already looking at and opening a new one. The sheet is most often
+  /// opened from the recent-purchases card ON this screen, and route arguments
+  /// are only read at construction — so without this the sole way to deliver
+  /// a prefill was to push a DUPLICATE screen over the live one. Mirrors
+  /// AirtimeScreen.mountedCount, which exists for exactly this.
+  static int mountedCount = 0;
+
+  /// Whether a data screen is already open.
+  static bool get isOpen => mountedCount > 0;
+
   @override
   State<DataBundlesHomeScreen> createState() => _DataBundlesHomeScreenState();
 }
@@ -62,9 +75,22 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
   @override
   void initState() {
     super.initState();
+    DataBundlesHomeScreen.mountedCount++;
     // Land on a tab the user can actually use: with Local switched off this
     // opens International rather than an empty Local panel.
     _selectedTab = _firstEnabledTab;
+  }
+
+  @override
+  void dispose() {
+    // Clamped at zero: a hot reload can run dispose on a state whose
+    // initState belonged to the previous build, and a negative count would
+    // make isOpen false while the screen is plainly on screen.
+    DataBundlesHomeScreen.mountedCount =
+        DataBundlesHomeScreen.mountedCount > 0
+            ? DataBundlesHomeScreen.mountedCount - 1
+            : 0;
+    super.dispose();
   }
 
   // Both tabs share the invoice purple when active — matches the airtime

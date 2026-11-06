@@ -1,4 +1,6 @@
 import 'dart:convert';
+
+import 'package:lazervault/core/utils/ng_network_prefixes.dart';
 import 'package:equatable/equatable.dart';
 
 /// User-facing status buckets for a data purchase. The backend emits
@@ -198,6 +200,64 @@ class DataPurchaseEntity extends Equatable {
   String get destCurrency {
     final v = metadataMap['dest_currency'] ?? metadataMap['delivered_currency'];
     return v?.toString() ?? '';
+  }
+
+  /// The catalogue id of the BUNDLE this purchase was for.
+  ///
+  /// [dataPlan] is mapped from the proto's `provider_id`, and on production
+  /// that column is EMPTY on every one of the 61 data purchases ever made —
+  /// the plan id is written into `metadata` instead (`variation_id`, with
+  /// `plan_name` carrying the same value today). So "Repeat Purchase" asked
+  /// the plan list to match "" and never matched anything: the user landed on
+  /// the full catalogue with the one thing they were repeating — which bundle
+  /// — missing.
+  ///
+  /// Reads the column first so a backend that starts populating it wins, and
+  /// falls back to metadata for every row written so far.
+  String get planVariationId {
+    final direct = dataPlan.trim();
+    if (direct.isNotEmpty) return direct;
+    for (final k in const ['variation_id', 'variationId', 'plan_name']) {
+      final v = metadataMap[k];
+      if (v is String && v.trim().isNotEmpty) return v.trim();
+    }
+    return '';
+  }
+
+  /// The network code the DATA CATALOGUE is keyed by — `mtn-data`, not `MTN`
+  /// and not `mtn`.
+  ///
+  /// Three different spellings of "the network" meet here: [networkCode]
+  /// yields `MTN` (derived from a plan-id prefix), the NCC prefix map yields
+  /// `mtn`, and `getDataPlans` only accepts `mtn-data`. Repeat Purchase was
+  /// handing the bare ticker straight to the catalogue, so even when the
+  /// carrier was identified correctly the plan fetch asked for a network that
+  /// does not exist and came back empty.
+  ///
+  /// `vtpass_service_id` is preferred because it IS the catalogue code,
+  /// verbatim, on every production row.
+  String get dataCatalogueNetwork {
+    final svc = metadataMap['vtpass_service_id'];
+    if (svc is String && svc.trim().toLowerCase().endsWith('-data')) {
+      return svc.trim().toLowerCase();
+    }
+    final net = metadataMap['network'];
+    if (net is String && net.trim().isNotEmpty) {
+      return _asCatalogueNetwork(net);
+    }
+    if (networkCode.isNotEmpty) return _asCatalogueNetwork(networkCode);
+    final ticker = NgNetworkPrefixes.detect(phoneNumber);
+    return ticker == null ? '' : _asCatalogueNetwork(ticker);
+  }
+
+  /// `MTN` / `mtn` / `mtn-data` → `mtn-data`; 9mobile's catalogue key is
+  /// `etisalat-data`, which is why the alias is mapped rather than lowercased.
+  static String _asCatalogueNetwork(String raw) {
+    var v = raw.trim().toLowerCase();
+    if (v.isEmpty) return '';
+    if (v.endsWith('-data')) v = v.substring(0, v.length - 5);
+    if (v == '9mobile') v = 'etisalat';
+    return '$v-data';
   }
 
   /// Effective currency of [amount] — prefers the explicit [currency] set
