@@ -144,6 +144,21 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
     // rather than as route arguments, which only land at construction. See
     // data_prefill.dart for why that mattered.
     DataPrefillSignal.revision.addListener(_onPrefillRequested);
+    // …and a request that arrived while this widget was NOT mounted is applied
+    // once, here.
+    //
+    // This is not belt-and-braces, it is the only path for one real case: the
+    // quick-buy lives on the Local tab, so a repeat tapped while the screen sat
+    // on International bumps the signal with no listener attached. The home
+    // screen switches the tab in response, which MOUNTS this widget on the next
+    // frame — after the bump it would have needed. The request is deliberately
+    // not consumed by the tab switch, so it is still here to collect.
+    //
+    // Post-frame because _onPrefillRequested calls setState, which throws
+    // before the first build.
+    if (DataPrefillSignal.pending != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _onPrefillRequested());
+    }
   }
 
   /// Apply a repeat hand-off to the live form.

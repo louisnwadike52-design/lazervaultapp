@@ -11,6 +11,7 @@ import '../cubit/data_bundles_cubit.dart';
 import '../widgets/data_recent_purchases_card.dart';
 import '../widgets/data_quick_buy.dart';
 import 'package:lazervault/core/navigation/back_or_home.dart';
+import '../widgets/data_prefill.dart';
 part 'data_bundles_home_screen_widgets.dart';
 
 /// Two-tab landing for data bundles mirroring the airtime landing page:
@@ -79,10 +80,30 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
     // Land on a tab the user can actually use: with Local switched off this
     // opens International rather than an empty Local panel.
     _selectedTab = _firstEnabledTab;
+    // A LOCAL repeat must reach a mounted DataQuickBuy.
+    //
+    // DataQuickBuy only exists on the Local tab, so a Repeat Purchase tapped
+    // from the history while this screen sat on International would bump the
+    // signal with nothing listening: the request would never be consumed, the
+    // sheet would dismiss, and the pop would land the user on the
+    // International panel with no explanation. Switching the tab here — WITHOUT
+    // consuming the request — puts the quick-buy on screen so its own listener
+    // can take it.
+    DataPrefillSignal.revision.addListener(_onPrefillRequestedSelectLocalTab);
+  }
+
+  void _onPrefillRequestedSelectLocalTab() {
+    if (!mounted || DataPrefillSignal.pending == null) return;
+    // Only when Local is actually available. With the scope switched off there
+    // is no quick-buy to prefill, and forcing the tab would replace a working
+    // panel with the "not available right now" notice.
+    if (_selectedTab == 0 || !_localTabEnabled) return;
+    setState(() => _selectedTab = 0);
   }
 
   @override
   void dispose() {
+    DataPrefillSignal.revision.removeListener(_onPrefillRequestedSelectLocalTab);
     // Clamped at zero: a hot reload can run dispose on a state whose
     // initState belonged to the previous build, and a negative count would
     // make isOpen false while the screen is plainly on screen.
