@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/services/access_token_shape.dart';
-import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart' show CallOptions;
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -325,61 +324,6 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
       return Left(Failure(
         message: 'Failed to reveal card details: ${e.toString()}',
         statusCode: 403,
-      ));
-    }
-  }
-
-  @override
-  Future<Either<Failure, DocumentEntity>> downloadAccountStatement({
-    required String accountId,
-    required DateTime startDate,
-    required DateTime endDate,
-    DocumentFormat format = DocumentFormat.pdf,
-    String? accessToken,
-  }) async {
-    try {
-      final token = accessToken ?? await _secureStorage.getAccessToken();
-
-      final request = accounts_pb.GenerateStatementRequest(
-        accountId: accountId,
-        startDate: Int64(startDate.millisecondsSinceEpoch ~/ 1000),
-        endDate: Int64(endDate.millisecondsSinceEpoch ~/ 1000),
-        format: format == DocumentFormat.pdf ? 'PDF' : 'CSV',
-      );
-
-      final response = await _accountsClient.generateStatement(
-        request,
-        options: _getCallOptions(token),
-      );
-
-      return Right(DocumentEntity(
-        id: response.documentId,
-        type: DocumentType.accountStatement,
-        title: 'Account Statement',
-        description:
-            'Statement from ${startDate.day}/${startDate.month}/${startDate.year} to ${endDate.day}/${endDate.month}/${endDate.year}',
-        // Honour what the backend actually rendered — the user may have
-        // asked for PDF and got CSV (or vice versa) via a future
-        // upgrade; we never want to lie about the file extension.
-        format: response.format.toUpperCase() == 'CSV'
-            ? DocumentFormat.csv
-            : format,
-        downloadUrl: response.downloadUrl,
-        createdAt: DateTime.now(),
-        validUntil: DateTime.fromMillisecondsSinceEpoch(
-            response.validUntil.toInt() * 1000),
-        sha256: response.sha256.isEmpty ? null : response.sha256,
-        generatedAt: response.generatedAt.toInt() > 0
-            ? DateTime.fromMillisecondsSinceEpoch(
-                response.generatedAt.toInt() * 1000)
-            : null,
-        cached: response.cached,
-        transactionCount: response.transactionCount.toInt(),
-      ));
-    } catch (e) {
-      return Left(Failure(
-        message: 'Failed to generate statement: ${e.toString()}',
-        statusCode: 500,
       ));
     }
   }

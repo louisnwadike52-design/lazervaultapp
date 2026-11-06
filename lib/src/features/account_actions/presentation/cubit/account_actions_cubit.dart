@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/account_details_entity.dart';
-import 'package:lazervault/src/features/account_actions/domain/entities/document_entity.dart';
 import 'package:lazervault/src/features/account_actions/domain/repositories/i_account_actions_repository.dart';
 import 'account_actions_state.dart';
 
@@ -501,43 +500,22 @@ class AccountActionsCubit extends Cubit<AccountActionsState> {
     );
   }
 
-  /// Download account statement
-  Future<void> downloadAccountStatement({
-    required String accountId,
-    required DateTime startDate,
-    required DateTime endDate,
-    DocumentFormat format = DocumentFormat.pdf,
-    String? accessToken,
-  }) async {
-    if (isClosed) return;
-    emit(const DocumentDownloading('Account Statement'));
-
-    final result = await _repository.downloadAccountStatement(
-      accountId: accountId,
-      startDate: startDate,
-      endDate: endDate,
-      format: format,
-      accessToken: accessToken,
-    );
-
-    result.fold(
-      (failure) {
-        if (isClosed) return;
-        emit(AccountActionsError(
-          failure.message,
-          statusCode: failure.statusCode,
-        ));
-      },
-      (document) {
-        if (isClosed) return;
-        // Emit the REAL document the backend returned (URL, sha256,
-        // generatedAt, format, etc.) — earlier code emitted a hardcoded
-        // stub that dropped the download URL and metadata, breaking the
-        // share/verify flow.
-        emit(DocumentDownloaded(document));
-      },
-    );
-  }
+  // downloadAccountStatement lived here and is gone.
+  //
+  // It was a SECOND statement implementation: it called GenerateStatement
+  // itself and handed the result to _openDownloadedDocument, which opened
+  // the backend URL in the device browser — no SHA-256 verification, no
+  // save, no print, and no share sheet. The statements feature's panel does
+  // all four, and StatementExportPanel already takes initialAccountId +
+  // lockAccount for exactly this caller.
+  //
+  // The Documents tab now opens that shared sheet
+  // (showStatementExportSheet), so this path had no callers left — it was
+  // a duplicate waiting for someone to wire it up again and reintroduce
+  // the weaker flow. The repository method and its interface entry go with
+  // it. Other document types (confirmation letter, proof of address) still
+  // use DocumentDownloaded and _openDownloadedDocument, which is why those
+  // stay.
 
   /// Download account confirmation letter
   Future<void> downloadAccountConfirmation({

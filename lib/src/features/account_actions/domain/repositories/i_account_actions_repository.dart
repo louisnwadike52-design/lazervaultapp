@@ -60,13 +60,6 @@ abstract class IAccountActionsRepository {
   });
 
   /// Download account statement
-  Future<Either<Failure, DocumentEntity>> downloadAccountStatement({
-    required String accountId,
-    required DateTime startDate,
-    required DateTime endDate,
-    DocumentFormat format = DocumentFormat.pdf,
-    String? accessToken,
-  });
 
   /// Download account confirmation letter
   Future<Either<Failure, DocumentEntity>> downloadAccountConfirmation({
