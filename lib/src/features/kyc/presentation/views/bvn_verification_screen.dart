@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_status_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -175,130 +176,140 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHeader(
-                title: isMaxTier ? 'You\'re Verified' : 'Verify Your Identity',
-                subtitle: isMaxTier
-                    ? 'Your identity is fully verified. You have full access.'
-                    : 'Complete a quick, secure check to unlock higher limits and full access',
-              ),
-              if (_loadingStatus)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.h),
-                  child: const LinearProgressIndicator(
-                    minHeight: 2,
-                    backgroundColor: _divider,
-                    valueColor: AlwaysStoppedAnimation<Color>(_accent),
-                  ),
-                ),
-              if (status != null && status.tier > 0) _buildTierCard(status),
-              if (!isMaxTier) ...[
-                _buildInfoCard(
-                  'You will be guided through a secure check by our verification partner. Have your BVN and NIN handy and allow camera access for a quick liveness check. Completing your BVN, NIN and the liveness check reaches Tier 3, the highest tier with unlimited limits. Your information is encrypted and only used for CBN compliance.',
-                ),
-                // Surface profile-readiness (valid email required; NG-phone note)
-                // so the user fixes blockers before opening the secure check.
-                _buildReadinessNotices(),
-                SizedBox(height: 18.h),
-                _buildBenefitsSection(status),
-              ],
-              SizedBox(height: 20.h),
-              SizedBox(
-                width: double.infinity,
-                height: 50.h,
-                child: AppLoadingButton(
-                  onPressed: _isSubmitting
-                      ? null
-                      : (isMaxTier ? _finishVerified : _startVerification),
-                  isLoading: _isSubmitting,
-                  // Tier 3 is the final tier — show a terminal "Done", not a
-                  // "Continue" that implies there's a further step. A Tier-2 user
-                  // is one liveness/NIN step away from the top, so frame their CTA
-                  // explicitly as the upgrade to Tier 3.
-                  text: isMaxTier
-                      ? 'Done'
-                      : (status != null && status.tier >= 2
-                          ? 'Upgrade to Tier 3'
-                          : (status != null && status.tier > 0
-                              ? 'Continue Verification'
-                              : 'Verify Identity')),
-                  backgroundColor: _accent,
-                  textColor: Colors.white,
-                ),
-              ),
-              if (!isMaxTier && _allowSkip) ...[
-                SizedBox(height: 16.h),
-                Center(
-                  child: TextButton(
-                    // A HELD HOLDER IS NOT SKIPPING, AND MUST NOT BE SENT
-                    // THROUGH THE SKIP PATH.
-                    //
-                    // `_allowSkip` admits `_heldForReview` so the button shows
-                    // while an operator compares two names. `_skipForNow`'s
-                    // authority guard is `!_reachedTier2`, which REFUSES such a
-                    // holder — so the button appeared, was tapped, and answered
-                    // "Verification required". A control that is present and
-                    // inert is worse than an absent one, and this one appeared
-                    // at the exact moment the customer is waiting on us.
-                    //
-                    // It must not simply be admitted into _skipForNow either:
-                    // that writes has_skipped_kyc and calls skipKYCUpgrade,
-                    // which persists a tier server-side. The hold GRANTS
-                    // NOTHING by design — see _heldForReview — so the deferral
-                    // is its own path, writing nothing.
-                    onPressed: _heldForReview && !_reachedTier2
-                        ? _deferWhileUnderReview
-                        : _skipForNow,
-                    style: TextButton.styleFrom(
-                      foregroundColor: _accent,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 16.w, vertical: 10.h),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          child: _loadingStatus
+              // A SKELETON, NOT THE REAL SCREEN WITH A PROGRESS BAR.
+              //
+              // This branch used to render the header unconditionally, which
+              // meant an already-verified customer opened a page headed
+              // "Verify Your Identity" — status was still null, so isMaxTier
+              // was false — waited behind a two-pixel progress line, and
+              // watched it rewrite itself into "You're Verified" with a tier
+              // card. The first paint was not a loading state; it was a
+              // confident wrong answer, and the reflow made it look broken.
+              //
+              // Nothing is claimed until the status is known.
+              ? const KycStatusSkeleton()
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildHeader(
+                      title: isMaxTier
+                          ? 'You\'re Verified'
+                          : 'Verify Your Identity',
+                      subtitle: isMaxTier
+                          ? 'Your identity is fully verified. You have full access.'
+                          : 'Complete a quick, secure check to unlock higher limits and full access',
                     ),
-                    // Prominent TEXT CTA (no border) — consistent with the
-                    // email/phone verification skips: clearly secondary to the
-                    // primary CTA but easy to find (accent colour, bold, arrow).
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          // "Skip" is the wrong word for a holder whose check
-                          // is RUNNING: nothing is being skipped, they are
-                          // being let go of the screen while they wait.
-                          _heldForReview && !_reachedTier2
-                              ? 'Continue for now'
-                              : 'Skip for now',
-                          style: GoogleFonts.inter(
-                            fontSize: 15.sp,
-                            color: _accent,
-                            fontWeight: FontWeight.w700,
+                    if (status != null && status.tier > 0)
+                      _buildTierCard(status),
+                    if (!isMaxTier) ...[
+                      _buildInfoCard(
+                        'You will be guided through a secure check by our verification partner. Have your BVN and NIN handy and allow camera access for a quick liveness check. Completing your BVN, NIN and the liveness check reaches Tier 3, the highest tier with unlimited limits. Your information is encrypted and only used for CBN compliance.',
+                      ),
+                      // Surface profile-readiness (valid email required; NG-phone note)
+                      // so the user fixes blockers before opening the secure check.
+                      _buildReadinessNotices(),
+                      SizedBox(height: 18.h),
+                      _buildBenefitsSection(status),
+                    ],
+                    SizedBox(height: 20.h),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50.h,
+                      child: AppLoadingButton(
+                        onPressed: _isSubmitting
+                            ? null
+                            : (isMaxTier
+                                ? _finishVerified
+                                : _startVerification),
+                        isLoading: _isSubmitting,
+                        // Tier 3 is the final tier — show a terminal "Done", not a
+                        // "Continue" that implies there's a further step. A Tier-2 user
+                        // is one liveness/NIN step away from the top, so frame their CTA
+                        // explicitly as the upgrade to Tier 3.
+                        text: isMaxTier
+                            ? 'Done'
+                            : (status != null && status.tier >= 2
+                                ? 'Upgrade to Tier 3'
+                                : (status != null && status.tier > 0
+                                    ? 'Continue Verification'
+                                    : 'Verify Identity')),
+                        backgroundColor: _accent,
+                        textColor: Colors.white,
+                      ),
+                    ),
+                    if (!isMaxTier && _allowSkip) ...[
+                      SizedBox(height: 16.h),
+                      Center(
+                        child: TextButton(
+                          // A HELD HOLDER IS NOT SKIPPING, AND MUST NOT BE SENT
+                          // THROUGH THE SKIP PATH.
+                          //
+                          // `_allowSkip` admits `_heldForReview` so the button shows
+                          // while an operator compares two names. `_skipForNow`'s
+                          // authority guard is `!_reachedTier2`, which REFUSES such a
+                          // holder — so the button appeared, was tapped, and answered
+                          // "Verification required". A control that is present and
+                          // inert is worse than an absent one, and this one appeared
+                          // at the exact moment the customer is waiting on us.
+                          //
+                          // It must not simply be admitted into _skipForNow either:
+                          // that writes has_skipped_kyc and calls skipKYCUpgrade,
+                          // which persists a tier server-side. The hold GRANTS
+                          // NOTHING by design — see _heldForReview — so the deferral
+                          // is its own path, writing nothing.
+                          onPressed: _heldForReview && !_reachedTier2
+                              ? _deferWhileUnderReview
+                              : _skipForNow,
+                          style: TextButton.styleFrom(
+                            foregroundColor: _accent,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 10.h),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          // Prominent TEXT CTA (no border) — consistent with the
+                          // email/phone verification skips: clearly secondary to the
+                          // primary CTA but easy to find (accent colour, bold, arrow).
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                // "Skip" is the wrong word for a holder whose check
+                                // is RUNNING: nothing is being skipped, they are
+                                // being let go of the screen while they wait.
+                                _heldForReview && !_reachedTier2
+                                    ? 'Continue for now'
+                                    : 'Skip for now',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15.sp,
+                                  color: _accent,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              SizedBox(width: 6.w),
+                              Icon(Icons.arrow_forward_rounded,
+                                  size: 18.sp, color: _accent),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 6.w),
-                        Icon(Icons.arrow_forward_rounded,
-                            size: 18.sp, color: _accent),
-                      ],
-                    ),
-                  ),
+                      ),
+                    ],
+                    // THE ONLY WAY OUT WHEN THERE IS NO OTHER ONE.
+                    //
+                    // Verification is compulsory below Tier 2 and there is no skip —
+                    // correct. But when this screen is ALSO the navigation root
+                    // (offAllNamed from signup, or from the post-login router when
+                    // kyc_required_on_signup is on), the back arrow pops an empty
+                    // stack and nothing else here signs out. Someone who cannot
+                    // verify on this device had the app rendered unusable with no
+                    // route even back to login.
+                    //
+                    // Shown only in exactly that corner: root AND no skip. With a
+                    // skip, or a stack to pop, there is already a way out.
+                    if (_isOnboardingRoot && !_allowSkip)
+                      const KycGateExitCta(),
+                  ],
                 ),
-              ],
-              // THE ONLY WAY OUT WHEN THERE IS NO OTHER ONE.
-              //
-              // Verification is compulsory below Tier 2 and there is no skip —
-              // correct. But when this screen is ALSO the navigation root
-              // (offAllNamed from signup, or from the post-login router when
-              // kyc_required_on_signup is on), the back arrow pops an empty
-              // stack and nothing else here signs out. Someone who cannot
-              // verify on this device had the app rendered unusable with no
-              // route even back to login.
-              //
-              // Shown only in exactly that corner: root AND no skip. With a
-              // skip, or a stack to pop, there is already a way out.
-              if (_isOnboardingRoot && !_allowSkip) const KycGateExitCta(),
-            ],
-          ),
         ),
       ),
     );
