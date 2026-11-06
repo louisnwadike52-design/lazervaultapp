@@ -23,10 +23,25 @@ void main() {
     'lib/src/features/kyc/presentation/widgets/kyc_gate_exit_cta.dart',
   ).readAsStringSync();
 
+  /// The screen with every run of whitespace collapsed to one space.
+  ///
+  /// WHY. The assertions below pin CODE STRUCTURE, but several were written as
+  /// literals carrying the indentation the file happened to have, so they also
+  /// pinned LAYOUT. Wrapping the build method in one more conditional pushed
+  /// those lines past the formatter's column limit, dart format re-wrapped
+  /// them, and three tests failed over whitespace while the behaviour they
+  /// guard was untouched.
+  ///
+  /// A guard that fails on reformatting teaches people to edit the test
+  /// instead of reading it. Comparing squashed text keeps exactly the
+  /// assertion that matters — these tokens, in this order — and drops the one
+  /// that never did.
+  final screenSquashed = screen.replaceAll(RegExp(r'\s+'), ' ');
+
   group('the verification gate always has an exit', () {
     test('the screen offers a sign-out when root AND skip is unavailable', () {
       expect(
-        screen.contains(
+        screenSquashed.contains(
             'if (_isOnboardingRoot && !_allowSkip) const KycGateExitCta()'),
         isTrue,
         reason: 'without this a user who cannot verify is sealed in: no skip '
@@ -37,7 +52,8 @@ void main() {
     test('it is NOT shown when a skip already exists', () {
       // Gated on !_allowSkip. A sign-out alongside a working skip is just an
       // invitation to lose your session for no reason.
-      expect(screen.contains('!_allowSkip) const KycGateExitCta()'), isTrue);
+      expect(
+          screenSquashed.contains('!_allowSkip) const KycGateExitCta()'), isTrue);
     });
 
     test('verification stays compulsory below Tier 2', () {
@@ -75,9 +91,8 @@ void main() {
     // exact moment the customer is waiting on us.
     test('a held holder gets a working deferral, not the skip path', () {
       expect(
-        screen.contains('''onPressed: _heldForReview && !_reachedTier2
-                        ? _deferWhileUnderReview
-                        : _skipForNow,'''),
+        screenSquashed.contains('onPressed: _heldForReview && !_reachedTier2 '
+            '? _deferWhileUnderReview : _skipForNow,'),
         isTrue,
         reason: 'a held holder must not be routed into _skipForNow, whose '
             'authority guard refuses them',
