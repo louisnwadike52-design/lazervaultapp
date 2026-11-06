@@ -245,7 +245,12 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
         currency: _currency,
         title: 'Confirm funding',
         message:
-            'Fund ${p.name} account $account (${v.accountName}) with $_currency ${amount.toStringAsFixed(0)}',
+            // The parenthetical is dropped when there is no name, rather
+            // than printing "account 9923380238 () with NGN 500" on the
+            // screen that asks the user to approve the payment.
+            'Fund ${p.name} account $account'
+                '${v.accountName.trim().isEmpty ? '' : ' (${v.accountName.trim()})'}'
+                ' with $_currency ${amount.toStringAsFixed(0)}',
         showProcessingPhase: true,
         successMessage: 'Funding request sent',
         onPinValidated: (token) async {
@@ -567,13 +572,29 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
         Icon(Icons.verified, color: const Color(0xFF10B981), size: 16.sp),
         SizedBox(width: 8.w),
         Expanded(
-          child: Text(v.accountName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600)),
+          // NEVER A BLANK BANNER.
+          //
+          // This rendered v.accountName straight, and for SportyBet that is
+          // EMPTY — VTU.africa echoes the platform back in the Customer field
+          // rather than returning an account holder, and the backend
+          // (resolveBetAccountName) correctly refuses to pass that off as a
+          // person's name. So the user got a green tick with nothing beside
+          // it, which reads as a half-finished lookup rather than a result.
+          //
+          // Platforms that DO return a holder still show it; the rest say what
+          // actually happened — the platform accepted this id — without
+          // claiming we confirmed whose account it is, which we did not.
+          child: Text(
+            v.accountName.trim().isNotEmpty
+                ? v.accountName.trim()
+                : 'Accepted by ${_platform?.name ?? 'the platform'}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600),
+          ),
         ),
       ]),
     );
@@ -671,7 +692,10 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
         border: Border.all(color: _border),
       ),
       child: Column(children: [
-        _row('Account name', _verification!.accountName),
+        // Only when one resolved — see the banner above. An "Account name"
+        // label with nothing beside it reads as a failed lookup.
+        if (_verification!.accountName.trim().isNotEmpty)
+          _row('Account name', _verification!.accountName.trim()),
         SizedBox(height: 10.h),
         _row('Platform', _platform!.name),
         SizedBox(height: 10.h),

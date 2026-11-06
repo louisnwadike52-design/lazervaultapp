@@ -216,9 +216,22 @@ class UserAvatar extends StatelessWidget {
               initials,
               maxLines: 1,
               softWrap: false,
+              // decoration: none is LOAD-BEARING, not tidiness.
+              //
+              // A Text with no DefaultTextStyle ancestor falls back to
+              // Flutter's debug style — red glyphs with a YELLOW DOUBLE
+              // UNDERLINE. A style given here is MERGED over that fallback, so
+              // colour/size/weight were overridden and the decoration was not.
+              //
+              // Normally there is a Material ancestor and none of this shows.
+              // But this avatar is the child of a Hero (settings → My Account),
+              // and during the flight the subtree is lifted into the overlay,
+              // away from any Material. That is the two yellow lines under the
+              // initials for the length of the transition, and only then.
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
+                decoration: TextDecoration.none,
                 // 0.4 gives a 16px char in a 40px disc — visually centered,
                 // still legible at 28px.
                 fontSize: size * 0.4,
