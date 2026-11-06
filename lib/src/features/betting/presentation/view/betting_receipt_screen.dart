@@ -151,122 +151,142 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen>
           child: Column(
             children: [
               Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 40.h),
-                      Container(
-                        width: 88.w,
-                        height: 88.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient:
-                              succeeded ? BettingTheme.heroGradient : null,
-                          color:
-                              succeeded ? null : color.withValues(alpha: 0.15),
+                // PULL TO REFRESH, replacing the "Refresh status" button.
+                //
+                // The status already updates on its own: BillStatusAutoRefresh
+                // polls with backoff and stops the moment the status is
+                // terminal. The button was never the mechanism, only a manual
+                // nudge — and giving that nudge its own control put a second,
+                // competing affordance on a screen whose job is to be read,
+                // while implying the receipt would otherwise sit still.
+                //
+                // A pull is the standard gesture for "check now" and costs no
+                // layout. AlwaysScrollableScrollPhysics so it still works when
+                // the receipt is short enough not to scroll.
+                child: RefreshIndicator(
+                  onRefresh: _refreshStatus,
+                  color: _primary,
+                  backgroundColor: _card,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 40.h),
+                        Container(
+                          width: 88.w,
+                          height: 88.w,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient:
+                                succeeded ? BettingTheme.heroGradient : null,
+                            color: succeeded
+                                ? null
+                                : color.withValues(alpha: 0.15),
+                          ),
+                          child: Icon(
+                            payment.isFailed
+                                ? Icons.close
+                                : refunded
+                                    ? Icons.undo_rounded
+                                    : (pending
+                                        ? Icons.hourglass_bottom
+                                        : Icons.check),
+                            color: succeeded ? Colors.white : color,
+                            size: 44.sp,
+                          ),
                         ),
-                        child: Icon(
-                          payment.isFailed
-                              ? Icons.close
-                              : refunded
-                                  ? Icons.undo_rounded
-                                  : (pending
-                                      ? Icons.hourglass_bottom
-                                      : Icons.check),
-                          color: succeeded ? Colors.white : color,
-                          size: 44.sp,
+                        SizedBox(height: 20.h),
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 20.h),
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.w800,
+                        SizedBox(height: 6.h),
+                        Text(
+                          result.message.isNotEmpty
+                              ? result.message
+                              : (pending
+                                  ? 'Your funding is being processed'
+                                  : 'Funds sent to your betting wallet'),
+                          textAlign: TextAlign.center,
+                          style:
+                              TextStyle(color: _textSecondary, fontSize: 13.sp),
                         ),
-                      ),
-                      SizedBox(height: 6.h),
-                      Text(
-                        result.message.isNotEmpty
-                            ? result.message
-                            : (pending
-                                ? 'Your funding is being processed'
-                                : 'Funds sent to your betting wallet'),
-                        textAlign: TextAlign.center,
-                        style:
-                            TextStyle(color: _textSecondary, fontSize: 13.sp),
-                      ),
-                      if (pending) ...[
+                        // A pending receipt now says it is updating itself; the
+                        // "Refresh status" button that used to sit here is a
+                        // pull-to-refresh on the scroll view above.
+                        if (pending) ...[
+                          SizedBox(height: 8.h),
+                          Text(
+                            'Updating automatically — pull down to check now',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: _textSecondary.withValues(alpha: 0.75),
+                              fontSize: 11.sp,
+                            ),
+                          ),
+                        ],
+                        SizedBox(height: 28.h),
+                        Container(
+                          padding: EdgeInsets.all(16.w),
+                          decoration: BoxDecoration(
+                            color: _card,
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                          child: Column(
+                            children: [
+                              _row(
+                                  'Platform',
+                                  _platformName.isNotEmpty
+                                      ? _platformName
+                                      : payment.platform),
+                              SizedBox(height: 10.h),
+                              if (_accountName.isNotEmpty) ...[
+                                _row('Account name', _accountName),
+                                SizedBox(height: 10.h),
+                              ],
+                              _row('Account', payment.customerNumber),
+                              SizedBox(height: 10.h),
+                              _row('Reference', payment.reference),
+                              if (result.providerReference.isNotEmpty) ...[
+                                SizedBox(height: 10.h),
+                                _row('Provider ref', result.providerReference),
+                              ],
+                              SizedBox(height: 10.h),
+                              _row('Status', payment.status),
+                            ],
+                          ),
+                        ),
                         SizedBox(height: 12.h),
-                        TextButton.icon(
-                          onPressed: _refreshing ? null : _refreshStatus,
-                          icon:
-                              Icon(Icons.refresh, color: _primary, size: 18.sp),
-                          label: Text('Refresh status',
-                              style: TextStyle(
-                                  color: _primary,
+                        BettingGradientCard(
+                          padding: EdgeInsets.all(18.w),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Amount funded',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.85),
                                   fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600)),
+                                ),
+                              ),
+                              Text(
+                                '₦${payment.amount.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
-                      SizedBox(height: 28.h),
-                      Container(
-                        padding: EdgeInsets.all(16.w),
-                        decoration: BoxDecoration(
-                          color: _card,
-                          borderRadius: BorderRadius.circular(14.r),
-                        ),
-                        child: Column(
-                          children: [
-                            _row(
-                                'Platform',
-                                _platformName.isNotEmpty
-                                    ? _platformName
-                                    : payment.platform),
-                            SizedBox(height: 10.h),
-                            if (_accountName.isNotEmpty) ...[
-                              _row('Account name', _accountName),
-                              SizedBox(height: 10.h),
-                            ],
-                            _row('Account', payment.customerNumber),
-                            SizedBox(height: 10.h),
-                            _row('Reference', payment.reference),
-                            if (result.providerReference.isNotEmpty) ...[
-                              SizedBox(height: 10.h),
-                              _row('Provider ref', result.providerReference),
-                            ],
-                            SizedBox(height: 10.h),
-                            _row('Status', payment.status),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 12.h),
-                      BettingGradientCard(
-                        padding: EdgeInsets.all(18.w),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Amount funded',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                fontSize: 14.sp,
-                              ),
-                            ),
-                            Text(
-                              '₦${payment.amount.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20.sp,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
