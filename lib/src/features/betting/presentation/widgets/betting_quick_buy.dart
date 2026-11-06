@@ -249,8 +249,8 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
             // than printing "account 9923380238 () with NGN 500" on the
             // screen that asks the user to approve the payment.
             'Fund ${p.name} account $account'
-                '${v.accountName.trim().isEmpty ? '' : ' (${v.accountName.trim()})'}'
-                ' with $_currency ${amount.toStringAsFixed(0)}',
+            '${v.accountName.trim().isEmpty ? '' : ' (${v.accountName.trim()})'}'
+            ' with $_currency ${amount.toStringAsFixed(0)}',
         showProcessingPhase: true,
         successMessage: 'Funding request sent',
         onPinValidated: (token) async {
@@ -290,8 +290,14 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
 
       if (!mounted) return;
       if (ok && result != null) {
+        // The receipt falls back to the payment record for both of these,
+        // but quick-buy holds the platform's DISPLAY name while the record
+        // stores its slug — so pass what we know and let the fallback cover
+        // the rest.
         Get.toNamed(AppRoutes.bettingReceipt, arguments: {
           'result': result,
+          'platformName': _platform?.name ?? '',
+          'accountName': _accountController.text.trim(),
         });
       }
     } catch (_) {

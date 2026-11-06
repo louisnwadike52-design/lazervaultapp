@@ -53,11 +53,47 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen>
     super.initState();
     final args = Get.arguments as Map<String, dynamic>?;
     _result = args?['result'] as BettingFundingResult?;
-    _platformName = (args?['platformName'] as String?) ?? '';
-    _accountName = (args?['accountName'] as String?) ?? '';
+
+    // THE RECORD IS THE FALLBACK, SO NO CALLER CAN PRODUCE A BLANK RECEIPT.
+    //
+    // Four routes reach this screen and they disagreed about what to send.
+    // The quick-buy path — the one taken straight after a purchase — passed
+    // only `result`, so the receipt rendered a tick above an empty platform
+    // and an empty name. History and the recent strip passed `platform` but
+    // hardcoded `accountName: ''`, so the funded account was never shown
+    // there either.
+    //
+    // Both values already exist on the payment record every caller passes, so
+    // reading them from it makes the receipt identical whichever way it was
+    // opened — which is what "the post-purchase receipt should look like the
+    // one from history" actually requires. An explicit argument still wins
+    // where a caller has something better (quick-buy knows the platform's
+    // display name; the record stores its slug).
+    final record = _result?.payment;
+    _platformName = _firstNonEmpty([
+      args?['platformName'] as String?,
+      record?.platform,
+    ]);
+    _accountName = _firstNonEmpty([
+      args?['accountName'] as String?,
+      record?.customerNumber,
+    ]);
     // Lands on "Processing" and settles when the provider's webhook arrives.
     // Without this the receipt sat there until the user thought to pull down.
     startBillStatusAutoRefresh();
+  }
+
+  /// The first value that is actually present, or ''.
+  ///
+  /// Trimmed, because an argument of " " is a blank to a reader even though
+  /// it is not empty to Dart — and a receipt showing a single space where the
+  /// account should be is the defect this exists to prevent.
+  static String _firstNonEmpty(List<String?> candidates) {
+    for (final c in candidates) {
+      final v = c?.trim() ?? '';
+      if (v.isNotEmpty) return v;
+    }
+    return '';
   }
 
   /// Back / close returns to the Bills Hub landing the service was launched

@@ -59,7 +59,9 @@ class _BettingHomeScreenState extends State<BettingHomeScreen> {
         message: '',
       ),
       'platformName': r.platform,
-      'accountName': '',
+      // accountName deliberately omitted: the receipt reads it from the
+      // payment record. Passing '' here used to WIN over that fallback, so
+      // every receipt opened from a list showed a blank funded account.
     });
   }
 
