@@ -44,6 +44,19 @@ class _PhoneEmailVerificationScreenState
 
   final _emailCtrl = TextEditingController();
   _Phase _phase = _Phase.email;
+
+  /// True once submitSignup has created the account.
+  ///
+  /// Decides which call an email submission makes. Before: create the account
+  /// with this address. After: CHANGE the address on the account that exists —
+  /// re-submitting would be refused as a duplicate phone, which is what a user
+  /// correcting a typo would otherwise have hit.
+  bool _accountCreated = false;
+
+  /// Set while a change-email request is in flight, so its completion can be
+  /// told apart from any other state the cubit emits. The change succeeds
+  /// into PhonePasscodeInitial, which carries no payload of its own.
+  bool _awaitingEmailChange = false;
   String _code = '';
   int _resendInitial = 0;
   int _resendKey = 0;
@@ -78,7 +91,13 @@ class _PhoneEmailVerificationScreenState
         return;
       }
       setState(() => _error = null);
-      context.read<PhonePasscodeCubit>().submitSignup(email: email);
+      if (_accountCreated) {
+        // Correcting the address on an account that already exists.
+        _awaitingEmailChange = true;
+        context.read<PhonePasscodeCubit>().changeSignupEmail(email);
+      } else {
+        context.read<PhonePasscodeCubit>().submitSignup(email: email);
+      }
     } else {
       // Phase 2: verify the entered code.
       context.read<PhonePasscodeCubit>().verifyEmailCode(_code);
@@ -97,12 +116,38 @@ class _PhoneEmailVerificationScreenState
   Widget build(BuildContext context) {
     return BlocConsumer<PhonePasscodeCubit, PhonePasscodeState>(
       listener: (context, state) {
+        // A change-email request that came back clean: return to the code
+        // phase, now showing the corrected address. A FAILURE falls through
+        // to the generic handler below and is shown beside the field the user
+        // is editing, which is where they can act on it.
+        if (_awaitingEmailChange &&
+            state is! PhonePasscodeLoading &&
+            state is! PhonePasscodeFailure) {
+          _awaitingEmailChange = false;
+          setState(() {
+            _phase = _Phase.code;
+            _code = '';
+          });
+          showAppSnackbar(
+            'Code sent',
+            'We sent a new code to ${_emailCtrl.text.trim()}.',
+            type: AppSnackbarType.success,
+          );
+          return;
+        }
+        if (_awaitingEmailChange && state is PhonePasscodeFailure) {
+          _awaitingEmailChange = false;
+        }
         if (state is PhoneSignupSuccess) {
           // Account created + verification code dispatched → reveal the code
           // section and hydrate the shared profile for downstream screens.
           context.read<AuthenticationCubit>().hydrateProfile(state.profile);
           setState(() {
             _phase = _Phase.code;
+          // submitSignup CREATED the account. Re-submitting would be
+          // rejected as a duplicate phone, so a later edit must take the
+          // change-email path instead.
+          _accountCreated = true;
             _resendInitial = 60;
             _resendKey++;
           });
@@ -136,6 +181,22 @@ class _PhoneEmailVerificationScreenState
         final isLoading = state is PhonePasscodeLoading;
         final inCode = _phase == _Phase.code;
         return PhoneFlowScaffold(
+          // BACK FROM THE CODE PHASE RETURNS TO THE EMAIL FIELD.
+          //
+          // Without this, back popped the whole step. A user who reached the
+          // code screen and realised the address was wrong — the commonest
+          // reason a code never arrives — had no way to correct it: the
+          // account already existed, attached to an inbox they do not read,
+          // and abandoning signup was the only exit.
+          //
+          // Only overridden while IN the code phase. On the email phase back
+          // means what it always meant: leave this step.
+          onBack: inCode
+              ? () => setState(() {
+                    _phase = _Phase.email;
+                    _code = '';
+                  })
+              : null,
           title: inCode ? 'Verify your email' : 'Your email',
           subtitle: inCode
               ? 'Enter the 6-digit code we sent to ${_maskEmail(_emailCtrl.text.trim())}.'

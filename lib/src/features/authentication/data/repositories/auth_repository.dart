@@ -1489,6 +1489,40 @@ class AuthRepositoryImpl implements IAuthRepository {
     }
   }
 
+  /// Points an UNVERIFIED signup account at a different email and sends a
+  /// fresh code there.
+  ///
+  /// Uses RequestEmailVerification, whose request message has carried an
+  /// `email` field since it was written — auth-service now honours it instead
+  /// of resending to whatever was already stored. Fenced server-side: refused
+  /// once the current address is verified, refused if the address belongs to
+  /// someone else, and the old code is retired so it cannot still verify the
+  /// account from the previous inbox.
+  ///
+  /// Returns the address the server actually stored, so the caller echoes
+  /// where the code went rather than what the user typed.
+  @override
+  Future<Either<Failure, String>> changeSignupEmail(
+      {required String email}) async {
+    try {
+      final request =
+          auth_req_resp.RequestEmailVerificationRequest(email: email);
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.requestEmailVerification(
+        request,
+        options: callOptions,
+      );
+      if (response.success) return Right(email);
+      return Left(ServerFailure(message: response.msg, statusCode: 0));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: e.message ?? 'Could not update your email.',
+          statusCode: 0));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
+
   @override
   Future<Either<Failure, int>> resendVerificationEmail(
       {required String email}) async {

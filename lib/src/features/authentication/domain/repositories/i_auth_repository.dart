@@ -252,6 +252,14 @@ abstract class IAuthRepository {
   });
 
   /// Returns the cooldown seconds (time to wait before next resend attempt)
+  /// Point an UNVERIFIED signup account at a different email and send a
+  /// fresh code there. Returns the address the server stored.
+  ///
+  /// Server-fenced: refused once the current address is verified, refused if
+  /// the address belongs to someone else, and the code already sent to the
+  /// old inbox is retired.
+  Future<Either<Failure, String>> changeSignupEmail({required String email});
+
   Future<Either<Failure, int>> resendVerificationEmail({required String email});
 
   // Email availability check

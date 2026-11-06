@@ -501,6 +501,36 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
   /// Verify the 6-digit code emailed after the account was created. On success
   /// the account's email is marked verified and the flow advances to the
   /// transaction-PIN step.
+  /// Point the account at a different email and send a fresh code there.
+  ///
+  /// Reachable only from the CODE phase, where the account already exists —
+  /// which is exactly the moment a user notices the address is wrong and,
+  /// until now, had no way to act on it.
+  ///
+  /// The server is the authority on whether the change is allowed: it refuses
+  /// once the current address is verified, refuses an address belonging to
+  /// someone else, and retires the code already sitting in the old inbox. A
+  /// refusal surfaces as an ordinary failure so the screen can show it beside
+  /// the field the user is editing.
+  Future<void> changeSignupEmail(String newEmail) async {
+    if (isClosed || state is PhonePasscodeLoading) return;
+    final email = newEmail.trim();
+    if (email.isEmpty) return;
+    emit(const PhonePasscodeLoading());
+    final result = await _authRepository.changeSignupEmail(email: email);
+    if (isClosed) return;
+    result.fold(
+      (failure) => emit(PhonePasscodeFailure(failure.message)),
+      (stored) {
+        // PhonePasscodeInitial, not a new state: the screen re-renders its
+        // code phase from this and the address it already holds. Inventing a
+        // state here would mean every existing listener had to learn it, for
+        // a transition that carries no new information beyond "done".
+        emit(const PhonePasscodeInitial());
+      },
+    );
+  }
+
   Future<void> verifyEmailCode(String code) async {
     if (isClosed || state is PhonePasscodeLoading) return;
     final c = code.trim();
