@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:lazervault/src/features/recipients/data/datasources/lazervault_account_lookup.dart';
+import 'package:lazervault/src/features/recipients/domain/services/account_number_augment.dart';
 import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
@@ -30,15 +32,33 @@ class ProfileRepositoryImpl implements IProfileRepository {
   final GrpcCallOptionsHelper _callOptionsHelper;
   final ProfilePictureUploadService _profilePictureUploadService;
 
+  /// Resolves a typed ACCOUNT NUMBER to its owner, so this search can answer
+  /// one. auth-service's `users` table holds no account numbers — they live in
+  /// `accounts`, a schema auth_role cannot see — so no `searchType` and no
+  /// query shaping can produce that answer from the directory alone.
+  ///
+  /// SUPPLIED AS A GETTER, NOT AN INSTANCE, TO BREAK A DEPENDENCY CYCLE.
+  /// LazervaultAccountLookup takes an IProfileRepository of its own (it
+  /// enriches an account hit with the owner's @handle), so constructing one
+  /// here would be circular and get_it would recurse forever on the first
+  /// resolve. Deferring the lookup to call time means both objects exist
+  /// before either is needed.
+  ///
+  /// Optional: when absent this search behaves exactly as it did before, so a
+  /// wiring gap degrades to the old behaviour rather than to an error.
+  final LazervaultAccountLookup? Function()? _accountLookup;
+
   ProfileRepositoryImpl({
     required UserServiceClient userServiceClient,
     required auth_grpc.AuthServiceClient authServiceClient,
     required GrpcCallOptionsHelper callOptionsHelper,
     required ProfilePictureUploadService profilePictureUploadService,
+    LazervaultAccountLookup? Function()? accountLookup,
   })  : _userServiceClient = userServiceClient,
         _authServiceClient = authServiceClient,
         _callOptionsHelper = callOptionsHelper,
-        _profilePictureUploadService = profilePictureUploadService;
+        _profilePictureUploadService = profilePictureUploadService,
+        _accountLookup = accountLookup;
 
   @override
   Future<Either<Failure, Map<String, dynamic>>> getUserProfile() async {
@@ -314,6 +334,20 @@ class ProfileRepositoryImpl implements IProfileRepository {
     String searchType =
         '', // Empty for unified search across username, name, phone, email
   }) async {
+    // Started BEFORE the directory call so the two run together: an
+    // account-number query costs one round trip, not two in series. Resolved
+    // through the getter so the cycle described on _accountLookup stays
+    // broken. Never throws — a term that is not a live Lazervault account
+    // simply answers null, which is the common case.
+    LazervaultAccountLookup? lookup;
+    try {
+      lookup = _accountLookup?.call();
+    } catch (_) {
+      lookup = null; // a wiring problem must not break search
+    }
+    final accountFuture =
+        AccountNumberAugment.start(lookup, query, offset: offset);
+
     try {
       final request = auth_pb.UserSearchRequest()
         ..query = query
@@ -338,10 +372,17 @@ class ProfileRepositoryImpl implements IProfileRepository {
           '[ProfileRepository] searchUsers response: success=${response.success}, msg="${response.msg}", users=${response.users.length}');
       if (!response.success) {
         print('[ProfileRepository] User search failed: ${response.msg}');
-        return [];
+        // An account-number hit still stands on its own: the directory
+        // failing says nothing about whether that account exists.
+        return AccountNumberAugment.merge<UserSearchResultEntity>(
+          results: const <UserSearchResultEntity>[],
+          match: await accountFuture,
+          userIdOf: (r) => r.userId,
+          map: _accountMatchToEntity,
+        );
       }
 
-      return response.users
+      final directory = response.users
           .map((user) => UserSearchResultEntity(
                 userId: user.userId,
                 username: user.username,
@@ -356,13 +397,57 @@ class ProfileRepositoryImpl implements IProfileRepository {
                 phoneMatchesSearchQueryExact: user.phoneMatchesSearchQueryExact,
               ))
           .toList();
+
+      // ALWAYS IN ADDITION, NEVER INSTEAD. The same digits can be a phone
+      // number, and whoever typed them neither knows nor should have to say
+      // which they meant, so both readings are offered. The account hit leads,
+      // because an exact account match beats a substring of someone's phone.
+      return AccountNumberAugment.merge<UserSearchResultEntity>(
+        results: directory,
+        match: await accountFuture,
+        userIdOf: (r) => r.userId,
+        map: _accountMatchToEntity,
+      );
     } on GrpcError catch (e) {
       print(
           '[ProfileRepository] gRPC Error searching users: ${e.codeName} - ${e.message}');
-      return [];
+      return _accountOnlyResult(await accountFuture);
     } catch (e) {
       print('[ProfileRepository] Error searching users: $e');
-      return [];
+      return _accountOnlyResult(await accountFuture);
     }
+  }
+
+  /// The account hit alone, for when the directory call failed. A timeout on
+  /// the directory is not evidence that the account does not exist, and
+  /// dropping a confirmed account because an unrelated RPC was slow is how a
+  /// payer concludes their payee is not on Lazervault.
+  List<UserSearchResultEntity> _accountOnlyResult(
+      LazervaultAccountMatch? match) {
+    return AccountNumberAugment.merge<UserSearchResultEntity>(
+      results: const <UserSearchResultEntity>[],
+      match: match,
+      userIdOf: (r) => r.userId,
+      map: _accountMatchToEntity,
+    );
+  }
+
+  static UserSearchResultEntity _accountMatchToEntity(
+      LazervaultAccountMatch m) {
+    final name = AccountNumberAugment.splitHolderName(m.holderName);
+    return UserSearchResultEntity(
+      userId: m.userId,
+      username: m.username,
+      firstName: name.first,
+      lastName: name.last,
+      email: '',
+      phoneNumber: '',
+      profilePicture: m.profilePicture,
+      // The account the NUMBER names, which is not necessarily the payee's
+      // primary one — a saved number often belongs to a family or business
+      // account. Paying the wrong account of the right person is still wrong.
+      primaryAccountId: m.accountId,
+      isLazervault: true,
+    );
   }
 }

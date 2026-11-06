@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/country_config.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -264,21 +266,41 @@ class KYCUpgradeModal extends StatelessWidget {
     );
   }
 
-  // Display-only tier daily-limit labels. These MUST mirror the canonical CBN
-  // limits in the backend `shared/kyctiers` Matrix (NG): Tier 1 \u20A650,000/day,
-  // Tier 2 \u20A6200,000/day, Tier 3 Unlimited. Kept in sync with the app's own
-  // verification_badge copy. Do not invent tier caps here \u2014 the backend is
-  // authoritative and enforces the real limits.
+  // Tier daily-limit labels, READ FROM THE APP'S ONE CONFIG rather than typed
+  // here.
+  //
+  // These were three hardcoded strings, with a comment instructing whoever
+  // edited them to keep them in lock-step with the backend by hand. That is
+  // the same arrangement that let the enforced caps drift to a hundred times
+  // the displayed ones without anything failing: the app said ₦50,000/day and
+  // accounts-service enforced ₦5,000,000/day, because the two numbers were
+  // written in different places in different units and nothing compared them.
+  //
+  // CountryConfig.dailyLimits already holds the per-tier figures in naira and
+  // is documented as tracking the canonical shared/kyctiers Matrix, so it is
+  // the single place the app states a tier cap. kyc_tier_limits_test.dart
+  // pins those values against the published CBN figures, so a drift fails the
+  // build rather than reaching a customer as a wrong promise.
+  //
+  // Still display-only: the backend enforces, and a label is never a cap.
   String _getTierLimits(int tier) {
-    switch (tier) {
-      case 1:
-        return '\u20A650,000/day';
-      case 2:
-        return '\u20A6200,000/day';
-      case 3:
-        return 'Unlimited';
-      default:
-        return 'N/A';
-    }
+    final limits = CountryConfigs.nigeria.dailyLimits;
+    final level = switch (tier) {
+      1 => KycLevel.basic,
+      2 => KycLevel.standard,
+      3 => KycLevel.advanced,
+      _ => null,
+    };
+    if (level == null) return 'N/A';
+    final amount = limits[level];
+    if (amount == null) return 'N/A';
+    // 0 is the canonical encoding of Unlimited (kyctiers.IsUnlimited), not a
+    // cap of nothing — rendering it as ₦0/day would tell a fully verified
+    // customer they may send nothing at all.
+    if (amount == 0) return 'Unlimited';
+    // Explicitly NGN, not the viewer's current display currency: a CBN tier
+    // cap is a naira figure, and rendering it with a dollar sign because the
+    // user is browsing in USD would state a limit that does not exist.
+    return '${CurrencySymbols.formatAmountWithCurrency(amount.toDouble(), 'NGN')}/day';
   }
 }

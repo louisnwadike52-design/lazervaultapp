@@ -1,4 +1,6 @@
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/src/features/recipients/data/datasources/lazervault_account_lookup.dart';
+import 'package:lazervault/src/features/recipients/domain/services/account_number_augment.dart';
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import 'package:lazervault/src/core/network/retry_helper.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
@@ -15,10 +17,16 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
   final auth_grpc.AuthServiceClient authServiceClient;
   final GrpcCallOptionsHelper callOptionsHelper;
 
+  /// Resolves a typed ACCOUNT NUMBER to its owner. Optional: when absent this
+  /// repository searches exactly as it did before, so a wiring gap degrades to
+  /// the old behaviour rather than to an error.
+  final LazervaultAccountLookup? accountLookup;
+
   TagPayRepositoryGrpcImpl({
     required this.grpcClient,
     required this.authServiceClient,
     required this.callOptionsHelper,
+    this.accountLookup,
   });
 
   @override
@@ -701,6 +709,13 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
     String searchType =
         '', // Empty for unified search across username, name, phone, email
   }) async {
+    // Started BEFORE the directory call so the two run together: an
+    // account-number query costs one round trip, not two in series.
+    // auth-service's `users` table holds no account numbers (they live in a
+    // schema auth_role cannot see), so this is the only way a typed account
+    // number finds its owner here.
+    final accountFuture = AccountNumberAugment.start(accountLookup, query);
+
     // User search is decoupled from TagPay - use AuthService instead
     // This follows proper architecture where user search is handled by UserService/AuthService
     return retryWithBackoff(
@@ -725,7 +740,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
           return [];
         }
 
-        return response.users
+        final directory = response.users
             .map((user) => UserSearchResultEntity(
                   userId: user.userId,
                   username: user.username,
@@ -738,6 +753,30 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
                       user.hasPrimaryAccountId() ? user.primaryAccountId : null,
                 ))
             .toList();
+
+        return AccountNumberAugment.merge<UserSearchResultEntity>(
+          results: directory,
+          match: await accountFuture,
+          userIdOf: (r) => r.userId,
+          map: (m) {
+            final name = AccountNumberAugment.splitHolderName(m.holderName);
+            return UserSearchResultEntity(
+              userId: m.userId,
+              username: m.username,
+              firstName: name.first,
+              lastName: name.last,
+              email: '',
+              phoneNumber: '',
+              profilePicture: m.profilePicture,
+              // The account the NUMBER names, which is not necessarily the
+              // payee's primary one — a number often belongs to a family or
+              // business account. Paying the wrong account of the right
+              // person is still the wrong outcome.
+              primaryAccountId: m.accountId,
+              isLazervault: true,
+            );
+          },
+        );
       },
     );
   }

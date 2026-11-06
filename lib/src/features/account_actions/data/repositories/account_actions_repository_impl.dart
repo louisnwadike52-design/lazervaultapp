@@ -463,7 +463,25 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
       accountType:
           proto.accountType.isNotEmpty ? proto.accountType : 'Personal',
       currency: proto.currency.isNotEmpty ? proto.currency : 'NGN',
-      balance: proto.balance / 100,
+      // UNITS: pb.Account CARRIES MAJOR UNITS (naira), NOT MINOR.
+      //
+      // This divided by 100 and that is why a daily limit saved as ₦200 came
+      // back as ₦2.00. accounts-service has TWO mappers for the same model and
+      // they disagree: modelToProtoAccountSummary multiplies balances by 100
+      // (pb.AccountSummary is minor), while modelToProtoAccount — the one that
+      // fills THIS message — passes acc.Balance and acc.DailyLimit straight
+      // through from a DECIMAL(20,2) naira column. Same field names, two
+      // meanings, and nothing in either type says which.
+      //
+      // The save path hid it: updateSpendingLimits reads the value back out of
+      // the SAME response without dividing, so the number looked right until
+      // the screen was reopened and took this path instead. That is exactly
+      // the "set 200, come back to 2.0" report.
+      //
+      // Verified both server-side fillers of pb.Account (accounts_handler_proto.go
+      // and multi_country_service_locale.go) pass raw naira, so there is no
+      // caller for which the division was correct.
+      balance: proto.balance,
       status: proto.status.isNotEmpty ? proto.status : 'active',
       cardHolderName: null,
       cardType: null,
@@ -474,10 +492,10 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
           proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       iban: null,
       bicSwift: null,
-      dailyLimit: proto.dailyLimit / 100,
-      monthlyLimit: proto.monthlyLimit / 100,
+      dailyLimit: proto.dailyLimit,
+      monthlyLimit: proto.monthlyLimit,
       singleTransactionLimit: proto.singleTransactionLimit > 0
-          ? proto.singleTransactionLimit / 100
+          ? proto.singleTransactionLimit
           : null,
       enable3DSecure: false,
       enableContactless: false,

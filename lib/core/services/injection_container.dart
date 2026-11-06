@@ -1326,6 +1326,11 @@ Future<void> init() async {
             callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
             profilePictureUploadService:
                 serviceLocator<ProfilePictureUploadService>(),
+            // A GETTER, not an instance. LazervaultAccountLookup takes an
+            // IProfileRepository of its own, so resolving it here would be a
+            // construction cycle and get_it would recurse on the first
+            // lookup. Deferring to call time means both exist by then.
+            accountLookup: () => serviceLocator<LazervaultAccountLookup>(),
           ));
 
   // Blocs/Cubits
@@ -2495,6 +2500,10 @@ Future<void> init() async {
           serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+      // So a typed account number finds its owner here too — the directory
+      // search cannot, because auth-service's users table holds no account
+      // numbers.
+      accountLookup: serviceLocator<LazervaultAccountLookup>(),
     ),
   );
 

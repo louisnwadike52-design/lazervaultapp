@@ -390,7 +390,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 fontSize: 16.sp,
               ),
               decoration: InputDecoration(
-                hintText: 'Search people to tag',
+                hintText: AccountNumberAugment.searchHint,
                 hintStyle: GoogleFonts.inter(
                   color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 16.sp,

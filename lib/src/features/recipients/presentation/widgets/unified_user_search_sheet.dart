@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/recipients/presentation/widgets/user_search_skeleton.dart';
+import 'package:lazervault/src/features/recipients/domain/services/account_number_augment.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -469,7 +470,10 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
         decoration: InputDecoration(
           hintText: _contactsMode
               ? 'Filter your contacts'
-              : 'Name, username, phone, email or account no.',
+              // One string for every surface that supports this, so a screen
+              // cannot promise account-number search it does not have, or
+              // have it without saying so.
+              : AccountNumberAugment.searchHint,
           // Smaller hint + tighter icon box so the long hint stays on one line.
           hintStyle: GoogleFonts.inter(
               fontSize: 12.sp, color: const Color(0xFF9CA3AF)),

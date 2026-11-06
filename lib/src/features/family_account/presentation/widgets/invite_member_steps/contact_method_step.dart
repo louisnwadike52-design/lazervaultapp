@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/recipients/domain/services/account_number_augment.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -201,7 +202,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
         fontSize: 16.sp,
       ),
       decoration: InputDecoration(
-        hintText: 'Search username, name, email, or phone...',
+        hintText: AccountNumberAugment.searchHint,
         hintStyle: TextStyle(
           color: const Color(0xFF9CA3AF),
           fontSize: 14.sp,

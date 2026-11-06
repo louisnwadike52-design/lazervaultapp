@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/recipients/domain/services/account_number_augment.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -263,7 +264,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
               fontSize: 16.sp,
             ),
             decoration: InputDecoration(
-              hintText: 'Search people to add',
+              hintText: AccountNumberAugment.searchHint,
               hintStyle: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),
                 fontSize: 16.sp,
