@@ -226,10 +226,13 @@ class _StatementExportPanelState extends State<StatementExportPanel> {
       if (!mounted) return;
       setState(() => _recent = updated);
 
-      LVSnackbar.showSuccess(
-        title: 'Statement ready',
-        message: 'Your statement has been downloaded.',
-      );
+      // No success snackbar here.
+      //
+      // _showActions() below opens a sheet already titled "Statement
+      // downloaded" with Open / Share / Print on it. The snackbar said the
+      // same thing a second time, landing ON TOP of that sheet and covering
+      // the actions it was announcing.
+      
       _showActions(localPath, statement.format);
     } catch (e) {
       if (!mounted) return;

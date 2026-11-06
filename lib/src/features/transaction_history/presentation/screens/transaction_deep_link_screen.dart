@@ -52,9 +52,30 @@ class TransactionDeepLinkScreen extends StatefulWidget {
 }
 
 class _TransactionDeepLinkScreenState extends State<TransactionDeepLinkScreen> {
+  /// Whether to explain what this screen is doing.
+  ///
+  /// The screen used to render a bare centred loader on an empty scaffold,
+  /// with no title, no label and no back button. The reasoning was that it
+  /// "exists for a few hundred milliseconds and is replaced, so any chrome
+  /// would flash and then be gone" — true on a warm lookup, and wrong in the
+  /// case users actually reported. The lookup has a SIX SECOND budget, and a
+  /// slow one leaves a blank white screen with a logo on it and no way back:
+  /// indistinguishable from the app having hung.
+  ///
+  /// So the chrome is DELAYED rather than removed. A fast resolve still shows
+  /// nothing but the loader and never flashes; past this threshold the screen
+  /// says what it is waiting for and offers a way out.
+  static const _explainAfter = Duration(milliseconds: 450);
+
+  bool _explain = false;
+  Timer? _explainTimer;
+
   @override
   void initState() {
     super.initState();
+    _explainTimer = Timer(_explainAfter, () {
+      if (mounted) setState(() => _explain = true);
+    });
     // After the first frame: this screen is itself being pushed, and calling
     // Get.off during that push throws — which would read to the user as the
     // notification tap doing nothing at all.
@@ -99,13 +120,62 @@ class _TransactionDeepLinkScreenState extends State<TransactionDeepLinkScreen> {
   }
 
   @override
+  void dispose() {
+    _explainTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Deliberately chrome-free: no app bar, no title, no back button. The
-    // screen exists for a few hundred milliseconds and is replaced, so any
-    // chrome would flash and then be gone — and a back button here would
-    // race the replacement.
-    return const Scaffold(
-      body: Center(child: LazerVaultLoader(size: 36)),
+    // Chrome-free for the first instant, explained after that.
+    //
+    // The original reasoning — "the screen exists for a few hundred
+    // milliseconds and is replaced, so any chrome would flash" — holds for a
+    // warm lookup and fails for the one users reported. _budget is SIX
+    // SECONDS, and a slow lookup left a blank screen with a logo on it, no
+    // label and no way back: indistinguishable from the app having hung.
+    //
+    // Delaying rather than removing keeps both properties: a fast resolve
+    // still shows only the loader and never flashes a title it is about to
+    // discard, while a slow one says what it is waiting for.
+    //
+    // The back control pops rather than replacing, so it returns to wherever
+    // the tap came from. It cannot race the replacement: _resolve() guards
+    // every navigation on `mounted`, and popping unmounts this screen.
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            if (_explain)
+              Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    if (Navigator.of(context).canPop()) Get.back();
+                  },
+                  tooltip: 'Back',
+                ),
+              ),
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const LazerVaultLoader(size: 36),
+                  if (_explain) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'Opening your receipt…',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
