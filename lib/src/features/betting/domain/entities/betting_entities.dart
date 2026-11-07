@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:equatable/equatable.dart';
 
 /// A betting platform the user can fund (Bet9ja, SportyBet, etc.).
@@ -81,6 +82,12 @@ class BettingFundingRecord extends Equatable {
   final String reference;
   final String createdAt;
 
+  /// Raw JSON metadata as the backend stored it. Parsed lazily by
+  /// [serviceFee] — the fee is already on the wire (BillPayment.metadata
+  /// carries `service_fee`), it simply was not being read, so a receipt for a
+  /// ₦228 debit showed "Amount funded ₦200" and nothing else.
+  final String metadata;
+
   const BettingFundingRecord({
     required this.id,
     required this.platform,
@@ -89,6 +96,7 @@ class BettingFundingRecord extends Equatable {
     required this.status,
     required this.reference,
     required this.createdAt,
+    this.metadata = '',
   });
 
   bool get isCompleted {
@@ -115,6 +123,28 @@ class BettingFundingRecord extends Equatable {
   }
 
   bool get isPending => !isCompleted && !isFailed && !isRefunded;
+
+  /// The service fee the customer was charged on top of [amount], from the
+  /// metadata the backend already sends. 0 when absent or malformed — never a
+  /// negative, which would make the receipt understate the debit.
+  double get serviceFee {
+    if (metadata.isEmpty) return 0;
+    try {
+      final decoded = jsonDecode(metadata);
+      if (decoded is! Map) return 0;
+      final raw = decoded['service_fee'];
+      final v = raw is num ? raw.toDouble() : double.tryParse('$raw');
+      if (v == null || v <= 0 || v.isNaN || v.isInfinite) return 0;
+      return v;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// What actually left the customer's balance: the funding amount plus the
+  /// fee. This is the figure the server held and debited, so it is the only
+  /// honest "total" for a receipt someone keeps as proof of payment.
+  double get totalPaid => amount + serviceFee;
 
   @override
   List<Object?> get props =>

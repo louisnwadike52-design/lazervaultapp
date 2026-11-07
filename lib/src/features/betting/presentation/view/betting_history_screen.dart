@@ -189,7 +189,11 @@ class _BettingHistoryScreenState extends State<BettingHistoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '₦${r.amount.toStringAsFixed(0)}',
+                  // The amount DEBITED, so the row reconciles against the
+                  // customer's statement. It showed the funding amount, which
+                  // on a fee-bearing funding is a different number from the
+                  // one in their transaction list.
+                  '₦${r.totalPaid.toStringAsFixed(0)}',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14.sp,

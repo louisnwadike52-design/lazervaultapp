@@ -39,5 +39,8 @@ class BettingMappers {
         status: p.status,
         reference: p.reference,
         createdAt: p.createdAt,
+        // Carries service_fee, which the receipt needs to show what the
+        // customer actually paid. Already populated by the betting handler.
+        metadata: p.metadata,
       );
 }

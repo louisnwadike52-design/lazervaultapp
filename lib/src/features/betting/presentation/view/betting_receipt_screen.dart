@@ -321,6 +321,26 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen>
                             ],
                           ),
                         ),
+                        // WHAT THEY ACTUALLY PAID.
+                        //
+                        // A receipt is the document a customer keeps as proof
+                        // of payment, and this one showed "Amount funded"
+                        // alone — ₦200 on a ₦228 debit, with the fee nowhere.
+                        // The figures were already on the wire in
+                        // BillPayment.metadata; nothing was reading them.
+                        //
+                        // Rendered only when there IS a fee, so a funding
+                        // taken before the fee was priced — every one so far —
+                        // shows exactly what it showed before.
+                        if (payment.serviceFee > 0) ...[
+                          SizedBox(height: 10.h),
+                          _row('Service fee',
+                              '₦${payment.serviceFee.toStringAsFixed(2)}'),
+                          SizedBox(height: 6.h),
+                          _row('Total paid',
+                              '₦${payment.totalPaid.toStringAsFixed(2)}',
+                              isTotal: true),
+                        ],
                       ],
                     ),
                   ),
@@ -405,7 +425,12 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen>
           : refunded
               ? 'Betting funding refunded'
               : (pending ? 'Betting funding pending' : 'Betting wallet funded'),
-      amountMajor: payment.amount,
+      // The TOTAL DEBITED, not the funded amount. A shared receipt is the
+      // copy that leaves the app — it goes to a third party as evidence of
+      // what was paid, so quoting the funding amount on a debit that included
+      // a fee understates it in the one place we cannot correct later. The
+      // breakdown is in the metadata below so the split is still legible.
+      amountMajor: payment.totalPaid,
       currency: 'NGN',
       flow: TransactionFlow.outgoing,
       status: status,
@@ -420,6 +445,12 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen>
           'Account name': accountName,
         if (result.providerReference.isNotEmpty)
           'Provider ref': result.providerReference,
+        // Only when there is a fee, so a pre-pricing funding's shared receipt
+        // is byte-for-byte what it was.
+        if (payment.serviceFee > 0) ...{
+          'Amount funded': '₦${payment.amount.toStringAsFixed(2)}',
+          'Service fee': '₦${payment.serviceFee.toStringAsFixed(2)}',
+        },
       },
     );
     showBusinessReceipt(context, tx);
