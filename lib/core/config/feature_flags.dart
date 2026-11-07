@@ -758,6 +758,22 @@ class FeatureFlags {
       // Unavailability scope is a string enum ('generic'|'account'|'country'),
       // mirrored verbatim; FeatureFlags.intlPayoutScope normalises on read.
       intlPayoutUnavailableScope,
+      // BILL SERVICE FEES (betting / ePIN) — the four keys per bill type that
+      // calcSimpleFee prices from.
+      //
+      // IN THE STRING LOOP, INCLUDING THE BOOLEAN ONE. The loop above stores
+      // with setBool, and billServiceFee reads every one of these with
+      // getString: a fee of "28" through setBool becomes `false`, and the
+      // enabled flag written as a bool reads back null. Both halves then
+      // agree the fee is zero while the server charges it. One loop, one
+      // storage type, one reader.
+      //
+      // Without being ingested AT ALL the chain is silent end to end:
+      // admin-gateway merges these into the response from utility-payments'
+      // database, and a key not named in one of these lists is discarded on
+      // arrival. Exactly the failure the SMS keys record above — writable,
+      // served, and still unreachable.
+      ...billFeeSettingKeys,
       // The bank-payout floor is a number; stored verbatim and parsed on
       // read so a malformed admin value degrades to the default instead of
       // throwing during boot.
@@ -1506,6 +1522,24 @@ class FeatureFlags {
   // number is wrong, which is why it is a faithful mirror rather than an
   // independent pricing rule, and why bill_service_fee_test.dart pins the
   // arithmetic to the Go implementation's.
+  /// The eight keys the settings poll must INGEST for a fee to be visible.
+  ///
+  /// Mirrors billFeeSettingKeys in admin-gateway, which is what merges them
+  /// into the response. Listed once and spread into applyRemoteSnapshot's
+  /// ingest list, so adding a bill type cannot leave the two halves out of
+  /// step — the gap that made the betting fee invisible even once the server
+  /// was pricing it.
+  static const List<String> billFeeSettingKeys = <String>[
+    'betting_service_fee_enabled',
+    'betting_fee_type',
+    'betting_fee_fixed',
+    'betting_fee_percentage',
+    'epin_service_fee_enabled',
+    'epin_fee_type',
+    'epin_fee_fixed',
+    'epin_fee_percentage',
+  ];
+
   static String billFeeTypeKey(String billType) => '${billType}_fee_type';
   static String billFeeEnabledKey(String billType) =>
       '${billType}_service_fee_enabled';

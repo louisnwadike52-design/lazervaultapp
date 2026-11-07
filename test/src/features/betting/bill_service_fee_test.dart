@@ -108,6 +108,53 @@ void main() {
     expect(FeatureFlags.billServiceFee('betting', 500), 28);
   });
 
+  group('the settings poll must ingest the fee keys as STRINGS', () {
+    test('all eight keys are ingested', () async {
+      // Uses the instance bound in setUpAll. Re-calling setMockInitialValues
+      // here does nothing — SharedPreferences caches its instance, which is
+      // the very thing this file's header comment warns about, and my first
+      // version of this test fell into it.
+      await seed({});
+
+      await FeatureFlags.applyRemoteSnapshot({
+        'betting_service_fee_enabled': 'true',
+        'betting_fee_type': 'fixed',
+        'betting_fee_fixed': '28',
+        'betting_fee_percentage': '0',
+        'epin_service_fee_enabled': 'true',
+        'epin_fee_type': 'fixed',
+        'epin_fee_fixed': '10',
+        'epin_fee_percentage': '0',
+      });
+
+      // Stored as STRINGS — getString must return them, because that is what
+      // billServiceFee reads with.
+      expect(prefs.getString('betting_fee_fixed'), '28',
+          reason: 'a fee stored via setBool would read back null here');
+      expect(prefs.getString('betting_fee_type'), 'fixed');
+      expect(prefs.getString('betting_service_fee_enabled'), 'true',
+          reason: 'the enabled flag is read with getString too, so it must be '
+              'stored as a string, not a bool');
+
+      // And the whole point: the fee is now visible to the UI.
+      expect(FeatureFlags.billServiceFee('betting', 200), 28);
+      expect(FeatureFlags.billServiceFee('epin', 500), 10);
+    });
+
+    test('the app list and admin-gateway list are the same eight keys', () {
+      // admin-gateway's billFeeSettingKeys is the server half; if they drift,
+      // the server merges a key the app discards.
+      expect(FeatureFlags.billFeeSettingKeys.length, 8);
+      for (final bt in ['betting', 'epin']) {
+        for (final sfx in [
+          '_service_fee_enabled', '_fee_type', '_fee_fixed', '_fee_percentage',
+        ]) {
+          expect(FeatureFlags.billFeeSettingKeys, contains('$bt$sfx'));
+        }
+      }
+    });
+  });
+
   test('the key names are exactly the ones the server prices from', () {
     expect(FeatureFlags.billFeeEnabledKey('betting'), 'betting_service_fee_enabled');
     expect(FeatureFlags.billFeeTypeKey('betting'), 'betting_fee_type');
@@ -115,3 +162,13 @@ void main() {
     expect(FeatureFlags.billFeePercentageKey('betting'), 'betting_fee_percentage');
   });
 }
+
+// The chain is only as good as its weakest link, and the weakest was the
+/// INGEST. admin-gateway merges the fee keys into the settings response, but
+/// applyRemoteSnapshot ingests an EXPLICIT list — a key not named there
+/// arrives in the HTTP response and is discarded, so billServiceFee reads
+/// nothing and every screen shows no fee while the server charges one.
+///
+/// It also matters WHICH list: one loop stores with setBool, the other with
+/// setString, and billServiceFee reads all eight with getString. A fee of
+/// "28" through the bool loop becomes `false`.
