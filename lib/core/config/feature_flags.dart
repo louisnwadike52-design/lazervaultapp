@@ -1488,6 +1488,64 @@ class FeatureFlags {
   /// would otherwise mean "no uploads allowed at all", which is never what an
   /// operator clearing a box intends, and [cap] keeps a typo from raising a
   /// limit past what the gateway will actually accept.
+  // ── Bill service fee (betting / ePIN) ────────────────────────────────────
+  //
+  // MIRRORS calcSimpleFee IN utility-payments, key for key and default for
+  // default:
+  //
+  //   {bt}_service_fee_enabled  bool   master switch, default FALSE → fee 0
+  //   {bt}_fee_type             string "fixed" | "percentage" (default pct)
+  //   {bt}_fee_fixed            NGN    when type == fixed
+  //   {bt}_fee_percentage       pct    when type == percentage (1.0 == 1%)
+  //
+  // The SERVER is authoritative — it charges amount + fee and the hold covers
+  // the total. This exists only so the amount sheet and the transaction-PIN
+  // sheet can SHOW the customer what they are about to pay, instead of
+  // displaying the funding amount and letting them discover the real total
+  // from their balance afterwards. If the two ever disagree the displayed
+  // number is wrong, which is why it is a faithful mirror rather than an
+  // independent pricing rule, and why bill_service_fee_test.dart pins the
+  // arithmetic to the Go implementation's.
+  static String billFeeTypeKey(String billType) => '${billType}_fee_type';
+  static String billFeeEnabledKey(String billType) =>
+      '${billType}_service_fee_enabled';
+  static String billFeeFixedKey(String billType) => '${billType}_fee_fixed';
+  static String billFeePercentageKey(String billType) =>
+      '${billType}_fee_percentage';
+
+  /// The service fee the server will add for [billType] on [amount], in naira.
+  ///
+  /// Returns 0 when the fee is switched off or unset — the same answer
+  /// calcSimpleFee gives, so a rail nobody has priced shows no fee rather
+  /// than a guess.
+  static double billServiceFee(String billType, double amount) {
+    if (amount <= 0) return 0;
+    if (!_boolSetting(billFeeEnabledKey(billType), false)) return 0;
+    final type =
+        (_prefs?.getString(billFeeTypeKey(billType)) ?? 'percentage').trim();
+    if (type == 'fixed') {
+      return _nonNegativeDouble(billFeeFixedKey(billType));
+    }
+    final pct = _nonNegativeDouble(billFeePercentageKey(billType));
+    return amount * pct / 100.0;
+  }
+
+  static bool _boolSetting(String key, bool fallback) {
+    final raw = (_prefs?.getString(key) ?? '').trim().toLowerCase();
+    if (raw.isEmpty) return fallback;
+    return raw == 'true' || raw == '1' || raw == 'yes';
+  }
+
+  /// A negative fee would SUBTRACT from what the customer pays, so a malformed
+  /// row reads as "no fee" rather than a discount nobody authorised.
+  static double _nonNegativeDouble(String key) {
+    final parsed = double.tryParse((_prefs?.getString(key) ?? '').trim());
+    if (parsed == null || parsed <= 0 || parsed.isNaN || parsed.isInfinite) {
+      return 0;
+    }
+    return parsed;
+  }
+
   static int _positiveSetting(String key, int fallback, {int? cap}) {
     final parsed = int.tryParse((_prefs?.getString(key) ?? '').trim());
     if (parsed == null || parsed <= 0) return fallback;

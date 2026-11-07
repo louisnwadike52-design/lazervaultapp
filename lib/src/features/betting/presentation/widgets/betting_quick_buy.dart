@@ -23,6 +23,7 @@ import '../../../transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/utils/ng_msisdn.dart';
 import '../../../../../core/widgets/amount_preset_row.dart';
 import 'betting_platform_sheet.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 
 /// Single-page betting-wallet funding — streamlined "one page, very fast" flow
 /// (mirror of WaterQuickBuy). Pick platform (Bet9ja/SportyBet/…) → enter the
@@ -60,6 +61,17 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
   bool _verifying = false;
   String? _verifyError;
   double? _amount;
+
+  /// The service fee the server will add, read from the admin settings the
+  /// server itself prices from (FeatureFlags.billServiceFee mirrors
+  /// calcSimpleFee key for key). 0 when the fee is switched off, so a rail
+  /// nobody has priced looks exactly as it did before.
+  double get _fee => FeatureFlags.billServiceFee('betting', _amount ?? 0);
+
+  /// What leaves the customer's balance: the funding amount PLUS the fee.
+  /// This is the number the server holds and debits, so it is the only honest
+  /// thing to put next to "You pay".
+  double get _total => (_amount ?? 0) + _fee;
   bool _submitting = false;
   Timer? _debounce;
   StreamSubscription<BettingState>? _sub;
@@ -224,6 +236,8 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
     final p = _platform!;
     final v = _verification!;
     final amount = _amount!;
+    final fee = _fee;
+    final total = _total;
     final account = _accountController.text.trim();
     // Send the canonical 11-digit form, never the raw field text: the button
     // now accepts a 10-digit number typed under the +234 prefix, and a
@@ -242,6 +256,12 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
         transactionId: txnId,
         transactionType: 'betting_funding',
         amount: amount,
+        // The PIN sheet already renders these; betting simply never sent them,
+        // so the last screen before the debit showed the funding amount and
+        // not the total. `fee` is null when there is none, which keeps the
+        // sheet's single-line layout for an unpriced rail.
+        fee: fee > 0 ? fee : null,
+        totalAmount: fee > 0 ? total : null,
         currency: _currency,
         title: 'Confirm funding',
         message:
@@ -250,7 +270,11 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
             // screen that asks the user to approve the payment.
             'Fund ${p.name} account $account'
             '${v.accountName.trim().isEmpty ? '' : ' (${v.accountName.trim()})'}'
-            ' with $_currency ${amount.toStringAsFixed(0)}',
+            // The amount FUNDED, then the total DEBITED — the customer is
+            // approving the debit, so it has to appear here.
+            ' with $_currency ${amount.toStringAsFixed(0)}'
+            '${fee > 0 ? ' ($_currency ${total.toStringAsFixed(0)} including a '
+                '$_currency ${fee.toStringAsFixed(0)} service fee)' : ''}',
         showProcessingPhase: true,
         successMessage: 'Funding request sent',
         onPinValidated: (token) async {
@@ -707,7 +731,21 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
         SizedBox(height: 10.h),
         Divider(color: _border, height: 1),
         SizedBox(height: 10.h),
-        _row('You pay', '₦${_amount!.toStringAsFixed(0)}',
+        // THE BREAKDOWN, not just the total.
+        //
+        // This row said "You pay ₦{amount}" while the server charges amount +
+        // fee, so the customer approved one number and was debited another —
+        // and found out from their balance. The fee line only appears when
+        // there IS one, so an unpriced rail is unchanged.
+        if (_fee > 0) ...[
+          _row('Funding amount', '₦${_amount!.toStringAsFixed(0)}'),
+          SizedBox(height: 10.h),
+          _row('Service fee', '₦${_fee.toStringAsFixed(0)}'),
+          SizedBox(height: 10.h),
+          Divider(color: _border, height: 1),
+          SizedBox(height: 10.h),
+        ],
+        _row('You pay', '₦${_total.toStringAsFixed(0)}',
             valueColor: const Color(0xFF10B981), bold: true),
       ]),
     );
@@ -749,7 +787,10 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
                 width: 20.w, height: 20.w, child: LazerVaultLoader.small())
             : Text(
                 _amount != null && _amount! > 0
-                    ? 'Fund ₦${_amount!.toStringAsFixed(0)}'
+                    // The TOTAL, matching the summary above it and the PIN
+                    // sheet after it — three places that must not disagree
+                    // about what the customer is paying.
+                    ? 'Fund ₦${_total.toStringAsFixed(0)}'
                     : 'Fund account',
                 style: GoogleFonts.inter(
                     fontSize: 15.sp, fontWeight: FontWeight.w700)),
