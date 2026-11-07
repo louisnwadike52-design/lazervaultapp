@@ -1,11 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum ReferralStatus {
-  pending,
-  completed,
-  failed,
-  cancelled,
-}
+enum ReferralStatus { pending, completed, failed, cancelled }
 
 class ReferralTransactionEntity extends Equatable {
   final int id;
@@ -52,6 +47,41 @@ class ReferralTransactionEntity extends Equatable {
     return 'Referral #$id';
   }
 
+  /// WHAT THE REFERRER ACTUALLY NEEDS TO KNOW.
+  ///
+  /// The bonus is released only when the person you referred completes KYC, so
+  /// "did they sign up" and "did they verify" are different questions and the
+  /// screen used to answer neither — a referral in flight rendered as a name
+  /// and a timestamp, with no hint that KYC was the thing still outstanding.
+  /// One referrer reported six signups against his code and assumed the code
+  /// was broken.
+  ///
+  /// `completed` is the only status a credit can produce, and a credit happens
+  /// only after KYC approval, so it is a sound proxy for "verified".
+  bool get refereeKycVerified => status == ReferralStatus.completed;
+
+  /// Signed up, but the bonus is still waiting on their KYC.
+  bool get awaitingRefereeKyc => status == ReferralStatus.pending;
+
+  /// One short line naming the stage this referral is at.
+  String get kycStageLabel {
+    switch (status) {
+      case ReferralStatus.completed:
+        return 'KYC verified · bonus earned';
+      case ReferralStatus.pending:
+        return refereeHasJoined
+            ? 'Joined · KYC not completed yet'
+            : 'Signed up · KYC not completed yet';
+      case ReferralStatus.failed:
+        final reason = failureReason?.trim();
+        return (reason == null || reason.isEmpty)
+            ? 'Could not be completed'
+            : reason;
+      case ReferralStatus.cancelled:
+        return 'Cancelled';
+    }
+  }
+
   ReferralTransactionEntity copyWith({
     int? id,
     int? referrerUserId,
@@ -92,23 +122,23 @@ class ReferralTransactionEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        referrerUserId,
-        refereeUserId,
-        referralCodeUsed,
-        status,
-        referrerRewardAmount,
-        refereeRewardAmount,
-        currency,
-        createdAt,
-        completedAt,
-        failureReason,
-        refereeFirstName,
-        refereeLastName,
-        refereeUsername,
-        referrerUsername,
-        refereeHasJoined,
-      ];
+    id,
+    referrerUserId,
+    refereeUserId,
+    referralCodeUsed,
+    status,
+    referrerRewardAmount,
+    refereeRewardAmount,
+    currency,
+    createdAt,
+    completedAt,
+    failureReason,
+    refereeFirstName,
+    refereeLastName,
+    refereeUsername,
+    referrerUsername,
+    refereeHasJoined,
+  ];
 
   @override
   String toString() {

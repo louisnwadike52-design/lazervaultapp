@@ -66,7 +66,7 @@ class ReferralStatsCard extends StatelessWidget {
               Expanded(
                 child: _buildStatCard(
                   value: _formatAmount(totalRewardsEarned),
-                  label: 'Earned',
+                  label: 'Paid out',
                   icon: Icons.account_balance_wallet_rounded,
                   color: const Color(0xFF4E03D0),
                 ),
@@ -75,12 +75,48 @@ class ReferralStatsCard extends StatelessWidget {
               Expanded(
                 child: _buildStatCard(
                   value: _formatAmount(pendingRewards),
-                  label: 'Pending',
+                  label: 'On KYC',
                   icon: Icons.schedule_rounded,
                   color: const Color(0xFFF59E0B),
                 ),
               ),
             ],
+          ),
+          SizedBox(height: 10.h),
+          // WHAT THESE NUMBERS MEAN.
+          //
+          // "Earned" and "Pending" read as though both are money owed and one
+          // is still being processed by us. Neither was true: the first is
+          // already in the wallet, and the second is waiting on somebody
+          // else's KYC, not on us. A referrer with six unverified signups and
+          // NGN 1,200 under "Pending" reasonably concluded the payout was
+          // stuck — it was never due.
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.w),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    size: 13.sp, color: const Color(0xFF6B7280)),
+                SizedBox(width: 5.w),
+                Expanded(
+                  child: Text(
+                    pendingRewards > 0
+                        ? 'Paid out lands in your personal wallet automatically. '
+                            'On KYC is not yet due — it is released when the person you '
+                            'referred completes their KYC.'
+                        : 'Your bonus lands in your personal wallet automatically once '
+                            'the person you referred completes their KYC.',
+                    style: TextStyle(
+                      fontSize: 10.5.sp,
+                      height: 1.35,
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF6B7280),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

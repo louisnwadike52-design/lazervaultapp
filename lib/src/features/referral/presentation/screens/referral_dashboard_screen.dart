@@ -11,6 +11,8 @@ import '../widgets/referral_stats_card.dart';
 import '../widgets/leaderboard_list.dart';
 import '../widgets/recent_referrals_list.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 
 class ReferralDashboardScreen extends StatefulWidget {
   const ReferralDashboardScreen({super.key});
@@ -21,10 +23,32 @@ class ReferralDashboardScreen extends StatefulWidget {
 }
 
 class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
+  // Used only to mark the viewer's own row on the leaderboard. It is NOT an
+  // identity check: referral-service cannot send a usable user id (the proto
+  // field is a uint64 and real ids are UUIDs), and the old comparison matched
+  // 0 == 0 and badged every row as "You". LeaderboardList badges a name only
+  // when exactly one entry matches it.
+  String? _myDisplayName;
+
   @override
   void initState() {
     super.initState();
     context.read<ReferralCubit>().loadDashboard();
+    _loadMyDisplayName();
+  }
+
+  Future<void> _loadMyDisplayName() async {
+    try {
+      final name =
+          await serviceLocator<SecureStorageService>().getUserFullName();
+      if (!mounted) return;
+      final trimmed = name?.trim();
+      if (trimmed == null || trimmed.isEmpty) return;
+      setState(() => _myDisplayName = trimmed);
+    } catch (_) {
+      // No name cached (fresh install, cleared storage): the leaderboard simply
+      // renders without a "You" badge, which is the correct degradation.
+    }
   }
 
   Future<void> _onRefresh() async {
@@ -227,7 +251,7 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
             if (state.leaderboard.isNotEmpty)
               LeaderboardList(
                 entries: state.leaderboard,
-                currentUserId: state.myCode.userId,
+                currentUserName: _myDisplayName,
               ),
 
             // Recent Referrals with "View All" header

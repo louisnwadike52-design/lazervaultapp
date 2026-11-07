@@ -87,23 +87,24 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
           indicatorColor: const Color(0xFF3B82F6),
           labelColor: Colors.white,
           unselectedLabelColor: const Color(0xFF9CA3AF),
-          labelStyle: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-          ),
+          labelStyle: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+          // The filter VALUES sent to referral-service stay 'joined'/'pending'
+          // — that is the API contract. Only the labels change, to name what
+          // those filters actually select: referee_has_joined flips to true
+          // inside the credit path, which now runs only after the referee's
+          // KYC is approved, so "joined" IS "verified" and the other bucket is
+          // people who signed up and have not finished KYC.
           tabs: const [
             Tab(text: 'All'),
-            Tab(text: 'Joined'),
-            Tab(text: 'Pending'),
+            Tab(text: 'Verified'),
+            Tab(text: 'On KYC'),
           ],
         ),
       ),
       body: BlocBuilder<ReferralCubit, ReferralState>(
         builder: (context, state) {
           if (state is ReferralLoading) {
-            return const Center(
-              child: LazerVaultLoader.small(),
-            );
+            return const Center(child: LazerVaultLoader.small());
           }
 
           if (state is ReferralError) {
@@ -127,8 +128,11 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline_rounded,
-                size: 48.sp, color: const Color(0xFFEF4444)),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48.sp,
+              color: const Color(0xFFEF4444),
+            ),
             SizedBox(height: 12.h),
             Text(
               message,
@@ -142,7 +146,8 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
                 backgroundColor: const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r)),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
               ),
               child: const Text('Retry'),
             ),
@@ -170,9 +175,7 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
           if (index >= state.referrals.length) {
             return Padding(
               padding: EdgeInsets.symmetric(vertical: 16.h),
-              child: const Center(
-                child: LazerVaultLoader.small(),
-              ),
+              child: const Center(child: LazerVaultLoader.small()),
             );
           }
           return _buildReferralItem(state.referrals[index]);
@@ -192,8 +195,11 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         SizedBox(height: 100.h),
-        Icon(Icons.people_outline_rounded,
-            size: 64.sp, color: const Color(0xFF2D2D2D)),
+        Icon(
+          Icons.people_outline_rounded,
+          size: 64.sp,
+          color: const Color(0xFF2D2D2D),
+        ),
         SizedBox(height: 16.h),
         Center(
           child: Text(
@@ -209,10 +215,7 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
         Center(
           child: Text(
             'Share your referral code to get started!',
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: const Color(0xFF6B7280),
-            ),
+            style: TextStyle(fontSize: 13.sp, color: const Color(0xFF6B7280)),
           ),
         ),
       ],
@@ -227,9 +230,13 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
       ReferralStatus.cancelled => const Color(0xFF6B7280),
     };
 
+    // These used to read 'Joined' / 'Pending', which named the wrong thing:
+    // a pending referral HAS joined — what is outstanding is their KYC, and
+    // that is what releases the bonus. 'Joined' on a completed one likewise
+    // credited the signup rather than the verification.
     final statusLabel = switch (referral.status) {
-      ReferralStatus.completed => 'Joined',
-      ReferralStatus.pending => 'Pending',
+      ReferralStatus.completed => 'Verified',
+      ReferralStatus.pending => 'On KYC',
       ReferralStatus.failed => 'Failed',
       ReferralStatus.cancelled => 'Cancelled',
     };
@@ -288,6 +295,34 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
                       color: const Color(0xFF9CA3AF),
                     ),
                   ),
+                SizedBox(height: 3.h),
+                // Spell out the KYC stage, not just a status word: the bonus
+                // is gated on it and the referrer otherwise has no way to see
+                // what is outstanding.
+                Row(
+                  children: [
+                    Icon(
+                      referral.refereeKycVerified
+                          ? Icons.verified_rounded
+                          : Icons.badge_outlined,
+                      size: 12.sp,
+                      color: statusColor,
+                    ),
+                    SizedBox(width: 4.w),
+                    Flexible(
+                      child: Text(
+                        referral.kycStageLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                          color: statusColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 2.h),
                 Text(
                   _formatDate(referral.createdAt),

@@ -4,12 +4,15 @@ import '../../domain/entities/leaderboard_entry_entity.dart';
 
 class LeaderboardList extends StatelessWidget {
   final List<LeaderboardEntryEntity> entries;
-  final int? currentUserId;
+
+  /// The viewer's display name, used only to mark their own row. See _myIndex
+  /// for why this is not a user id.
+  final String? currentUserName;
 
   const LeaderboardList({
     super.key,
     required this.entries,
-    this.currentUserId,
+    this.currentUserName,
   });
 
   String _getMedalEmoji(int rank) {
@@ -46,15 +49,45 @@ class LeaderboardList extends StatelessWidget {
             ),
           ),
           SizedBox(height: 12.h),
-          ...entries.map((entry) => _buildLeaderboardEntry(entry)),
+          ...() {
+            final mine = _myIndex;
+            return entries.asMap().entries.map(
+                  (e) => _buildLeaderboardEntry(e.value, e.key == mine),
+                );
+          }(),
         ],
       ),
     );
   }
 
-  Widget _buildLeaderboardEntry(LeaderboardEntryEntity entry) {
-    final isCurrentUser =
-        currentUserId != null && entry.userId == currentUserId;
+  /// WHY NOT `entry.userId == currentUserId`.
+  ///
+  /// Both sides were structurally zero. `LeaderboardEntry.user_id` and
+  /// `ReferralCode.user_id` are `uint64` in the proto while real user IDs are
+  /// UUIDs, so neither can be populated — and in fact referral-service sets
+  /// neither field at all. The comparison was therefore `0 == 0`, which marked
+  /// EVERY row on the leaderboard as "You".
+  ///
+  /// Matching on the display name instead, and only when exactly ONE entry
+  /// matches: two people can share a name, and badging the wrong stranger as
+  /// the viewer is worse than showing no badge at all. Resolved once per build
+  /// rather than per row so the uniqueness test sees the whole list.
+  int? get _myIndex {
+    final me = currentUserName?.trim().toLowerCase();
+    if (me == null || me.isEmpty) return null;
+    int? found;
+    for (var i = 0; i < entries.length; i++) {
+      final e = entries[i];
+      final name = '${e.firstName} ${e.lastName}'.trim().toLowerCase();
+      if (name.isEmpty || name != me) continue;
+      if (found != null) return null; // ambiguous — badge nobody
+      found = i;
+    }
+    return found;
+  }
+
+  Widget _buildLeaderboardEntry(
+      LeaderboardEntryEntity entry, bool isCurrentUser) {
     final medal = _getMedalEmoji(entry.rank);
 
     return Container(
@@ -156,15 +189,12 @@ class LeaderboardList extends StatelessWidget {
                     ],
                   ],
                 ),
-                SizedBox(height: 2.h),
-                Text(
-                  '${entry.totalReferrals} referrals',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xFF9CA3AF),
-                  ),
-                ),
+                // PRIVACY: how many people somebody referred is their business.
+                // This row used to print "<n> referrals" for every stranger on
+                // the board. The leaderboard is a public ranking, so it shows
+                // position and name only — the count and the earnings stay on
+                // the owner's own dashboard, where ReferralStatsCard reports
+                // them to the person they belong to.
               ],
             ),
           ),

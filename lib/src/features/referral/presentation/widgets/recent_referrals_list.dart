@@ -98,7 +98,7 @@ class RecentReferralsList extends StatelessWidget {
             ),
             SizedBox(height: 4.h),
             Text(
-              'Share your code to get started!',
+              'Share your code — you earn once they sign up and complete KYC.',
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
@@ -120,7 +120,43 @@ class RecentReferralsList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildKycSummary(),
           ...referrals.map((referral) => _buildReferralItem(referral)),
+        ],
+      ),
+    );
+  }
+
+  /// "2 of 6 completed KYC" — answers at a glance why the earned total is what
+  /// it is, which the stats card alone could not explain.
+  Widget _buildKycSummary() {
+    final verified = referrals.where((r) => r.refereeKycVerified).length;
+    final total = referrals.length;
+    final allVerified = verified == total;
+    return Padding(
+      padding: EdgeInsets.only(bottom: 10.h),
+      child: Row(
+        children: [
+          Icon(
+            allVerified ? Icons.verified_rounded : Icons.info_outline_rounded,
+            size: 13.sp,
+            color:
+                allVerified ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+          ),
+          SizedBox(width: 5.w),
+          Expanded(
+            child: Text(
+              allVerified
+                  ? '$verified of $total completed KYC'
+                  : '$verified of $total completed KYC — a bonus is paid once they do',
+              maxLines: 2,
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF9CA3AF),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -148,11 +184,7 @@ class RecentReferralsList extends StatelessWidget {
               color: statusColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              statusIcon,
-              size: 18.sp,
-              color: statusColor,
-            ),
+            child: Icon(statusIcon, size: 18.sp, color: statusColor),
           ),
           SizedBox(width: 12.w),
           // Referral info
@@ -168,11 +200,39 @@ class RecentReferralsList extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
+                SizedBox(height: 3.h),
+                // KYC stage. This is the line that was missing: without it a
+                // referral in flight showed a name and a date and nothing
+                // about the one thing holding the bonus up.
+                Row(
+                  children: [
+                    Icon(
+                      referral.refereeKycVerified
+                          ? Icons.verified_rounded
+                          : Icons.badge_outlined,
+                      size: 12.sp,
+                      color: statusColor,
+                    ),
+                    SizedBox(width: 4.w),
+                    Flexible(
+                      child: Text(
+                        referral.kycStageLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                          color: statusColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 2.h),
                 Text(
                   _getTimeAgo(referral.createdAt),
                   style: TextStyle(
-                    fontSize: 11.sp,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.w400,
                     color: const Color(0xFF6B7280),
                   ),
@@ -180,8 +240,11 @@ class RecentReferralsList extends StatelessWidget {
               ],
             ),
           ),
-          // Reward amount
-          if (referral.status == ReferralStatus.completed)
+          SizedBox(width: 8.w),
+          // Earned, or what it will be worth once they verify. Showing the
+          // amount while it is still pending tells the referrer the reward is
+          // real and what unlocks it, instead of leaving the row blank.
+          if (referral.refereeKycVerified)
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
@@ -194,6 +257,25 @@ class RecentReferralsList extends StatelessWidget {
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF10B981),
+                ),
+              ),
+            )
+          else if (referral.awaitingRefereeKyc)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(6.r),
+                border: Border.all(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                ),
+              ),
+              child: Text(
+                'On KYC',
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFFF59E0B),
                 ),
               ),
             ),

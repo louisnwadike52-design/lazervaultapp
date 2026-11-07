@@ -147,7 +147,12 @@ class _ConvertPointsSheetState extends State<ConvertPointsSheet> {
     final pin = await showTransactionPinModal(
       context,
       title: 'Convert to cash',
-      message: 'Convert ${_points(q.points)} points',
+      // Name the destination. referral-service pays a conversion into the
+      // PERSONAL wallet and only the personal wallet (selectPayoutAccount
+      // fails closed on anything else), so saying so is both accurate and the
+      // answer to "where did my money go" — a question the receipt used to be
+      // the first place to answer.
+      message: 'Convert ${_points(q.points)} points to your personal wallet',
       amount: q.cashMinor / 100,
       currency: q.currency,
       currencySymbol: q.currency == 'NGN' ? '₦' : '',
