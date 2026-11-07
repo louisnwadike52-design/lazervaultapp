@@ -192,6 +192,26 @@ class ReferralServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getPointsBreakdown, request, options: options);
   }
 
+  /// GetReferralBonusBalance reports what the caller has accrued, what is in
+  /// flight, and whether the programme is still running.
+  $grpc.ResponseFuture<$0.GetReferralBonusBalanceResponse>
+      getReferralBonusBalance(
+    $0.GetReferralBonusBalanceRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getReferralBonusBalance, request,
+        options: options);
+  }
+
+  /// WithdrawReferralBonus moves accrued bonus into the caller's PERSONAL
+  /// wallet. Requires the transaction PIN, like every other cash-out.
+  $grpc.ResponseFuture<$0.WithdrawReferralBonusResponse> withdrawReferralBonus(
+    $0.WithdrawReferralBonusRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$withdrawReferralBonus, request, options: options);
+  }
+
   // method descriptors
 
   static final _$validateReferralCode = $grpc.ClientMethod<
@@ -275,6 +295,17 @@ class ReferralServiceClient extends $grpc.Client {
       '/pb.ReferralService/GetPointsBreakdown',
       ($0.GetPointsBreakdownRequest value) => value.writeToBuffer(),
       $0.GetPointsBreakdownResponse.fromBuffer);
+  static final _$getReferralBonusBalance = $grpc.ClientMethod<
+          $0.GetReferralBonusBalanceRequest,
+          $0.GetReferralBonusBalanceResponse>(
+      '/pb.ReferralService/GetReferralBonusBalance',
+      ($0.GetReferralBonusBalanceRequest value) => value.writeToBuffer(),
+      $0.GetReferralBonusBalanceResponse.fromBuffer);
+  static final _$withdrawReferralBonus = $grpc.ClientMethod<
+          $0.WithdrawReferralBonusRequest, $0.WithdrawReferralBonusResponse>(
+      '/pb.ReferralService/WithdrawReferralBonus',
+      ($0.WithdrawReferralBonusRequest value) => value.writeToBuffer(),
+      $0.WithdrawReferralBonusResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('pb.ReferralService')
@@ -426,6 +457,24 @@ abstract class ReferralServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetPointsBreakdownRequest.fromBuffer(value),
         ($0.GetPointsBreakdownResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetReferralBonusBalanceRequest,
+            $0.GetReferralBonusBalanceResponse>(
+        'GetReferralBonusBalance',
+        getReferralBonusBalance_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetReferralBonusBalanceRequest.fromBuffer(value),
+        ($0.GetReferralBonusBalanceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.WithdrawReferralBonusRequest,
+            $0.WithdrawReferralBonusResponse>(
+        'WithdrawReferralBonus',
+        withdrawReferralBonus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.WithdrawReferralBonusRequest.fromBuffer(value),
+        ($0.WithdrawReferralBonusResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.ValidateReferralCodeResponse> validateReferralCode_Pre(
@@ -571,4 +620,22 @@ abstract class ReferralServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetPointsBreakdownResponse> getPointsBreakdown(
       $grpc.ServiceCall call, $0.GetPointsBreakdownRequest request);
+
+  $async.Future<$0.GetReferralBonusBalanceResponse> getReferralBonusBalance_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetReferralBonusBalanceRequest> $request) async {
+    return getReferralBonusBalance($call, await $request);
+  }
+
+  $async.Future<$0.GetReferralBonusBalanceResponse> getReferralBonusBalance(
+      $grpc.ServiceCall call, $0.GetReferralBonusBalanceRequest request);
+
+  $async.Future<$0.WithdrawReferralBonusResponse> withdrawReferralBonus_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.WithdrawReferralBonusRequest> $request) async {
+    return withdrawReferralBonus($call, await $request);
+  }
+
+  $async.Future<$0.WithdrawReferralBonusResponse> withdrawReferralBonus(
+      $grpc.ServiceCall call, $0.WithdrawReferralBonusRequest request);
 }

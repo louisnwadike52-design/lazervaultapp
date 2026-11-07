@@ -913,3 +913,128 @@ final $typed_data.Uint8List reverseTransactionPointsResponseDescriptor =
     $convert.base64Decode(
         'CiBSZXZlcnNlVHJhbnNhY3Rpb25Qb2ludHNSZXNwb25zZRInCg9wb2ludHNfcmV2ZXJzZWQYAS'
         'ABKAVSDnBvaW50c1JldmVyc2Vk');
+
+@$core.Deprecated('Use referralBonusBalanceDescriptor instead')
+const ReferralBonusBalance$json = {
+  '1': 'ReferralBonusBalance',
+  '2': [
+    {'1': 'available_minor', '3': 1, '4': 1, '5': 3, '10': 'availableMinor'},
+    {
+      '1': 'lifetime_accrued_minor',
+      '3': 2,
+      '4': 1,
+      '5': 3,
+      '10': 'lifetimeAccruedMinor'
+    },
+    {
+      '1': 'lifetime_withdrawn_minor',
+      '3': 3,
+      '4': 1,
+      '5': 3,
+      '10': 'lifetimeWithdrawnMinor'
+    },
+    {
+      '1': 'pending_withdrawal_minor',
+      '3': 4,
+      '4': 1,
+      '5': 3,
+      '10': 'pendingWithdrawalMinor'
+    },
+    {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'programme_active', '3': 6, '4': 1, '5': 8, '10': 'programmeActive'},
+    {
+      '1': 'minimum_withdrawal_minor',
+      '3': 7,
+      '4': 1,
+      '5': 3,
+      '10': 'minimumWithdrawalMinor'
+    },
+    {'1': 'programme_notice', '3': 8, '4': 1, '5': 9, '10': 'programmeNotice'},
+  ],
+};
+
+/// Descriptor for `ReferralBonusBalance`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List referralBonusBalanceDescriptor = $convert.base64Decode(
+    'ChRSZWZlcnJhbEJvbnVzQmFsYW5jZRInCg9hdmFpbGFibGVfbWlub3IYASABKANSDmF2YWlsYW'
+    'JsZU1pbm9yEjQKFmxpZmV0aW1lX2FjY3J1ZWRfbWlub3IYAiABKANSFGxpZmV0aW1lQWNjcnVl'
+    'ZE1pbm9yEjgKGGxpZmV0aW1lX3dpdGhkcmF3bl9taW5vchgDIAEoA1IWbGlmZXRpbWVXaXRoZH'
+    'Jhd25NaW5vchI4ChhwZW5kaW5nX3dpdGhkcmF3YWxfbWlub3IYBCABKANSFnBlbmRpbmdXaXRo'
+    'ZHJhd2FsTWlub3ISGgoIY3VycmVuY3kYBSABKAlSCGN1cnJlbmN5EikKEHByb2dyYW1tZV9hY3'
+    'RpdmUYBiABKAhSD3Byb2dyYW1tZUFjdGl2ZRI4ChhtaW5pbXVtX3dpdGhkcmF3YWxfbWlub3IY'
+    'ByABKANSFm1pbmltdW1XaXRoZHJhd2FsTWlub3ISKQoQcHJvZ3JhbW1lX25vdGljZRgIIAEoCV'
+    'IPcHJvZ3JhbW1lTm90aWNl');
+
+@$core.Deprecated('Use getReferralBonusBalanceRequestDescriptor instead')
+const GetReferralBonusBalanceRequest$json = {
+  '1': 'GetReferralBonusBalanceRequest',
+};
+
+/// Descriptor for `GetReferralBonusBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getReferralBonusBalanceRequestDescriptor =
+    $convert.base64Decode('Ch5HZXRSZWZlcnJhbEJvbnVzQmFsYW5jZVJlcXVlc3Q=');
+
+@$core.Deprecated('Use getReferralBonusBalanceResponseDescriptor instead')
+const GetReferralBonusBalanceResponse$json = {
+  '1': 'GetReferralBonusBalanceResponse',
+  '2': [
+    {
+      '1': 'balance',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ReferralBonusBalance',
+      '10': 'balance'
+    },
+  ],
+};
+
+/// Descriptor for `GetReferralBonusBalanceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getReferralBonusBalanceResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9HZXRSZWZlcnJhbEJvbnVzQmFsYW5jZVJlc3BvbnNlEjIKB2JhbGFuY2UYASABKAsyGC5wYi'
+        '5SZWZlcnJhbEJvbnVzQmFsYW5jZVIHYmFsYW5jZQ==');
+
+@$core.Deprecated('Use withdrawReferralBonusRequestDescriptor instead')
+const WithdrawReferralBonusRequest$json = {
+  '1': 'WithdrawReferralBonusRequest',
+  '2': [
+    {'1': 'amount_minor', '3': 1, '4': 1, '5': 3, '10': 'amountMinor'},
+    {'1': 'idempotency_key', '3': 2, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'pin', '3': 3, '4': 1, '5': 9, '10': 'pin'},
+  ],
+};
+
+/// Descriptor for `WithdrawReferralBonusRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List withdrawReferralBonusRequestDescriptor =
+    $convert.base64Decode(
+        'ChxXaXRoZHJhd1JlZmVycmFsQm9udXNSZXF1ZXN0EiEKDGFtb3VudF9taW5vchgBIAEoA1ILYW'
+        '1vdW50TWlub3ISJwoPaWRlbXBvdGVuY3lfa2V5GAIgASgJUg5pZGVtcG90ZW5jeUtleRIQCgNw'
+        'aW4YAyABKAlSA3Bpbg==');
+
+@$core.Deprecated('Use withdrawReferralBonusResponseDescriptor instead')
+const WithdrawReferralBonusResponse$json = {
+  '1': 'WithdrawReferralBonusResponse',
+  '2': [
+    {'1': 'withdrawal_id', '3': 1, '4': 1, '5': 9, '10': 'withdrawalId'},
+    {'1': 'amount_minor', '3': 2, '4': 1, '5': 3, '10': 'amountMinor'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'remaining_minor', '3': 4, '4': 1, '5': 3, '10': 'remainingMinor'},
+    {'1': 'destination', '3': 5, '4': 1, '5': 9, '10': 'destination'},
+    {
+      '1': 'completed_at',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'completedAt'
+    },
+  ],
+};
+
+/// Descriptor for `WithdrawReferralBonusResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List withdrawReferralBonusResponseDescriptor = $convert.base64Decode(
+    'Ch1XaXRoZHJhd1JlZmVycmFsQm9udXNSZXNwb25zZRIjCg13aXRoZHJhd2FsX2lkGAEgASgJUg'
+    'x3aXRoZHJhd2FsSWQSIQoMYW1vdW50X21pbm9yGAIgASgDUgthbW91bnRNaW5vchIaCghjdXJy'
+    'ZW5jeRgDIAEoCVIIY3VycmVuY3kSJwoPcmVtYWluaW5nX21pbm9yGAQgASgDUg5yZW1haW5pbm'
+    'dNaW5vchIgCgtkZXN0aW5hdGlvbhgFIAEoCVILZGVzdGluYXRpb24SPQoMY29tcGxldGVkX2F0'
+    'GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFILY29tcGxldGVkQXQ=');

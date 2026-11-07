@@ -4,6 +4,7 @@ import '../entities/referral_code_entity.dart';
 import '../entities/referral_transaction_entity.dart';
 import '../entities/country_reward_config_entity.dart';
 import '../entities/referral_stats_entity.dart';
+import '../entities/referral_bonus_entities.dart';
 import '../entities/leaderboard_entry_entity.dart';
 import '../entities/points_balance_entity.dart';
 import '../entities/point_transaction_entity.dart';
@@ -71,6 +72,19 @@ abstract class IReferralRepository {
   ///
   /// [pin] is the user's transaction PIN. It is verified SERVER-SIDE before any
   /// points are debited — the sheet prompts for it, but the app is not the gate.
+  /// What the caller has accrued in referral bonus, and whether the programme
+  /// is still running.
+  Future<Either<Failure, ReferralBonusBalanceEntity>> getReferralBonusBalance();
+
+  /// Moves accrued referral bonus into the caller's PERSONAL wallet. Requires
+  /// the transaction PIN; the server re-checks the amount, the minimum and the
+  /// destination.
+  Future<Either<Failure, ReferralBonusWithdrawalEntity>> withdrawReferralBonus({
+    required int amountMinor,
+    required String idempotencyKey,
+    required String pin,
+  });
+
   Future<Either<Failure, RedemptionResultEntity>> redeemPoints({
     required int points,
     required String idempotencyKey,

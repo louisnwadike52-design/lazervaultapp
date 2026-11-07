@@ -2,6 +2,7 @@ import 'package:lazervault/src/features/referral/domain/entities/country_reward_
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/referral_code_entity.dart';
 import '../../domain/entities/referral_stats_entity.dart';
+import '../../domain/entities/referral_bonus_entities.dart';
 import '../../domain/entities/leaderboard_entry_entity.dart';
 import '../../domain/entities/referral_transaction_entity.dart';
 import '../../domain/entities/points_balance_entity.dart';
@@ -48,12 +49,21 @@ class ReferralLoaded extends ReferralState {
   /// is to get someone to share the code.
   final CountryRewardConfigEntity? rewardConfig;
 
+  /// Accrued referral bonus, and whether the programme is still running.
+  ///
+  /// Defaults to [ReferralBonusBalanceEntity.empty] rather than being nullable:
+  /// a zero balance and an unreadable balance look the same to the user, and
+  /// the withdraw button is driven off canWithdraw, which is false for both. A
+  /// failure to load this must never take the dashboard down.
+  final ReferralBonusBalanceEntity bonusBalance;
+
   const ReferralLoaded({
     required this.myCode,
     required this.stats,
     required this.leaderboard,
     required this.recentReferrals,
     this.rewardConfig,
+    this.bonusBalance = ReferralBonusBalanceEntity.empty,
   });
 
   ReferralLoaded copyWith({
@@ -62,6 +72,7 @@ class ReferralLoaded extends ReferralState {
     List<LeaderboardEntryEntity>? leaderboard,
     List<ReferralTransactionEntity>? recentReferrals,
     CountryRewardConfigEntity? rewardConfig,
+    ReferralBonusBalanceEntity? bonusBalance,
   }) {
     return ReferralLoaded(
       myCode: myCode ?? this.myCode,
@@ -69,12 +80,16 @@ class ReferralLoaded extends ReferralState {
       leaderboard: leaderboard ?? this.leaderboard,
       recentReferrals: recentReferrals ?? this.recentReferrals,
       rewardConfig: rewardConfig ?? this.rewardConfig,
+      bonusBalance: bonusBalance ?? this.bonusBalance,
     );
   }
 
   @override
   List<Object?> get props =>
-      [myCode, stats, leaderboard, recentReferrals, rewardConfig];
+      // bonusBalance belongs here or the UI will not rebuild when a withdrawal
+      // changes it — the balance would move server-side and the screen would
+      // keep showing the old number.
+      [myCode, stats, leaderboard, recentReferrals, rewardConfig, bonusBalance];
 }
 
 /// Error state

@@ -10,6 +10,10 @@ import '../widgets/how_it_works_card.dart';
 import '../widgets/referral_stats_card.dart';
 import '../widgets/leaderboard_list.dart';
 import '../widgets/recent_referrals_list.dart';
+import '../widgets/referral_bonus_card.dart';
+import '../widgets/withdraw_bonus_sheet.dart';
+import '../../domain/entities/referral_bonus_entities.dart';
+import '../../domain/repositories/i_referral_repository.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -49,6 +53,23 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
       // No name cached (fresh install, cleared storage): the leaderboard simply
       // renders without a "You" badge, which is the correct degradation.
     }
+  }
+
+  void _openWithdrawSheet(ReferralBonusBalanceEntity balance) {
+    final cubit = context.read<ReferralCubit>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => WithdrawBonusSheet(
+        balance: balance,
+        repository: serviceLocator<IReferralRepository>(),
+        // Re-read from the server rather than adjusting the number locally: a
+        // withdrawal that resolved ambiguously may still be in flight, and the
+        // server is the only thing that knows which.
+        onWithdrawn: cubit.refreshBonusBalance,
+      ),
+    );
   }
 
   Future<void> _onRefresh() async {
@@ -238,6 +259,14 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
                 referrerReward: state.rewardConfig!.referrerReward,
                 refereeReward: state.rewardConfig!.refereeReward,
               ),
+
+            // Accrued bonus and the one action on it. Above the stats panel
+            // deliberately: the claimable number is what the user came for,
+            // and the stats explain it.
+            ReferralBonusCard(
+              balance: state.bonusBalance,
+              onWithdraw: () => _openWithdrawSheet(state.bonusBalance),
+            ),
 
             // Stats
             ReferralStatsCard(

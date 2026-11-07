@@ -13,6 +13,9 @@ import '../../domain/usecases/get_my_points_balance_usecase.dart';
 import '../../domain/usecases/get_my_points_history_usecase.dart';
 import '../../domain/usecases/get_points_config_usecase.dart';
 import 'referral_state.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import '../../domain/entities/referral_bonus_entities.dart';
+import '../../domain/repositories/i_referral_repository.dart';
 import 'dart:ui' show Rect;
 
 class ReferralCubit extends Cubit<ReferralState> {
@@ -26,6 +29,18 @@ class ReferralCubit extends Cubit<ReferralState> {
   final GetPointsConfigUseCase _getPointsConfigUseCase;
   final GetCountryRewardConfigUseCase _getCountryRewardConfigUseCase;
 
+  /// The repository directly, for the referral bonus balance.
+  ///
+  /// OPTIONAL so every existing construction of this cubit keeps compiling and
+  /// simply renders a zero balance; the withdraw button is driven off
+  /// canWithdraw, which is false for the empty default. A use case per call
+  /// would be two files to say "read one number", and ConvertPointsSheet
+  /// already takes the repository the same way.
+  final IReferralRepository? _repositoryOrNull;
+
+  IReferralRepository get _repository =>
+      _repositoryOrNull ?? serviceLocator<IReferralRepository>();
+
   ReferralCubit({
     required GetMyReferralCodeUseCase getMyReferralCode,
     required GetMyReferralStatsUseCase getMyReferralStats,
@@ -36,6 +51,7 @@ class ReferralCubit extends Cubit<ReferralState> {
     required GetMyPointsHistoryUseCase getMyPointsHistory,
     required GetPointsConfigUseCase getPointsConfig,
     required GetCountryRewardConfigUseCase getCountryRewardConfig,
+    IReferralRepository? repository,
   })  : _getMyReferralCodeUseCase = getMyReferralCode,
         _getMyReferralStatsUseCase = getMyReferralStats,
         _getLeaderboardUseCase = getLeaderboard,
@@ -45,7 +61,21 @@ class ReferralCubit extends Cubit<ReferralState> {
         _getMyPointsHistoryUseCase = getMyPointsHistory,
         _getPointsConfigUseCase = getPointsConfig,
         _getCountryRewardConfigUseCase = getCountryRewardConfig,
+        _repositoryOrNull = repository,
         super(const ReferralInitial());
+
+  /// Re-read the accrued bonus without reloading the whole dashboard. Called
+  /// after a withdrawal so the balance on screen matches the server.
+  Future<void> refreshBonusBalance() async {
+    final current = state;
+    if (current is! ReferralLoaded || isClosed) return;
+    final result = await _repository.getReferralBonusBalance();
+    if (isClosed) return;
+    result.fold((_) {
+      // Leave the last known balance on screen. Replacing it with a zero on a
+      // transient read failure would read as "your money is gone".
+    }, (balance) => emit(current.copyWith(bonusBalance: balance)));
+  }
 
   /// Load dashboard data (code, stats, leaderboard, recent referrals)
   Future<void> loadDashboard() async {
@@ -80,6 +110,15 @@ class ReferralCubit extends Cubit<ReferralState> {
       final rewardConfig = rewardConfigResult.fold((l) {
         print('[ReferralCubit] Reward config unavailable: $l');
         return null;
+      }, (r) => r);
+
+      // Accrued bonus. BEST EFFORT and non-fatal, like rewardConfig above: a
+      // dashboard without it is still worth showing, and the empty default
+      // renders a zero balance with no withdraw button rather than an error.
+      final bonusResult = await _repository.getReferralBonusBalance();
+      final bonusBalance = bonusResult.fold((l) {
+        print('[ReferralCubit] Bonus balance unavailable: $l');
+        return ReferralBonusBalanceEntity.empty;
       }, (r) => r);
 
       print('[ReferralCubit] Fetching referrals...');
@@ -140,6 +179,7 @@ class ReferralCubit extends Cubit<ReferralState> {
           leaderboard: leaderboard,
           recentReferrals: referrals,
           rewardConfig: rewardConfig,
+          bonusBalance: bonusBalance,
         ));
       } else {
         if (isClosed) return;

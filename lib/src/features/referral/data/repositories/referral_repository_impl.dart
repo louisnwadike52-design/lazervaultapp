@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:fixnum/fixnum.dart';
 import '../../domain/entities/redemption_entities.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
@@ -9,6 +10,7 @@ import 'package:lazervault/src/features/referral/domain/entities/referral_code_e
 import 'package:lazervault/src/features/referral/domain/entities/referral_transaction_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/country_reward_config_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/referral_stats_entity.dart';
+import 'package:lazervault/src/features/referral/domain/entities/referral_bonus_entities.dart';
 import 'package:lazervault/src/features/referral/domain/entities/leaderboard_entry_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/points_balance_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/point_transaction_entity.dart';
@@ -428,6 +430,12 @@ class ReferralRepositoryImpl implements IReferralRepository {
         referral_pb.RedeemPointsRequest(
           points: points,
           idempotencyKey: idempotencyKey,
+          // THE PIN WAS COLLECTED AND THEN DROPPED. This request omitted it
+          // while the server passed req.GetPin() straight to
+          // VerifyTransactionPin, so every conversion arrived with an empty
+          // PIN and was refused — the sheet asked the user for four digits,
+          // discarded them, and showed the rejection as a generic failure.
+          pin: pin,
         ),
         options: callOptions,
       );
@@ -445,6 +453,78 @@ class ReferralRepositoryImpl implements IReferralRepository {
       // can actually act on what it says.
       return Left(ServerFailure(
         message: friendlyGrpcError(e, 'Could not convert your points'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ReferralBonusBalanceEntity>>
+      getReferralBonusBalance() async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _referralServiceClient.getReferralBonusBalance(
+        referral_pb.GetReferralBonusBalanceRequest(),
+        options: callOptions,
+      );
+      final b = response.balance;
+      return Right(ReferralBonusBalanceEntity(
+        availableMinor: b.availableMinor.toInt(),
+        lifetimeAccruedMinor: b.lifetimeAccruedMinor.toInt(),
+        lifetimeWithdrawnMinor: b.lifetimeWithdrawnMinor.toInt(),
+        pendingWithdrawalMinor: b.pendingWithdrawalMinor.toInt(),
+        currency: b.currency.isNotEmpty ? b.currency : 'NGN',
+        programmeActive: b.programmeActive,
+        minimumWithdrawalMinor: b.minimumWithdrawalMinor.toInt(),
+        programmeNotice: b.programmeNotice,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not load your referral bonus'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ReferralBonusWithdrawalEntity>> withdrawReferralBonus({
+    required int amountMinor,
+    required String idempotencyKey,
+    required String pin,
+  }) async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _referralServiceClient.withdrawReferralBonus(
+        referral_pb.WithdrawReferralBonusRequest(
+          amountMinor: Int64(amountMinor),
+          idempotencyKey: idempotencyKey,
+          pin: pin,
+        ),
+        options: callOptions,
+      );
+      return Right(ReferralBonusWithdrawalEntity(
+        withdrawalId: response.withdrawalId,
+        amountMinor: response.amountMinor.toInt(),
+        currency: response.currency.isNotEmpty ? response.currency : 'NGN',
+        remainingMinor: response.remainingMinor.toInt(),
+        destination: response.destination,
+      ));
+    } on GrpcError catch (e) {
+      // The server phrases every actionable refusal itself — not enough
+      // balance, below the minimum, no personal wallet, wrong PIN — and those
+      // are the only messages worth showing on a screen where the user can act.
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not withdraw your referral bonus'),
         statusCode: e.code,
       ));
     } catch (e) {

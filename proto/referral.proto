@@ -4,38 +4,8 @@ package pb;
 
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
 
-option go_package = "lazervaultGo/pb";
-
-// OpenAPI v2 documentation options
-option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  info: {
-    title: "LazerVault Referral Service";
-    version: "1.0";
-    contact: {
-      name: "LazerVault Support";
-      url: "https://github.com/LazerVault";
-      email: "support@lazervault.example";
-    };
-  };
-  security_definitions: {
-    security: {
-      key: "bearer";
-      value: {
-        type: TYPE_API_KEY;
-        in: IN_HEADER;
-        name: "Authorization";
-        description: "Authentication token, prefixed by Bearer: Bearer <token>";
-      };
-    };
-  };
-  security: {
-    security_requirement: {
-      key: "bearer";
-    };
-  };
-};
+option go_package = "referral-service/proto";
 
 // Referral status enum
 enum ReferralStatus {
@@ -331,4 +301,240 @@ service ReferralService {
       get: "/v1/referral/points/config"
     };
   }
+
+  // Convert LazerPoints into cash in the caller's wallet.
+  //
+  // Idempotent on (caller, idempotency_key): a phone that times out and retries
+  // must convert once, not twice. The cash is paid from a funded platform
+  // wallet, so a redemption is real money leaving the business rather than a
+  // number being minted.
+  rpc RedeemPoints(RedeemPointsRequest) returns (RedeemPointsResponse) {
+    option (google.api.http) = {
+      post: "/v1/referral/points/redeem"
+      body: "*"
+    };
+  }
+
+  // Award points for a completed transaction. SERVICE-TO-SERVICE.
+  //
+  // Called by accounts-service after a transaction commits. Idempotent on
+  // transaction_id: at-least-once delivery and retries must award once.
+  //
+  // Not user-authenticated — the caller is a service acting on behalf of a user
+  // it has already authenticated, and the user_id is supplied rather than taken
+  // from a token.
+  rpc AwardTransactionPoints(AwardTransactionPointsRequest) returns (AwardTransactionPointsResponse) {
+    option (google.api.http) = {
+      post: "/v1/internal/referral/points/award-transaction"
+      body: "*"
+    };
+  }
+
+  // Claw back points when a transaction is refunded. SERVICE-TO-SERVICE.
+  //
+  // Without it, buy -> earn -> refund mints a rewards balance out of nothing.
+  rpc ReverseTransactionPoints(ReverseTransactionPointsRequest) returns (ReverseTransactionPointsResponse) {
+    option (google.api.http) = {
+      post: "/v1/internal/referral/points/reverse-transaction"
+      body: "*"
+    };
+  }
+
+  // What a conversion would be worth, without performing it.
+  //
+  // Exists so the app can show the cash value and the minimum BEFORE the user
+  // commits. Quoting client-side would duplicate the rate and the rounding
+  // rule, and the two would drift.
+  rpc GetRedemptionQuote(GetRedemptionQuoteRequest) returns (GetRedemptionQuoteResponse) {
+    option (google.api.http) = {
+      get: "/v1/referral/points/redeem/quote"
+    };
+  }
+
+  // Where a user's points came from, per product.
+  //
+  // The rewards screen showed a total and a flat list of history rows, so
+  // "most of this came from bill payments" was not answerable without scrolling
+  // the entire ledger — and a rewards balance nobody can account for is a
+  // rewards balance nobody trusts.
+  rpc GetPointsBreakdown(GetPointsBreakdownRequest) returns (GetPointsBreakdownResponse) {
+    option (google.api.http) = {
+      get: "/v1/referral/points/breakdown"
+    };
+  }
+
+  // ── REFERRAL BONUS: accrue, then withdraw ───────────────────────────────
+  //
+  // A referral bonus used to be transferred straight into the referrer's
+  // wallet the moment it was credited, so there was nothing to claim and
+  // nothing to show. It now ACCRUES to a referral bonus balance that the user
+  // withdraws on demand, into their personal wallet and nowhere else.
+
+  // GetReferralBonusBalance reports what the caller has accrued, what is in
+  // flight, and whether the programme is still running.
+  rpc GetReferralBonusBalance(GetReferralBonusBalanceRequest) returns (GetReferralBonusBalanceResponse) {
+    option (google.api.http) = {
+      get: "/v1/referral/bonus/balance"
+    };
+  }
+
+  // WithdrawReferralBonus moves accrued bonus into the caller's PERSONAL
+  // wallet. Requires the transaction PIN, like every other cash-out.
+  rpc WithdrawReferralBonus(WithdrawReferralBonusRequest) returns (WithdrawReferralBonusResponse) {
+    option (google.api.http) = {
+      post: "/v1/referral/bonus/withdraw"
+      body: "*"
+    };
+  }
+}
+
+message GetPointsBreakdownRequest {}
+
+// ServicePointsBreakdown is one product's contribution to a balance.
+message ServicePointsBreakdown {
+  // The canonical product key — "crypto", "giftcards", "bills".
+  string service_key = 1;
+  // Resolved server-side so every client names a product the same way, and so
+  // renaming one does not need an app release.
+  string display_name = 2;
+  int32 points = 3;
+  // How many earning events made up those points, so a large total from one
+  // big transaction reads differently from the same total earned steadily.
+  int32 transactions = 4;
+}
+
+message GetPointsBreakdownResponse {
+  repeated ServicePointsBreakdown items = 1;
+  // The sum of the items, computed server-side. The client must not add these
+  // up itself: the list is capped for display and the total would silently
+  // disagree with the balance shown directly above it.
+  int32 total_points = 2;
+}
+
+message RedeemPointsRequest {
+  int32 points = 1;
+  // Caller-generated, stable across retries of the SAME attempt.
+  string idempotency_key = 2;
+  // Raw transaction PIN.
+  //
+  // Converting points takes real money out of the rewards wallet, and this was
+  // the only cash-out in the product that asked for nothing. Verified
+  // server-side against auth-service BEFORE any debit: a client-side check is
+  // advice, not a gate, because the client can be modified.
+  string pin = 3;
+}
+
+message RedeemPointsResponse {
+  int32 points_redeemed = 1;
+  // Kobo, like every amount crossing a service boundary here.
+  int64 cash_minor = 2;
+  string currency = 3;
+  int32 new_balance = 4;
+  string reference = 5;
+}
+
+message GetRedemptionQuoteRequest {
+  // 0 quotes the caller's WHOLE balance, which is what the screen opens on.
+  int32 points = 1;
+}
+
+message GetRedemptionQuoteResponse {
+  int32 points = 1;
+  int64 cash_minor = 2;
+  string currency = 3;
+  // How many points buy one major unit. Shown so the rate is visible rather
+  // than implied by a number the user has to reverse-engineer.
+  int32 points_per_major_unit = 4;
+  int32 min_redeem_points = 5;
+  // False when the balance is under the minimum or the rate is unset. Carries
+  // the reason so the button can explain itself instead of being inert.
+  bool can_redeem = 6;
+  string reason = 7;
+}
+
+message AwardTransactionPointsRequest {
+  string user_id = 1;
+  // The idempotency anchor. One transaction earns once however many times its
+  // completion is delivered.
+  string transaction_id = 2;
+  // Minor units (kobo).
+  int64 amount_minor = 3;
+  string currency = 4;
+  // What was paid for, shown in the user's points history so the earn is
+  // recognisable rather than an unexplained credit.
+  string service_type = 5;
+}
+
+message AwardTransactionPointsResponse {
+  int32 points_awarded = 1;
+}
+
+message ReverseTransactionPointsRequest {
+  string user_id = 1;
+  string transaction_id = 2;
+}
+
+message ReverseTransactionPointsResponse {
+  int32 points_reversed = 1;
+}
+
+
+// ── REFERRAL BONUS MESSAGES ─────────────────────────────────────────────────
+
+// ReferralBonusBalance is the claimable state of somebody's referral earnings.
+//
+// Every amount is in MINOR units of `currency` — kobo for NGN — matching
+// country_reward_configs and referral_transactions. Sending major units here
+// would be a 100x error on the one number the user acts on.
+message ReferralBonusBalance {
+  // Accrued, not yet withdrawn, and not already committed to an in-flight
+  // withdrawal. This is the amount the user may withdraw right now.
+  int64 available_minor = 1;
+  // Everything ever accrued, so the screen can show earnings separately from
+  // what is left to claim.
+  int64 lifetime_accrued_minor = 2;
+  int64 lifetime_withdrawn_minor = 3;
+  // Committed to a withdrawal that has not finished. Shown so a user whose
+  // transfer is retrying sees where the money went rather than a silent gap.
+  int64 pending_withdrawal_minor = 4;
+  string currency = 5;
+  // FALSE once the referral programme is discontinued. Accrued balance stays
+  // withdrawable — money already earned is the user's, and a programme ending
+  // is not a reason to confiscate it. New referrals simply stop being taken.
+  bool programme_active = 6;
+  // Below this, withdrawal is refused. Keeps a NGN 2 transfer from costing more
+  // to move than it is worth. 0 means no minimum.
+  int64 minimum_withdrawal_minor = 7;
+  // Set when the programme is discontinued, so the app can say so in the words
+  // the operator chose rather than inventing copy.
+  string programme_notice = 8;
+}
+
+message GetReferralBonusBalanceRequest {}
+
+message GetReferralBonusBalanceResponse {
+  ReferralBonusBalance balance = 1;
+}
+
+message WithdrawReferralBonusRequest {
+  // Minor units. Must be > 0, >= minimum_withdrawal_minor, and <=
+  // available_minor; the server re-checks all three against its own ledger.
+  int64 amount_minor = 1;
+  // The caller's own id for this attempt. A phone that times out and retries
+  // must not withdraw twice, so the same key means the same withdrawal.
+  string idempotency_key = 2;
+  // Raw transaction PIN, verified server-side before anything moves.
+  string pin = 3;
+}
+
+message WithdrawReferralBonusResponse {
+  string withdrawal_id = 1;
+  int64 amount_minor = 2;
+  string currency = 3;
+  // What is left after this withdrawal, so the app does not have to re-fetch
+  // to redraw the balance.
+  int64 remaining_minor = 4;
+  // Where it landed, in words — always the personal wallet.
+  string destination = 5;
+  google.protobuf.Timestamp completed_at = 6;
 }

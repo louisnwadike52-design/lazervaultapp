@@ -2850,7 +2850,12 @@ class RedeemPointsRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearIdempotencyKey() => $_clearField(2);
 
-  /// Raw transaction PIN, verified server-side before any debit.
+  /// Raw transaction PIN.
+  ///
+  /// Converting points takes real money out of the rewards wallet, and this was
+  /// the only cash-out in the product that asked for nothing. Verified
+  /// server-side against auth-service BEFORE any debit: a client-side check is
+  /// advice, not a gate, because the client can be modified.
   @$pb.TagNumber(3)
   $core.String get pin => $_getSZ(2);
   @$pb.TagNumber(3)
@@ -3473,6 +3478,492 @@ class ReverseTransactionPointsResponse extends $pb.GeneratedMessage {
   $core.bool hasPointsReversed() => $_has(0);
   @$pb.TagNumber(1)
   void clearPointsReversed() => $_clearField(1);
+}
+
+/// ReferralBonusBalance is the claimable state of somebody's referral earnings.
+///
+/// Every amount is in MINOR units of `currency` — kobo for NGN — matching
+/// country_reward_configs and referral_transactions. Sending major units here
+/// would be a 100x error on the one number the user acts on.
+class ReferralBonusBalance extends $pb.GeneratedMessage {
+  factory ReferralBonusBalance({
+    $fixnum.Int64? availableMinor,
+    $fixnum.Int64? lifetimeAccruedMinor,
+    $fixnum.Int64? lifetimeWithdrawnMinor,
+    $fixnum.Int64? pendingWithdrawalMinor,
+    $core.String? currency,
+    $core.bool? programmeActive,
+    $fixnum.Int64? minimumWithdrawalMinor,
+    $core.String? programmeNotice,
+  }) {
+    final result = create();
+    if (availableMinor != null) result.availableMinor = availableMinor;
+    if (lifetimeAccruedMinor != null)
+      result.lifetimeAccruedMinor = lifetimeAccruedMinor;
+    if (lifetimeWithdrawnMinor != null)
+      result.lifetimeWithdrawnMinor = lifetimeWithdrawnMinor;
+    if (pendingWithdrawalMinor != null)
+      result.pendingWithdrawalMinor = pendingWithdrawalMinor;
+    if (currency != null) result.currency = currency;
+    if (programmeActive != null) result.programmeActive = programmeActive;
+    if (minimumWithdrawalMinor != null)
+      result.minimumWithdrawalMinor = minimumWithdrawalMinor;
+    if (programmeNotice != null) result.programmeNotice = programmeNotice;
+    return result;
+  }
+
+  ReferralBonusBalance._();
+
+  factory ReferralBonusBalance.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ReferralBonusBalance.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ReferralBonusBalance',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aInt64(1, _omitFieldNames ? '' : 'availableMinor')
+    ..aInt64(2, _omitFieldNames ? '' : 'lifetimeAccruedMinor')
+    ..aInt64(3, _omitFieldNames ? '' : 'lifetimeWithdrawnMinor')
+    ..aInt64(4, _omitFieldNames ? '' : 'pendingWithdrawalMinor')
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..aOB(6, _omitFieldNames ? '' : 'programmeActive')
+    ..aInt64(7, _omitFieldNames ? '' : 'minimumWithdrawalMinor')
+    ..aOS(8, _omitFieldNames ? '' : 'programmeNotice')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReferralBonusBalance clone() =>
+      ReferralBonusBalance()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReferralBonusBalance copyWith(void Function(ReferralBonusBalance) updates) =>
+      super.copyWith((message) => updates(message as ReferralBonusBalance))
+          as ReferralBonusBalance;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ReferralBonusBalance create() => ReferralBonusBalance._();
+  @$core.override
+  ReferralBonusBalance createEmptyInstance() => create();
+  static $pb.PbList<ReferralBonusBalance> createRepeated() =>
+      $pb.PbList<ReferralBonusBalance>();
+  @$core.pragma('dart2js:noInline')
+  static ReferralBonusBalance getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ReferralBonusBalance>(create);
+  static ReferralBonusBalance? _defaultInstance;
+
+  /// Accrued, not yet withdrawn, and not already committed to an in-flight
+  /// withdrawal. This is the amount the user may withdraw right now.
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get availableMinor => $_getI64(0);
+  @$pb.TagNumber(1)
+  set availableMinor($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasAvailableMinor() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAvailableMinor() => $_clearField(1);
+
+  /// Everything ever accrued, so the screen can show earnings separately from
+  /// what is left to claim.
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get lifetimeAccruedMinor => $_getI64(1);
+  @$pb.TagNumber(2)
+  set lifetimeAccruedMinor($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLifetimeAccruedMinor() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLifetimeAccruedMinor() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get lifetimeWithdrawnMinor => $_getI64(2);
+  @$pb.TagNumber(3)
+  set lifetimeWithdrawnMinor($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLifetimeWithdrawnMinor() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLifetimeWithdrawnMinor() => $_clearField(3);
+
+  /// Committed to a withdrawal that has not finished. Shown so a user whose
+  /// transfer is retrying sees where the money went rather than a silent gap.
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get pendingWithdrawalMinor => $_getI64(3);
+  @$pb.TagNumber(4)
+  set pendingWithdrawalMinor($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPendingWithdrawalMinor() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPendingWithdrawalMinor() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => $_clearField(5);
+
+  /// FALSE once the referral programme is discontinued. Accrued balance stays
+  /// withdrawable — money already earned is the user's, and a programme ending
+  /// is not a reason to confiscate it. New referrals simply stop being taken.
+  @$pb.TagNumber(6)
+  $core.bool get programmeActive => $_getBF(5);
+  @$pb.TagNumber(6)
+  set programmeActive($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasProgrammeActive() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProgrammeActive() => $_clearField(6);
+
+  /// Below this, withdrawal is refused. Keeps a NGN 2 transfer from costing more
+  /// to move than it is worth. 0 means no minimum.
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get minimumWithdrawalMinor => $_getI64(6);
+  @$pb.TagNumber(7)
+  set minimumWithdrawalMinor($fixnum.Int64 value) => $_setInt64(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasMinimumWithdrawalMinor() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMinimumWithdrawalMinor() => $_clearField(7);
+
+  /// Set when the programme is discontinued, so the app can say so in the words
+  /// the operator chose rather than inventing copy.
+  @$pb.TagNumber(8)
+  $core.String get programmeNotice => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set programmeNotice($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasProgrammeNotice() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearProgrammeNotice() => $_clearField(8);
+}
+
+class GetReferralBonusBalanceRequest extends $pb.GeneratedMessage {
+  factory GetReferralBonusBalanceRequest() => create();
+
+  GetReferralBonusBalanceRequest._();
+
+  factory GetReferralBonusBalanceRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetReferralBonusBalanceRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetReferralBonusBalanceRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetReferralBonusBalanceRequest clone() =>
+      GetReferralBonusBalanceRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetReferralBonusBalanceRequest copyWith(
+          void Function(GetReferralBonusBalanceRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetReferralBonusBalanceRequest))
+          as GetReferralBonusBalanceRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetReferralBonusBalanceRequest create() =>
+      GetReferralBonusBalanceRequest._();
+  @$core.override
+  GetReferralBonusBalanceRequest createEmptyInstance() => create();
+  static $pb.PbList<GetReferralBonusBalanceRequest> createRepeated() =>
+      $pb.PbList<GetReferralBonusBalanceRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetReferralBonusBalanceRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetReferralBonusBalanceRequest>(create);
+  static GetReferralBonusBalanceRequest? _defaultInstance;
+}
+
+class GetReferralBonusBalanceResponse extends $pb.GeneratedMessage {
+  factory GetReferralBonusBalanceResponse({
+    ReferralBonusBalance? balance,
+  }) {
+    final result = create();
+    if (balance != null) result.balance = balance;
+    return result;
+  }
+
+  GetReferralBonusBalanceResponse._();
+
+  factory GetReferralBonusBalanceResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetReferralBonusBalanceResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetReferralBonusBalanceResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOM<ReferralBonusBalance>(1, _omitFieldNames ? '' : 'balance',
+        subBuilder: ReferralBonusBalance.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetReferralBonusBalanceResponse clone() =>
+      GetReferralBonusBalanceResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetReferralBonusBalanceResponse copyWith(
+          void Function(GetReferralBonusBalanceResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetReferralBonusBalanceResponse))
+          as GetReferralBonusBalanceResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetReferralBonusBalanceResponse create() =>
+      GetReferralBonusBalanceResponse._();
+  @$core.override
+  GetReferralBonusBalanceResponse createEmptyInstance() => create();
+  static $pb.PbList<GetReferralBonusBalanceResponse> createRepeated() =>
+      $pb.PbList<GetReferralBonusBalanceResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetReferralBonusBalanceResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetReferralBonusBalanceResponse>(
+          create);
+  static GetReferralBonusBalanceResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ReferralBonusBalance get balance => $_getN(0);
+  @$pb.TagNumber(1)
+  set balance(ReferralBonusBalance value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasBalance() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBalance() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ReferralBonusBalance ensureBalance() => $_ensure(0);
+}
+
+class WithdrawReferralBonusRequest extends $pb.GeneratedMessage {
+  factory WithdrawReferralBonusRequest({
+    $fixnum.Int64? amountMinor,
+    $core.String? idempotencyKey,
+    $core.String? pin,
+  }) {
+    final result = create();
+    if (amountMinor != null) result.amountMinor = amountMinor;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    if (pin != null) result.pin = pin;
+    return result;
+  }
+
+  WithdrawReferralBonusRequest._();
+
+  factory WithdrawReferralBonusRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory WithdrawReferralBonusRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'WithdrawReferralBonusRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aInt64(1, _omitFieldNames ? '' : 'amountMinor')
+    ..aOS(2, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(3, _omitFieldNames ? '' : 'pin')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawReferralBonusRequest clone() =>
+      WithdrawReferralBonusRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawReferralBonusRequest copyWith(
+          void Function(WithdrawReferralBonusRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as WithdrawReferralBonusRequest))
+          as WithdrawReferralBonusRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static WithdrawReferralBonusRequest create() =>
+      WithdrawReferralBonusRequest._();
+  @$core.override
+  WithdrawReferralBonusRequest createEmptyInstance() => create();
+  static $pb.PbList<WithdrawReferralBonusRequest> createRepeated() =>
+      $pb.PbList<WithdrawReferralBonusRequest>();
+  @$core.pragma('dart2js:noInline')
+  static WithdrawReferralBonusRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<WithdrawReferralBonusRequest>(create);
+  static WithdrawReferralBonusRequest? _defaultInstance;
+
+  /// Minor units. Must be > 0, >= minimum_withdrawal_minor, and <=
+  /// available_minor; the server re-checks all three against its own ledger.
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get amountMinor => $_getI64(0);
+  @$pb.TagNumber(1)
+  set amountMinor($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasAmountMinor() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAmountMinor() => $_clearField(1);
+
+  /// The caller's own id for this attempt. A phone that times out and retries
+  /// must not withdraw twice, so the same key means the same withdrawal.
+  @$pb.TagNumber(2)
+  $core.String get idempotencyKey => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set idempotencyKey($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasIdempotencyKey() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIdempotencyKey() => $_clearField(2);
+
+  /// Raw transaction PIN, verified server-side before anything moves.
+  @$pb.TagNumber(3)
+  $core.String get pin => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set pin($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPin() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPin() => $_clearField(3);
+}
+
+class WithdrawReferralBonusResponse extends $pb.GeneratedMessage {
+  factory WithdrawReferralBonusResponse({
+    $core.String? withdrawalId,
+    $fixnum.Int64? amountMinor,
+    $core.String? currency,
+    $fixnum.Int64? remainingMinor,
+    $core.String? destination,
+    $1.Timestamp? completedAt,
+  }) {
+    final result = create();
+    if (withdrawalId != null) result.withdrawalId = withdrawalId;
+    if (amountMinor != null) result.amountMinor = amountMinor;
+    if (currency != null) result.currency = currency;
+    if (remainingMinor != null) result.remainingMinor = remainingMinor;
+    if (destination != null) result.destination = destination;
+    if (completedAt != null) result.completedAt = completedAt;
+    return result;
+  }
+
+  WithdrawReferralBonusResponse._();
+
+  factory WithdrawReferralBonusResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory WithdrawReferralBonusResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'WithdrawReferralBonusResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'withdrawalId')
+    ..aInt64(2, _omitFieldNames ? '' : 'amountMinor')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aInt64(4, _omitFieldNames ? '' : 'remainingMinor')
+    ..aOS(5, _omitFieldNames ? '' : 'destination')
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'completedAt',
+        subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawReferralBonusResponse clone() =>
+      WithdrawReferralBonusResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawReferralBonusResponse copyWith(
+          void Function(WithdrawReferralBonusResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as WithdrawReferralBonusResponse))
+          as WithdrawReferralBonusResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static WithdrawReferralBonusResponse create() =>
+      WithdrawReferralBonusResponse._();
+  @$core.override
+  WithdrawReferralBonusResponse createEmptyInstance() => create();
+  static $pb.PbList<WithdrawReferralBonusResponse> createRepeated() =>
+      $pb.PbList<WithdrawReferralBonusResponse>();
+  @$core.pragma('dart2js:noInline')
+  static WithdrawReferralBonusResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<WithdrawReferralBonusResponse>(create);
+  static WithdrawReferralBonusResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get withdrawalId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set withdrawalId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasWithdrawalId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearWithdrawalId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get amountMinor => $_getI64(1);
+  @$pb.TagNumber(2)
+  set amountMinor($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAmountMinor() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmountMinor() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => $_clearField(3);
+
+  /// What is left after this withdrawal, so the app does not have to re-fetch
+  /// to redraw the balance.
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get remainingMinor => $_getI64(3);
+  @$pb.TagNumber(4)
+  set remainingMinor($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasRemainingMinor() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRemainingMinor() => $_clearField(4);
+
+  /// Where it landed, in words — always the personal wallet.
+  @$pb.TagNumber(5)
+  $core.String get destination => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set destination($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasDestination() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDestination() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $1.Timestamp get completedAt => $_getN(5);
+  @$pb.TagNumber(6)
+  set completedAt($1.Timestamp value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasCompletedAt() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCompletedAt() => $_clearField(6);
+  @$pb.TagNumber(6)
+  $1.Timestamp ensureCompletedAt() => $_ensure(5);
 }
 
 const $core.bool _omitFieldNames =
