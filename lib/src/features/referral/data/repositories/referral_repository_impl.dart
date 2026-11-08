@@ -1,5 +1,4 @@
 import 'package:dartz/dartz.dart';
-import 'package:fixnum/fixnum.dart';
 import '../../domain/entities/redemption_entities.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
@@ -486,45 +485,6 @@ class ReferralRepositoryImpl implements IReferralRepository {
     } on GrpcError catch (e) {
       return Left(ServerFailure(
         message: friendlyGrpcError(e, 'Could not load your referral bonus'),
-        statusCode: e.code,
-      ));
-    } catch (e) {
-      return Left(ServerFailure(
-        message: 'An unexpected error occurred',
-        statusCode: 500,
-      ));
-    }
-  }
-
-  @override
-  Future<Either<Failure, ReferralBonusWithdrawalEntity>> withdrawReferralBonus({
-    required int amountMinor,
-    required String idempotencyKey,
-    required String pin,
-  }) async {
-    try {
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _referralServiceClient.withdrawReferralBonus(
-        referral_pb.WithdrawReferralBonusRequest(
-          amountMinor: Int64(amountMinor),
-          idempotencyKey: idempotencyKey,
-          pin: pin,
-        ),
-        options: callOptions,
-      );
-      return Right(ReferralBonusWithdrawalEntity(
-        withdrawalId: response.withdrawalId,
-        amountMinor: response.amountMinor.toInt(),
-        currency: response.currency.isNotEmpty ? response.currency : 'NGN',
-        remainingMinor: response.remainingMinor.toInt(),
-        destination: response.destination,
-      ));
-    } on GrpcError catch (e) {
-      // The server phrases every actionable refusal itself — not enough
-      // balance, below the minimum, no personal wallet, wrong PIN — and those
-      // are the only messages worth showing on a screen where the user can act.
-      return Left(ServerFailure(
-        message: friendlyGrpcError(e, 'Could not withdraw your referral bonus'),
         statusCode: e.code,
       ));
     } catch (e) {

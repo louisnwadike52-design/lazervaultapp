@@ -363,12 +363,15 @@ service ReferralService {
     };
   }
 
-  // ── REFERRAL BONUS: accrue, then withdraw ───────────────────────────────
+  // ── REFERRAL BONUS: earned, then deposited automatically ────────────────
   //
-  // A referral bonus used to be transferred straight into the referrer's
-  // wallet the moment it was credited, so there was nothing to claim and
-  // nothing to show. It now ACCRUES to a referral bonus balance that the user
-  // withdraws on demand, into their personal wallet and nowhere else.
+  // A bonus is earned when the referred user passes KYC, recorded in the
+  // referral bonus ledger, and DEPOSITED into the referrer's personal wallet
+  // by a worker — which then sends them a push notification. There is no claim
+  // step: the user does nothing.
+  //
+  // The ledger is also the analytics: one row per bonus, carrying who earned
+  // it, which referral produced it, when it was paid and where it went.
 
   // GetReferralBonusBalance reports what the caller has accrued, what is in
   // flight, and whether the programme is still running.
@@ -378,8 +381,12 @@ service ReferralService {
     };
   }
 
-  // WithdrawReferralBonus moves accrued bonus into the caller's PERSONAL
-  // wallet. Requires the transaction PIN, like every other cash-out.
+  // WithdrawReferralBonus ALWAYS REFUSES with FailedPrecondition.
+  //
+  // Retained only so a client built against the old claim-step contract gets
+  // one clear sentence saying bonuses are deposited automatically, rather than
+  // an Internal error it would render as "something went wrong". Do not build
+  // against it.
   rpc WithdrawReferralBonus(WithdrawReferralBonusRequest) returns (WithdrawReferralBonusResponse) {
     option (google.api.http) = {
       post: "/v1/referral/bonus/withdraw"
@@ -481,29 +488,37 @@ message ReverseTransactionPointsResponse {
 
 // ── REFERRAL BONUS MESSAGES ─────────────────────────────────────────────────
 
-// ReferralBonusBalance is the claimable state of somebody's referral earnings.
+// ReferralBonusBalance is somebody's referral EARNINGS.
+//
+// Nothing here is claimable — bonuses are deposited automatically — so
+// available_minor is always 0. The field names predate that change and are
+// kept because renaming them would break the contract for no behavioural gain;
+// read each one by its comment, not its name.
 //
 // Every amount is in MINOR units of `currency` — kobo for NGN — matching
 // country_reward_configs and referral_transactions. Sending major units here
 // would be a 100x error on the one number the user acts on.
 message ReferralBonusBalance {
-  // Accrued, not yet withdrawn, and not already committed to an in-flight
-  // withdrawal. This is the amount the user may withdraw right now.
+  // ALWAYS 0. There is no claim step, so there is never a balance sitting
+  // here waiting to be collected. Kept so the message shape is unchanged.
   int64 available_minor = 1;
-  // Everything ever accrued, so the screen can show earnings separately from
-  // what is left to claim.
+  // Everything ever EARNED. This is the headline number on the referral
+  // screen and the one the admin reports total.
   int64 lifetime_accrued_minor = 2;
+  // Everything that has reached the user's personal wallet.
   int64 lifetime_withdrawn_minor = 3;
-  // Committed to a withdrawal that has not finished. Shown so a user whose
-  // transfer is retrying sees where the money went rather than a silent gap.
+  // Earned but not yet deposited — normally for less than a minute, longer if
+  // the user has no personal wallet in this currency yet. Shown so the gap
+  // between "my friend verified" and "money arrived" is never silent.
   int64 pending_withdrawal_minor = 4;
   string currency = 5;
-  // FALSE once the referral programme is discontinued. Accrued balance stays
-  // withdrawable — money already earned is the user's, and a programme ending
-  // is not a reason to confiscate it. New referrals simply stop being taken.
+  // FALSE once the referral programme is discontinued. Bonuses already earned
+  // are still paid — money already earned is the user's, and a programme
+  // ending is not a reason to cancel an obligation. New referrals simply stop
+  // being taken.
   bool programme_active = 6;
-  // Below this, withdrawal is refused. Keeps a NGN 2 transfer from costing more
-  // to move than it is worth. 0 means no minimum.
+  // UNUSED since bonuses became automatic — there is no amount for a user to
+  // choose, so there is nothing to apply a floor to. Kept at 0.
   int64 minimum_withdrawal_minor = 7;
   // Set when the programme is discontinued, so the app can say so in the words
   // the operator chose rather than inventing copy.

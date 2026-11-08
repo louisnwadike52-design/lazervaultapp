@@ -3480,7 +3480,12 @@ class ReverseTransactionPointsResponse extends $pb.GeneratedMessage {
   void clearPointsReversed() => $_clearField(1);
 }
 
-/// ReferralBonusBalance is the claimable state of somebody's referral earnings.
+/// ReferralBonusBalance is somebody's referral EARNINGS.
+///
+/// Nothing here is claimable — bonuses are deposited automatically — so
+/// available_minor is always 0. The field names predate that change and are
+/// kept because renaming them would break the contract for no behavioural gain;
+/// read each one by its comment, not its name.
 ///
 /// Every amount is in MINOR units of `currency` — kobo for NGN — matching
 /// country_reward_configs and referral_transactions. Sending major units here
@@ -3557,8 +3562,8 @@ class ReferralBonusBalance extends $pb.GeneratedMessage {
       $pb.GeneratedMessage.$_defaultFor<ReferralBonusBalance>(create);
   static ReferralBonusBalance? _defaultInstance;
 
-  /// Accrued, not yet withdrawn, and not already committed to an in-flight
-  /// withdrawal. This is the amount the user may withdraw right now.
+  /// ALWAYS 0. There is no claim step, so there is never a balance sitting
+  /// here waiting to be collected. Kept so the message shape is unchanged.
   @$pb.TagNumber(1)
   $fixnum.Int64 get availableMinor => $_getI64(0);
   @$pb.TagNumber(1)
@@ -3568,8 +3573,8 @@ class ReferralBonusBalance extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearAvailableMinor() => $_clearField(1);
 
-  /// Everything ever accrued, so the screen can show earnings separately from
-  /// what is left to claim.
+  /// Everything ever EARNED. This is the headline number on the referral
+  /// screen and the one the admin reports total.
   @$pb.TagNumber(2)
   $fixnum.Int64 get lifetimeAccruedMinor => $_getI64(1);
   @$pb.TagNumber(2)
@@ -3579,6 +3584,7 @@ class ReferralBonusBalance extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearLifetimeAccruedMinor() => $_clearField(2);
 
+  /// Everything that has reached the user's personal wallet.
   @$pb.TagNumber(3)
   $fixnum.Int64 get lifetimeWithdrawnMinor => $_getI64(2);
   @$pb.TagNumber(3)
@@ -3588,8 +3594,9 @@ class ReferralBonusBalance extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearLifetimeWithdrawnMinor() => $_clearField(3);
 
-  /// Committed to a withdrawal that has not finished. Shown so a user whose
-  /// transfer is retrying sees where the money went rather than a silent gap.
+  /// Earned but not yet deposited — normally for less than a minute, longer if
+  /// the user has no personal wallet in this currency yet. Shown so the gap
+  /// between "my friend verified" and "money arrived" is never silent.
   @$pb.TagNumber(4)
   $fixnum.Int64 get pendingWithdrawalMinor => $_getI64(3);
   @$pb.TagNumber(4)
@@ -3608,9 +3615,10 @@ class ReferralBonusBalance extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   void clearCurrency() => $_clearField(5);
 
-  /// FALSE once the referral programme is discontinued. Accrued balance stays
-  /// withdrawable — money already earned is the user's, and a programme ending
-  /// is not a reason to confiscate it. New referrals simply stop being taken.
+  /// FALSE once the referral programme is discontinued. Bonuses already earned
+  /// are still paid — money already earned is the user's, and a programme
+  /// ending is not a reason to cancel an obligation. New referrals simply stop
+  /// being taken.
   @$pb.TagNumber(6)
   $core.bool get programmeActive => $_getBF(5);
   @$pb.TagNumber(6)
@@ -3620,8 +3628,8 @@ class ReferralBonusBalance extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   void clearProgrammeActive() => $_clearField(6);
 
-  /// Below this, withdrawal is refused. Keeps a NGN 2 transfer from costing more
-  /// to move than it is worth. 0 means no minimum.
+  /// UNUSED since bonuses became automatic — there is no amount for a user to
+  /// choose, so there is nothing to apply a floor to. Kept at 0.
   @$pb.TagNumber(7)
   $fixnum.Int64 get minimumWithdrawalMinor => $_getI64(6);
   @$pb.TagNumber(7)

@@ -72,18 +72,11 @@ abstract class IReferralRepository {
   ///
   /// [pin] is the user's transaction PIN. It is verified SERVER-SIDE before any
   /// points are debited — the sheet prompts for it, but the app is not the gate.
-  /// What the caller has accrued in referral bonus, and whether the programme
-  /// is still running.
+  /// What the caller has EARNED from referrals, how much has reached their
+  /// wallet, and whether the programme is still running. There is no claim
+  /// call: bonuses are deposited automatically and the server refuses a
+  /// withdrawal.
   Future<Either<Failure, ReferralBonusBalanceEntity>> getReferralBonusBalance();
-
-  /// Moves accrued referral bonus into the caller's PERSONAL wallet. Requires
-  /// the transaction PIN; the server re-checks the amount, the minimum and the
-  /// destination.
-  Future<Either<Failure, ReferralBonusWithdrawalEntity>> withdrawReferralBonus({
-    required int amountMinor,
-    required String idempotencyKey,
-    required String pin,
-  });
 
   Future<Either<Failure, RedemptionResultEntity>> redeemPoints({
     required int points,

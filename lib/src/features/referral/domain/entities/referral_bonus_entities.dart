@@ -1,33 +1,39 @@
 import 'package:equatable/equatable.dart';
 
-/// A referral bonus ACCRUES and is then withdrawn.
+/// Somebody's referral EARNINGS.
 ///
-/// It used to be transferred into the referrer's wallet the instant a referral
-/// completed, which left nothing to claim and nothing to show. It now
-/// accumulates server-side and the user moves it into their personal wallet on
-/// demand.
+/// A bonus is earned when the person they referred passes KYC, and deposited
+/// into their personal wallet automatically within about a minute. There is no
+/// claim step and nothing for the user to press — this screen reports what
+/// happened rather than offering an action.
 ///
 /// Every amount is in MINOR units — kobo for NGN — matching the backend's
 /// ledger. Treating one of these as naira is a 100x error on the one number the
 /// user acts on, so the conversion happens once, in [majorOf].
 class ReferralBonusBalanceEntity extends Equatable {
-  /// Accrued, not withdrawn, and not committed to a withdrawal in flight.
-  /// This is what the user can take right now.
+  /// Always 0 from the server: nothing is claimable. Kept because the field
+  /// is still on the wire.
   final int availableMinor;
+
+  /// Everything ever earned. The headline number.
   final int lifetimeAccruedMinor;
+
+  /// Everything that has reached the personal wallet.
   final int lifetimeWithdrawnMinor;
 
-  /// Committed to a withdrawal that has not settled. Shown so a user whose
-  /// transfer is retrying can see where the money went instead of a silent gap.
+  /// Earned but not yet deposited — normally under a minute, longer if there
+  /// is no personal wallet in this currency yet. Shown so the gap between "my
+  /// friend verified" and "money arrived" is never silent.
   final int pendingWithdrawalMinor;
 
   final String currency;
 
-  /// False once the operator discontinues the programme. An accrued balance
-  /// stays withdrawable — it was earned under the programme and is the user's.
+  /// False once the operator discontinues the programme. Bonuses already
+  /// earned are still paid — they were earned under the programme and ending
+  /// it does not cancel the obligation.
   final bool programmeActive;
 
-  /// Below this, withdrawal is refused. 0 means no minimum.
+  /// Unused now that bonuses are automatic; there is no amount to choose.
   final int minimumWithdrawalMinor;
 
   /// The operator's own words for a discontinued programme. Empty means use a
@@ -58,27 +64,13 @@ class ReferralBonusBalanceEntity extends Equatable {
 
   static double majorOf(int minor) => minor / 100;
 
-  bool get hasAnything => lifetimeAccruedMinor > 0 || availableMinor > 0;
+  bool get hasAnything => lifetimeAccruedMinor > 0;
 
-  /// Whether a withdrawal is possible at all right now. The server re-checks
-  /// every one of these; this only decides whether to offer the button.
-  bool get canWithdraw =>
-      availableMinor > 0 && availableMinor >= minimumWithdrawalMinor;
-
-  /// Why the button is unavailable, in words the user can act on. Null when it
-  /// is available.
-  String? get blockedReason {
-    if (availableMinor <= 0) {
-      return pendingWithdrawalMinor > 0
-          ? 'Your withdrawal is being processed'
-          : null;
-    }
-    if (availableMinor < minimumWithdrawalMinor) {
-      return 'Minimum withdrawal is '
-          '${majorOf(minimumWithdrawalMinor).toStringAsFixed(0)}';
-    }
-    return null;
-  }
+  /// Earned, deposit still owed. True for the short window between the
+  /// referee's KYC and the deposit worker's next pass — or indefinitely if the
+  /// user has no personal wallet in this currency, which is the one case worth
+  /// telling them about.
+  bool get awaitingDeposit => pendingWithdrawalMinor > 0;
 
   @override
   List<Object?> get props => [
@@ -91,29 +83,4 @@ class ReferralBonusBalanceEntity extends Equatable {
         minimumWithdrawalMinor,
         programmeNotice,
       ];
-}
-
-/// The outcome of a settled withdrawal.
-class ReferralBonusWithdrawalEntity extends Equatable {
-  final String withdrawalId;
-  final int amountMinor;
-  final String currency;
-
-  /// What is left afterwards, so the screen can redraw without re-fetching.
-  final int remainingMinor;
-
-  /// Where it landed, in the server's words — always the personal wallet.
-  final String destination;
-
-  const ReferralBonusWithdrawalEntity({
-    required this.withdrawalId,
-    required this.amountMinor,
-    required this.currency,
-    required this.remainingMinor,
-    required this.destination,
-  });
-
-  @override
-  List<Object?> get props =>
-      [withdrawalId, amountMinor, currency, remainingMinor, destination];
 }

@@ -122,23 +122,23 @@ class ReferralTransactionEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    referrerUserId,
-    refereeUserId,
-    referralCodeUsed,
-    status,
-    referrerRewardAmount,
-    refereeRewardAmount,
-    currency,
-    createdAt,
-    completedAt,
-    failureReason,
-    refereeFirstName,
-    refereeLastName,
-    refereeUsername,
-    referrerUsername,
-    refereeHasJoined,
-  ];
+        id,
+        referrerUserId,
+        refereeUserId,
+        referralCodeUsed,
+        status,
+        referrerRewardAmount,
+        refereeRewardAmount,
+        currency,
+        createdAt,
+        completedAt,
+        failureReason,
+        refereeFirstName,
+        refereeLastName,
+        refereeUsername,
+        referrerUsername,
+        refereeHasJoined,
+      ];
 
   @override
   String toString() {

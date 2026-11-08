@@ -25,18 +25,14 @@ ReferralBonusBalanceEntity _bal({
   );
 }
 
-Future<void> _pump(WidgetTester t, ReferralBonusBalanceEntity b,
-    {VoidCallback? onWithdraw}) async {
+Future<void> _pump(WidgetTester t, ReferralBonusBalanceEntity b) async {
   await t.pumpWidget(
     ScreenUtilInit(
       designSize: const Size(390, 844),
       builder: (_, __) => MaterialApp(
         home: Scaffold(
           body: SingleChildScrollView(
-            child: ReferralBonusCard(
-              balance: b,
-              onWithdraw: onWithdraw ?? () {},
-            ),
+            child: ReferralBonusCard(balance: b),
           ),
         ),
       ),
@@ -60,36 +56,42 @@ void main() {
     });
   });
 
-  group('when withdrawal is offered', () {
-    test('a zero balance cannot be withdrawn', () {
-      expect(_bal(available: 0, accrued: 0).canWithdraw, isFalse);
+  group('what the balance says', () {
+    test('nothing is claimable — deposits are automatic', () {
+      // The server always sends 0 here; the app must not invent a claimable
+      // amount from the earned total.
+      expect(_bal(available: 0, accrued: 20000).availableMinor, 0);
     });
 
-    test('below the minimum cannot be withdrawn, and says so', () {
-      final b = _bal(available: 5000, minimum: 10000);
-      expect(b.canWithdraw, isFalse);
-      expect(b.blockedReason, contains('Minimum'));
+    test('an undeposited bonus is reported as on its way', () {
+      expect(_bal(accrued: 20000, pending: 20000).awaitingDeposit, isTrue);
     });
 
-    test('at exactly the minimum it can be withdrawn', () {
-      expect(_bal(available: 10000, minimum: 10000).canWithdraw, isTrue);
+    test('a fully deposited bonus is not pending', () {
+      final b = _bal(accrued: 20000, withdrawn: 20000, pending: 0);
+      expect(b.awaitingDeposit, isFalse);
+      expect(b.hasAnything, isTrue);
     });
 
-    test('a pending withdrawal explains a zero available balance', () {
-      final b = _bal(available: 0, pending: 20000);
-      expect(b.canWithdraw, isFalse);
-      expect(b.blockedReason, 'Your withdrawal is being processed');
+    test('nothing earned means nothing to show', () {
+      expect(_bal(available: 0, accrued: 0).hasAnything, isFalse);
     });
   });
 
   group('the card', () {
-    testWidgets('offers the withdrawal and names the destination', (t) async {
-      var tapped = false;
-      await _pump(t, _bal(), onWithdraw: () => tapped = true);
-      final cta = find.text('Withdraw to personal wallet');
-      expect(cta, findsOneWidget);
-      await t.tap(cta);
-      expect(tapped, isTrue);
+    testWidgets('reports earnings and offers no action', (t) async {
+      // There is deliberately nothing to press: the money is already on its
+      // way without the user doing anything.
+      await _pump(t, _bal());
+      expect(find.text('Referral bonus'), findsOneWidget);
+      expect(find.text('Earned from referrals'), findsOneWidget);
+      expect(find.textContaining('Withdraw'), findsNothing);
+      expect(find.byType(ElevatedButton), findsNothing);
+    });
+
+    testWidgets('names the personal wallet as the destination', (t) async {
+      await _pump(t, _bal(accrued: 20000, withdrawn: 20000));
+      expect(find.text('Personal wallet'), findsOneWidget);
     });
 
     testWidgets('renders nothing when nothing was ever earned', (t) async {
@@ -99,16 +101,15 @@ void main() {
       expect(find.text('Referral bonus'), findsNothing);
     });
 
-    testWidgets('shows in-flight money rather than a shrinking balance', (t) async {
-      await _pump(t, _bal(available: 0, accrued: 20000, pending: 20000));
-      expect(find.textContaining('is being sent to your wallet'), findsOneWidget);
+    testWidgets('explains money earned but not yet deposited', (t) async {
+      await _pump(t, _bal(accrued: 20000, pending: 20000));
+      expect(find.textContaining('on its way to your personal wallet'), findsOneWidget);
     });
 
-    testWidgets('a discontinued programme still offers the withdrawal', (t) async {
+    testWidgets('a discontinued programme says earned money is still paid', (t) async {
       // The programme ending must not read as the money being taken.
       await _pump(t, _bal(active: false));
-      expect(find.text('Withdraw to personal wallet'), findsOneWidget);
-      expect(find.textContaining('still yours to withdraw'), findsOneWidget);
+      expect(find.textContaining('still yours'), findsOneWidget);
     });
 
     testWidgets('a discontinued programme uses the operator notice when set', (t) async {
@@ -117,11 +118,10 @@ void main() {
       expect(find.textContaining('still yours to withdraw'), findsNothing);
     });
 
-    testWidgets('a discontinued programme with a spent balance still explains itself',
+    testWidgets('a discontinued programme with everything paid still explains itself',
         (t) async {
-      await _pump(t, _bal(available: 0, accrued: 20000, withdrawn: 20000, active: false));
+      await _pump(t, _bal(accrued: 20000, withdrawn: 20000, active: false));
       expect(find.text('Referral bonus'), findsOneWidget);
-      expect(find.text('Withdraw to personal wallet'), findsNothing);
       expect(find.textContaining('no longer counted'), findsOneWidget);
     });
   });

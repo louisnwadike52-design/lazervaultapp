@@ -203,8 +203,12 @@ class ReferralServiceClient extends $grpc.Client {
         options: options);
   }
 
-  /// WithdrawReferralBonus moves accrued bonus into the caller's PERSONAL
-  /// wallet. Requires the transaction PIN, like every other cash-out.
+  /// WithdrawReferralBonus ALWAYS REFUSES with FailedPrecondition.
+  ///
+  /// Retained only so a client built against the old claim-step contract gets
+  /// one clear sentence saying bonuses are deposited automatically, rather than
+  /// an Internal error it would render as "something went wrong". Do not build
+  /// against it.
   $grpc.ResponseFuture<$0.WithdrawReferralBonusResponse> withdrawReferralBonus(
     $0.WithdrawReferralBonusRequest request, {
     $grpc.CallOptions? options,

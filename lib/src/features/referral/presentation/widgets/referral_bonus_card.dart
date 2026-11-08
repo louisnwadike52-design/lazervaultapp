@@ -4,21 +4,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/src/features/referral/domain/entities/referral_bonus_entities.dart';
 
-/// Accrued referral bonus, and the one action that can be taken on it.
+/// What the user has earned from referrals, and where it went.
 ///
-/// The bonus used to be transferred into the wallet at the moment a referral
-/// completed, so the referral screen had nothing to show and nothing to do —
-/// the money appeared in the wallet with a narration and that was the whole
-/// experience. It now accrues here and the user withdraws it deliberately.
+/// There is no action here on purpose. A bonus is deposited into the personal
+/// wallet automatically when the referred person passes KYC, and the user gets
+/// a push when it lands — so this card reports, and the only thing it ever has
+/// to explain is the short window before the money arrives.
 class ReferralBonusCard extends StatelessWidget {
-  const ReferralBonusCard({
-    super.key,
-    required this.balance,
-    required this.onWithdraw,
-  });
+  const ReferralBonusCard({super.key, required this.balance});
 
   final ReferralBonusBalanceEntity balance;
-  final VoidCallback onWithdraw;
 
   String get _symbol => CurrencyUtils.getSymbol(balance.currency);
 
@@ -32,9 +27,6 @@ class ReferralBonusCard extends StatelessWidget {
     if (!balance.hasAnything && balance.programmeActive) {
       return const SizedBox.shrink();
     }
-
-    final blocked = balance.blockedReason;
-    final canWithdraw = balance.canWithdraw;
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -64,7 +56,7 @@ class ReferralBonusCard extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            _money(balance.availableMinor),
+            _money(balance.lifetimeAccruedMinor),
             style: TextStyle(
               fontSize: 26.sp,
               fontWeight: FontWeight.w800,
@@ -73,13 +65,15 @@ class ReferralBonusCard extends StatelessWidget {
           ),
           SizedBox(height: 2.h),
           Text(
-            'Available to withdraw',
+            'Earned from referrals',
             style: TextStyle(fontSize: 11.sp, color: const Color(0xFF6B7280)),
           ),
 
-          // In-flight money has to be visible, or a retrying transfer looks
-          // like a balance that quietly shrank.
-          if (balance.pendingWithdrawalMinor > 0) ...[
+          // The only gap worth explaining: earned, not yet in the wallet.
+          // Usually under a minute. If the user has no personal wallet in this
+          // currency it stays here until they open one, and saying so is the
+          // difference between "pending" and "nobody knows".
+          if (balance.awaitingDeposit) ...[
             SizedBox(height: 10.h),
             Row(
               children: [
@@ -94,7 +88,7 @@ class ReferralBonusCard extends StatelessWidget {
                 SizedBox(width: 6.w),
                 Expanded(
                   child: Text(
-                    '${_money(balance.pendingWithdrawalMinor)} is being sent to your wallet',
+                    '${_money(balance.pendingWithdrawalMinor)} is on its way to your personal wallet',
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w500,
@@ -107,11 +101,19 @@ class ReferralBonusCard extends StatelessWidget {
           ],
 
           SizedBox(height: 12.h),
+          // Expanded on both: the labels and values are variable width
+          // ("Personal wallet" is wider than an amount) and a fixed Row
+          // overflowed by 30px at phone width, which clips the destination —
+          // the one thing this row exists to say.
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _stat('Earned', _money(balance.lifetimeAccruedMinor)),
-              SizedBox(width: 16.w),
-              _stat('Withdrawn', _money(balance.lifetimeWithdrawnMinor)),
+              Expanded(
+                child: _stat(
+                    'Paid to wallet', _money(balance.lifetimeWithdrawnMinor)),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(child: _stat('Paid into', 'Personal wallet')),
             ],
           ),
 
@@ -140,8 +142,9 @@ class ReferralBonusCard extends StatelessWidget {
                       balance.programmeNotice.isNotEmpty
                           ? balance.programmeNotice
                           : 'The referral programme has ended. New referrals are '
-                              'no longer counted, and anything you already '
-                              'earned is still yours to withdraw.',
+                              'no longer counted. Anything you already earned '
+                              'is still yours and is still paid into your '
+                              'personal wallet.',
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         height: 1.35,
@@ -150,36 +153,6 @@ class ReferralBonusCard extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-            ),
-          ],
-
-          if (balance.availableMinor > 0) ...[
-            SizedBox(height: 14.h),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: canWithdraw ? onWithdraw : null,
-                icon: Icon(Icons.account_balance_wallet_rounded, size: 16.sp),
-                label: Text(
-                  canWithdraw
-                      ? 'Withdraw to personal wallet'
-                      : (blocked ?? 'Unavailable'),
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4E03D0),
-                  disabledBackgroundColor: const Color(0xFF2D2D2D),
-                  disabledForegroundColor: const Color(0xFF6B7280),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                ),
               ),
             ),
           ],
@@ -197,6 +170,8 @@ class ReferralBonusCard extends StatelessWidget {
         SizedBox(height: 2.h),
         Text(
           value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: 12.sp,
             fontWeight: FontWeight.w600,
