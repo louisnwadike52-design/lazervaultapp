@@ -44,7 +44,8 @@ void main() {
       // the string "null" from an unguarded interpolation, and an opaque
       // step-up token.
       for (final bad in [null, '', '   ', 'null', 'opaque-step-up-token']) {
-        expect(isUsableJwt(bad), isFalse, reason: 'should reject ${bad ?? "null"}');
+        expect(isUsableJwt(bad), isFalse,
+            reason: 'should reject ${bad ?? "null"}');
       }
     });
 
@@ -69,7 +70,8 @@ void main() {
           reason: 'gRPC attaches the authorization header without checking '
               'the token is a JWT');
       expect(
-        src.contains("metadata.addAll(authHeader(accessToken, key: 'authorization'))"),
+        src.contains(
+            "metadata.addAll(authHeader(accessToken, key: 'authorization'))"),
         isTrue,
         reason: 'gRPC no longer builds its metadata through the shared '
             'authHeader, so the rule can drift from the other transports',
@@ -78,9 +80,33 @@ void main() {
 
     test('gRPC waits for a USABLE token, not merely a present one', () {
       final src = _codeOnly(_grpc);
-      expect(src.contains('if (isUsableJwt(accessToken)) break;'), isTrue,
-          reason: 'the startup wait settles for any non-empty value again, so '
-              'a transient non-JWT is sent instead of waiting for the real one');
+      // The PROPERTY, not one spelling of it. The wait was a loop that broke
+      // on `if (isUsableJwt(accessToken)) break;`; it is now a loop whose
+      // CONDITION is `!isUsableJwt(accessToken)`, which exits on exactly the
+      // same test. Pinning the old line made a correct refactor look like a
+      // regression.
+      expect(
+        src.contains('!isUsableJwt(accessToken)') ||
+            src.contains('if (isUsableJwt(accessToken)) break;'),
+        isTrue,
+        reason: 'the startup wait settles for any non-empty value again, so '
+            'a transient non-JWT is sent instead of waiting for the real one',
+      );
+      // And the wait must still be bounded — an unbounded one would hang every
+      // call for a signed-out user.
+      expect(src.contains('attempt <'), isTrue,
+          reason: 'the token wait is no longer bounded');
+    });
+
+    test('an EXPIRED token is refreshed rather than sent', () {
+      // isUsableJwt checks SHAPE only, so an expired token passed it and was
+      // sent — 6 "token is expired" rejections on prod 2026-11-08.
+      final src = _codeOnly(_grpc);
+      expect(src.contains('isJwtExpired(accessToken)'), isTrue,
+          reason: 'expiry is unchecked again, so a stale token is sent and '
+              'the call fails Unauthenticated with nothing retrying it');
+      expect(src.contains('_attemptTokenRefresh()'), isTrue,
+          reason: 'nothing refreshes a stale token before the call');
     });
 
     test('HTTP attaches the header only for a usable token', () {
@@ -96,7 +122,9 @@ void main() {
       // "Bearer null", turning a recoverable 401 into a malformed-credential
       // rejection.
       final src = _codeOnly(_http);
-      expect(src.contains('if (!isUsableJwt(accessToken)) {\n            return handler.reject(err);'),
+      expect(
+          src.contains(
+              'if (!isUsableJwt(accessToken)) {\n            return handler.reject(err);'),
           isTrue,
           reason: 'the 401 retry sets Authorization without a usable token '
               'again');
@@ -113,11 +141,16 @@ void main() {
     // must not be shape-checked, and the 2FA/step-up flow sends an OPAQUE
     // token on purpose. Those keep their own handling.
     const accessTokenNames = {
-      'token', 'accessToken', 'authToken', 'overrideAccessToken', 'adminToken',
+      'token',
+      'accessToken',
+      'authToken',
+      'overrideAccessToken',
+      'adminToken',
     };
     final bearer = RegExp(r'''['"]Bearer \$\{?(\w+)''');
     final offenders = <String>[];
-    for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
+    for (final f
+        in Directory('lib').listSync(recursive: true).whereType<File>()) {
       if (!f.path.endsWith('.dart')) continue;
       if (f.path.endsWith('access_token_shape.dart')) continue; // the builder
       final lines = f.readAsLinesSync();
@@ -138,13 +171,15 @@ void main() {
     // No duplicate functions: two copies is how the transports start
     // disagreeing about what a token is.
     var definitions = 0;
-    for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
+    for (final f
+        in Directory('lib').listSync(recursive: true).whereType<File>()) {
       if (!f.path.endsWith('.dart')) continue;
       definitions += RegExp(r'^bool isUsableJwt\(', multiLine: true)
           .allMatches(_codeOnly(f.path))
           .length;
     }
-    expect(definitions, 1, reason: 'expected one definition, found $definitions');
+    expect(definitions, 1,
+        reason: 'expected one definition, found $definitions');
     expect(File(_rule).existsSync(), isTrue);
   });
 }

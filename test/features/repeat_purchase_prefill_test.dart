@@ -26,7 +26,8 @@ void main() {
 
   String code(String src) => src
       .split('\n')
-      .where((l) => !l.trimLeft().startsWith('//') && !l.trimLeft().startsWith('///'))
+      .where((l) =>
+          !l.trimLeft().startsWith('//') && !l.trimLeft().startsWith('///'))
       .join('\n');
 
   group('the prefill signal', () {
@@ -102,7 +103,8 @@ void main() {
   });
 
   test('the airtime screen counts its mounts in both directions', () {
-    const path = 'lib/src/features/airtime/presentation/view/airtime_screen.dart';
+    const path =
+        'lib/src/features/airtime/presentation/view/airtime_screen.dart';
     final src = code(read(path));
     expect(src.contains('AirtimeScreen.mountedCount++'), isTrue);
     expect(src.contains('AirtimeScreen.mountedCount--'), isTrue,
@@ -113,9 +115,18 @@ void main() {
   test('data repeat carries the bundle, not just the carrier', () {
     final sheet = code(read(
         'lib/src/features/data_bundles/presentation/widgets/data_history_actions_sheet.dart'));
-    expect(sheet.contains("'planId': p.dataPlan"), isTrue,
+    // planVariationId, NOT dataPlan. This assertion pinned the bug it was
+    // written to catch: dataPlan is the proto's provider_id, which is EMPTY on
+    // all 61 production data purchases, so matching on it never hit and the
+    // user got the full catalogue. The fix reads the plan id from metadata via
+    // the entity's resolver; the guard was never re-pointed and kept asserting
+    // the broken field.
+    expect(sheet.contains("'planId': p.planVariationId"), isTrue,
         reason: 'the repeated bundle is not passed, so the user lands on the '
             'full plan list with only the carrier filled in');
+    expect(sheet.contains("'planId': p.dataPlan"), isFalse,
+        reason: 'dataPlan is the provider_id and is empty on every production '
+            'purchase — matching on it is what made repeat do nothing');
 
     final screen = code(read(
         'lib/src/features/data_bundles/presentation/view/data_plan_selection_screen.dart'));
