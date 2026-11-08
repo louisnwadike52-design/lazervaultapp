@@ -19,6 +19,8 @@
 /// login, where a silent retry had been before.
 library;
 
+import 'dart:convert';
+
 /// Whether [token] is shaped like a JWT we can actually send.
 ///
 /// Three dot-separated, non-empty segments. Deliberately a SHAPE check and
@@ -53,3 +55,45 @@ bool isUsableJwt(String? token) {
 /// so those call sites pass `key: 'authorization'`.
 Map<String, String> authHeader(String? token, {String key = 'Authorization'}) =>
     isUsableJwt(token) ? {key: 'Bearer ${token!.trim()}'} : const {};
+
+/// The `exp` claim of a JWT, or null when it cannot be read.
+///
+/// WHY THIS EXISTS SEPARATELY FROM [isUsableJwt]. That function checks SHAPE
+/// only — three non-empty segments — which is the right test for "would the
+/// server reject this as malformed". It says nothing about whether the token is
+/// still valid, so an EXPIRED token passes it and is sent anyway. The gateway
+/// then answers `invalid token: ... token is expired`, which the app treats
+/// exactly like any other failure: on 2026-11-08 that meant a dashboard card
+/// stuck on its loading state with no error and no retry.
+///
+/// Deliberately tolerant: a token whose payload will not decode returns null
+/// and is treated as "expiry unknown", because refusing to send a token we
+/// merely failed to parse would be worse than letting the server judge it.
+DateTime? jwtExpiry(String? token) {
+  if (!isUsableJwt(token)) return null;
+  try {
+    final payload = token!.trim().split('.')[1];
+    // base64url without padding is what JWTs use; normalise before decoding.
+    final normalised = base64Url.normalize(payload);
+    final map = jsonDecode(utf8.decode(base64Url.decode(normalised)));
+    if (map is! Map) return null;
+    final exp = map['exp'];
+    if (exp is! num) return null;
+    return DateTime.fromMillisecondsSinceEpoch(exp.toInt() * 1000, isUtc: true);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Whether [token] is expired, or so close to it that sending it is pointless.
+///
+/// [leeway] guards the race where a token is valid when checked and expired by
+/// the time the server sees it — a real outcome on a slow first call after a
+/// cold start. An unreadable or absent expiry is reported as NOT expired: see
+/// [jwtExpiry].
+bool isJwtExpired(String? token,
+    {Duration leeway = const Duration(seconds: 30)}) {
+  final exp = jwtExpiry(token);
+  if (exp == null) return false;
+  return DateTime.now().toUtc().add(leeway).isAfter(exp);
+}

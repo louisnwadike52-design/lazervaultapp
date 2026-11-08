@@ -58,11 +58,52 @@ class GrpcCallOptionsHelper {
     //
     // So the wait is for a token that is actually SHAPED like a JWT, and a
     // value that is not one keeps the loop going instead of being sent.
-    if (!isUsableJwt(accessToken)) {
-      for (var attempt = 0; attempt < 5; attempt++) {
-        await Future.delayed(const Duration(milliseconds: 120));
-        accessToken = await storage.read(key: _accessTokenKey);
-        if (isUsableJwt(accessToken)) break;
+    // WHY THE WAIT IS CONDITIONAL ON HAVING A SESSION, AND WHY IT IS LONGER.
+    //
+    // The old version waited a flat 5 x 120ms = 600ms and then sent the call
+    // WITH NO AUTHORIZATION HEADER. That is fine for a signed-out user and
+    // wrong for the case that actually hurt: the first cold start after a
+    // Play Store update, when the Dart caches are cold and Android re-opens
+    // the keystore, so the restore routinely takes longer than 600ms.
+    //
+    // Measured on prod 2026-11-08, build 485: 80 gateway rejections of
+    // "authorization token not provided" across the dashboard's parallel
+    // reads — GetUserAccounts, GetFamilyAccounts, GetPendingInvitations,
+    // ListRecipients, GetMyReferralStats — plus 6 of "token is expired". And
+    // because NOTHING in the app retries an Unauthenticated reply, each of
+    // those cards sat on its loading state forever. The user's own summary:
+    // "it loads after logout and login again, but on the first login on
+    // update it just keeps spinning."
+    //
+    // A REFRESH TOKEN is the signal that distinguishes the two cases. Present
+    // means the user is signed in and the access token is merely not restored
+    // yet (or has aged out) — worth waiting for, and worth spending a refresh
+    // on. Absent means they are genuinely signed out, and waiting would only
+    // delay a call that has to fail anyway, so that path is unchanged.
+    if (!isUsableJwt(accessToken) || isJwtExpired(accessToken)) {
+      final refreshToken = await storage.read(key: _refreshTokenKey);
+      final hasSession = refreshToken != null && refreshToken.trim().isNotEmpty;
+
+      if (hasSession) {
+        // Exits the moment the token lands, which in the ordinary case is the
+        // first iteration or two. The bound only matters on the bad cold start.
+        for (var attempt = 0;
+            attempt < 24 && !isUsableJwt(accessToken);
+            attempt++) {
+          await Future.delayed(const Duration(milliseconds: 150));
+          accessToken = await storage.read(key: _accessTokenKey);
+        }
+
+        // Missing after the wait, or present but expired, while a refresh
+        // token sits right there. Spend it rather than sending a call that is
+        // certain to be rejected — an expired token passes isUsableJwt (which
+        // checks SHAPE only) and was being sent, which is where those 6
+        // "token is expired" rejections came from.
+        if (!isUsableJwt(accessToken) || isJwtExpired(accessToken)) {
+          if (await _attemptTokenRefresh()) {
+            accessToken = await storage.read(key: _accessTokenKey);
+          }
+        }
       }
     }
 
