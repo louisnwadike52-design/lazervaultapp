@@ -194,7 +194,24 @@ Future<ActiveAccountSnapshot?> ensurePersonalAccountSnapshot() async {
 /// AccountSummariesStore, which is what the readers below actually see.
 Future<bool> _loadSummaries({bool force = false, bool silent = true}) async {
   try {
-    final userId = serviceLocator<AuthenticationCubit>().userId ?? '';
+    // WAIT FOR THE SESSION TO FINISH RESTORING, DO NOT BAIL ON IT.
+    //
+    // This read used to be a single shot: an empty userId returned false, no
+    // fetch was made, and NO ERROR was emitted — so whatever was showing a
+    // spinner kept showing it. On the first cold start after a Play Store
+    // update the AuthenticationCubit has not restored yet, which is exactly
+    // when this is empty, and is why the dashboard "just keeps spinning on the
+    // first login on update" and then loads normally after a logout and login
+    // (by which point the id is already in memory).
+    //
+    // Bounded, and only while the restore could still be in flight. A user who
+    // is genuinely signed out resolves on the first pass and nothing is
+    // delayed.
+    var userId = serviceLocator<AuthenticationCubit>().userId ?? '';
+    for (var attempt = 0; attempt < 20 && userId.isEmpty; attempt++) {
+      await Future.delayed(const Duration(milliseconds: 150));
+      userId = serviceLocator<AuthenticationCubit>().userId ?? '';
+    }
     if (userId.isEmpty) return false;
     if (!force && AccountSummariesStore.rows(forUserId: userId).isNotEmpty) {
       return true;
