@@ -7374,6 +7374,7 @@ class InitiateProveKYCResponse extends $pb.GeneratedMessage {
     $core.String? reference,
     $core.String? sessionId,
     $core.String? status,
+    $core.int? retryAfterSeconds,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -7383,6 +7384,7 @@ class InitiateProveKYCResponse extends $pb.GeneratedMessage {
     if (reference != null) result.reference = reference;
     if (sessionId != null) result.sessionId = sessionId;
     if (status != null) result.status = status;
+    if (retryAfterSeconds != null) result.retryAfterSeconds = retryAfterSeconds;
     return result;
   }
 
@@ -7406,6 +7408,8 @@ class InitiateProveKYCResponse extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'reference')
     ..aOS(6, _omitFieldNames ? '' : 'sessionId')
     ..aOS(7, _omitFieldNames ? '' : 'status')
+    ..a<$core.int>(
+        8, _omitFieldNames ? '' : 'retryAfterSeconds', $pb.PbFieldType.O3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -7493,6 +7497,26 @@ class InitiateProveKYCResponse extends $pb.GeneratedMessage {
   $core.bool hasStatus() => $_has(6);
   @$pb.TagNumber(7)
   void clearStatus() => $_clearField(7);
+
+  /// Seconds left before a NEW session can be minted, when error_code is
+  /// SESSION_COOLDOWN.
+  ///
+  /// A session is billed per initiate and is reused for a configured window,
+  /// so a customer who corrects a detail inside that window has to wait for a
+  /// session carrying the corrected detail. The app shows a countdown, and it
+  /// counts from THIS — the server's own clock — rather than from a window
+  /// length the client hardcoded and would have to keep in step with the
+  /// admin setting (kyc.mono.session_reuse_seconds).
+  ///
+  /// 0 on every other outcome.
+  @$pb.TagNumber(8)
+  $core.int get retryAfterSeconds => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set retryAfterSeconds($core.int value) => $_setSignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasRetryAfterSeconds() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearRetryAfterSeconds() => $_clearField(8);
 }
 
 class CompleteProveKYCRequest extends $pb.GeneratedMessage {
@@ -22407,6 +22431,468 @@ class CalculateMoveFeeResponse extends $pb.GeneratedMessage {
   $core.bool hasMaxAmount() => $_has(13);
   @$pb.TagNumber(14)
   void clearMaxAmount() => $_clearField(14);
+}
+
+/// One OTP delivery route Mono will accept for a session.
+class BVNLookupMethod extends $pb.GeneratedMessage {
+  factory BVNLookupMethod({
+    $core.String? method,
+    $core.String? hint,
+  }) {
+    final result = create();
+    if (method != null) result.method = method;
+    if (hint != null) result.hint = hint;
+    return result;
+  }
+
+  BVNLookupMethod._();
+
+  factory BVNLookupMethod.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory BVNLookupMethod.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'BVNLookupMethod',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'method')
+    ..aOS(2, _omitFieldNames ? '' : 'hint')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BVNLookupMethod clone() => BVNLookupMethod()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BVNLookupMethod copyWith(void Function(BVNLookupMethod) updates) =>
+      super.copyWith((message) => updates(message as BVNLookupMethod))
+          as BVNLookupMethod;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BVNLookupMethod create() => BVNLookupMethod._();
+  @$core.override
+  BVNLookupMethod createEmptyInstance() => create();
+  static $pb.PbList<BVNLookupMethod> createRepeated() =>
+      $pb.PbList<BVNLookupMethod>();
+  @$core.pragma('dart2js:noInline')
+  static BVNLookupMethod getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<BVNLookupMethod>(create);
+  static BVNLookupMethod? _defaultInstance;
+
+  /// "email" | "phone" | "alternate_phone" — send back verbatim on
+  /// SendBVNLookupOTP.
+  @$pb.TagNumber(1)
+  $core.String get method => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set method($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMethod() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMethod() => $_clearField(1);
+
+  /// Mono's OWN masked description, e.g. "An email with a verification code
+  /// will be sent to loui***adike52@gmail.com". Already masked by Mono —
+  /// display it as-is; we never see the real address.
+  @$pb.TagNumber(2)
+  $core.String get hint => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set hint($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasHint() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearHint() => $_clearField(2);
+}
+
+class InitiateBVNLookupRequest extends $pb.GeneratedMessage {
+  factory InitiateBVNLookupRequest({
+    $core.String? bvn,
+  }) {
+    final result = create();
+    if (bvn != null) result.bvn = bvn;
+    return result;
+  }
+
+  InitiateBVNLookupRequest._();
+
+  factory InitiateBVNLookupRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory InitiateBVNLookupRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'InitiateBVNLookupRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'bvn')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  InitiateBVNLookupRequest clone() =>
+      InitiateBVNLookupRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  InitiateBVNLookupRequest copyWith(
+          void Function(InitiateBVNLookupRequest) updates) =>
+      super.copyWith((message) => updates(message as InitiateBVNLookupRequest))
+          as InitiateBVNLookupRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static InitiateBVNLookupRequest create() => InitiateBVNLookupRequest._();
+  @$core.override
+  InitiateBVNLookupRequest createEmptyInstance() => create();
+  static $pb.PbList<InitiateBVNLookupRequest> createRepeated() =>
+      $pb.PbList<InitiateBVNLookupRequest>();
+  @$core.pragma('dart2js:noInline')
+  static InitiateBVNLookupRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<InitiateBVNLookupRequest>(create);
+  static InitiateBVNLookupRequest? _defaultInstance;
+
+  /// The holder's BVN. user_id is taken from the JWT, never the body.
+  @$pb.TagNumber(1)
+  $core.String get bvn => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set bvn($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasBvn() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBvn() => $_clearField(1);
+}
+
+class InitiateBVNLookupResponse extends $pb.GeneratedMessage {
+  factory InitiateBVNLookupResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.Iterable<BVNLookupMethod>? methods,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (errorCode != null) result.errorCode = errorCode;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    if (methods != null) result.methods.addAll(methods);
+    return result;
+  }
+
+  InitiateBVNLookupResponse._();
+
+  factory InitiateBVNLookupResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory InitiateBVNLookupResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'InitiateBVNLookupResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..pc<BVNLookupMethod>(
+        4, _omitFieldNames ? '' : 'methods', $pb.PbFieldType.PM,
+        subBuilder: BVNLookupMethod.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  InitiateBVNLookupResponse clone() =>
+      InitiateBVNLookupResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  InitiateBVNLookupResponse copyWith(
+          void Function(InitiateBVNLookupResponse) updates) =>
+      super.copyWith((message) => updates(message as InitiateBVNLookupResponse))
+          as InitiateBVNLookupResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static InitiateBVNLookupResponse create() => InitiateBVNLookupResponse._();
+  @$core.override
+  InitiateBVNLookupResponse createEmptyInstance() => create();
+  static $pb.PbList<InitiateBVNLookupResponse> createRepeated() =>
+      $pb.PbList<InitiateBVNLookupResponse>();
+  @$core.pragma('dart2js:noInline')
+  static InitiateBVNLookupResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<InitiateBVNLookupResponse>(create);
+  static InitiateBVNLookupResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => $_clearField(3);
+
+  /// The routes to offer. PER-BVN: a record with no registered email offers
+  /// only phone, so these must be shown rather than assumed.
+  @$pb.TagNumber(4)
+  $pb.PbList<BVNLookupMethod> get methods => $_getList(3);
+}
+
+class SendBVNLookupOTPRequest extends $pb.GeneratedMessage {
+  factory SendBVNLookupOTPRequest({
+    $core.String? method,
+  }) {
+    final result = create();
+    if (method != null) result.method = method;
+    return result;
+  }
+
+  SendBVNLookupOTPRequest._();
+
+  factory SendBVNLookupOTPRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SendBVNLookupOTPRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SendBVNLookupOTPRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'method')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendBVNLookupOTPRequest clone() =>
+      SendBVNLookupOTPRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendBVNLookupOTPRequest copyWith(
+          void Function(SendBVNLookupOTPRequest) updates) =>
+      super.copyWith((message) => updates(message as SendBVNLookupOTPRequest))
+          as SendBVNLookupOTPRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SendBVNLookupOTPRequest create() => SendBVNLookupOTPRequest._();
+  @$core.override
+  SendBVNLookupOTPRequest createEmptyInstance() => create();
+  static $pb.PbList<SendBVNLookupOTPRequest> createRepeated() =>
+      $pb.PbList<SendBVNLookupOTPRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SendBVNLookupOTPRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SendBVNLookupOTPRequest>(create);
+  static SendBVNLookupOTPRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get method => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set method($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMethod() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMethod() => $_clearField(1);
+}
+
+class SendBVNLookupOTPResponse extends $pb.GeneratedMessage {
+  factory SendBVNLookupOTPResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (errorCode != null) result.errorCode = errorCode;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    return result;
+  }
+
+  SendBVNLookupOTPResponse._();
+
+  factory SendBVNLookupOTPResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SendBVNLookupOTPResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SendBVNLookupOTPResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendBVNLookupOTPResponse clone() =>
+      SendBVNLookupOTPResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendBVNLookupOTPResponse copyWith(
+          void Function(SendBVNLookupOTPResponse) updates) =>
+      super.copyWith((message) => updates(message as SendBVNLookupOTPResponse))
+          as SendBVNLookupOTPResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SendBVNLookupOTPResponse create() => SendBVNLookupOTPResponse._();
+  @$core.override
+  SendBVNLookupOTPResponse createEmptyInstance() => create();
+  static $pb.PbList<SendBVNLookupOTPResponse> createRepeated() =>
+      $pb.PbList<SendBVNLookupOTPResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SendBVNLookupOTPResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SendBVNLookupOTPResponse>(create);
+  static SendBVNLookupOTPResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => $_clearField(3);
+}
+
+class CompleteBVNLookupRequest extends $pb.GeneratedMessage {
+  factory CompleteBVNLookupRequest({
+    $core.String? otp,
+    $core.String? firstName,
+    $core.String? lastName,
+    $core.String? dateOfBirth,
+  }) {
+    final result = create();
+    if (otp != null) result.otp = otp;
+    if (firstName != null) result.firstName = firstName;
+    if (lastName != null) result.lastName = lastName;
+    if (dateOfBirth != null) result.dateOfBirth = dateOfBirth;
+    return result;
+  }
+
+  CompleteBVNLookupRequest._();
+
+  factory CompleteBVNLookupRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CompleteBVNLookupRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CompleteBVNLookupRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'otp')
+    ..aOS(2, _omitFieldNames ? '' : 'firstName')
+    ..aOS(3, _omitFieldNames ? '' : 'lastName')
+    ..aOS(4, _omitFieldNames ? '' : 'dateOfBirth')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CompleteBVNLookupRequest clone() =>
+      CompleteBVNLookupRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CompleteBVNLookupRequest copyWith(
+          void Function(CompleteBVNLookupRequest) updates) =>
+      super.copyWith((message) => updates(message as CompleteBVNLookupRequest))
+          as CompleteBVNLookupRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CompleteBVNLookupRequest create() => CompleteBVNLookupRequest._();
+  @$core.override
+  CompleteBVNLookupRequest createEmptyInstance() => create();
+  static $pb.PbList<CompleteBVNLookupRequest> createRepeated() =>
+      $pb.PbList<CompleteBVNLookupRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CompleteBVNLookupRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CompleteBVNLookupRequest>(create);
+  static CompleteBVNLookupRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get otp => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set otp($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasOtp() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOtp() => $_clearField(1);
+
+  /// The typed name/DOB to reconcile against the registry record. The name is
+  /// ADOPTED from the registry when the date of birth agrees; the date of
+  /// birth is the hard check.
+  @$pb.TagNumber(2)
+  $core.String get firstName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set firstName($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasFirstName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFirstName() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get lastName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set lastName($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLastName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLastName() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get dateOfBirth => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set dateOfBirth($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasDateOfBirth() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDateOfBirth() => $_clearField(4);
 }
 
 const $core.bool _omitFieldNames =

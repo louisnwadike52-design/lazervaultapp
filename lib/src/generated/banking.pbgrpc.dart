@@ -745,6 +745,41 @@ class BankingServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// ── BVN Lookup: a THREE-STEP CONSENT FLOW ────────────────────────────
+  ///
+  /// Mono's BVN lookup is not a single call like NIN. BVN data is
+  /// NIBSS-regulated and needs the holder's consent, so Mono sends them a
+  /// one-time code and we exchange it for the record:
+  ///
+  ///   InitiateBVNLookup  -> opens a session, returns the delivery routes
+  ///   SendBVNLookupOTP   -> Mono (not us) delivers the code by the chosen route
+  ///   CompleteBVNLookup  -> exchanges the code for the identity record
+  ///
+  /// The Mono session id is deliberately ABSENT from every message here: it
+  /// is bearer-like (session + otp is enough to read the holder's identity),
+  /// so banking-service holds it server-side keyed by the caller's JWT. The
+  /// app can only ever advance its own session.
+  $grpc.ResponseFuture<$0.InitiateBVNLookupResponse> initiateBVNLookup(
+    $0.InitiateBVNLookupRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$initiateBVNLookup, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SendBVNLookupOTPResponse> sendBVNLookupOTP(
+    $0.SendBVNLookupOTPRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$sendBVNLookupOTP, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SignupIdentityVerificationResponse> completeBVNLookup(
+    $0.CompleteBVNLookupRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$completeBVNLookup, request, options: options);
+  }
+
   // method descriptors
 
   static final _$initiateDomesticTransfer =
@@ -1172,6 +1207,21 @@ class BankingServiceClient extends $grpc.Client {
       '/banking.BankingService/GetCardAcceptanceStatus',
       ($0.GetCardAcceptanceStatusRequest value) => value.writeToBuffer(),
       $0.GetCardAcceptanceStatusResponse.fromBuffer);
+  static final _$initiateBVNLookup = $grpc.ClientMethod<
+          $0.InitiateBVNLookupRequest, $0.InitiateBVNLookupResponse>(
+      '/banking.BankingService/InitiateBVNLookup',
+      ($0.InitiateBVNLookupRequest value) => value.writeToBuffer(),
+      $0.InitiateBVNLookupResponse.fromBuffer);
+  static final _$sendBVNLookupOTP = $grpc.ClientMethod<
+          $0.SendBVNLookupOTPRequest, $0.SendBVNLookupOTPResponse>(
+      '/banking.BankingService/SendBVNLookupOTP',
+      ($0.SendBVNLookupOTPRequest value) => value.writeToBuffer(),
+      $0.SendBVNLookupOTPResponse.fromBuffer);
+  static final _$completeBVNLookup = $grpc.ClientMethod<
+          $0.CompleteBVNLookupRequest, $0.SignupIdentityVerificationResponse>(
+      '/banking.BankingService/CompleteBVNLookup',
+      ($0.CompleteBVNLookupRequest value) => value.writeToBuffer(),
+      $0.SignupIdentityVerificationResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('banking.BankingService')
@@ -1925,6 +1975,34 @@ abstract class BankingServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetCardAcceptanceStatusRequest.fromBuffer(value),
         ($0.GetCardAcceptanceStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.InitiateBVNLookupRequest,
+            $0.InitiateBVNLookupResponse>(
+        'InitiateBVNLookup',
+        initiateBVNLookup_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.InitiateBVNLookupRequest.fromBuffer(value),
+        ($0.InitiateBVNLookupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SendBVNLookupOTPRequest,
+            $0.SendBVNLookupOTPResponse>(
+        'SendBVNLookupOTP',
+        sendBVNLookupOTP_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SendBVNLookupOTPRequest.fromBuffer(value),
+        ($0.SendBVNLookupOTPResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CompleteBVNLookupRequest,
+            $0.SignupIdentityVerificationResponse>(
+        'CompleteBVNLookup',
+        completeBVNLookup_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CompleteBVNLookupRequest.fromBuffer(value),
+        ($0.SignupIdentityVerificationResponse value) =>
+            value.writeToBuffer()));
   }
 
   $async.Future<$0.TransferResponse> initiateDomesticTransfer_Pre(
@@ -2672,4 +2750,31 @@ abstract class BankingServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetCardAcceptanceStatusResponse> getCardAcceptanceStatus(
       $grpc.ServiceCall call, $0.GetCardAcceptanceStatusRequest request);
+
+  $async.Future<$0.InitiateBVNLookupResponse> initiateBVNLookup_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.InitiateBVNLookupRequest> $request) async {
+    return initiateBVNLookup($call, await $request);
+  }
+
+  $async.Future<$0.InitiateBVNLookupResponse> initiateBVNLookup(
+      $grpc.ServiceCall call, $0.InitiateBVNLookupRequest request);
+
+  $async.Future<$0.SendBVNLookupOTPResponse> sendBVNLookupOTP_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SendBVNLookupOTPRequest> $request) async {
+    return sendBVNLookupOTP($call, await $request);
+  }
+
+  $async.Future<$0.SendBVNLookupOTPResponse> sendBVNLookupOTP(
+      $grpc.ServiceCall call, $0.SendBVNLookupOTPRequest request);
+
+  $async.Future<$0.SignupIdentityVerificationResponse> completeBVNLookup_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CompleteBVNLookupRequest> $request) async {
+    return completeBVNLookup($call, await $request);
+  }
+
+  $async.Future<$0.SignupIdentityVerificationResponse> completeBVNLookup(
+      $grpc.ServiceCall call, $0.CompleteBVNLookupRequest request);
 }

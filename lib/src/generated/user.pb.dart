@@ -415,6 +415,9 @@ class UpdateUserProfileRequest extends $pb.GeneratedMessage {
     $core.String? addressPostalCode,
     $core.String? addressCountry,
     $core.bool? updateAddress,
+    $core.String? dateOfBirth,
+    $core.String? middleName,
+    $core.bool? updateMiddleName,
   }) {
     final result = create();
     if (firstName != null) result.firstName = firstName;
@@ -432,6 +435,9 @@ class UpdateUserProfileRequest extends $pb.GeneratedMessage {
     if (addressPostalCode != null) result.addressPostalCode = addressPostalCode;
     if (addressCountry != null) result.addressCountry = addressCountry;
     if (updateAddress != null) result.updateAddress = updateAddress;
+    if (dateOfBirth != null) result.dateOfBirth = dateOfBirth;
+    if (middleName != null) result.middleName = middleName;
+    if (updateMiddleName != null) result.updateMiddleName = updateMiddleName;
     return result;
   }
 
@@ -463,6 +469,9 @@ class UpdateUserProfileRequest extends $pb.GeneratedMessage {
     ..aOS(13, _omitFieldNames ? '' : 'addressPostalCode')
     ..aOS(14, _omitFieldNames ? '' : 'addressCountry')
     ..aOB(15, _omitFieldNames ? '' : 'updateAddress')
+    ..aOS(16, _omitFieldNames ? '' : 'dateOfBirth')
+    ..aOS(17, _omitFieldNames ? '' : 'middleName')
+    ..aOB(18, _omitFieldNames ? '' : 'updateMiddleName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -630,6 +639,59 @@ class UpdateUserProfileRequest extends $pb.GeneratedMessage {
   $core.bool hasUpdateAddress() => $_has(14);
   @$pb.TagNumber(15)
   void clearUpdateAddress() => $_clearField(15);
+
+  /// Date of birth, ISO 8601 (YYYY-MM-DD). Empty = not touched, for the same
+  /// reason update_address exists: proto3 cannot tell unset from blank, and a
+  /// client saving a new name must not clear a stored date.
+  ///
+  /// Forwarded verbatim to auth-service, which accepts it ONLY while the account
+  /// is unverified — a date of birth that has been checked against NIBSS or NIMC
+  /// is not the holder's to edit afterwards.
+  @$pb.TagNumber(16)
+  $core.String get dateOfBirth => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set dateOfBirth($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasDateOfBirth() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearDateOfBirth() => $_clearField(16);
+
+  /// OPTIONAL middle name.
+  ///
+  /// Forwarded to auth-service's UpdateProfile, which owns the decision
+  /// about whether a verified holder may change it. Present in BOTH copies
+  /// of this file at the SAME number: the app and the gateway compile from
+  /// separate files that describe one wire format.
+  @$pb.TagNumber(17)
+  $core.String get middleName => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set middleName($core.String value) => $_setString(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasMiddleName() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearMiddleName() => $_clearField(17);
+
+  /// Companion flag for middle_name, exactly as update_address guards the
+  /// six address fields.
+  ///
+  /// WHY IT IS REQUIRED. proto3 cannot tell an unset string from an empty
+  /// one, and an empty middle name is a LEGITIMATE value — most people
+  /// have none, so "" has to be able to clear it. Without this flag every
+  /// client that knows nothing about middle names — the profile screen,
+  /// the KYC name editor, every installed build — would silently erase a
+  /// middle name on any unrelated save, because it sends "" for a field
+  /// it has never heard of.
+  ///
+  /// So: the value applies ONLY when this is true. Absent means leave it
+  /// alone; true with an empty string means clear it.
+  @$pb.TagNumber(18)
+  $core.bool get updateMiddleName => $_getBF(17);
+  @$pb.TagNumber(18)
+  set updateMiddleName($core.bool value) => $_setBool(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasUpdateMiddleName() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearUpdateMiddleName() => $_clearField(18);
 }
 
 class UpdateUserProfileResponse extends $pb.GeneratedMessage {

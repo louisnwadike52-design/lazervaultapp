@@ -186,6 +186,15 @@ const UpdateUserProfileRequest$json = {
     },
     {'1': 'address_country', '3': 14, '4': 1, '5': 9, '10': 'addressCountry'},
     {'1': 'update_address', '3': 15, '4': 1, '5': 8, '10': 'updateAddress'},
+    {'1': 'date_of_birth', '3': 16, '4': 1, '5': 9, '10': 'dateOfBirth'},
+    {'1': 'middle_name', '3': 17, '4': 1, '5': 9, '10': 'middleName'},
+    {
+      '1': 'update_middle_name',
+      '3': 18,
+      '4': 1,
+      '5': 8,
+      '10': 'updateMiddleName'
+    },
   ],
 };
 
@@ -200,7 +209,9 @@ final $typed_data.Uint8List updateUserProfileRequestDescriptor = $convert.base64
     'DGFkZHJlc3NMaW5lMhIhCgxhZGRyZXNzX2NpdHkYCyABKAlSC2FkZHJlc3NDaXR5EiMKDWFkZH'
     'Jlc3Nfc3RhdGUYDCABKAlSDGFkZHJlc3NTdGF0ZRIuChNhZGRyZXNzX3Bvc3RhbF9jb2RlGA0g'
     'ASgJUhFhZGRyZXNzUG9zdGFsQ29kZRInCg9hZGRyZXNzX2NvdW50cnkYDiABKAlSDmFkZHJlc3'
-    'NDb3VudHJ5EiUKDnVwZGF0ZV9hZGRyZXNzGA8gASgIUg11cGRhdGVBZGRyZXNz');
+    'NDb3VudHJ5EiUKDnVwZGF0ZV9hZGRyZXNzGA8gASgIUg11cGRhdGVBZGRyZXNzEiIKDWRhdGVf'
+    'b2ZfYmlydGgYECABKAlSC2RhdGVPZkJpcnRoEh8KC21pZGRsZV9uYW1lGBEgASgJUgptaWRkbG'
+    'VOYW1lEiwKEnVwZGF0ZV9taWRkbGVfbmFtZRgSIAEoCFIQdXBkYXRlTWlkZGxlTmFtZQ==');
 
 @$core.Deprecated('Use updateUserProfileResponseDescriptor instead')
 const UpdateUserProfileResponse$json = {

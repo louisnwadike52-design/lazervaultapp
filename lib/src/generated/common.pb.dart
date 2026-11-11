@@ -47,6 +47,7 @@ class User extends $pb.GeneratedMessage {
     $core.String? addressState,
     $core.String? addressPostalCode,
     $core.String? addressCountry,
+    $core.String? middleName,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -72,6 +73,7 @@ class User extends $pb.GeneratedMessage {
     if (addressState != null) result.addressState = addressState;
     if (addressPostalCode != null) result.addressPostalCode = addressPostalCode;
     if (addressCountry != null) result.addressCountry = addressCountry;
+    if (middleName != null) result.middleName = middleName;
     return result;
   }
 
@@ -114,6 +116,7 @@ class User extends $pb.GeneratedMessage {
     ..aOS(21, _omitFieldNames ? '' : 'addressState')
     ..aOS(22, _omitFieldNames ? '' : 'addressPostalCode')
     ..aOS(23, _omitFieldNames ? '' : 'addressCountry')
+    ..aOS(24, _omitFieldNames ? '' : 'middleName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -345,6 +348,24 @@ class User extends $pb.GeneratedMessage {
   $core.bool hasAddressCountry() => $_has(22);
   @$pb.TagNumber(23)
   void clearAddressCountry() => $_clearField(23);
+
+  /// OPTIONAL middle name, so a client can PREFILL a name editor with what
+  /// is actually stored.
+  ///
+  /// Without it the editor opens blank over a stored value, and a form
+  /// that saves what it shows would erase it. (The update path is guarded
+  /// by update_middle_name for that reason, but a field a customer cannot
+  /// see is a field they cannot correct — and after verification this
+  /// holds the REGISTRY's middle name, which is exactly the one they may
+  /// need to check.)
+  @$pb.TagNumber(24)
+  $core.String get middleName => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set middleName($core.String value) => $_setString(23, value);
+  @$pb.TagNumber(24)
+  $core.bool hasMiddleName() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearMiddleName() => $_clearField(24);
 }
 
 class Data extends $pb.GeneratedMessage {

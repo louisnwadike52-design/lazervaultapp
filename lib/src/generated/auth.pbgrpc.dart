@@ -17,6 +17,7 @@ import 'package:grpc/service_api.dart' as $grpc;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'auth.pb.dart' as $0;
+import 'user.pb.dart' as $1;
 
 export 'auth.pb.dart';
 
@@ -113,6 +114,17 @@ class AuthServiceClient extends $grpc.Client {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$getMe, request, options: options);
+  }
+
+  /// GetMyInsurancePrefill returns the AUTHENTICATED caller's OWN verified KYC
+  /// identity (name/email/phone/DOB + nin/bvn) for the insurance create-policy
+  /// form to prefill the customer-info section (editable). user_id comes from
+  /// the JWT context, never the request — a user can only read their own data.
+  $grpc.ResponseFuture<$0.GetMyInsurancePrefillResponse> getMyInsurancePrefill(
+    $0.GetMyInsurancePrefillRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getMyInsurancePrefill, request, options: options);
   }
 
   /// Update user profile
@@ -287,12 +299,9 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$loginWithPasscode, request, options: options);
   }
 
-  /// Public: complete an adaptive step-up login by verifying the OTP that was
-  /// sent when LoginResponse.step_up_required was true. Returns a full session.
-  /// Issues a fresh step-up code for an in-flight challenge. The code is
-  /// replaced in place, so the caller keeps the same step_up_token and there is
-  /// only ever one live code per session. Rate limited by cooldown and a resend
-  /// cap; both admin-tunable.
+  /// Public: issue a fresh step-up code for an in-flight challenge. The code
+  /// is replaced in place (same step_up_token, one live code per session);
+  /// rate limited by cooldown + resend cap, both admin-tunable.
   $grpc.ResponseFuture<$0.LoginResponse> resendLoginOtp(
     $0.ResendLoginOtpRequest request, {
     $grpc.CallOptions? options,
@@ -300,13 +309,11 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$resendLoginOtp, request, options: options);
   }
 
-  /// Complete sign-in WITHOUT entering the code, when an operator has enabled
-  /// the escape hatch (auth_otp_skip_button_visible).
-  ///
-  /// Skipping is not a bypass. The device stays UNVERIFIED, so the risk engine
-  /// raises the same challenge on the very next login — which is precisely the
-  /// contract the OTP screen already documents. Refused with FAILED_PRECONDITION
-  /// when the operator has skipping disabled, so the server decides, not the app.
+  /// Public: complete an adaptive step-up login by verifying the login OTP.
+  /// Complete sign-in WITHOUT the code, when the operator has enabled the
+  /// escape hatch. Public like VerifyLoginOtp: the caller holds a step-up token
+  /// and no session. Leaves the device unverified so the next login
+  /// re-challenges — a deferral, not a bypass.
   $grpc.ResponseFuture<$0.LoginResponse> skipLoginOtp(
     $0.SkipLoginOtpRequest request, {
     $grpc.CallOptions? options,
@@ -337,9 +344,7 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$changePasscode, request, options: options);
   }
 
-  /// Device permissions audit (camera/mic/contacts/etc). Persists the user's
-  /// last-known OS permission grants for cross-device audit. The OS remains the
-  /// source of truth on each device; this is a best-effort mirror.
+  /// Device permissions audit — mirrors auth-service.
   $grpc.ResponseFuture<$0.AuthUpdateDevicePermissionsResponse>
       updateDevicePermissions(
     $0.AuthUpdateDevicePermissionsRequest request, {
@@ -357,11 +362,9 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getDevicePermissions, request, options: options);
   }
 
-  /// Verify passcode (read-only check of the current login passcode; no session
-  /// change). Used by the Settings "Change Passcode" flow to confirm the current
-  /// passcode before allowing entry of a new one. Applies brute-force lockout.
-  $grpc.ResponseFuture<$0.VerifyPasscodeResponse> verifyPasscode(
-    $0.VerifyPasscodeRequest request, {
+  /// Verify passcode (read-only; no session change). Mirrors auth-service.
+  $grpc.ResponseFuture<$1.VerifyPasscodeResponse> verifyPasscode(
+    $1.VerifyPasscodeRequest request, {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$verifyPasscode, request, options: options);
@@ -477,106 +480,6 @@ class AuthServiceClient extends $grpc.Client {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$skipKYCUpgrade, request, options: options);
-  }
-
-  /// SyncVerifiedKYCTier — INTERNAL, gRPC-only (no HTTP route). A trusted service
-  /// (banking-service, which runs the Mono Prove flow and owns the verified
-  /// identity record) pushes a user's verified KYC tier into auth so the
-  /// platform's users.kyc_tier reflects it. Gated by x-service-name metadata in
-  /// the handler; never reachable by end users.
-  $grpc.ResponseFuture<$0.SyncVerifiedKYCTierResponse> syncVerifiedKYCTier(
-    $0.SyncVerifiedKYCTierRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$syncVerifiedKYCTier, request, options: options);
-  }
-
-  /// AdminOverrideKYCTier sets a user's KYC tier from the admin console. Unlike
-  /// SyncVerifiedKYCTier (monotonic, system source), this allows a DOWNGRADE
-  /// (fraud) and records the admin actor + reason in the audit trail. It emits
-  /// the same tier-change event so accounts re-syncs limits both ways. Gated by
-  /// x-service-name (admin-gateway).
-  $grpc.ResponseFuture<$0.AdminOverrideKYCTierResponse> adminOverrideKYCTier(
-    $0.AdminOverrideKYCTierRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$adminOverrideKYCTier, request, options: options);
-  }
-
-  /// AdminResetTransactionPin clears a user's transaction PIN from the admin
-  /// console (super-admin support action). The admin does NOT choose a PIN value —
-  /// the PIN is cleared and the user must re-enrol a fresh PIN in the app. Emits a
-  /// security notification (push + SMS + email) and audits the admin actor. Gated
-  /// by x-service-name (admin-gateway).
-  $grpc.ResponseFuture<$0.AdminResetTransactionPinResponse>
-      adminResetTransactionPin(
-    $0.AdminResetTransactionPinRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$adminResetTransactionPin, request,
-        options: options);
-  }
-
-  /// Admin: clear a failed-login lockout so a locked-out customer can sign in
-  /// again without waiting out the timer.
-  $grpc.ResponseFuture<$0.AdminUnlockAccountResponse> adminUnlockAccount(
-    $0.AdminUnlockAccountRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$adminUnlockAccount, request, options: options);
-  }
-
-  /// GetKYCTier returns the canonical kyc_tier for a user (service-only; gated by
-  /// x-service-name). Lets banking reflect the authoritative tier (e.g. after an
-  /// admin override) in GetProveKYCStatus.
-  $grpc.ResponseFuture<$0.GetKYCTierResponse> getKYCTier(
-    $0.GetKYCTierRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$getKYCTier, request, options: options);
-  }
-
-  /// GetUserIdentityForService returns the user's RAW verified KYC identity
-  /// (NIN/BVN + name/email/phone/DOB) for SERVICE-TO-SERVICE callers that must
-  /// prefill a downstream provider form (e.g. MyCover insurance purchase needs
-  /// first_name/last_name/email/phone_number + nin). gRPC-only (NO HTTP route)
-  /// and gated by x-service-name; end users reach auth only via the gateway and
-  /// can never invoke it, so the raw NIN/BVN stays internal.
-  $grpc.ResponseFuture<$0.GetUserIdentityForServiceResponse>
-      getUserIdentityForService(
-    $0.GetUserIdentityForServiceRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$getUserIdentityForService, request,
-        options: options);
-  }
-
-  /// MarkEmailBouncedByEmail flags an email address as undeliverable (hard bounce
-  /// or complaint) reported by Amazon SES. Called by notifications-service's
-  /// ses-events consumer when SES delivers a bounce/complaint event. Sets
-  /// email_bounced (+ clears email_verified) on the user owning that address so
-  /// downstream flows treat the email as unusable. gRPC-only (NO HTTP route) and
-  /// gated by x-service-name, so end users can never invoke it.
-  $grpc.ResponseFuture<$0.MarkEmailBouncedByEmailResponse>
-      markEmailBouncedByEmail(
-    $0.MarkEmailBouncedByEmailRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$markEmailBouncedByEmail, request,
-        options: options);
-  }
-
-  /// GetMyInsurancePrefill returns the AUTHENTICATED caller's OWN verified KYC
-  /// identity (name/email/phone/DOB + nin/bvn) so the insurance create-policy
-  /// form can prefill the customer-info section (editable). The user_id comes
-  /// from the JWT context, never the request, so a user can only read their own
-  /// identity. Dedicated route (not GetMe) so the raw NIN/BVN is only exposed on
-  /// an endpoint a client opts into for prefill, not on every profile fetch.
-  $grpc.ResponseFuture<$0.GetMyInsurancePrefillResponse> getMyInsurancePrefill(
-    $0.GetMyInsurancePrefillRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$getMyInsurancePrefill, request, options: options);
   }
 
   /// Get user's KYC documents
@@ -719,9 +622,7 @@ class AuthServiceClient extends $grpc.Client {
         options: options);
   }
 
-  /// Public: returns the platform-wide active authentication mode so the client
-  /// renders the correct onboarding/login flow. Mirrors the value read from
-  /// system_settings(auth_mode); defaults to email_password.
+  /// ===== Configurable Auth Mode: Phone + Passcode flow ===== (PUBLIC)
   $grpc.ResponseFuture<$0.GetAuthenticationConfigResponse>
       getAuthenticationConfig(
     $0.GetAuthenticationConfigRequest request, {
@@ -731,8 +632,6 @@ class AuthServiceClient extends $grpc.Client {
         options: options);
   }
 
-  /// Public: send a 6-digit SMS OTP to prove ownership of a phone before signup
-  /// (no account exists yet). Reuses the sms.verification Kafka delivery path.
   $grpc.ResponseFuture<$0.RequestSignupPhoneOTPResponse> requestSignupPhoneOTP(
     $0.RequestSignupPhoneOTPRequest request, {
     $grpc.CallOptions? options,
@@ -740,8 +639,6 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$requestSignupPhoneOTP, request, options: options);
   }
 
-  /// Public: verify the signup phone OTP; on success returns a single-use
-  /// signup_token proving phone ownership, consumed by SignupWithPhone.
   $grpc.ResponseFuture<$0.VerifySignupPhoneOTPResponse> verifySignupPhoneOTP(
     $0.VerifySignupPhoneOTPRequest request, {
     $grpc.CallOptions? options,
@@ -749,8 +646,6 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$verifySignupPhoneOTP, request, options: options);
   }
 
-  /// Public: create a phone-primary account (auth_type=PHONE_PASSCODE) using a
-  /// verified signup_token + 6-digit passcode. Email is optional. Returns tokens.
   $grpc.ResponseFuture<$0.LoginResponse> signupWithPhone(
     $0.SignupWithPhoneRequest request, {
     $grpc.CallOptions? options,
@@ -758,7 +653,6 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$signupWithPhone, request, options: options);
   }
 
-  /// Public: login with phone + passcode (phone-primary accounts).
   $grpc.ResponseFuture<$0.LoginResponse> loginWithPhonePasscode(
     $0.LoginWithPhonePasscodeRequest request, {
     $grpc.CallOptions? options,
@@ -768,9 +662,7 @@ class AuthServiceClient extends $grpc.Client {
   }
 
   /// Public: start a passcode reset for a phone-primary (passwordless) account by
-  /// sending a 6-digit SMS OTP to the account's phone. Mirrors the signup OTP
-  /// path but targets an EXISTING account; never reveals whether the phone is
-  /// registered. Used by "Forgot your passcode?" in phone+passcode mode.
+  /// sending a 6-digit SMS OTP. Never reveals whether the phone is registered.
   $grpc.ResponseFuture<$0.RequestPasscodeResetResponse> requestPasscodeReset(
     $0.RequestPasscodeResetRequest request, {
     $grpc.CallOptions? options,
@@ -778,11 +670,8 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$requestPasscodeReset, request, options: options);
   }
 
-  /// Public: verify the passcode-reset OTP WITHOUT consuming it, so the client
-  /// can validate the 6-digit code immediately on entry and only advance to the
-  /// new-passcode step when the code is valid. Increments the attempt counter on
-  /// a wrong code (same budget as the confirm call); marks the OTP verified on
-  /// success but leaves it unconsumed for ResetPasscodeWithOTP to finalize.
+  /// Public: verify the passcode-reset OTP WITHOUT consuming it (immediate
+  /// 6-digit validation before setting a new passcode).
   $grpc.ResponseFuture<$0.VerifyPasscodeResetOTPResponse>
       verifyPasscodeResetOTP(
     $0.VerifyPasscodeResetOTPRequest request, {
@@ -792,8 +681,7 @@ class AuthServiceClient extends $grpc.Client {
         options: options);
   }
 
-  /// Public: verify the passcode-reset OTP and set a new login passcode for the
-  /// phone-primary account in a single call. Consumes the OTP.
+  /// Public: verify the passcode-reset OTP and set a new login passcode.
   $grpc.ResponseFuture<$0.ResetPasscodeWithOTPResponse> resetPasscodeWithOTP(
     $0.ResetPasscodeWithOTPRequest request, {
     $grpc.CallOptions? options,
@@ -801,10 +689,7 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$resetPasscodeWithOTP, request, options: options);
   }
 
-  /// Authenticated: set the calling user's preferred login method
-  /// ("email_password" | "phone_passcode"). Overrides the platform default on
-  /// subsequent logins. Switching to email_password requires a password to
-  /// already be set (see SetPassword).
+  /// Authenticated: set the calling user's preferred login method.
   $grpc.ResponseFuture<$0.SetPreferredLoginMethodResponse>
       setPreferredLoginMethod(
     $0.SetPreferredLoginMethodRequest request, {
@@ -814,10 +699,7 @@ class AuthServiceClient extends $grpc.Client {
         options: options);
   }
 
-  /// Authenticated: set an INITIAL password for a passwordless (phone-primary)
-  /// account, so the user can switch to the email+password login method. Only
-  /// succeeds when no password is set yet; use ChangePassword to rotate an
-  /// existing password.
+  /// Authenticated: set an INITIAL password for a passwordless account.
   $grpc.ResponseFuture<$0.SetPasswordResponse> setPassword(
     $0.SetPasswordRequest request, {
     $grpc.CallOptions? options,
@@ -826,7 +708,6 @@ class AuthServiceClient extends $grpc.Client {
   }
 
   /// Admin: set a specific user's preferred login method (dashboard override).
-  /// Requires an admin JWT; enforced by the admin-gateway.
   $grpc.ResponseFuture<$0.SetPreferredLoginMethodResponse>
       adminSetPreferredLoginMethod(
     $0.AdminSetPreferredLoginMethodRequest request, {
@@ -836,9 +717,7 @@ class AuthServiceClient extends $grpc.Client {
         options: options);
   }
 
-  /// Authenticated: begin changing the calling user's phone number to a brand-new
-  /// one. Sends a 6-digit SMS OTP to the NEW number (stored pending, not applied
-  /// yet). Rejects a number already owned by another account.
+  /// Authenticated: begin changing the calling user's phone to a brand-new one.
   $grpc.ResponseFuture<$0.RequestPhoneChangeResponse> requestPhoneChange(
     $0.RequestPhoneChangeRequest request, {
     $grpc.CallOptions? options,
@@ -846,8 +725,7 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$requestPhoneChange, request, options: options);
   }
 
-  /// Authenticated: verify the OTP sent to the new number and apply the change
-  /// (sets phone + phone_verified=true). Consumes the OTP.
+  /// Authenticated: verify the OTP for the new number and apply the change.
   $grpc.ResponseFuture<$0.VerifyPhoneChangeResponse> verifyPhoneChange(
     $0.VerifyPhoneChangeRequest request, {
     $grpc.CallOptions? options,
@@ -856,9 +734,6 @@ class AuthServiceClient extends $grpc.Client {
   }
 
   /// ===== Device registry (trusted devices / security center) =====
-  /// Enroll or update the calling user's device: stores the hardware-backed
-  /// public key (DPoP) + descriptor and returns the server device_uuid + trust
-  /// status. Authenticated (user from JWT).
   $grpc.ResponseFuture<$0.RegisterDeviceResponse> registerDevice(
     $0.RegisterDeviceRequest request, {
     $grpc.CallOptions? options,
@@ -866,7 +741,6 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$registerDevice, request, options: options);
   }
 
-  /// List the calling user's known devices (trusted-device list / login activity).
   $grpc.ResponseFuture<$0.ListDevicesResponse> listDevices(
     $0.ListDevicesRequest request, {
     $grpc.CallOptions? options,
@@ -874,7 +748,6 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$listDevices, request, options: options);
   }
 
-  /// Revoke one of the calling user's devices (forces re-verification on it).
   $grpc.ResponseFuture<$0.RevokeDeviceResponse> revokeDevice(
     $0.RevokeDeviceRequest request, {
     $grpc.CallOptions? options,
@@ -882,7 +755,6 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$revokeDevice, request, options: options);
   }
 
-  /// Recent sign-in activity (successes + failures) for the calling user.
   $grpc.ResponseFuture<$0.GetLoginHistoryResponse> getLoginHistory(
     $0.GetLoginHistoryRequest request, {
     $grpc.CallOptions? options,
@@ -911,36 +783,6 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$cancelAccountDeletion, request, options: options);
   }
 
-  /// Admin: list accounts in the deletion lifecycle (pending within grace, or
-  /// awaiting admin finalization past grace). Enforced by the admin-gateway.
-  $grpc.ResponseFuture<$0.ListDeletionAccountsResponse> listDeletionAccounts(
-    $0.ListDeletionAccountsRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$listDeletionAccounts, request, options: options);
-  }
-
-  /// Admin: irreversibly finalize (anonymise + soft-delete) a specific account
-  /// that is past its grace period. Confirm-gated in the dashboard.
-  $grpc.ResponseFuture<$0.AdminAccountDeletionActionResponse>
-      adminFinalizeAccountDeletion(
-    $0.AdminAccountDeletionActionRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$adminFinalizeAccountDeletion, request,
-        options: options);
-  }
-
-  /// Admin: reactivate an account still in the deletion lifecycle (restore).
-  $grpc.ResponseFuture<$0.AdminAccountDeletionActionResponse>
-      adminReactivateAccount(
-    $0.AdminAccountDeletionActionRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$adminReactivateAccount, request,
-        options: options);
-  }
-
   /// ===== Account self-lock (Settings → Security) =====
   /// Arm a user-initiated login + transaction lock for a timeframe (JWT-identified).
   /// No early unlock — it elapses. Blocks login (after creds, before 2FA) AND
@@ -950,31 +792,6 @@ class AuthServiceClient extends $grpc.Client {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$requestAccountLock, request, options: options);
-  }
-
-  /// FreezeAccount locks a user's account for suspicious/fraudulent activity.
-  /// gRPC-only, SERVICE-TO-SERVICE (x-service-name: core-payments-service or
-  /// admin-gateway) — NO HTTP route, never app-callable. Reuses the self-lock
-  /// mechanism (stamps self_locked_until, revokes sessions, emits
-  /// user.self_locked so accounts-service freezes money movement). reason is
-  /// stored under a "fraud:" prefix so the login gate + app render the
-  /// fraud-specific freeze modal instead of the generic self-lock one.
-  $grpc.ResponseFuture<$0.FreezeAccountResponse> freezeAccount(
-    $0.FreezeAccountRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$freezeAccount, request, options: options);
-  }
-
-  /// UnfreezeAccount clears a fraud freeze early (admin-gateway only). The plain
-  /// self-lock deliberately has no early unlock; a fraud freeze is a false-positive
-  /// risk, so support/admin can lift it. Clears self_locked_until + emits
-  /// user.self_unlocked so accounts-service unfreezes money movement.
-  $grpc.ResponseFuture<$0.UnfreezeAccountResponse> unfreezeAccount(
-    $0.UnfreezeAccountRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$unfreezeAccount, request, options: options);
   }
 
   // method descriptors
@@ -1028,6 +845,11 @@ class AuthServiceClient extends $grpc.Client {
       '/pb.AuthService/GetMe',
       ($0.GetMeRequest value) => value.writeToBuffer(),
       $0.GetMeResponse.fromBuffer);
+  static final _$getMyInsurancePrefill = $grpc.ClientMethod<
+          $0.GetMyInsurancePrefillRequest, $0.GetMyInsurancePrefillResponse>(
+      '/pb.AuthService/GetMyInsurancePrefill',
+      ($0.GetMyInsurancePrefillRequest value) => value.writeToBuffer(),
+      $0.GetMyInsurancePrefillResponse.fromBuffer);
   static final _$updateProfile =
       $grpc.ClientMethod<$0.UpdateProfileRequest, $0.UpdateProfileResponse>(
           '/pb.AuthService/UpdateProfile',
@@ -1170,10 +992,10 @@ class AuthServiceClient extends $grpc.Client {
       ($0.AuthGetDevicePermissionsRequest value) => value.writeToBuffer(),
       $0.AuthGetDevicePermissionsResponse.fromBuffer);
   static final _$verifyPasscode =
-      $grpc.ClientMethod<$0.VerifyPasscodeRequest, $0.VerifyPasscodeResponse>(
+      $grpc.ClientMethod<$1.VerifyPasscodeRequest, $1.VerifyPasscodeResponse>(
           '/pb.AuthService/VerifyPasscode',
-          ($0.VerifyPasscodeRequest value) => value.writeToBuffer(),
-          $0.VerifyPasscodeResponse.fromBuffer);
+          ($1.VerifyPasscodeRequest value) => value.writeToBuffer(),
+          $1.VerifyPasscodeResponse.fromBuffer);
   static final _$requestPasswordReset = $grpc.ClientMethod<
           $0.RequestPasswordResetRequest, $0.RequestPasswordResetResponse>(
       '/pb.AuthService/RequestPasswordReset',
@@ -1242,49 +1064,6 @@ class AuthServiceClient extends $grpc.Client {
           '/pb.AuthService/SkipKYCUpgrade',
           ($0.SkipKYCUpgradeRequest value) => value.writeToBuffer(),
           $0.SkipKYCUpgradeResponse.fromBuffer);
-  static final _$syncVerifiedKYCTier = $grpc.ClientMethod<
-          $0.SyncVerifiedKYCTierRequest, $0.SyncVerifiedKYCTierResponse>(
-      '/pb.AuthService/SyncVerifiedKYCTier',
-      ($0.SyncVerifiedKYCTierRequest value) => value.writeToBuffer(),
-      $0.SyncVerifiedKYCTierResponse.fromBuffer);
-  static final _$adminOverrideKYCTier = $grpc.ClientMethod<
-          $0.AdminOverrideKYCTierRequest, $0.AdminOverrideKYCTierResponse>(
-      '/pb.AuthService/AdminOverrideKYCTier',
-      ($0.AdminOverrideKYCTierRequest value) => value.writeToBuffer(),
-      $0.AdminOverrideKYCTierResponse.fromBuffer);
-  static final _$adminResetTransactionPin = $grpc.ClientMethod<
-          $0.AdminResetTransactionPinRequest,
-          $0.AdminResetTransactionPinResponse>(
-      '/pb.AuthService/AdminResetTransactionPin',
-      ($0.AdminResetTransactionPinRequest value) => value.writeToBuffer(),
-      $0.AdminResetTransactionPinResponse.fromBuffer);
-  static final _$adminUnlockAccount = $grpc.ClientMethod<
-          $0.AdminUnlockAccountRequest, $0.AdminUnlockAccountResponse>(
-      '/pb.AuthService/AdminUnlockAccount',
-      ($0.AdminUnlockAccountRequest value) => value.writeToBuffer(),
-      $0.AdminUnlockAccountResponse.fromBuffer);
-  static final _$getKYCTier =
-      $grpc.ClientMethod<$0.GetKYCTierRequest, $0.GetKYCTierResponse>(
-          '/pb.AuthService/GetKYCTier',
-          ($0.GetKYCTierRequest value) => value.writeToBuffer(),
-          $0.GetKYCTierResponse.fromBuffer);
-  static final _$getUserIdentityForService = $grpc.ClientMethod<
-          $0.GetUserIdentityForServiceRequest,
-          $0.GetUserIdentityForServiceResponse>(
-      '/pb.AuthService/GetUserIdentityForService',
-      ($0.GetUserIdentityForServiceRequest value) => value.writeToBuffer(),
-      $0.GetUserIdentityForServiceResponse.fromBuffer);
-  static final _$markEmailBouncedByEmail = $grpc.ClientMethod<
-          $0.MarkEmailBouncedByEmailRequest,
-          $0.MarkEmailBouncedByEmailResponse>(
-      '/pb.AuthService/MarkEmailBouncedByEmail',
-      ($0.MarkEmailBouncedByEmailRequest value) => value.writeToBuffer(),
-      $0.MarkEmailBouncedByEmailResponse.fromBuffer);
-  static final _$getMyInsurancePrefill = $grpc.ClientMethod<
-          $0.GetMyInsurancePrefillRequest, $0.GetMyInsurancePrefillResponse>(
-      '/pb.AuthService/GetMyInsurancePrefill',
-      ($0.GetMyInsurancePrefillRequest value) => value.writeToBuffer(),
-      $0.GetMyInsurancePrefillResponse.fromBuffer);
   static final _$getUserDocuments = $grpc.ClientMethod<
           $0.GetUserDocumentsRequest, $0.GetUserDocumentsResponse>(
       '/pb.AuthService/GetUserDocuments',
@@ -1468,38 +1247,11 @@ class AuthServiceClient extends $grpc.Client {
       '/pb.AuthService/CancelAccountDeletion',
       ($0.CancelAccountDeletionRequest value) => value.writeToBuffer(),
       $0.CancelAccountDeletionResponse.fromBuffer);
-  static final _$listDeletionAccounts = $grpc.ClientMethod<
-          $0.ListDeletionAccountsRequest, $0.ListDeletionAccountsResponse>(
-      '/pb.AuthService/ListDeletionAccounts',
-      ($0.ListDeletionAccountsRequest value) => value.writeToBuffer(),
-      $0.ListDeletionAccountsResponse.fromBuffer);
-  static final _$adminFinalizeAccountDeletion = $grpc.ClientMethod<
-          $0.AdminAccountDeletionActionRequest,
-          $0.AdminAccountDeletionActionResponse>(
-      '/pb.AuthService/AdminFinalizeAccountDeletion',
-      ($0.AdminAccountDeletionActionRequest value) => value.writeToBuffer(),
-      $0.AdminAccountDeletionActionResponse.fromBuffer);
-  static final _$adminReactivateAccount = $grpc.ClientMethod<
-          $0.AdminAccountDeletionActionRequest,
-          $0.AdminAccountDeletionActionResponse>(
-      '/pb.AuthService/AdminReactivateAccount',
-      ($0.AdminAccountDeletionActionRequest value) => value.writeToBuffer(),
-      $0.AdminAccountDeletionActionResponse.fromBuffer);
   static final _$requestAccountLock = $grpc.ClientMethod<
           $0.RequestAccountLockRequest, $0.RequestAccountLockResponse>(
       '/pb.AuthService/RequestAccountLock',
       ($0.RequestAccountLockRequest value) => value.writeToBuffer(),
       $0.RequestAccountLockResponse.fromBuffer);
-  static final _$freezeAccount =
-      $grpc.ClientMethod<$0.FreezeAccountRequest, $0.FreezeAccountResponse>(
-          '/pb.AuthService/FreezeAccount',
-          ($0.FreezeAccountRequest value) => value.writeToBuffer(),
-          $0.FreezeAccountResponse.fromBuffer);
-  static final _$unfreezeAccount =
-      $grpc.ClientMethod<$0.UnfreezeAccountRequest, $0.UnfreezeAccountResponse>(
-          '/pb.AuthService/UnfreezeAccount',
-          ($0.UnfreezeAccountRequest value) => value.writeToBuffer(),
-          $0.UnfreezeAccountResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('pb.AuthService')
@@ -1589,6 +1341,15 @@ abstract class AuthServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetMeRequest.fromBuffer(value),
         ($0.GetMeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyInsurancePrefillRequest,
+            $0.GetMyInsurancePrefillResponse>(
+        'GetMyInsurancePrefill',
+        getMyInsurancePrefill_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetMyInsurancePrefillRequest.fromBuffer(value),
+        ($0.GetMyInsurancePrefillResponse value) => value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.UpdateProfileRequest, $0.UpdateProfileResponse>(
             'UpdateProfile',
@@ -1830,15 +1591,15 @@ abstract class AuthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.AuthGetDevicePermissionsRequest.fromBuffer(value),
         ($0.AuthGetDevicePermissionsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.VerifyPasscodeRequest,
-            $0.VerifyPasscodeResponse>(
+    $addMethod($grpc.ServiceMethod<$1.VerifyPasscodeRequest,
+            $1.VerifyPasscodeResponse>(
         'VerifyPasscode',
         verifyPasscode_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.VerifyPasscodeRequest.fromBuffer(value),
-        ($0.VerifyPasscodeResponse value) => value.writeToBuffer()));
+            $1.VerifyPasscodeRequest.fromBuffer(value),
+        ($1.VerifyPasscodeResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.RequestPasswordResetRequest,
             $0.RequestPasswordResetResponse>(
         'RequestPasswordReset',
@@ -1957,76 +1718,6 @@ abstract class AuthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.SkipKYCUpgradeRequest.fromBuffer(value),
         ($0.SkipKYCUpgradeResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.SyncVerifiedKYCTierRequest,
-            $0.SyncVerifiedKYCTierResponse>(
-        'SyncVerifiedKYCTier',
-        syncVerifiedKYCTier_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.SyncVerifiedKYCTierRequest.fromBuffer(value),
-        ($0.SyncVerifiedKYCTierResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.AdminOverrideKYCTierRequest,
-            $0.AdminOverrideKYCTierResponse>(
-        'AdminOverrideKYCTier',
-        adminOverrideKYCTier_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.AdminOverrideKYCTierRequest.fromBuffer(value),
-        ($0.AdminOverrideKYCTierResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.AdminResetTransactionPinRequest,
-            $0.AdminResetTransactionPinResponse>(
-        'AdminResetTransactionPin',
-        adminResetTransactionPin_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.AdminResetTransactionPinRequest.fromBuffer(value),
-        ($0.AdminResetTransactionPinResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.AdminUnlockAccountRequest,
-            $0.AdminUnlockAccountResponse>(
-        'AdminUnlockAccount',
-        adminUnlockAccount_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.AdminUnlockAccountRequest.fromBuffer(value),
-        ($0.AdminUnlockAccountResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetKYCTierRequest, $0.GetKYCTierResponse>(
-        'GetKYCTier',
-        getKYCTier_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.GetKYCTierRequest.fromBuffer(value),
-        ($0.GetKYCTierResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetUserIdentityForServiceRequest,
-            $0.GetUserIdentityForServiceResponse>(
-        'GetUserIdentityForService',
-        getUserIdentityForService_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.GetUserIdentityForServiceRequest.fromBuffer(value),
-        ($0.GetUserIdentityForServiceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.MarkEmailBouncedByEmailRequest,
-            $0.MarkEmailBouncedByEmailResponse>(
-        'MarkEmailBouncedByEmail',
-        markEmailBouncedByEmail_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.MarkEmailBouncedByEmailRequest.fromBuffer(value),
-        ($0.MarkEmailBouncedByEmailResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetMyInsurancePrefillRequest,
-            $0.GetMyInsurancePrefillResponse>(
-        'GetMyInsurancePrefill',
-        getMyInsurancePrefill_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.GetMyInsurancePrefillRequest.fromBuffer(value),
-        ($0.GetMyInsurancePrefillResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetUserDocumentsRequest,
             $0.GetUserDocumentsResponse>(
         'GetUserDocuments',
@@ -2339,35 +2030,6 @@ abstract class AuthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.CancelAccountDeletionRequest.fromBuffer(value),
         ($0.CancelAccountDeletionResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.ListDeletionAccountsRequest,
-            $0.ListDeletionAccountsResponse>(
-        'ListDeletionAccounts',
-        listDeletionAccounts_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.ListDeletionAccountsRequest.fromBuffer(value),
-        ($0.ListDeletionAccountsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.AdminAccountDeletionActionRequest,
-            $0.AdminAccountDeletionActionResponse>(
-        'AdminFinalizeAccountDeletion',
-        adminFinalizeAccountDeletion_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.AdminAccountDeletionActionRequest.fromBuffer(value),
-        ($0.AdminAccountDeletionActionResponse value) =>
-            value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.AdminAccountDeletionActionRequest,
-            $0.AdminAccountDeletionActionResponse>(
-        'AdminReactivateAccount',
-        adminReactivateAccount_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.AdminAccountDeletionActionRequest.fromBuffer(value),
-        ($0.AdminAccountDeletionActionResponse value) =>
-            value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.RequestAccountLockRequest,
             $0.RequestAccountLockResponse>(
         'RequestAccountLock',
@@ -2377,24 +2039,6 @@ abstract class AuthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.RequestAccountLockRequest.fromBuffer(value),
         ($0.RequestAccountLockResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.FreezeAccountRequest, $0.FreezeAccountResponse>(
-            'FreezeAccount',
-            freezeAccount_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.FreezeAccountRequest.fromBuffer(value),
-            ($0.FreezeAccountResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.UnfreezeAccountRequest,
-            $0.UnfreezeAccountResponse>(
-        'UnfreezeAccount',
-        unfreezeAccount_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.UnfreezeAccountRequest.fromBuffer(value),
-        ($0.UnfreezeAccountResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.SignupResponse> signup_Pre(
@@ -2480,6 +2124,15 @@ abstract class AuthServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetMeResponse> getMe(
       $grpc.ServiceCall call, $0.GetMeRequest request);
+
+  $async.Future<$0.GetMyInsurancePrefillResponse> getMyInsurancePrefill_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMyInsurancePrefillRequest> $request) async {
+    return getMyInsurancePrefill($call, await $request);
+  }
+
+  $async.Future<$0.GetMyInsurancePrefillResponse> getMyInsurancePrefill(
+      $grpc.ServiceCall call, $0.GetMyInsurancePrefillRequest request);
 
   $async.Future<$0.UpdateProfileResponse> updateProfile_Pre(
       $grpc.ServiceCall $call,
@@ -2718,14 +2371,14 @@ abstract class AuthServiceBase extends $grpc.Service {
   $async.Future<$0.AuthGetDevicePermissionsResponse> getDevicePermissions(
       $grpc.ServiceCall call, $0.AuthGetDevicePermissionsRequest request);
 
-  $async.Future<$0.VerifyPasscodeResponse> verifyPasscode_Pre(
+  $async.Future<$1.VerifyPasscodeResponse> verifyPasscode_Pre(
       $grpc.ServiceCall $call,
-      $async.Future<$0.VerifyPasscodeRequest> $request) async {
+      $async.Future<$1.VerifyPasscodeRequest> $request) async {
     return verifyPasscode($call, await $request);
   }
 
-  $async.Future<$0.VerifyPasscodeResponse> verifyPasscode(
-      $grpc.ServiceCall call, $0.VerifyPasscodeRequest request);
+  $async.Future<$1.VerifyPasscodeResponse> verifyPasscode(
+      $grpc.ServiceCall call, $1.VerifyPasscodeRequest request);
 
   $async.Future<$0.RequestPasswordResetResponse> requestPasswordReset_Pre(
       $grpc.ServiceCall $call,
@@ -2845,77 +2498,6 @@ abstract class AuthServiceBase extends $grpc.Service {
 
   $async.Future<$0.SkipKYCUpgradeResponse> skipKYCUpgrade(
       $grpc.ServiceCall call, $0.SkipKYCUpgradeRequest request);
-
-  $async.Future<$0.SyncVerifiedKYCTierResponse> syncVerifiedKYCTier_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.SyncVerifiedKYCTierRequest> $request) async {
-    return syncVerifiedKYCTier($call, await $request);
-  }
-
-  $async.Future<$0.SyncVerifiedKYCTierResponse> syncVerifiedKYCTier(
-      $grpc.ServiceCall call, $0.SyncVerifiedKYCTierRequest request);
-
-  $async.Future<$0.AdminOverrideKYCTierResponse> adminOverrideKYCTier_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.AdminOverrideKYCTierRequest> $request) async {
-    return adminOverrideKYCTier($call, await $request);
-  }
-
-  $async.Future<$0.AdminOverrideKYCTierResponse> adminOverrideKYCTier(
-      $grpc.ServiceCall call, $0.AdminOverrideKYCTierRequest request);
-
-  $async.Future<$0.AdminResetTransactionPinResponse>
-      adminResetTransactionPin_Pre($grpc.ServiceCall $call,
-          $async.Future<$0.AdminResetTransactionPinRequest> $request) async {
-    return adminResetTransactionPin($call, await $request);
-  }
-
-  $async.Future<$0.AdminResetTransactionPinResponse> adminResetTransactionPin(
-      $grpc.ServiceCall call, $0.AdminResetTransactionPinRequest request);
-
-  $async.Future<$0.AdminUnlockAccountResponse> adminUnlockAccount_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.AdminUnlockAccountRequest> $request) async {
-    return adminUnlockAccount($call, await $request);
-  }
-
-  $async.Future<$0.AdminUnlockAccountResponse> adminUnlockAccount(
-      $grpc.ServiceCall call, $0.AdminUnlockAccountRequest request);
-
-  $async.Future<$0.GetKYCTierResponse> getKYCTier_Pre($grpc.ServiceCall $call,
-      $async.Future<$0.GetKYCTierRequest> $request) async {
-    return getKYCTier($call, await $request);
-  }
-
-  $async.Future<$0.GetKYCTierResponse> getKYCTier(
-      $grpc.ServiceCall call, $0.GetKYCTierRequest request);
-
-  $async.Future<$0.GetUserIdentityForServiceResponse>
-      getUserIdentityForService_Pre($grpc.ServiceCall $call,
-          $async.Future<$0.GetUserIdentityForServiceRequest> $request) async {
-    return getUserIdentityForService($call, await $request);
-  }
-
-  $async.Future<$0.GetUserIdentityForServiceResponse> getUserIdentityForService(
-      $grpc.ServiceCall call, $0.GetUserIdentityForServiceRequest request);
-
-  $async.Future<$0.MarkEmailBouncedByEmailResponse> markEmailBouncedByEmail_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.MarkEmailBouncedByEmailRequest> $request) async {
-    return markEmailBouncedByEmail($call, await $request);
-  }
-
-  $async.Future<$0.MarkEmailBouncedByEmailResponse> markEmailBouncedByEmail(
-      $grpc.ServiceCall call, $0.MarkEmailBouncedByEmailRequest request);
-
-  $async.Future<$0.GetMyInsurancePrefillResponse> getMyInsurancePrefill_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetMyInsurancePrefillRequest> $request) async {
-    return getMyInsurancePrefill($call, await $request);
-  }
-
-  $async.Future<$0.GetMyInsurancePrefillResponse> getMyInsurancePrefill(
-      $grpc.ServiceCall call, $0.GetMyInsurancePrefillRequest request);
 
   $async.Future<$0.GetUserDocumentsResponse> getUserDocuments_Pre(
       $grpc.ServiceCall $call,
@@ -3231,34 +2813,6 @@ abstract class AuthServiceBase extends $grpc.Service {
   $async.Future<$0.CancelAccountDeletionResponse> cancelAccountDeletion(
       $grpc.ServiceCall call, $0.CancelAccountDeletionRequest request);
 
-  $async.Future<$0.ListDeletionAccountsResponse> listDeletionAccounts_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.ListDeletionAccountsRequest> $request) async {
-    return listDeletionAccounts($call, await $request);
-  }
-
-  $async.Future<$0.ListDeletionAccountsResponse> listDeletionAccounts(
-      $grpc.ServiceCall call, $0.ListDeletionAccountsRequest request);
-
-  $async.Future<$0.AdminAccountDeletionActionResponse>
-      adminFinalizeAccountDeletion_Pre($grpc.ServiceCall $call,
-          $async.Future<$0.AdminAccountDeletionActionRequest> $request) async {
-    return adminFinalizeAccountDeletion($call, await $request);
-  }
-
-  $async.Future<$0.AdminAccountDeletionActionResponse>
-      adminFinalizeAccountDeletion(
-          $grpc.ServiceCall call, $0.AdminAccountDeletionActionRequest request);
-
-  $async.Future<$0.AdminAccountDeletionActionResponse>
-      adminReactivateAccount_Pre($grpc.ServiceCall $call,
-          $async.Future<$0.AdminAccountDeletionActionRequest> $request) async {
-    return adminReactivateAccount($call, await $request);
-  }
-
-  $async.Future<$0.AdminAccountDeletionActionResponse> adminReactivateAccount(
-      $grpc.ServiceCall call, $0.AdminAccountDeletionActionRequest request);
-
   $async.Future<$0.RequestAccountLockResponse> requestAccountLock_Pre(
       $grpc.ServiceCall $call,
       $async.Future<$0.RequestAccountLockRequest> $request) async {
@@ -3267,22 +2821,4 @@ abstract class AuthServiceBase extends $grpc.Service {
 
   $async.Future<$0.RequestAccountLockResponse> requestAccountLock(
       $grpc.ServiceCall call, $0.RequestAccountLockRequest request);
-
-  $async.Future<$0.FreezeAccountResponse> freezeAccount_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.FreezeAccountRequest> $request) async {
-    return freezeAccount($call, await $request);
-  }
-
-  $async.Future<$0.FreezeAccountResponse> freezeAccount(
-      $grpc.ServiceCall call, $0.FreezeAccountRequest request);
-
-  $async.Future<$0.UnfreezeAccountResponse> unfreezeAccount_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.UnfreezeAccountRequest> $request) async {
-    return unfreezeAccount($call, await $request);
-  }
-
-  $async.Future<$0.UnfreezeAccountResponse> unfreezeAccount(
-      $grpc.ServiceCall call, $0.UnfreezeAccountRequest request);
 }

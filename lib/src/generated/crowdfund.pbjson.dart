@@ -314,6 +314,7 @@ const CrowdfundMessage$json = {
     },
     {'1': 'refunds_failed', '3': 28, '4': 1, '5': 5, '10': 'refundsFailed'},
     {'1': 'total_refunded', '3': 29, '4': 1, '5': 4, '10': 'totalRefunded'},
+    {'1': 'total_raised', '3': 30, '4': 1, '5': 4, '10': 'totalRaised'},
   ],
 };
 
@@ -341,7 +342,7 @@ final $typed_data.Uint8List crowdfundMessageDescriptor = $convert.base64Decode(
     'RhbXBSC2NhbmNlbGxlZEF0EicKD3JlZnVuZHNfcGVuZGluZxgaIAEoBVIOcmVmdW5kc1BlbmRp'
     'bmcSKwoRcmVmdW5kc19jb21wbGV0ZWQYGyABKAVSEHJlZnVuZHNDb21wbGV0ZWQSJQoOcmVmdW'
     '5kc19mYWlsZWQYHCABKAVSDXJlZnVuZHNGYWlsZWQSJQoOdG90YWxfcmVmdW5kZWQYHSABKARS'
-    'DXRvdGFsUmVmdW5kZWQ=');
+    'DXRvdGFsUmVmdW5kZWQSIQoMdG90YWxfcmFpc2VkGB4gASgEUgt0b3RhbFJhaXNlZA==');
 
 @$core.Deprecated('Use crowdfundDonorMessageDescriptor instead')
 const CrowdfundDonorMessage$json = {

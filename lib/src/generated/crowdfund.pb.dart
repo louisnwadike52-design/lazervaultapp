@@ -200,6 +200,7 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     $core.int? refundsCompleted,
     $core.int? refundsFailed,
     $fixnum.Int64? totalRefunded,
+    $fixnum.Int64? totalRaised,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -233,6 +234,7 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     if (refundsCompleted != null) result.refundsCompleted = refundsCompleted;
     if (refundsFailed != null) result.refundsFailed = refundsFailed;
     if (totalRefunded != null) result.totalRefunded = totalRefunded;
+    if (totalRaised != null) result.totalRaised = totalRaised;
     return result;
   }
 
@@ -304,6 +306,9 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
         28, _omitFieldNames ? '' : 'refundsFailed', $pb.PbFieldType.O3)
     ..a<$fixnum.Int64>(
         29, _omitFieldNames ? '' : 'totalRefunded', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        30, _omitFieldNames ? '' : 'totalRaised', $pb.PbFieldType.OU6,
         defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false;
 
@@ -596,6 +601,16 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
   $core.bool hasTotalRefunded() => $_has(28);
   @$pb.TagNumber(29)
   void clearTotalRefunded() => $_clearField(29);
+
+  /// Lifetime completed contributions in KOBO; monotonic (withdrawals/refunds never reduce it).
+  @$pb.TagNumber(30)
+  $fixnum.Int64 get totalRaised => $_getI64(29);
+  @$pb.TagNumber(30)
+  set totalRaised($fixnum.Int64 value) => $_setInt64(29, value);
+  @$pb.TagNumber(30)
+  $core.bool hasTotalRaised() => $_has(29);
+  @$pb.TagNumber(30)
+  void clearTotalRaised() => $_clearField(30);
 }
 
 class CrowdfundDonorMessage extends $pb.GeneratedMessage {

@@ -1659,6 +1659,13 @@ const InitiateProveKYCResponse$json = {
     {'1': 'reference', '3': 5, '4': 1, '5': 9, '10': 'reference'},
     {'1': 'session_id', '3': 6, '4': 1, '5': 9, '10': 'sessionId'},
     {'1': 'status', '3': 7, '4': 1, '5': 9, '10': 'status'},
+    {
+      '1': 'retry_after_seconds',
+      '3': 8,
+      '4': 1,
+      '5': 5,
+      '10': 'retryAfterSeconds'
+    },
   ],
 };
 
@@ -1668,7 +1675,8 @@ final $typed_data.Uint8List initiateProveKYCResponseDescriptor = $convert.base64
     'plcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJy'
     'b3JNZXNzYWdlEhkKCG1vbm9fdXJsGAQgASgJUgdtb25vVXJsEhwKCXJlZmVyZW5jZRgFIAEoCV'
     'IJcmVmZXJlbmNlEh0KCnNlc3Npb25faWQYBiABKAlSCXNlc3Npb25JZBIWCgZzdGF0dXMYByAB'
-    'KAlSBnN0YXR1cw==');
+    'KAlSBnN0YXR1cxIuChNyZXRyeV9hZnRlcl9zZWNvbmRzGAggASgFUhFyZXRyeUFmdGVyU2Vjb2'
+    '5kcw==');
 
 @$core.Deprecated('Use completeProveKYCRequestDescriptor instead')
 const CompleteProveKYCRequest$json = {
@@ -5331,3 +5339,101 @@ final $typed_data.Uint8List calculateMoveFeeResponseDescriptor = $convert.base64
     'dBIaCghjdXJyZW5jeRgLIAEoCVIIY3VycmVuY3kSLgoJYnJlYWtkb3duGAwgAygLMhAuYmFua2'
     'luZy5GZWVJdGVtUglicmVha2Rvd24SHQoKbWluX2Ftb3VudBgNIAEoA1IJbWluQW1vdW50Eh0K'
     'Cm1heF9hbW91bnQYDiABKANSCW1heEFtb3VudA==');
+
+@$core.Deprecated('Use bVNLookupMethodDescriptor instead')
+const BVNLookupMethod$json = {
+  '1': 'BVNLookupMethod',
+  '2': [
+    {'1': 'method', '3': 1, '4': 1, '5': 9, '10': 'method'},
+    {'1': 'hint', '3': 2, '4': 1, '5': 9, '10': 'hint'},
+  ],
+};
+
+/// Descriptor for `BVNLookupMethod`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List bVNLookupMethodDescriptor = $convert.base64Decode(
+    'Cg9CVk5Mb29rdXBNZXRob2QSFgoGbWV0aG9kGAEgASgJUgZtZXRob2QSEgoEaGludBgCIAEoCV'
+    'IEaGludA==');
+
+@$core.Deprecated('Use initiateBVNLookupRequestDescriptor instead')
+const InitiateBVNLookupRequest$json = {
+  '1': 'InitiateBVNLookupRequest',
+  '2': [
+    {'1': 'bvn', '3': 1, '4': 1, '5': 9, '10': 'bvn'},
+  ],
+};
+
+/// Descriptor for `InitiateBVNLookupRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List initiateBVNLookupRequestDescriptor =
+    $convert.base64Decode(
+        'ChhJbml0aWF0ZUJWTkxvb2t1cFJlcXVlc3QSEAoDYnZuGAEgASgJUgNidm4=');
+
+@$core.Deprecated('Use initiateBVNLookupResponseDescriptor instead')
+const InitiateBVNLookupResponse$json = {
+  '1': 'InitiateBVNLookupResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    {
+      '1': 'methods',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.banking.BVNLookupMethod',
+      '10': 'methods'
+    },
+  ],
+};
+
+/// Descriptor for `InitiateBVNLookupResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List initiateBVNLookupResponseDescriptor = $convert.base64Decode(
+    'ChlJbml0aWF0ZUJWTkxvb2t1cFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQ'
+    'oKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVy'
+    'cm9yTWVzc2FnZRIyCgdtZXRob2RzGAQgAygLMhguYmFua2luZy5CVk5Mb29rdXBNZXRob2RSB2'
+    '1ldGhvZHM=');
+
+@$core.Deprecated('Use sendBVNLookupOTPRequestDescriptor instead')
+const SendBVNLookupOTPRequest$json = {
+  '1': 'SendBVNLookupOTPRequest',
+  '2': [
+    {'1': 'method', '3': 1, '4': 1, '5': 9, '10': 'method'},
+  ],
+};
+
+/// Descriptor for `SendBVNLookupOTPRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sendBVNLookupOTPRequestDescriptor =
+    $convert.base64Decode(
+        'ChdTZW5kQlZOTG9va3VwT1RQUmVxdWVzdBIWCgZtZXRob2QYASABKAlSBm1ldGhvZA==');
+
+@$core.Deprecated('Use sendBVNLookupOTPResponseDescriptor instead')
+const SendBVNLookupOTPResponse$json = {
+  '1': 'SendBVNLookupOTPResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+  ],
+};
+
+/// Descriptor for `SendBVNLookupOTPResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sendBVNLookupOTPResponseDescriptor = $convert.base64Decode(
+    'ChhTZW5kQlZOTG9va3VwT1RQUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCg'
+    'plcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJy'
+    'b3JNZXNzYWdl');
+
+@$core.Deprecated('Use completeBVNLookupRequestDescriptor instead')
+const CompleteBVNLookupRequest$json = {
+  '1': 'CompleteBVNLookupRequest',
+  '2': [
+    {'1': 'otp', '3': 1, '4': 1, '5': 9, '10': 'otp'},
+    {'1': 'first_name', '3': 2, '4': 1, '5': 9, '10': 'firstName'},
+    {'1': 'last_name', '3': 3, '4': 1, '5': 9, '10': 'lastName'},
+    {'1': 'date_of_birth', '3': 4, '4': 1, '5': 9, '10': 'dateOfBirth'},
+  ],
+};
+
+/// Descriptor for `CompleteBVNLookupRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List completeBVNLookupRequestDescriptor = $convert.base64Decode(
+    'ChhDb21wbGV0ZUJWTkxvb2t1cFJlcXVlc3QSEAoDb3RwGAEgASgJUgNvdHASHQoKZmlyc3Rfbm'
+    'FtZRgCIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgDIAEoCVIIbGFzdE5hbWUSIgoNZGF0'
+    'ZV9vZl9iaXJ0aBgEIAEoCVILZGF0ZU9mQmlydGg=');
