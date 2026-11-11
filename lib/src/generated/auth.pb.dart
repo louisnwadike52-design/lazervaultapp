@@ -506,6 +506,7 @@ class SignupRequest extends $pb.GeneratedMessage {
     $core.String? nin,
     @$core.Deprecated('This field is deprecated.') $core.String? countryCode,
     @$core.Deprecated('This field is deprecated.') $core.String? currencyCode,
+    $core.String? middleName,
   }) {
     final result = create();
     if (email != null) result.email = email;
@@ -525,6 +526,7 @@ class SignupRequest extends $pb.GeneratedMessage {
     if (nin != null) result.nin = nin;
     if (countryCode != null) result.countryCode = countryCode;
     if (currencyCode != null) result.currencyCode = currencyCode;
+    if (middleName != null) result.middleName = middleName;
     return result;
   }
 
@@ -561,6 +563,7 @@ class SignupRequest extends $pb.GeneratedMessage {
     ..aOS(14, _omitFieldNames ? '' : 'nin')
     ..aOS(15, _omitFieldNames ? '' : 'countryCode')
     ..aOS(16, _omitFieldNames ? '' : 'currencyCode')
+    ..aOS(17, _omitFieldNames ? '' : 'middleName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -737,6 +740,27 @@ class SignupRequest extends $pb.GeneratedMessage {
   @$core.Deprecated('This field is deprecated.')
   @$pb.TagNumber(16)
   void clearCurrencyCode() => $_clearField(16);
+
+  /// OPTIONAL middle name, at the SAME NUMBER auth-service uses (17).
+  ///
+  /// It was added to auth-service's SignupRequest and never mirrored here,
+  /// while the app — which generates its Dart from THIS file — had already been
+  /// changed to send it. So the app did not compile against its own generated
+  /// code, and every build since relied on a Dart file regenerated from
+  /// somewhere else and left uncommitted. Regenerating from this copy silently
+  /// removed the field and broke the build, twice, before anyone read the
+  /// error.
+  ///
+  /// The number is the wire format: it must match auth-service exactly or the
+  /// gateway forwards a middle name into whatever field 17 means there.
+  @$pb.TagNumber(17)
+  $core.String get middleName => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set middleName($core.String value) => $_setString(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasMiddleName() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearMiddleName() => $_clearField(17);
 }
 
 class SignupResponse extends $pb.GeneratedMessage {
@@ -1054,6 +1078,8 @@ class LoginResponse extends $pb.GeneratedMessage {
     $core.String? stepUpMethod,
     $core.String? stepUpDestination,
     $core.String? twoFactorMethod,
+    $fixnum.Int64? stepUpExpiresIn,
+    $core.String? errorCode,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -1069,6 +1095,8 @@ class LoginResponse extends $pb.GeneratedMessage {
     if (stepUpMethod != null) result.stepUpMethod = stepUpMethod;
     if (stepUpDestination != null) result.stepUpDestination = stepUpDestination;
     if (twoFactorMethod != null) result.twoFactorMethod = twoFactorMethod;
+    if (stepUpExpiresIn != null) result.stepUpExpiresIn = stepUpExpiresIn;
+    if (errorCode != null) result.errorCode = errorCode;
     return result;
   }
 
@@ -1099,6 +1127,8 @@ class LoginResponse extends $pb.GeneratedMessage {
     ..aOS(11, _omitFieldNames ? '' : 'stepUpMethod')
     ..aOS(12, _omitFieldNames ? '' : 'stepUpDestination')
     ..aOS(13, _omitFieldNames ? '' : 'twoFactorMethod')
+    ..aInt64(14, _omitFieldNames ? '' : 'stepUpExpiresIn')
+    ..aOS(15, _omitFieldNames ? '' : 'errorCode')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1240,6 +1270,36 @@ class LoginResponse extends $pb.GeneratedMessage {
   $core.bool hasTwoFactorMethod() => $_has(12);
   @$pb.TagNumber(13)
   void clearTwoFactorMethod() => $_clearField(13);
+
+  /// MIRRORED FROM auth-service AT THE SAME NUMBERS (14, 15), which had both
+  /// and this copy had neither — while the app, which generates its Dart from
+  /// THIS file, already read both.
+  ///
+  /// Seconds the step-up OTP remains valid. The app drives its countdown from
+  /// this rather than a mirrored constant: the two used to be separate numbers
+  /// that only agreed by hand, so changing the server TTL silently left the app
+  /// counting down from the old one.
+  @$pb.TagNumber(14)
+  $fixnum.Int64 get stepUpExpiresIn => $_getI64(13);
+  @$pb.TagNumber(14)
+  set stepUpExpiresIn($fixnum.Int64 value) => $_setInt64(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasStepUpExpiresIn() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearStepUpExpiresIn() => $_clearField(14);
+
+  /// Stable reason for a failed step-up verify, so the app branches on a
+  /// contract instead of matching on prose. One of: STEP_UP_UNAVAILABLE,
+  /// STEP_UP_SESSION_EXPIRED, OTP_EXPIRED, OTP_USED, OTP_ATTEMPTS_EXCEEDED,
+  /// OTP_INCORRECT. Empty on success and on unclassified failures.
+  @$pb.TagNumber(15)
+  $core.String get errorCode => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set errorCode($core.String value) => $_setString(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasErrorCode() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearErrorCode() => $_clearField(15);
 }
 
 class LoginData extends $pb.GeneratedMessage {
@@ -1974,6 +2034,7 @@ class SignupWithPhoneRequest extends $pb.GeneratedMessage {
     $core.String? deviceId,
     $core.String? deviceName,
     $core.String? dateOfBirth,
+    $core.String? middleName,
   }) {
     final result = create();
     if (phone != null) result.phone = phone;
@@ -1989,6 +2050,7 @@ class SignupWithPhoneRequest extends $pb.GeneratedMessage {
     if (deviceId != null) result.deviceId = deviceId;
     if (deviceName != null) result.deviceName = deviceName;
     if (dateOfBirth != null) result.dateOfBirth = dateOfBirth;
+    if (middleName != null) result.middleName = middleName;
     return result;
   }
 
@@ -2018,6 +2080,7 @@ class SignupWithPhoneRequest extends $pb.GeneratedMessage {
     ..aOS(11, _omitFieldNames ? '' : 'deviceId')
     ..aOS(12, _omitFieldNames ? '' : 'deviceName')
     ..aOS(13, _omitFieldNames ? '' : 'dateOfBirth')
+    ..aOS(14, _omitFieldNames ? '' : 'middleName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2159,6 +2222,18 @@ class SignupWithPhoneRequest extends $pb.GeneratedMessage {
   $core.bool hasDateOfBirth() => $_has(12);
   @$pb.TagNumber(13)
   void clearDateOfBirth() => $_clearField(13);
+
+  /// OPTIONAL middle name, at the SAME NUMBER auth-service uses (14).
+  /// Mirrored here for the same reason as SignupRequest.middle_name above —
+  /// the app generates its Dart from this file and already sends one.
+  @$pb.TagNumber(14)
+  $core.String get middleName => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set middleName($core.String value) => $_setString(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasMiddleName() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearMiddleName() => $_clearField(14);
 }
 
 class LoginWithPhonePasscodeRequest extends $pb.GeneratedMessage {

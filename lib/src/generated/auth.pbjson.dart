@@ -330,6 +330,7 @@ const SignupRequest$json = {
       '8': {'3': true},
       '10': 'currencyCode',
     },
+    {'1': 'middle_name', '3': 17, '4': 1, '5': 9, '10': 'middleName'},
   ],
 };
 
@@ -344,7 +345,8 @@ final $typed_data.Uint8List signupRequestDescriptor = $convert.base64Decode(
     'CVIMcmVmZXJyYWxDb2RlEiIKDWRhdGVfb2ZfYmlydGgYCyABKAlSC2RhdGVPZkJpcnRoEhYKBm'
     'xvY2FsZRgMIAEoCVIGbG9jYWxlEhAKA2J2bhgNIAEoCVIDYnZuEhAKA25pbhgOIAEoCVIDbmlu'
     'EiUKDGNvdW50cnlfY29kZRgPIAEoCUICGAFSC2NvdW50cnlDb2RlEicKDWN1cnJlbmN5X2NvZG'
-    'UYECABKAlCAhgBUgxjdXJyZW5jeUNvZGU=');
+    'UYECABKAlCAhgBUgxjdXJyZW5jeUNvZGUSHwoLbWlkZGxlX25hbWUYESABKAlSCm1pZGRsZU5h'
+    'bWU=');
 
 @$core.Deprecated('Use signupResponseDescriptor instead')
 const SignupResponse$json = {
@@ -461,6 +463,14 @@ const LoginResponse$json = {
       '5': 9,
       '10': 'twoFactorMethod'
     },
+    {
+      '1': 'step_up_expires_in',
+      '3': 14,
+      '4': 1,
+      '5': 3,
+      '10': 'stepUpExpiresIn'
+    },
+    {'1': 'error_code', '3': 15, '4': 1, '5': 9, '10': 'errorCode'},
   ],
 };
 
@@ -474,7 +484,9 @@ final $typed_data.Uint8List loginResponseDescriptor = $convert.base64Decode(
     'FjdG9yVG9rZW4SKAoQc3RlcF91cF9yZXF1aXJlZBgJIAEoCFIOc3RlcFVwUmVxdWlyZWQSIgoN'
     'c3RlcF91cF90b2tlbhgKIAEoCVILc3RlcFVwVG9rZW4SJAoOc3RlcF91cF9tZXRob2QYCyABKA'
     'lSDHN0ZXBVcE1ldGhvZBIuChNzdGVwX3VwX2Rlc3RpbmF0aW9uGAwgASgJUhFzdGVwVXBEZXN0'
-    'aW5hdGlvbhIqChF0d29fZmFjdG9yX21ldGhvZBgNIAEoCVIPdHdvRmFjdG9yTWV0aG9k');
+    'aW5hdGlvbhIqChF0d29fZmFjdG9yX21ldGhvZBgNIAEoCVIPdHdvRmFjdG9yTWV0aG9kEisKEn'
+    'N0ZXBfdXBfZXhwaXJlc19pbhgOIAEoA1IPc3RlcFVwRXhwaXJlc0luEh0KCmVycm9yX2NvZGUY'
+    'DyABKAlSCWVycm9yQ29kZQ==');
 
 @$core.Deprecated('Use loginDataDescriptor instead')
 const LoginData$json = {
@@ -690,6 +702,7 @@ const SignupWithPhoneRequest$json = {
     {'1': 'device_id', '3': 11, '4': 1, '5': 9, '10': 'deviceId'},
     {'1': 'device_name', '3': 12, '4': 1, '5': 9, '10': 'deviceName'},
     {'1': 'date_of_birth', '3': 13, '4': 1, '5': 9, '10': 'dateOfBirth'},
+    {'1': 'middle_name', '3': 14, '4': 1, '5': 9, '10': 'middleName'},
   ],
 };
 
@@ -702,7 +715,8 @@ final $typed_data.Uint8List signupWithPhoneRequestDescriptor = $convert.base64De
     'Q29kZRIWCgZsb2NhbGUYCCABKAlSBmxvY2FsZRIaCgh1c2VybmFtZRgJIAEoCVIIdXNlcm5hbW'
     'USIwoNcmVmZXJyYWxfY29kZRgKIAEoCVIMcmVmZXJyYWxDb2RlEhsKCWRldmljZV9pZBgLIAEo'
     'CVIIZGV2aWNlSWQSHwoLZGV2aWNlX25hbWUYDCABKAlSCmRldmljZU5hbWUSIgoNZGF0ZV9vZl'
-    '9iaXJ0aBgNIAEoCVILZGF0ZU9mQmlydGg=');
+    '9iaXJ0aBgNIAEoCVILZGF0ZU9mQmlydGgSHwoLbWlkZGxlX25hbWUYDiABKAlSCm1pZGRsZU5h'
+    'bWU=');
 
 @$core.Deprecated('Use loginWithPhonePasscodeRequestDescriptor instead')
 const LoginWithPhonePasscodeRequest$json = {
