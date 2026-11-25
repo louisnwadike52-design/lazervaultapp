@@ -1,0 +1,9 @@
+Improvements and fixes across the app:
+
+• You now get a text and an email for money in and out, alongside the alert in the app
+• If your date of birth does not match your BVN, you can correct it and carry on verifying
+• When it cannot be changed in the app, getting it corrected is now one tap away
+• Your profile code and username sit together in the menu, easier to find and scan
+• A tidier sign-in screen when you are switching between accounts
+
+Thank you for using Lazervault.
