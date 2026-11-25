@@ -43,8 +43,8 @@ import 'package:lazervault/src/features/widgets/dashboard/dashboard_refresh_sign
 import 'package:get/get.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/dashboard/active_account_scope.dart';
-import 'package:lazervault/core/utils/kyc_completion.dart';
-import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_login_prompt.dart';
+import 'package:lazervault/core/config/dashboard_widgets.dart';
+import 'package:lazervault/src/features/widgets/dashboard/customise_dashboard_sheet.dart';
 part 'dashboard_widgets.dart';
 
 class Dashboard extends StatefulWidget {
@@ -113,24 +113,28 @@ class _DashboardState extends State<Dashboard> {
             .maybeShow(context, userId: walkthroughUserId);
       }
 
-      // Identity verification, LAST in the same chain and for the same reason
-      // the two above coordinate: it must never land on top of another modal.
+      // THE IDENTITY PROMPT NO LONGER LIVES HERE. Removed 2026-11-10.
       //
-      // Only reachable when the platform does NOT require verification — when
-      // it does, the post-login router sends an unverified user into the
-      // verification flow and they never arrive at this dashboard. The two read
-      // the same gate, so they cannot both fire.
-      if (!mounted) return;
-      final u = context.read<AuthenticationCubit>().currentProfile?.user;
-      if (u != null) {
-        await KycLoginPrompt.maybeShow(
-          context,
-          gate: KycLoginGate.forHolder(
-            kycStatus: u.kycStatus,
-            kycTier: u.kycTier,
-          ),
-        );
-      }
+      // It fired on arrival at the dashboard, which is the one moment it
+      // cannot be acted on usefully: the customer has just finished signing
+      // up, has not tried to do anything yet, and is being asked to go and do
+      // more admin. Reported verbatim — "why showing this for this user when
+      // I just signed up" — on an account that had in fact already submitted
+      // a BVN.
+      //
+      // Two things replace it, each at the moment it is actually relevant:
+      //
+      //  * BELOW Tier 2 the dashboard is not reachable at all. Tier 2 is what
+      //    mints the account number, so the identity step is part of
+      //    onboarding rather than a nag afterwards — see the gate in
+      //    signup_resume.dart / post_login_navigator.
+      //  * AT Tier 2, the prompt appears where the limit is actually met:
+      //    send funds, batch transfer and PiggyVault all show KYCUpgradeModal
+      //    when a transfer is refused by a tier cap, naming the operation the
+      //    customer was trying to perform.
+      //
+      // KycLoginPrompt itself is kept — kyc_login_prompt.dart is still the
+      // widget those surfaces reuse — but nothing opens it on arrival.
     });
   }
 
@@ -252,7 +256,13 @@ class _DashboardState extends State<Dashboard> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (LocaleGating.sectionAllowed('crowdfunds') &&
+                // DashboardWidgets.isVisible on top of the existing gates,
+                // never instead of them. An operator withdrawing the section,
+                // a non-NGN locale and an account that cannot hold a
+                // crowdfund each still win — this only answers the question
+                // none of them asked: does THIS user want it on the page.
+                if (DashboardWidgets.isVisible('crowdfunds') &&
+                    LocaleGating.sectionAllowed('crowdfunds') &&
                     AppServicesBuilder.activeAccountSupports(
                         AppServiceName.crowdfund)) ...[
                   SizedBox(height: 16.0.h),
@@ -261,7 +271,8 @@ class _DashboardState extends State<Dashboard> {
                     child: const TrendingCrowdfunds(),
                   ),
                 ],
-                if (LocaleGating.sectionAllowed('public_groups') &&
+                if (DashboardWidgets.isVisible('public_groups') &&
+                    LocaleGating.sectionAllowed('public_groups') &&
                     AppServicesBuilder.activeAccountSupports(
                         AppServiceName.groupAccount)) ...[
                   SizedBox(height: 16.0.h),
@@ -308,6 +319,9 @@ class _DashboardState extends State<Dashboard> {
             }
             if (!AppServicesBuilder.activeAccountSupports(
                 AppServiceName.exchange)) {
+              return const SizedBox.shrink();
+            }
+            if (!DashboardWidgets.isVisible('exchange_rates')) {
               return const SizedBox.shrink();
             }
             return Column(
@@ -466,96 +480,159 @@ class _DashboardState extends State<Dashboard> {
                 _buildPendingInvitationsBanner(),
                 Container(
                   padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      // Quick services + (classic) refer-a-friend OR (showcase)
-                      // compact services + adverts carousel. The user picks the
-                      // layout in Settings → Dashboard layout; this region
-                      // rebuilds live when they switch.
-                      ValueListenableBuilder<int>(
-                        valueListenable: FeatureFlags.dashboardLayoutRevision,
-                        builder: (context, _, __) {
-                          final showcase = FeatureFlags.dashboardShowcaseLayout;
-                          return Column(
-                            children: [
-                              DashboardWalkthrough.step(
-                                key: DashboardWalkthrough.servicesKey,
-                                title: 'Your services',
-                                body:
-                                    'These reorder by how often you use them (toggle in Settings). Tap “View all” to see everything and rearrange.',
-                                child: AppServicesBuilder(compact: showcase),
-                              ),
-                              SizedBox(height: 16.0.h),
-                              // Adverts carousel + refer-a-friend are hidden when
-                              // a Family & Friends card is active so that screen
-                              // stays clean — only the (self-gating) create-another
-                              // family CTA shows there.
-                              _familyAwareBottomExtras(showcase),
-                            ],
-                          );
-                        },
-                      ),
-                      SizedBox(height: 16.0.h),
-                      DashboardWalkthrough.step(
-                        key: DashboardWalkthrough.historyKey,
-                        title: 'Recent activity',
-                        body:
-                            'Your latest transactions at a glance, tap any to see its receipt.',
-                        // Lower on the page → tooltip sits ABOVE, pointing down.
-                        position: TooltipPosition.top,
-                        child: RecentHistory(),
-                      ),
-                      // Discovery rails are NGN-only.
-                      //
-                      // Crowdfunds and public groups are NGN-denominated
-                      // communal pots: a user on a USD/GBP/EUR account cannot
-                      // contribute to one or take a payout from it, so the
-                      // rail would be a scroll of things they can look at and
-                      // never join. Guarding the whole block (rather than the
-                      // child widget) also means the cubits are never
-                      // constructed, so the dashboard does not fire the
-                      // trending/public-groups fetches in a region whose
-                      // results it will not show.
-                      // ALSO gated on the ACTIVE ACCOUNT offering the service.
-                      // A crowdfund belongs to a personal wallet; on a business
-                      // or savings pot the rail would advertise something that
-                      // account cannot do. The predicate reads the same
-                      // per-account service lists the quick-grid is built from,
-                      // so the two can never disagree.
-                      //
-                      // AND on the account being POSITIVELY resolved as the
-                      // personal one. activeAccountSupports answers against a
-                      // null account type by falling back to the personal
-                      // service list, which is fine for the grid (it rebuilds
-                      // the instant the type arrives) but wrong for a section:
-                      // these build before the grid resolves, so a communal
-                      // rail would flash onto a business or savings account.
-                      _communalRails(),
-                      // Cards section: force-hidden in the view layer
-                      // regardless of the admin flag. The widget + its
-                      // routes/repository + `FeatureFlags.dashboardCardsVisible`
-                      // stay wired — to re-enable, just delete the `false &&`
-                      // guard below. (Hidden because the Cards product surface
-                      // isn't ready for testers yet; keeping the flag wiring
-                      // intact means the admin toggle resumes working when
-                      // the guard is lifted.)
-                      // ignore: dead_code
-                      if (false && FeatureFlags.dashboardCardsVisible) ...[
+                  // REBUILDS ON A CUSTOMISE CHANGE. This tab is kept alive
+                  // inside the TabBarView, so adding or removing a section
+                  // from the sheet would otherwise not show until the user
+                  // left the tab and came back — which reads as the switch
+                  // having done nothing.
+                  // BOTH NOTIFIERS, MERGED.
+                  //
+                  // The user's own changes (the customise sheet) bump
+                  // DashboardWidgets.revision. An OPERATOR's changes arrive by
+                  // settings snapshot and bump FeatureFlags
+                  // .dashboardLayoutRevision — and they move these same
+                  // sections: which are offered at all, and where the
+                  // customise card sits. Listening to one meant an operator
+                  // could save a change, see it live in the app's settings
+                  // store, and watch the page it governs not redraw until the
+                  // app was restarted.
+                  child: ListenableBuilder(
+                    listenable: Listenable.merge([
+                      DashboardWidgets.revision,
+                      FeatureFlags.dashboardLayoutRevision,
+                    ]),
+                    builder: (context, _) => Column(
+                      children: [
+                        // Quick services + (classic) refer-a-friend OR (showcase)
+                        // compact services + adverts carousel. The user picks the
+                        // layout in Settings → Dashboard layout; this region
+                        // rebuilds live when they switch.
+                        ValueListenableBuilder<int>(
+                          valueListenable: FeatureFlags.dashboardLayoutRevision,
+                          builder: (context, _, __) {
+                            final showcase =
+                                FeatureFlags.dashboardShowcaseLayout;
+                            return Column(
+                              children: [
+                                DashboardWalkthrough.step(
+                                  key: DashboardWalkthrough.servicesKey,
+                                  title: 'Your services',
+                                  body:
+                                      'These reorder by how often you use them (toggle in Settings). Tap “View all” to see everything and rearrange.',
+                                  child: AppServicesBuilder(compact: showcase),
+                                ),
+                                if (DashboardWidgets
+                                    .customiseGoesAfter('services'))
+                                  const CustomiseDashboardRow(),
+                                SizedBox(height: 16.0.h),
+                                // Adverts carousel + refer-a-friend are hidden when
+                                // a Family & Friends card is active so that screen
+                                // stays clean — only the (self-gating) create-another
+                                // family CTA shows there.
+                                _familyAwareBottomExtras(showcase),
+                                if (DashboardWidgets
+                                    .customiseGoesAfter('extras'))
+                                  const CustomiseDashboardRow(),
+                              ],
+                            );
+                          },
+                        ),
                         SizedBox(height: 16.0.h),
-                        GenerateBankCard(),
+                        DashboardWalkthrough.step(
+                          key: DashboardWalkthrough.historyKey,
+                          title: 'Recent activity',
+                          body:
+                              'Your latest transactions at a glance, tap any to see its receipt.',
+                          // Lower on the page → tooltip sits ABOVE, pointing down.
+                          position: TooltipPosition.top,
+                          child: RecentHistory(),
+                        ),
+                        // THE CUSTOMISE CARD, WHERE THE OPERATOR PUT IT.
+                        //
+                        // Default is here, directly under recent activity:
+                        // the one section every customer scrolls to, so the
+                        // control that shapes the page is found rather than
+                        // hunted for at the foot of a long scroll.
+                        //
+                        // Asked per section rather than resolved to an index,
+                        // so when the anchor section is hidden for this
+                        // customer the card simply lands under the next one
+                        // that renders instead of disappearing with it.
+                        if (DashboardWidgets.customiseGoesAfter('history'))
+                          const CustomiseDashboardRow(),
+                        // Discovery rails are NGN-only.
+                        //
+                        // Crowdfunds and public groups are NGN-denominated
+                        // communal pots: a user on a USD/GBP/EUR account cannot
+                        // contribute to one or take a payout from it, so the
+                        // rail would be a scroll of things they can look at and
+                        // never join. Guarding the whole block (rather than the
+                        // child widget) also means the cubits are never
+                        // constructed, so the dashboard does not fire the
+                        // trending/public-groups fetches in a region whose
+                        // results it will not show.
+                        // ALSO gated on the ACTIVE ACCOUNT offering the service.
+                        // A crowdfund belongs to a personal wallet; on a business
+                        // or savings pot the rail would advertise something that
+                        // account cannot do. The predicate reads the same
+                        // per-account service lists the quick-grid is built from,
+                        // so the two can never disagree.
+                        //
+                        // AND on the account being POSITIVELY resolved as the
+                        // personal one. activeAccountSupports answers against a
+                        // null account type by falling back to the personal
+                        // service list, which is fine for the grid (it rebuilds
+                        // the instant the type arrives) but wrong for a section:
+                        // these build before the grid resolves, so a communal
+                        // rail would flash onto a business or savings account.
+                        _communalRails(),
+                        if (DashboardWidgets.customiseGoesAfter('communal'))
+                          const CustomiseDashboardRow(),
+                        // Cards section: force-hidden in the view layer
+                        // regardless of the admin flag. The widget + its
+                        // routes/repository + `FeatureFlags.dashboardCardsVisible`
+                        // stay wired — to re-enable, just delete the `false &&`
+                        // guard below. (Hidden because the Cards product surface
+                        // isn't ready for testers yet; keeping the flag wiring
+                        // intact means the admin toggle resumes working when
+                        // the guard is lifted.)
+                        // ignore: dead_code
+                        if (false && FeatureFlags.dashboardCardsVisible) ...[
+                          SizedBox(height: 16.0.h),
+                          GenerateBankCard(),
+                        ],
+                        // Portfolio belongs to an account that can actually
+                        // hold investments; Exchange rates to one that can
+                        // convert. Same predicate, same source of truth.
+                        if (DashboardWidgets.isVisible('portfolio') &&
+                            AppServicesBuilder.activeAccountSupports(
+                                AppServiceName.invest)) ...[
+                          SizedBox(height: 16.0.h),
+                          Portfolio(),
+                        ],
+                        if (DashboardWidgets.customiseGoesAfter('portfolio'))
+                          const CustomiseDashboardRow(),
+                        _exchangeRatesRail(),
+                        if (DashboardWidgets.customiseGoesAfter('exchange_rates'))
+                          const CustomiseDashboardRow(),
+                        if (DashboardWidgets.isVisible('monthly_summary')) ...[
+                          SizedBox(height: 16.0.h),
+                          MonthlySummary(),
+                        ],
+                        if (DashboardWidgets.customiseGoesAfter('monthly_summary'))
+                          const CustomiseDashboardRow(),
+                        // THE WAY BACK IN. A removed section is not missing, it
+                        // is not yet added — so the control that adds it has to
+                        // be on the page that would have shown it. Without this
+                        // a basic dashboard is simply a smaller one with no
+                        // explanation and no way out of it.
+                        //
+                        // This is the 'bottom' anchor — the old fixed place,
+                        // still available to an operator who wants it there.
+                        if (DashboardWidgets.customiseGoesAfter('bottom'))
+                          const CustomiseDashboardRow(),
                       ],
-                      // Portfolio belongs to an account that can actually
-                      // hold investments; Exchange rates to one that can
-                      // convert. Same predicate, same source of truth.
-                      if (AppServicesBuilder.activeAccountSupports(
-                          AppServiceName.invest)) ...[
-                        SizedBox(height: 16.0.h),
-                        Portfolio(),
-                      ],
-                      _exchangeRatesRail(),
-                      SizedBox(height: 16.0.h),
-                      MonthlySummary(),
-                    ],
+                    ),
                   ),
                 ),
               ],

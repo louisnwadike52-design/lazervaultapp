@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
-import 'package:lazervault/core/widgets/bank_logo.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_avatar.dart';
 
 /// Revolut-style transaction row — no card borders, clean minimal layout
 class TransactionCard extends StatelessWidget {
@@ -47,10 +48,48 @@ class TransactionCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (transaction.description != null) ...[
+                  // A SUBTITLE THAT REPEATS THE TITLE IS NOT A SUBTITLE.
+                  //
+                  // Rows read "Transfer to GRACE C. ONWUA…" over "Transfer to
+                  // GRACE C. ONWUANAKU" — the same sentence twice, the top one
+                  // truncated, so the second line's only contribution was the
+                  // ending the first line had cut off. Dropping it gives the
+                  // title the full width and the row one statement.
+                  // PAID WITH CRYPTO, said on the row itself.
+                  //
+                  // A customer scrolling for "the one I paid with USDT" has
+                  // nothing to scan for otherwise — the row looks identical
+                  // to every wallet payment, and the split is two taps away
+                  // on the receipt. Rendered INSTEAD of the subtitle when
+                  // both would show, because the row has one second line and
+                  // which balance paid is the rarer, more useful fact.
+                  if (_fundingBadge() != null) ...[
+                    SizedBox(height: 3.h),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.currency_bitcoin,
+                            size: 12.sp, color: const Color(0xFFA78BFA)),
+                        SizedBox(width: 3.w),
+                        Flexible(
+                          child: Text(
+                            _fundingBadge()!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFFA78BFA),
+                              fontFamily: 'Inter',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ] else if (_subtitle() != null) ...[
                     SizedBox(height: 3.h),
                     Text(
-                      transaction.description!,
+                      _subtitle()!,
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w400,
@@ -152,37 +191,45 @@ class TransactionCard extends StatelessWidget {
     }
   }
 
-  Widget _buildIcon() {
-    // External bank transfers show the recipient bank's logo instead of a
-    // generic transfer glyph, so history reads "which bank" at a glance.
-    final md = transaction.metadata;
-    final bankName = md?['bank_name'] as String?;
-    final bankCode = (md?['bank_code'] as String?) ??
-        (md?['destination_bank_code'] as String?);
-    if (bankName != null && bankName.isNotEmpty) {
-      return BankLogo(
-        bankName: bankName,
-        bankCode: bankCode,
-        size: 40,
-        borderRadius: 20,
+  /// The avatar and its direction pip, from the shared widget.
+  ///
+  /// This used to be two private methods here, which is why the dashboard's
+  /// first five rows showed a generic glyph and no direction: the logic was
+  /// reachable only from this file. The ring is this page's own ground.
+  Widget _buildIcon() => TransactionAvatar(
+        transaction: transaction,
+        ringColor: const Color(0xFF0A0A0A),
       );
-    }
-    return Container(
-      width: 40.w,
-      height: 40.w,
-      decoration: BoxDecoration(
-        color: transaction.serviceColor.withValues(alpha: 0.15),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        transaction.serviceIcon,
-        color: transaction.serviceColor,
-        size: 20.sp,
-      ),
-    );
+
+  /// "Paid with USDT", when this payment was funded by a coin.
+  ///
+  /// Null for every ordinary payment, which is almost all of them — the
+  /// breakdown reads itself off the record and refuses to exist without a
+  /// declared funding source, so there is no condition to write here.
+  String? _fundingBadge() =>
+      breakdownBadge(PaymentMethodBreakdown.from(transaction.metadata));
+
+  /// The second line, when it says something the first does not.
+  ///
+  /// Compared on a normalised form so "Transfer to GRACE C. ONWUANAKU" is
+  /// recognised as the same statement as the title even when the title has
+  /// been ellipsised, and so trailing punctuation or case cannot smuggle a
+  /// duplicate through.
+  String? _subtitle() {
+    final d = transaction.description?.trim();
+    if (d == null || d.isEmpty) return null;
+    String norm(String v) =>
+        v.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    final title = norm(transaction.title);
+    final sub = norm(d);
+    if (sub == title) return null;
+    // Also drop the case where one is a prefix of the other, which is what an
+    // ellipsised title produces.
+    if (title.isNotEmpty && sub.startsWith(title)) return null;
+    if (sub.isNotEmpty && title.startsWith(sub)) return null;
+    return d;
   }
 
-  /// Green for incoming, white for outgoing, no +/- on outgoing
   String _formatAmount() {
     // Crypto-denominated rows (swap/send) pre-format their display \u2014 never
     // "\u20A60.00". A swap's full legs are too wide for this trailing column, so
@@ -195,7 +242,11 @@ class TransactionCard extends StatelessWidget {
       return '${transaction.flow.prefix}$compact';
     }
     final symbol = CountryConfigs.symbolForCurrency(transaction.currency);
-    final amt = transaction.amount.toStringAsFixed(2);
+    // GROUPED. `toStringAsFixed` alone rendered a six-figure transfer as
+    // "₦100023.00" — a number a reader has to count digits on to tell
+    // ₦100,023 from ₦10,023. Every other money surface in the app groups;
+    // this list, the densest one, did not.
+    final amt = NumberFormat('#,##0.00').format(transaction.amount);
     if (transaction.flow == TransactionFlow.incoming) {
       return '+$symbol$amt';
     }

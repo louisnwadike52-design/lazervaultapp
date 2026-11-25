@@ -9,6 +9,7 @@ import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_receipt_router.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_avatar.dart';
 
 class RecentHistoryList extends StatelessWidget {
   const RecentHistoryList({super.key});
@@ -226,18 +227,20 @@ class _RecentTransactionRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: transaction.serviceColor.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                transaction.serviceIcon,
-                color: transaction.serviceColor,
-                size: 20.sp,
-              ),
+            // THE SAME AVATAR THE FULL HISTORY DRAWS.
+            //
+            // This was a generic service glyph in a tinted circle, so the
+            // five rows a customer sees first were the poorer pair: no
+            // recipient bank logo and no direction pip, while tapping "View
+            // all" showed both for the very same payments. One widget now
+            // draws both lists, so they cannot drift again.
+            //
+            // The ring is WHITE because this card is — the pip needs the
+            // page's own ground behind it to read as sitting on the avatar.
+            // The full history passes its own near-black for the same reason.
+            TransactionAvatar(
+              transaction: transaction,
+              ringColor: Colors.white,
             ),
             SizedBox(width: 14.w),
             Expanded(

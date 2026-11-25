@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -58,6 +61,18 @@ class FeatureFlags {
   static const String crowdfundDonationAlertsVisible =
       'crowdfund_donation_alerts_visible';
 
+  // Referral leaderboard — the public ranking of top referrers on the
+  // Referral dashboard. HIDDEN by default per the rule above: it exposes
+  // other customers' names and referral counts to every user, which is a
+  // disclosure decision an operator should make deliberately rather than one
+  // that ships switched on.
+  //
+  // The screen renders without it, and the fetch is SKIPPED entirely while
+  // the flag is off — a hidden surface should not cost a network round trip
+  // on every dashboard open.
+  static const String referralLeaderboardVisible =
+      'referral_leaderboard_visible';
+
   /// Show/hide the "Remove this fund" CTA on the Lazerfund details screen.
   static const String upliftRemoveCtaVisible = 'uplift_remove_cta_visible';
 
@@ -108,6 +123,27 @@ class FeatureFlags {
   static const String groupFundsOneTimeEnabled = 'group_funds_one_time_enabled';
   static const String groupFundsEsusuEnabled = 'group_funds_esusu_enabled';
 
+  // Piggyvault: whether a new plan is held for review before its term starts.
+  //
+  // THE OPERATIONAL REALITY THIS DESCRIBES. Piggyvault deposits are placed
+  // with an asset-management company by hand today — there is no API. So a
+  // plan cannot begin earning the moment somebody taps Confirm: the money has
+  // not reached the company that generates the return. An operator moves it,
+  // then approves the plan, and the term starts there.
+  //
+  // The app needs this BEFORE the deposit, not after. The create response
+  // carries the plan's real status and every screen renders it honestly, but
+  // by then the user has already paid on the strength of a maturity date and
+  // an interest projection. If those start at approval rather than at tap,
+  // the wizard has to say so while they can still decide.
+  //
+  // Mirrors `piggyvault_manual_activation` in accounts-service, which fails
+  // toward waiting for the same reason this getter defaults to true: holding
+  // a plan costs a delay an operator can clear in a click, while promising
+  // returns on money nobody has placed anywhere cannot be clicked back.
+  static const String piggyvaultManualActivation =
+      'piggyvault_manual_activation';
+
   /// Whether Group Funds is available at all. Default true.
   ///
   /// DEPRECATED for gating the entry point — use [groupFundsAvailableFor],
@@ -150,6 +186,14 @@ class FeatureFlags {
   /// Default true.
   static bool get groupFundsEsusuAvailable =>
       _prefs?.getBool(groupFundsEsusuEnabled) ?? true;
+
+  /// Whether a new Piggyvault plan is reviewed before it starts earning.
+  ///
+  /// Default TRUE, which is the opposite of nearly every other flag here, and
+  /// deliberately: the safe answer when we do not know is the one that
+  /// promises the user less. See [piggyvaultManualActivation].
+  static bool get piggyvaultPlansAreReviewed =>
+      _prefs?.getBool(piggyvaultManualActivation) ?? true;
 
   /// Whether ANY contribution type can be created right now.
   ///
@@ -219,6 +263,38 @@ class FeatureFlags {
   //   This is a UI gate ONLY — the authoritative check is server-side in
   //   core-payments-service SendFunds. Default ON for safety.
   static const String sendFundsPinRequired = 'send_funds_pin_required';
+
+  // SAVED-PAYEE MATCHING IN THE ACCOUNT-NUMBER FIELD.
+  //
+  // As the payer types an account number, their own saved recipients are
+  // matched against the digits so far and offered in the prediction overlay —
+  // before, and independently of, the bank name-enquiry, which costs seconds.
+  //
+  // savedPayeeMinDigits is a disclosure threshold as much as a convenience
+  // one: the overlay floats over the form, so matching from a single digit
+  // puts a slice of the payer's payee book on screen for anyone stood behind
+  // them. savedPayeeMaxRows bounds the height of that overlay.
+  //
+  // Both are INTEGERS stored verbatim and parsed on read, so a malformed admin
+  // value degrades to the default rather than throwing during boot.
+  static const String savedPayeeMinDigitsKey =
+      'send_funds_saved_payee_min_digits';
+  static const String savedPayeeMaxRowsKey = 'send_funds_saved_payee_max_rows';
+
+  // How many saved payees the as-you-type matcher holds in memory.
+  //
+  // NOT the same number as savedPayeeMaxRows, which bounds how many matches
+  // are SHOWN. This bounds how many are SEARCHED, and the two were conflated
+  // by accident rather than by decision: the snapshot was fed from the
+  // recipients list's own first page of twenty, so a payer with more saved
+  // payees than that could type the exact account number of the twenty-first
+  // and be offered nothing. A page boundary is invisible to the payer, so it
+  // reads as the feature not working at all.
+  //
+  // Tunable because the right number is "however many payees your users
+  // actually keep", which is an operations question and not a code one.
+  static const String savedPayeeSnapshotRowsKey =
+      'send_funds_saved_payee_snapshot_rows';
 
   // The payout provider's floor for an NGN bank transfer, in KOBO.
   //
@@ -571,7 +647,288 @@ class FeatureFlags {
   static String get maintenanceMessage =>
       (_prefs?.getString(maintenanceMessageKey) ?? '').trim();
 
+  /// WHO STILL GETS IN DURING A DECLARED MAINTENANCE WINDOW.
+  ///
+  /// Comma-separated emails and/or user ids. An operator putting the app
+  /// behind the maintenance notice almost always needs somebody — themselves,
+  /// a tester, a support responder — to keep using it and confirm the fix
+  /// before the notice comes down. Without this the only way to check is to
+  /// turn maintenance off for everybody.
+  ///
+  /// THIS ONLY EVER APPLIES TO A DECLARED WINDOW. It is read inside the
+  /// `maintenanceModeEnabled` branch of the startup gate and nowhere else, so
+  /// it cannot let anyone past a genuine outage: if the backend is returning
+  /// 5xx or is unreachable, being on this list changes nothing, because there
+  /// is no working backend to be let through to. A whitelist that suppressed a
+  /// REAL outage notice would hand a tester a broken app with no explanation —
+  /// the opposite of what it is for.
+  ///
+  /// Matching is case-insensitive and whitespace-tolerant: these are typed by
+  /// a human into a dashboard field.
+  static const String maintenanceWhitelistKey = 'maintenance_whitelist';
+
+  // ---------------------------------------------------------------------
+  // PIGGYVAULT PROVIDER DISCLOSURE.
+  //
+  // PiggyVault is powered by Swiftlynx, and the app has to say so where the
+  // product is used. Same shape as the crypto risk disclosure: an
+  // admin-settable URL opened in the in-app PartnerWebViewScreen, with a
+  // PUBLISHED FALLBACK so the disclosure is never unreachable because nobody
+  // filled the field in. A compliance surface that can be switched off by
+  // leaving a setting blank is not a compliance surface.
+  static const String piggyvaultDisclosureUrlKey = 'piggyvault_disclosure_url';
+
+  /// THE ATTRIBUTION LINE, AND IT IS EMPTY UNTIL AN OPERATOR WRITES ONE.
+  ///
+  /// "Piggyvault is powered by Swiftlynx." was compiled in. Who powers a
+  /// product is a commercial fact that changes without a release, and a
+  /// hardcoded partner name is a claim the app keeps making after it stops
+  /// being true. Operator decision 2026-11-24: show nothing for now.
+  ///
+  /// The DISCLOSURE ITSELF is unaffected — the CTA below always renders and
+  /// always has a URL. Only the line of prose above it is optional, which is
+  /// the right way round: the compliance surface is not what we made
+  /// switchable.
+  static const String piggyvaultProviderTextKey = 'piggyvault_provider_text';
+
+  /// Blank unless an operator has set one. Deliberately NOT defaulted to the
+  /// old sentence: an unset value means "say nothing", not "say what we used
+  /// to say".
+  static String get piggyvaultProviderText =>
+      (_prefs?.getString(piggyvaultProviderTextKey) ?? '').trim();
+
+  /// The disclosure URL. Falls back to the published page rather than ever
+  /// returning empty — the CTA must always have somewhere to go.
+  static String get piggyvaultDisclosureUrl {
+    final configured =
+        (_prefs?.getString(piggyvaultDisclosureUrlKey) ?? '').trim();
+    return configured.isNotEmpty
+        ? configured
+        : 'https://lazervault.app/legal/piggyvault';
+  }
+
+  static String get maintenanceWhitelistRaw =>
+      (_prefs?.getString(maintenanceWhitelistKey) ?? '').trim();
+
+  /// The list, normalised. Empty when nobody is whitelisted, which is the
+  /// default and means the notice applies to everyone.
+  static List<String> get maintenanceWhitelist => maintenanceWhitelistRaw
+      .split(RegExp(r'[,\s]+'))
+      .map((e) => e.trim().toLowerCase())
+      .where((e) => e.isNotEmpty)
+      .toList(growable: false);
+
+  /// Whether any of [identities] — an email, a user id, or a phone — is on the
+  /// maintenance whitelist.
+  ///
+  /// WHAT ARRIVES HERE IS A LIST OF DIGESTS, NOT ADDRESSES. The settings poll
+  /// this key comes down on answers unauthenticated callers, so admin-gateway
+  /// replaces every entry with its SHA-256 before serving the app (see
+  /// maintenance_whitelist_privacy.go there). The team's email addresses and
+  /// phone numbers would otherwise sit in a public response body and in every
+  /// installation's SharedPreferences. So we hash the identity we hold and
+  /// compare digest to digest, which answers the only question this gate asks
+  /// — "is the person holding this phone on the list" — and discloses nothing
+  /// about anyone else.
+  ///
+  /// Lowercased before hashing, matching the server, because an operator types
+  /// `Firstname.Lastname@…` and a case-sensitive compare would lock them out
+  /// silently. Entries that are not 64 hex chars are ignored rather than
+  /// compared raw: accepting a plaintext entry here would quietly undo the
+  /// server-side change the first time a stale value was cached.
+  ///
+  /// Takes the candidates rather than reading storage itself so it stays a
+  /// pure function: the caller owns the async identity lookup and this stays
+  /// testable without a device.
+  static bool maintenanceAllows(Iterable<String?> identities) {
+    final digests =
+        maintenanceWhitelist.where((e) => e.length == 64 && _isHex(e)).toSet();
+    if (digests.isEmpty) return false;
+    for (final raw in identities) {
+      final id = (raw ?? '').trim().toLowerCase();
+      if (id.isEmpty) continue;
+      if (digests.contains(sha256.convert(utf8.encode(id)).toString())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static bool _isHex(String s) {
+    for (final c in s.codeUnits) {
+      final hex = (c >= 0x30 && c <= 0x39) || // 0-9
+          (c >= 0x61 && c <= 0x66); // a-f (the digest is lowercased already)
+      if (!hex) return false;
+    }
+    return true;
+  }
+
+  // ---------------------------------------------------------------------
+  // SMS DND delivery help.
+  //
+  // Nigerian networks let a subscriber put their line on the NCC "Do Not
+  // Disturb" register, which blocks SMS on promotional routes. Our OTPs ask
+  // for the corporate/OTP route, but a provider may silently downgrade the
+  // route when the sender ID is not registered for it — and on a downgraded
+  // route a DND line receives NOTHING while the provider reports success.
+  //
+  // So when a customer has waited out the first cooldown and still has no
+  // code, DND is a genuinely likely cause and worth surfacing. Shown only
+  // AFTER that first countdown so it never pre-empts a code that is simply
+  // in flight.
+  //
+  // Defaults ON: unlike a kill switch, a help notice that fails ON is
+  // harmless — the failure mode is a customer reading advice they did not
+  // need. The short code and keyword are operator-tunable WITHOUT a release
+  // because they are set by the networks/NCC, not by us, and a wrong code
+  // hardcoded into a shipped binary would be unfixable for weeks.
+  static const String smsDndHelpEnabledKey = 'sms_dnd_help_enabled';
+  static bool get smsDndHelpEnabled =>
+      _prefs?.getBool(smsDndHelpEnabledKey) ?? true;
+
+  /// Is our sender approved for the carrier's corporate/OTP route?
+  ///
+  /// That route is DND-EXEMPT: a verification code reaches a DND-registered
+  /// line with the customer doing nothing at all. So once approval lands the
+  /// DND advice is not merely redundant, it is WRONG — it would ask people to
+  /// weaken their spam protection for no reason. The notice retires itself on
+  /// every SMS OTP screen the moment this flips, with no release.
+  ///
+  /// Defaults FALSE, which is the measured state: a real send on 2026-11-13
+  /// returned requested_gateway=otp / gateway_used=direct-refund. Failing
+  /// false shows help nobody needed; failing true would strand a DND customer
+  /// with no code and no explanation.
+  static const String smsOtpRouteApprovedKey = 'sms_otp_route_approved';
+  static bool get smsOtpRouteApproved =>
+      _prefs?.getBool(smsOtpRouteApprovedKey) ?? false;
+
+  /// NCC DND short code. Operator-tunable; defaults to the published 2442.
+  static const String smsDndHelpCodeKey = 'sms_dnd_help_code';
+  static String get smsDndHelpCode {
+    final v = (_prefs?.getString(smsDndHelpCodeKey) ?? '').trim();
+    return v.isEmpty ? '2442' : v;
+  }
+
+  /// Keyword that lifts DND. Operator-tunable; defaults to the published ALLOW.
+  static const String smsDndHelpKeywordKey = 'sms_dnd_help_keyword';
+  static String get smsDndHelpKeyword {
+    final v = (_prefs?.getString(smsDndHelpKeywordKey) ?? '').trim();
+    // "1" allows banking/insurance/financial messages only; "ALLOW" would
+    // switch off the customer's spam protection wholesale. See the NCC 2442
+    // table in admin-gateway's sms_dnd_defaults.go.
+    return v.isEmpty ? '1' : v;
+  }
+
+  /// Body copy. Empty → the compiled fallback below.
+  static const String smsDndHelpMessageKey = 'sms_dnd_help_message';
+  static String get smsDndHelpMessage =>
+      (_prefs?.getString(smsDndHelpMessageKey) ?? '').trim();
+
+  // EVERY STRING THE NOTICE RENDERS IS A SETTING.
+  //
+  // The operator owns this copy: it explains a carrier behaviour we do not
+  // control, the NCC short code and keyword can change, and getting the
+  // wording wrong sends customers hunting through phone settings for a
+  // network register that is not there. None of that should need a release
+  // and a store review to correct.
+  //
+  // The compiled values are a LAST-RESORT fallback for the window before the
+  // first settings snapshot lands (cold start, offline, failed fetch). They
+  // are not the source of truth — any operator value wins. Rendering nothing
+  // in that window would withhold correct, static advice from the customer
+  // precisely when they are stuck, which is the worse failure.
+  static const String smsDndHelpTitleKey = 'sms_dnd_help_title';
+  static String get smsDndHelpTitle {
+    final v = (_prefs?.getString(smsDndHelpTitleKey) ?? '').trim();
+    return v.isEmpty ? 'Still no code?' : v;
+  }
+
+  /// The "carrier, not your phone" correction. Its own key so it can be
+  /// reworded without touching the body, and dropped entirely (empty) if it
+  /// ever stops being true.
+  static const String smsDndHelpDistinctionKey = 'sms_dnd_help_distinction';
+  static String get smsDndHelpDistinction {
+    // ABSENT and EMPTY mean different things here, unlike the other strings.
+    // Absent = never configured, so show the default. Explicitly empty = the
+    // operator removed the line on purpose, so honour that and render nothing
+    // rather than silently reinstating our wording.
+    final raw = _prefs?.getString(smsDndHelpDistinctionKey);
+    if (raw == null) {
+      return "This is set by your mobile network, not on your phone — it is not "
+          "the Do Not Disturb or Focus setting in your phone's settings.";
+    }
+    return raw.trim();
+  }
+
+  /// Instruction line. Supports {keyword} and {code} placeholders so the
+  /// operator can reword around the values without retyping them.
+  static const String smsDndHelpActionKey = 'sms_dnd_help_action';
+  static String get smsDndHelpAction {
+    final v = (_prefs?.getString(smsDndHelpActionKey) ?? '').trim();
+    final raw = v.isEmpty
+        ? 'Text {keyword} to {code} from this number to allow bank messages, then tap resend.'
+            '\n\nNot sure if DND is on? Text STATUS to {code} to check. '
+            'To remove DND completely, text ALLOW to {code}.'
+        : v;
+    return raw
+        .replaceAll('{keyword}', smsDndHelpKeyword)
+        .replaceAll('{code}', smsDndHelpCode);
+  }
+
+  /// Button label. Same placeholders.
+  static const String smsDndHelpCtaKey = 'sms_dnd_help_cta';
+  static String get smsDndHelpCta {
+    final v = (_prefs?.getString(smsDndHelpCtaKey) ?? '').trim();
+    final raw = v.isEmpty ? 'Text {keyword} to {code}' : v;
+    return raw
+        .replaceAll('{keyword}', smsDndHelpKeyword)
+        .replaceAll('{code}', smsDndHelpCode);
+  }
+
+  /// HOW MANY elapsed resend cooldowns before the notice appears.
+  ///
+  /// 1 = after the first countdown. Raising it means the customer must have
+  /// asked for, and waited out, that many codes before being shown
+  /// troubleshooting — which is the right dial when SMS is healthy and the
+  /// advice would just be noise. 0 disables the notice outright, same as
+  /// turning the enabled flag off.
+  ///
+  /// Capped at 5: beyond that nobody is still on the screen, and a typo'd
+  /// large value would silently disable the feature while reading as enabled.
+  /// How the app-rating sheet asks the question: 'emoji' | 'stars' |
+  /// 'alternate'.
+  ///
+  /// Faces ask "how was that for you"; stars ask "rate us". Which performs
+  /// better is an empirical question about THIS audience, not one to settle in
+  /// code — so it is a setting, and 'alternate' exists to compare the two on
+  /// real traffic without shipping a release between arms.
+  ///
+  /// Defaults to emoji. An unrecognised value falls back to emoji rather than
+  /// rendering nothing: a rating sheet with no scale is a dead end the
+  /// customer cannot get past.
+  static const String appRatingScaleModeKey = 'app_rating_scale_mode';
+  static String get appRatingScaleMode {
+    final v =
+        (_prefs?.getString(appRatingScaleModeKey) ?? '').trim().toLowerCase();
+    return (v == 'stars' || v == 'alternate') ? v : 'emoji';
+  }
+
+  static const String smsDndHelpAfterAttemptsKey =
+      'sms_dnd_help_after_attempts';
+  static int get smsDndHelpAfterAttempts {
+    final parsed = int.tryParse(
+        (_prefs?.getString(smsDndHelpAfterAttemptsKey) ?? '').trim());
+    if (parsed == null || parsed < 0) return 1;
+    return parsed > 5 ? 5 : parsed;
+  }
+
   static SharedPreferences? _prefs;
+
+  /// The same store, for [DashboardWidgets] — which is a separate file only
+  /// because this one is already far past the size guideline, not a separate
+  /// concern. Sharing the instance keeps one source of truth for every
+  /// setting the app reads, admin and user alike.
+  static SharedPreferences? get prefsForDashboard => _prefs;
 
   /// Session-pinned Send Funds flow decision (short vs long). Loaded from the
   /// persisted [sendFlowPinned] at boot (fast, offline), re-resolved on login,
@@ -612,6 +969,7 @@ class FeatureFlags {
     _sessionShortSendFlow = null;
     _sendFlowDepth = 0;
     _repinPending = false;
+    _smsAvailableForUserMemo = null;
   }
 
   /// Apply a fresh batch of flags pulled from the admin endpoint. The map is
@@ -650,6 +1008,9 @@ class FeatureFlags {
       // phone-OTP flow coherently.
       smsProviderActiveKey,
       smsOtpEnabledKey,
+      // Boolean: whether the DND help notice may render at all.
+      smsDndHelpEnabledKey,
+      smsOtpRouteApprovedKey,
       maintenanceModeEnabledKey,
       bvnPhoneNoticeEnabledKey,
       bulkSmsVisibleKey,
@@ -670,6 +1031,7 @@ class FeatureFlags {
       receiptFormatSheetVisible,
       appUpdateEnabledKey,
       crowdfundDonationAlertsVisible,
+      referralLeaderboardVisible,
       upliftRemoveCtaVisible,
       intlPayoutEnabled,
       groupFundsEnabled,
@@ -677,6 +1039,7 @@ class FeatureFlags {
       groupFundsEsusuEnabled,
       spraymeLikeSoundKey,
       spraymeRecordingEnabled,
+      piggyvaultManualActivation,
     ]) {
       final v = remote[key]?.trim();
       // An EMPTY value is not `false`.
@@ -751,7 +1114,47 @@ class FeatureFlags {
       appMinBuildAndroid,
       appStoreUrlAndroid,
       appUpdateNotesKey,
+      // STRING, not boolean: "bottom" | "grid". In the bool list above
+      // `v == 'true'` would store it as false and the getter would read the
+      // compiled default forever while the dashboard showed a saved value —
+      // the same quiet strand referralMinKycTierKey and the DND copy keys hit.
+      quickServicesMorePlacementKey,
       maintenanceMessageKey,
+      // STRING: a comma-separated allow-list. In the bool list it would be
+      // stored as false and every whitelisted tester would be locked out
+      // while the dashboard showed the names saved.
+      maintenanceWhitelistKey,
+      // A URL, not a boolean. In the bool list above it would be coerced to
+      // false and the footer would silently serve the compiled fallback
+      // forever while the dashboard showed the operator a saved value.
+      piggyvaultDisclosureUrlKey,
+      // The attribution LINE beside it. A string, and it has to be HERE as
+      // well as in the gateway's two allow-lists — the fourth wiring point
+      // every app-visible setting needs. Missing any one of them means the
+      // dashboard saves it, shows it saved, and the app never sees it.
+      piggyvaultProviderTextKey,
+      // STRINGS, not booleans — the NCC short code ("2442"), the keyword
+      // ("ALLOW") and the operator copy override. In the bool list above
+      // `v == 'true'` would store each as false and the getters would fall
+      // back to their compiled defaults while the dashboard showed a saved
+      // value — the same quiet strand referralMinKycTierKey hit.
+      smsDndHelpCodeKey,
+      smsDndHelpKeywordKey,
+      smsDndHelpMessageKey,
+      smsDndHelpTitleKey,
+      smsDndHelpDistinctionKey,
+      smsDndHelpActionKey,
+      smsDndHelpCtaKey,
+      // A COUNT, not a boolean — string list, like referralMinKycTierKey.
+      smsDndHelpAfterAttemptsKey,
+      // A string enum ('emoji'|'stars'|'alternate'), mirrored verbatim.
+      appRatingScaleModeKey,
+      // A DIGIT, NOT A BOOLEAN — it belongs here and not in the bool list
+      // above, which coerces every value with `v == 'true'`. Putting it there
+      // stored "3" as false, the getter read nothing, and the app silently
+      // fell back to its default while the dashboard showed the operator a
+      // saved value. Exactly the quiet strand the allowlist comments warn of.
+      referralMinKycTierKey,
       // Spray layout default is a string enum ('grid'|'sidebar'|'spotlight'),
       // so it is mirrored verbatim here rather than coerced to a bool above.
       spraymeDefaultLayoutMode,
@@ -781,6 +1184,16 @@ class FeatureFlags {
       // Upload ceilings. Numbers, stored verbatim and parsed on read, so a
       // malformed admin value degrades to the built-in default rather than
       // throwing during boot.
+      // How long the auth backdrop holds each photo. A number, stored verbatim
+      // and parsed on read like the ceilings below, so a malformed admin value
+      // degrades to the default instead of throwing during boot.
+      authBackgroundRotateSecondsKey,
+      // Saved-payee matching bounds. Numbers — in the BOOL loop above they
+      // would be coerced by `v == 'true'` and a "3" would store as false,
+      // which is the quiet strand referralMinKycTierKey records.
+      savedPayeeMinDigitsKey,
+      savedPayeeMaxRowsKey,
+      savedPayeeSnapshotRowsKey,
       upliftFundGalleryMaxImagesKey,
       upliftApplicationMaxImagesKey,
       upliftApplicationMaxDocumentsKey,
@@ -828,6 +1241,21 @@ class FeatureFlags {
     // synchronously the moment this fires, so it must not run until every
     // write above has completed.
     revision.value++;
+    // AND THE DASHBOARD'S OWN TWO, which are not the same notifier.
+    //
+    // A snapshot can change which quick services a basic dashboard shows,
+    // which sections are offered at all, and where the customise card sits —
+    // every one of them a dashboard surface. But the dashboard does not
+    // listen to `revision`; it listens to these two. So an operator could
+    // move the customise card or change the basic set, watch the value save,
+    // and see nothing change on a running app until it was restarted — the
+    // setting was live in SharedPreferences and the page that reads it had no
+    // reason to rebuild.
+    // ONE notifier, not two: DashboardWidgets imports this file, so reaching
+    // back for its revision here would close an import cycle. The dashboard
+    // merges the two listenables instead — see the section builder in
+    // dashboard.dart, which rebuilds on either.
+    dashboardLayoutRevision.value++;
   }
 
   // ── Existing transfer-API helpers ────────────────────────────────────────
@@ -837,6 +1265,18 @@ class FeatureFlags {
 
   static void enableNewTransferApi() {
     _prefs?.setBool(useNewTransferApi, true);
+  }
+
+  // ── Referral leaderboard visibility ──────────────────────────────────────
+  /// `false` by default, so the leaderboard stays hidden until an admin turns
+  /// it on — including on the very first launch, before any snapshot has
+  /// been fetched. Defaulting to true would publish customers' names to every
+  /// user for the length of one cold start.
+  ///
+  /// Synchronous read, like every flag here: a build method never waits on
+  /// the network.
+  static bool get referralLeaderboardEnabled {
+    return _prefs?.getBool(referralLeaderboardVisible) ?? false;
   }
 
   // ── Dashboard cards visibility ───────────────────────────────────────────
@@ -877,6 +1317,7 @@ class FeatureFlags {
   // snapshot has not resolved yet, or the settings call failed, the app
   // behaves as though SMS is unavailable. Showing an OTP screen that cannot
   // work is worse than skipping one that could have.
+
   static const String smsProviderActiveKey = 'sms_provider_active';
 
   /// Whether a working SMS provider is integrated and enabled.
@@ -936,6 +1377,114 @@ class FeatureFlags {
   /// another region a dashboard full of services that dead-end.
   static bool get localeGatingOn =>
       _prefs?.getBool(localeGatingEnabled) ?? true;
+
+  // ── Quick-services "More" placement ──────────────────────────────────────
+  //
+  // WHERE THE PAGE-TURN CONTROL LIVES, and it is a layout decision an operator
+  // can take back without a release.
+  //
+  //   "bottom" (DEFAULT) — a pill on the trailing edge of the indicator row,
+  //                        styled like the section's own "View All" but
+  //                        filled rather than tinted, because this one turns
+  //                        the page rather than opening a sheet. The
+  //                        Financial Connections icon moves to the LEADING
+  //                        edge so the two controls bracket the dots instead
+  //                        of fighting for the same corner.
+  //   "grid"             — the original: the control takes the last cell of
+  //                        the grid, and Financial Connections keeps the
+  //                        trailing edge of the indicator row.
+  //
+  // One key, not two booleans: the placement and the icon's side are the SAME
+  // decision, and expressing them separately invites the combination nobody
+  // wants — both controls stacked in one corner.
+  //
+  // Defaults to "bottom" because that is the operator's chosen arrangement;
+  // an unreadable or mistyped value falls back to it rather than to the layout
+  // it replaced, so a typo cannot quietly restore the old grid cell.
+  static const String quickServicesMorePlacementKey =
+      'quick_services_more_placement';
+
+  /// Whether the page-turn control sits in the GRID rather than the bottom row.
+  static bool get quickServicesMoreInGrid =>
+      (_prefs?.getString(quickServicesMorePlacementKey) ?? '')
+          .trim()
+          .toLowerCase() ==
+      'grid';
+
+  // ── Per-account SMS availability (told BY THE SERVER) ───────────────────
+  //
+  // SMS stopped being one platform-wide fact on 2026-11-17: the provider
+  // accepts and bills OTP traffic it does not deliver, so [smsProviderActive]
+  // is off for everyone while an operator whitelist keeps SMS for named
+  // testers — resolved server-side against the account's own email and phone.
+  //
+  // WHY THE SERVER HAS TO TELL US. The whitelist is personal contact details
+  // and the settings snapshot below arrives over an UNAUTHENTICATED poll that
+  // every installation downloads, so the list can never be readable here. But
+  // the app is what decides whether the phone-OTP step is rendered at all
+  // (signup_steps REMOVES it, main.dart routes resumption past it) — so with
+  // only the global flag, a whitelisted tester never reached a screen that
+  // would send, and a whitelist that was correct and tested on the server did
+  // nothing in the product. The answer therefore rides on every auth response
+  // (auth.proto User.sms_available) and is cached here.
+  //
+  // PER USER, so it is in kPerUserStorageKeys and purged on a user switch —
+  // one holder's answer must never be applied to another's.
+  static const String smsAvailableForUserKey = 'sms_available_for_user';
+
+  /// In-memory mirror, preferred over the stored value.
+  ///
+  /// THIS IS WHAT MAKES THE FLAG USABLE AT LOGIN, and the reason is a race the
+  /// stored value cannot win. The post-login router resolves its route
+  /// SYNCHRONOUSLY, the moment the auth response is mapped — while the
+  /// SharedPreferences write is still in flight. Reading only the store would
+  /// hand the router the PREVIOUS session's answer on the very login that
+  /// carried the new one.
+  ///
+  /// That is not hypothetical: the same one-launch lag already bites the admin
+  /// snapshot. main.dart applies the CACHED settings at boot and the fresh poll
+  /// lands later, so flipping sms_provider_active on in the dashboard did not
+  /// prompt anyone for phone verification until their next launch — the login
+  /// route had already been decided from the stale cache. An answer that
+  /// arrives ON the login response must not inherit that lag.
+  static bool? _smsAvailableForUserMemo;
+
+  /// The server's last answer for THIS account, or null if none has arrived.
+  ///
+  /// Null is "not known", NOT "unavailable" — before the first auth response
+  /// (a fresh install at the login screen) there is no account to answer for,
+  /// and SmsPolicy falls back to the platform-wide flag.
+  static bool? get smsAvailableForUser =>
+      _smsAvailableForUserMemo ?? _prefs?.getBool(smsAvailableForUserKey);
+
+  /// Record what the server just said. Called from the one mapper every auth
+  /// response passes through, so no path can skip it.
+  ///
+  /// The memo is set SYNCHRONOUSLY before the await, so a caller that reads the
+  /// flag in the same turn — the post-login router does — sees this response's
+  /// answer rather than the last one's.
+  static Future<void> rememberSmsAvailableForUser(bool value) async {
+    _smsAvailableForUserMemo = value;
+    try {
+      await _prefs?.setBool(smsAvailableForUserKey, value);
+    } catch (_) {
+      // Best effort: the memo already carries this session, and a failed write
+      // costs a hidden affordance next launch, never a wrong one — SmsPolicy
+      // only ever reads this permissively.
+    }
+  }
+
+  /// Drop the IN-MEMORY mirror only.
+  ///
+  /// Not the whole answer: the getter falls back to the stored value, so a
+  /// caller that wants the account forgotten must remove
+  /// [smsAvailableForUserKey] from the store as well. purgeStaleUserCache does
+  /// both, and that pairing is what a user switch needs — the memo lives in
+  /// the process and would otherwise outlive the store it was cleared from,
+  /// leaving one holder's answer in force for the next person on the device.
+  static void forgetSmsAvailableForUser() {
+    _smsAvailableForUserMemo = null;
+  }
 
   /// The signed-in user's email, for whitelist checks.
   ///
@@ -1073,6 +1622,31 @@ class FeatureFlags {
     return gateAvailable(prefix, defaultOn: defaultOn);
   }
 
+  /// The gate a ROUTE should consult — the same decision the tile makes.
+  ///
+  /// A QUICK SERVICE HAS TWO SWITCHES AND A ROUTE WAS ONLY READING ONE.
+  /// `_visible` removes the tile from the grid and the search corpus;
+  /// `_available` leaves the tile up and explains itself on tap. Tapping a
+  /// tile goes through `openAppService` → [quickServiceEntryBlocked], which
+  /// honours BOTH plus the whitelist. A route guard called [gateAllowed],
+  /// which reads `_available` alone — so an operator who turned a service OFF
+  /// the natural way (hiding the tile) still left every other door open:
+  /// a deep link, a shared URL, an AI-chat `Get.toNamed`, a notification tap.
+  /// The service vanished from the dashboard and remained fully usable.
+  ///
+  /// For a `quick_service_*` gate this now asks exactly what the tile asks, so
+  /// "off" means off at every entrance. Non-quick-service gates are unchanged.
+  static bool routeGateAllowed(String gate, {String? email}) {
+    const p = 'quick_service_';
+    if (gate.startsWith(p)) {
+      final service = gate.substring(p.length);
+      if (service.isNotEmpty) {
+        return !quickServiceEntryBlocked(service, email: email);
+      }
+    }
+    return gateAllowed(gate, email: email);
+  }
+
   /// The gift-card SELL tab.
   ///
   /// DEFAULT OFF, so the gift-cards screen shows Buy alone until an operator
@@ -1092,6 +1666,90 @@ class FeatureFlags {
 
   static bool giftcardSellTabIsVisible({String? email}) =>
       gateAllowed(giftcardSellPrefix, email: email, defaultOn: false);
+
+  // ---------------------------------------------------------------------
+  // PAY WITH CRYPTO.
+  //
+  //   feature_cryptopay_available   "true" enables it (DEFAULT OFF)
+  //   feature_cryptopay_whitelist   CSV of emails that see it regardless
+  //
+  // DEFAULT OFF, and deliberately `defaultOn: false` rather than the usual
+  // `true`: this one spends a customer's crypto. A key that failed to reach
+  // the handset — a settings poll that 500s, a prefix someone forgot — must
+  // leave the option ABSENT, not present. Every other gate in this file can
+  // afford to fail open; this one cannot.
+  //
+  // The whitelist is checked first and overrides the switch, which is how
+  // production testing happens while it stays hidden from everyone else.
+  // ── Crowdfund contribution: async by default ──────────────────────────
+  //
+  //   feature_crowdfund_asynccontribution_available
+  //     "false" → the PIN sheet holds its processing phase until the money
+  //               RPC answers, and the receipt opens already terminal.
+  //     anything else (the DEFAULT) → the receipt opens immediately in
+  //               Processing and settles in place.
+  //
+  // WHY ASYNC IS THE DEFAULT. The contribution RPC straddles the PIN
+  // validation, the wallet debit and the campaign-row update, and the user
+  // watched a dedicated full-screen spinner for all of it — reported simply
+  // as "why's the processing stage in crowdfund that slow". It is not faster
+  // either way; what changes is that the customer is holding a receipt with a
+  // live status instead of a progress animation they cannot leave, which is
+  // how the send-funds flow has always worked.
+  //
+  // Tunable rather than hardcoded so the sync path stays one switch away if a
+  // provider incident ever makes an in-place settle worse than a wait.
+  static const String crowdfundAsyncPrefix =
+      'feature_crowdfund_asynccontribution';
+
+  /// True when a contribution hands the customer a receipt immediately.
+  static bool get crowdfundAsyncContribution =>
+      gateAvailable(crowdfundAsyncPrefix);
+
+  static const String cryptoPayPrefix = 'feature_cryptopay';
+
+  /// Whether the Fiat | Crypto choice may be offered at all.
+  ///
+  /// This is the CLIENT half of the gate and is only ever a courtesy: the
+  /// server refuses a funding request from a user it has not enabled, so a
+  /// tampered app gains nothing by forcing this true.
+  static bool payWithCryptoAvailable({String? email, String? userId}) {
+    // THE WHITELIST ARRIVES AS DIGESTS, NOT ADDRESSES.
+    //
+    // gateAllowed compares the whitelist as plaintext, which is right for the
+    // staff lists it was written for. This one rides the same public settings
+    // poll while naming the people running a money pilot, so admin-gateway
+    // hashes it (digestedWhitelistKeys) and the comparison happens here
+    // instead. Entries that are not 64 hex chars are ignored rather than
+    // compared raw — accepting plaintext would quietly undo the server-side
+    // change the first time a stale value was cached.
+    final digests = (_prefs?.getString('${cryptoPayPrefix}_whitelist') ?? '')
+        .split(RegExp(r'[,\s]+'))
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.length == 64 && _isHex(e))
+        .toSet();
+    // BOTH IDENTIFIERS ARE COMPARED, and the user id is the one to prefer.
+    //
+    // A digest only hides a list; it cannot hide a value someone can guess,
+    // and an email address is guessable — hash the address you already suspect
+    // and you have your answer. A user id is a random UUID, so a digest of one
+    // really is opaque. The privacy note in admin-gateway tells operators to
+    // whitelist by id for exactly that reason, and this used to hash the email
+    // ONLY: an operator who followed that advice was silently never matched,
+    // which for a gate is the worst way to be wrong — it looks like the
+    // feature is broken rather than like the list is.
+    if (digests.isNotEmpty) {
+      for (final raw in [userId, email]) {
+        final v = (raw ?? '').trim().toLowerCase();
+        if (v.isEmpty) continue;
+        final d = sha256.convert(utf8.encode(v)).toString();
+        // The whitelist OVERRIDES the switch — that is how a pilot runs while
+        // the feature stays off for everyone else.
+        if (digests.contains(d)) return true;
+      }
+    }
+    return gateAvailable(cryptoPayPrefix, defaultOn: false);
+  }
 
   /// Whether Lazerfunds should show the FULL first-run guide card on its tabs,
   /// instead of the one-line info link that is now the standing state.
@@ -1304,6 +1962,40 @@ class FeatureFlags {
       'quick_service_${service}_message';
   static String quickServiceVisibleKey(String service) =>
       'quick_service_${service}_visible';
+
+  static String quickServiceLabelKey(String service) =>
+      'quick_service_${service}_label';
+
+  /// The tile label for [service], or [shipped] when the operator has not
+  /// renamed it.
+  ///
+  /// WHY A RENAME NEEDS TO BE A SETTING. The label is the only part of a
+  /// service a customer reads before tapping, and the words that work change
+  /// without the service changing at all — "Send Funds" became "Transfer"
+  /// because that is what people here call it. Shipping that as a constant
+  /// means a wording decision waits on a store review.
+  ///
+  /// THE SHIPPED LABEL IS RETURNED FIRST AND WITHOUT WAITING. This read is
+  /// synchronous from SharedPreferences, which the settings poll fills in the
+  /// background, so the first frame shows the shipped word and the tile
+  /// re-renders to the operator's when the poll lands. There is deliberately
+  /// no loading state: a grid of skeletons while we ask the network what to
+  /// call things would be worse than a word changing a moment later.
+  ///
+  /// Bounded and non-blank: a tile is two short lines, and an empty override
+  /// would render an unlabelled icon that looks broken rather than renamed.
+  /// Both fall back to the shipped label rather than to nothing.
+  static String quickServiceLabel(String service, String shipped) {
+    final raw = (_prefs?.getString(quickServiceLabelKey(service)) ?? '').trim();
+    if (raw.isEmpty) return shipped;
+    if (raw.runes.length > quickServiceLabelMaxRunes) return shipped;
+    return raw;
+  }
+
+  /// The longest label a tile can render without the text being clipped.
+  /// Measured against the existing two-line labels — "Financial Connections"
+  /// is 21 — with a little headroom.
+  static const int quickServiceLabelMaxRunes = 24;
 
   /// Whether the service appears AT ALL. Default TRUE.
   ///
@@ -1529,6 +2221,34 @@ class FeatureFlags {
   /// ingest list, so adding a bill type cannot leave the two halves out of
   /// step — the gap that made the betting fee invisible even once the server
   /// was pricing it.
+  /// How long the rotating auth backdrop holds each photo, in seconds.
+  ///
+  /// It was `const Duration(seconds: 10)` written at one call site, which is
+  /// not a setting however reasonable the number: changing it meant a release
+  /// and a store review. Now admin-tunable like every other pacing value.
+  static const String authBackgroundRotateSecondsKey =
+      'auth_background_rotate_seconds';
+
+  /// Default 7s — the operator's chosen pace.
+  static const int _authBackgroundRotateSecondsDefault = 7;
+
+  /// Bounded on READ, not on write alone.
+  ///
+  /// A 0 would restart the timer continuously and decode a 7.9 MB photo on
+  /// every tick; a very large value is indistinguishable from a static
+  /// backdrop and would read as the feature being broken. Anything
+  /// unparseable or outside the range falls back to the default rather than
+  /// throwing on a screen the user cannot get past — this is the SIGN-IN
+  /// screen, so a crash here locks everyone out.
+  static Duration get authBackgroundRotateInterval {
+    final raw = _prefs?.getString(authBackgroundRotateSecondsKey)?.trim();
+    final parsed = int.tryParse(raw ?? '');
+    if (parsed == null || parsed < 2 || parsed > 120) {
+      return const Duration(seconds: _authBackgroundRotateSecondsDefault);
+    }
+    return Duration(seconds: parsed);
+  }
+
   static const List<String> billFeeSettingKeys = <String>[
     'betting_service_fee_enabled',
     'betting_fee_type',
@@ -1580,6 +2300,123 @@ class FeatureFlags {
     return parsed;
   }
 
+  /// The KYC tier a REFEREE must reach before their referrer is paid.
+  ///
+  /// NEVER HARDCODED. This is a commercial rule an operator changes from the
+  /// dashboard — Tier 2 (BVN verified, account minted) buys growth, Tier 3
+  /// (BVN + NIN + liveness) buys certainty — and the app PROMISES it to the
+  /// customer on the referral screen. A number baked in here would tell
+  /// someone their friend needs Tier 2 while the allocator paid only on
+  /// Tier 3, which is a promise the product does not keep.
+  ///
+  /// Defaults to 3, matching DefaultReferralMinKYCTier in auth-service: with
+  /// no row set, both sides independently resolve the same strict answer.
+  /// Clamped to 2..3 because tier 1 is the unverified baseline and there is
+  /// no tier above 3.
+  /// The referral conditions shown to the customer — CMS copy, not code.
+  ///
+  /// Lives in `feature_referral_terms_message`, which needs no allow-list
+  /// change: the gateway's bulk read already serves `feature_%` and its write
+  /// validator already accepts the `_message` suffix, and this app already
+  /// stores every `feature_` key verbatim. Newline-separated, one condition
+  /// per line.
+  ///
+  /// `{tier}` is substituted from [referralMinKycTier] — the value
+  /// auth-service actually gates on — for the same reason that accessor
+  /// exists: a number written into the copy would tell someone their friend
+  /// needs Tier 2 while the allocator paid only on Tier 3.
+  ///
+  /// Returns EMPTY when unset, and the caller then shows nothing. Inventing a
+  /// condition is worse than omitting one, because the customer acts on it.
+  static const String referralTermsKey = 'feature_referral_terms_message';
+  static List<String> referralTerms() {
+    final raw = (_prefs?.getString(referralTermsKey) ?? '').trim();
+    if (raw.isEmpty) return const [];
+    final tier = referralMinKycTier.toString();
+    return raw
+        .split('\n')
+        .map((l) => l.trim().replaceAll('{tier}', tier))
+        .where((l) => l.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  /// WHAT THE REFERRAL SCREEN SAYS, IN EACH OF THE PROGRAMME'S STATES.
+  ///
+  /// The screen used to assert, in four places and in compiled text, that a
+  /// bonus lands in your wallet automatically once your referee passes KYC.
+  /// That is true only while the programme is RUNNING, and the programme has
+  /// three live states an operator can choose between from the console —
+  /// running, recording referrals but paying nothing, and closed to new
+  /// referrals altogether. In the other two the app went on promising money,
+  /// which is a promise nobody could keep.
+  ///
+  /// `feature_referral_*` needs no allow-list change: admin-gateway's bulk
+  /// read already serves `feature_%`, its write validator already accepts the
+  /// `_message` suffix, and the app stores every `feature_` key verbatim.
+  ///
+  /// Blank falls back to the compiled wording rather than showing nothing —
+  /// an empty explanation where money is concerned is worse than a plain one.
+  /// The CLOSED state has no key here on purpose: it already travels on the
+  /// wire as `programmeNotice`, and a second place to write it is a second
+  /// place for the two to disagree.
+  static const String referralEarnMessageKey = 'feature_referral_earn_message';
+  static const String referralRewardsPausedMessageKey =
+      'feature_referral_rewards_paused_message';
+  static const String referralEarnPendingMessageKey =
+      'feature_referral_earn_pending_message';
+  static const String referralEmptyPromptKey =
+      'feature_referral_empty_prompt_message';
+
+  /// One CMS string, trimmed, or [fallback] when nothing is configured.
+  static String referralCopy(String key, String fallback) {
+    final v = (_prefs?.getString(key) ?? '').trim();
+    return v.isEmpty ? fallback : v;
+  }
+
+  // ── Crowdfunding policy ────────────────────────────────────────────────
+
+  /// Where the public crowdfunding policy lives.
+  ///
+  /// A URL rather than text compiled into the app, so there is ONE copy and a
+  /// build can never ship a stale version of a policy document.
+  ///
+  /// COMPOSED SERVER-SIDE from `link_base_domain` + `legal_crowdfunding_path`,
+  /// exactly like every other legal link (terms, privacy, gift cards, crypto
+  /// disclosure). That composition is why this is not a full URL in its own
+  /// row: moving the marketing site changes one setting and every legal link
+  /// follows, instead of leaving one policy pointing at the old domain.
+  ///
+  /// Reaches the app through the `legal_%` bulk-read prefix that already
+  /// carries the others.
+  static const String crowdfundPolicyUrlKey = 'legal_crowdfunding_url';
+
+  /// The policy URL, or null when no policy page is published.
+  ///
+  /// NULL IS A REAL ANSWER and every caller must hide the link on it. A
+  /// blocked creator — the person most likely to tap it — would otherwise be
+  /// sent into a blank WebView, which reads as the app being broken on top of
+  /// their campaign having been refused.
+  static String? get crowdfundPolicyUrl {
+    final v = (_prefs?.getString(crowdfundPolicyUrlKey) ?? '').trim();
+    if (v.isEmpty) return null;
+    // Validated on READ. The composer runs in another service and another
+    // deploy; a malformed base domain, or a value written straight to the
+    // database, must not reach a WebView.
+    final uri = Uri.tryParse(v);
+    if (uri == null || !uri.isScheme('https') || uri.host.trim().isEmpty) {
+      return null;
+    }
+    return v;
+  }
+
+  static const String referralMinKycTierKey = 'referral_bonus_min_kyc_tier';
+  static int get referralMinKycTier {
+    final parsed =
+        int.tryParse((_prefs?.getString(referralMinKycTierKey) ?? '').trim());
+    if (parsed == null || parsed < 2 || parsed > 3) return 3;
+    return parsed;
+  }
+
   static int _positiveSetting(String key, int fallback, {int? cap}) {
     final parsed = int.tryParse((_prefs?.getString(key) ?? '').trim());
     if (parsed == null || parsed <= 0) return fallback;
@@ -1605,6 +2442,30 @@ class FeatureFlags {
   /// Default 5.
   static int get upliftApplicationMaxDocuments =>
       _positiveSetting(upliftApplicationMaxDocumentsKey, 3, cap: 20);
+
+  /// How many digits the payer must type before their saved payees are
+  /// matched against the account-number field. Default 3.
+  ///
+  /// Not zero and not one: this list floats over the form, and at one digit a
+  /// payer with a full payee book shows a slice of it to whoever is stood
+  /// behind them. Three is enough to be a real narrowing.
+  static int get savedPayeeMinDigits =>
+      _positiveSetting(savedPayeeMinDigitsKey, 3, cap: 10);
+
+  /// How many saved-payee matches the prediction overlay may show at once.
+  /// Default 5 — the overlay is anchored under the field, so a taller list
+  /// covers the form rather than scrolling it.
+  static int get savedPayeeMaxRows =>
+      _positiveSetting(savedPayeeMaxRowsKey, 5, cap: 20);
+
+  /// How many saved payees the matcher keeps in memory to search. Default 500.
+  ///
+  /// Capped at 2000 rather than left open: this is one request and one list
+  /// held for the session, and a payer with more payees than that is a
+  /// business account whose matching belongs on the server, not a reason to
+  /// pull an unbounded table onto a phone.
+  static int get savedPayeeSnapshotRows =>
+      _positiveSetting(savedPayeeSnapshotRowsKey, 500, cap: 2000);
 
   /// Largest image or PDF any uploader will send, in MB. Default 10.
   ///

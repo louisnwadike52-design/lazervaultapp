@@ -33,6 +33,12 @@ enum TransactionServiceType {
   // Stored value / commerce.
   invoice('Invoice', Icons.receipt_long, Color(0xFF6366F1)),
   giftCard('Gift Card', Icons.card_giftcard, Color(0xFF6366F1)),
+  // Event tickets. ITS OWN TYPE rather than `unknown`, so a buyer's history
+  // says what the money was for — "Event Ticket", with the event named in the
+  // receipt metadata — instead of an unlabelled debit they have to recognise
+  // from the amount.
+  eventTicket('Event Ticket', Icons.confirmation_num_outlined,
+      Color(0xFFD946EF)),
 
   // Business (payroll, sales, expenses, tax, inventory) — receipts the business
   // dashboard generates.
@@ -94,7 +100,12 @@ enum TransactionServiceType {
   lazerpoints('Lazerpoints', Icons.stars_rounded, Color(0xFFF59E0B)),
 
   // Account-level money flow.
-  deposit('Deposit', Icons.add_circle_outline, Color(0xFF10B981)),
+  // A WALLET, NOT A PLUS. `add_circle_outline` is the glyph for an "add"
+  // control, so a deposit row read as a button rather than a thing that
+  // happened — and the direction pip on the avatar's corner already says
+  // money came IN, which is all the plus was carrying. The avatar's job is
+  // to say WHAT, and what this is, is money arriving in the wallet.
+  deposit('Deposit', Icons.account_balance_wallet_rounded, Color(0xFF10B981)),
   withdrawal('Withdrawal', Icons.remove_circle_outline, Color(0xFFEF4444)),
   refund('Refund', Icons.undo_outlined, Color(0xFF6B7280)),
   reversal('Reversal', Icons.replay_outlined, Color(0xFF6B7280)),
