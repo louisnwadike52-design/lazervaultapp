@@ -42,6 +42,11 @@ import 'package:lazervault/src/features/pending_actions/presentation/widgets/pen
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_tabs.dart';
 import 'package:lazervault/core/config/locale_gating.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/rating/presentation/app_rating_sheet.dart';
+import 'package:lazervault/src/features/support/data/support_api.dart';
+import 'package:lazervault/core/widgets/system_bottom_inset.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Set to `true` to show the voice banking setup bottom sheet when the dashboard loads.
 const bool _kShowVoiceSetupDashboardPrompt = false;
@@ -294,6 +299,48 @@ class _DashboardScreenState extends State<DashboardScreen>
     await cubit.refresh();
     if (!thenPrompt || !mounted) return;
     await _maybeShowPendingPaymentsPrompt(cubit.state);
+    if (!mounted) return;
+    await _maybeAskForRating();
+  }
+
+  /// Offer the rating prompt, LAST and only when nothing else interrupted.
+  ///
+  /// Ordering is the whole design here. The update modal and the pending-
+  /// payments sheet both ask the customer to DO something; a rating asks them
+  /// for a favour. Stacking a favour on top of an interruption is how a prompt
+  /// gets dismissed on reflex and then resented, so this runs after the others
+  /// have had their turn and only if none of them is on screen.
+  ///
+  /// The schedule itself is the SERVER's: this asks "may I?" and renders. A
+  /// device-side interval would be reset by clearing app storage, and the
+  /// cadence is an operator decision that should not need a release to change.
+  ///
+  /// Fire-and-forget and never throws — the rating prompt is the least
+  /// important thing on this screen.
+  Future<void> _maybeAskForRating() async {
+    try {
+      // Another sheet is already up. Try again next launch rather than
+      // queueing behind it.
+      if (ModalRoute.of(context)?.isCurrent != true) return;
+
+      final api = SupportApi(serviceLocator<SecureStorageService>());
+      // The server cannot see account age from support-service, so the app
+      // supplies it. It can only ever COST us a prompt, never defeat the
+      // interval, the snooze or the post-rating quiet — those are computed
+      // from rows only the server writes.
+      final created =
+          serviceLocator<AuthenticationCubit>().currentProfile?.user.createdAt;
+      final ageDays = created == null
+          ? 0
+          : DateTime.now().toUtc().difference(created.toUtc()).inDays;
+      if (ageDays <= 0) return;
+
+      if (!await api.shouldAskForRating(accountAgeDays: ageDays)) return;
+      if (!mounted) return;
+      await showAppRatingSheet(context);
+    } catch (_) {
+      // Never surfaces. See above.
+    }
   }
 
   Future<void> _maybeShowPendingPaymentsPrompt(
@@ -343,7 +390,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       pendingCount: actions.length,
     );
     try {
-      await showModalBottomSheet<void>(
+      await showAppBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
@@ -515,7 +562,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// Open the voice command bottom sheet directly (enrollment already verified)
   void _openVoiceCommandSheet() {
     // Self-sizing sheet (DraggableScrollableSheet: 90% → full screen).
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       VoiceCommandSheet(skipActivationCheck: true),
       isScrollControlled: true,
       enableDrag: false,
@@ -560,7 +607,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   /// Show voice setup modal bottom sheet
   void _showVoiceSetupModal({required bool canDismiss, int? skipCount}) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isDismissible: canDismiss,
       enableDrag: canDismiss,
@@ -618,13 +665,24 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (_fraudModalActive) return;
     final should = await _updateCubit.service.shouldShowOptionalModal(info);
     if (!should || !mounted) return;
-    await _updateCubit.service.markOptionalModalSeen(info);
-    if (!mounted) return;
-    await showUpdateModal(
+    // SAME ORDER AS THE STARTUP GATE: push the sheet, then mark.
+    //
+    // This marked BEFORE showing, which spends the one-time prompt even when
+    // the sheet never renders — the failure the gate's own comment was written
+    // about, just on the other path. showModalBottomSheet pushes synchronously
+    // and throws synchronously, so holding the Future first means we only mark
+    // once it is genuinely on screen, and a throw leaves the prompt owed.
+    //
+    // The two paths share one SharedPreferences token, so they must agree on
+    // when a prompt counts as seen or one of them will keep re-offering what
+    // the other already showed.
+    final shown = showUpdateModal(
       context,
       info: info,
       onUpdate: () => _openUpdateStore(info),
     );
+    await _updateCubit.service.markOptionalModalSeen(info);
+    await shown;
   }
 
   @override
@@ -724,7 +782,19 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       bottom: 0,
                                       left: 0,
                                       right: 0,
-                                      height: 80,
+                                      // + the system navigation bar. extendBody
+                                      // runs this strip to the bottom of the
+                                      // WINDOW, which on an edge-to-edge
+                                      // Android is below the nav buttons; a
+                                      // fixed 80 left a transparent band
+                                      // between the strip and the bar above it.
+                                      //
+                                      // viewPadding, not padding: the Scaffold
+                                      // removes bottom padding from its body,
+                                      // so padding reads 0 here.
+                                      height: 80 +
+                                          MediaQuery.viewPaddingOf(context)
+                                              .bottom,
                                       child: Container(
                                         decoration: BoxDecoration(
                                           color: Color(0xFF1E1E1E),
@@ -748,52 +818,74 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget _buildAdaptiveBottomNav() {
     // Use curved navigation for AI Chat tab (index 2)
     if (_currentIndex >= 2) {
+      // FLUSH AT THE BOTTOM, matching the tab bar below — see the note there.
+      // This was wrapped in SystemBottomInset; the operator reported the
+      // result as lifted too high and asked for it back at the bottom.
       return Theme(
-        data: Theme.of(context).copyWith(
-          iconTheme: IconThemeData(color: Colors.white),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Color(0xFF1E1E1E),
+          data: Theme.of(context).copyWith(
+            iconTheme: IconThemeData(color: Colors.white),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Color(0xFF1E1E1E),
+                ],
+              ),
+            ),
+            child: CurvedNavigationBar(
+              index: _currentIndex,
+              height: 58.0,
+              items: [
+                _buildCurvedNavItem(0),
+                _buildCurvedNavItem(1),
+                _buildCurvedNavItem(2),
+                _buildCurvedNavItem(3),
+                _buildCurvedNavItem(4),
               ],
+              color: Color(0xFF1E1E1E),
+              buttonBackgroundColor: Colors.blue.withValues(alpha: 0.2),
+              backgroundColor: Colors.transparent,
+              animationCurve: Curves.easeInOut,
+              animationDuration: Duration(milliseconds: 300),
+              onTap: _handleOnTabChange,
+              // Refuse the visual move for a destination this region cannot use.
+              //
+              // _handleOnTabChange already blocks the navigation, but without
+              // this the curved bar still slides its highlight onto the tab it
+              // did not open — the indicator ends up on Beam while Lifestyle is
+              // still on screen, which looks like a broken nav rather than a
+              // withheld feature.
+              letIndexChange: (index) =>
+                  LocaleGating.navAllowed(dashboardTabLabel(index)),
             ),
           ),
-          child: CurvedNavigationBar(
-            index: _currentIndex,
-            height: 58.0,
-            items: [
-              _buildCurvedNavItem(0),
-              _buildCurvedNavItem(1),
-              _buildCurvedNavItem(2),
-              _buildCurvedNavItem(3),
-              _buildCurvedNavItem(4),
-            ],
-            color: Color(0xFF1E1E1E),
-            buttonBackgroundColor: Colors.blue.withValues(alpha: 0.2),
-            backgroundColor: Colors.transparent,
-            animationCurve: Curves.easeInOut,
-            animationDuration: Duration(milliseconds: 300),
-            onTap: _handleOnTabChange,
-            // Refuse the visual move for a destination this region cannot use.
-            //
-            // _handleOnTabChange already blocks the navigation, but without
-            // this the curved bar still slides its highlight onto the tab it
-            // did not open — the indicator ends up on Beam while Lifestyle is
-            // still on screen, which looks like a broken nav rather than a
-            // withheld feature.
-            letIndexChange: (index) =>
-                LocaleGating.navAllowed(dashboardTabLabel(index)),
-          ),
-        ),
       );
     }
 
-    // Use MotionTabBar for other tabs
+    // Use MotionTabBar for other tabs. The bar paints itself white
+    // (tabBarColor), so the inset strip has to match or the gap under it
+    // shows the page through.
+    //
+    // SITTING FLUSH AT THE BOTTOM, BY INSTRUCTION.
+    //
+    // This was wrapped in SystemBottomInset so the bar would clear the
+    // phone's navigation buttons under Android 15's edge-to-edge layout. The
+    // operator reported the result as the bar "lifted too high" — twice, in
+    // the same words they used for the original complaint — and asked for it
+    // back at the bottom.
+    //
+    // They are the one looking at the device, so the inset is gone from here.
+    // MotionTabBar's own `useSafeArea` still defaults to TRUE and is left
+    // alone, so the package applies whatever its own SafeArea resolves to and
+    // nothing is added on top of it.
+    //
+    // SystemBottomInset is NOT deleted: the bottom sheets and action bars that
+    // use it were never part of this complaint, and it is the right tool the
+    // day this needs revisiting on a three-button device.
     return BottomNavMenu(
       initialIndex: _currentIndex,
       onTabChange: _handleOnTabChange,

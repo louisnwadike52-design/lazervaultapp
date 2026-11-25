@@ -8,7 +8,9 @@ part of 'phone_verification_screen.dart';
 /// Arguments:
 /// - phoneNumber: The phone number to verify (required)
 /// - codeSent: Whether the OTP was already sent (default: true when coming from signup)
-/// - expiresIn: Seconds until the OTP expires (optional, default: 600 seconds / 10 minutes)
+/// - expiresIn: Seconds until the OTP expires, as the SERVER reported it.
+///   There is no default: see the note on the countdown below — inventing one
+///   showed a timer the database did not honour.
 /// - isRequired: Whether verification is mandatory or can be skipped (default: true)
 /// - secondaryEmail: Email for secondary verification after phone (optional)
 class PhoneVerificationScreen extends StatelessWidget {
@@ -74,7 +76,19 @@ class PhoneVerificationScreen extends StatelessWidget {
       child: _PhoneOtpVerificationView(
         phoneNumber: phone ?? '',
         codeSent: settingsSource ? false : otpSent,
-        expiresIn: expiry ?? 600, // Default 10 minutes
+        // NO INVENTED FALLBACK. This read `expiry ?? 600`, so whenever the
+        // server did not send an expiry the screen counted down from TEN
+        // MINUTES — while the canonical server TTL
+        // (auth_login_otp_ttl_seconds) is 120 SECONDS. The customer watched a
+        // confident timer for eight minutes after their code had already
+        // died, then typed it and was told it was wrong.
+        //
+        // A countdown we cannot source is worse than none: it is trusted
+        // precisely because it looks authoritative. 0 means "unknown", and
+        // _startExpiryCountdown ignores a non-positive value, so the row
+        // simply does not render until a real expiry arrives from the send
+        // response (PhoneVerificationState.expiresIn).
+        expiresIn: expiry ?? 0,
         isRequired: required,
         secondaryEmail: secondaryEmailArg,
         nextRoute: nextRouteArg,

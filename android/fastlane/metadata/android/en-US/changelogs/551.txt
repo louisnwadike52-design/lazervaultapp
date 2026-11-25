@@ -1,0 +1,7 @@
+Verify-email now names the inbox your code went to, and resend works when you arrive from sign-in.
+
+Pay with Crypto converts enough to cover the transfer fee as well as the amount; a refused quote keeps you on the amount screen.
+
+Receipts show the crypto sold, its naira value and any wallet top-up, plus your narration wherever a transaction appears.
+
+Bottom navigation sits above the phone's buttons. The side drawer shows your username, and exchange receipts share and download again.

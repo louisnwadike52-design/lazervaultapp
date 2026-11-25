@@ -6,10 +6,14 @@ import 'package:lazervault/core/offline/mutation_queue.dart';
 import 'package:lazervault/core/utilities/bank_sort.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/core/utils/grpc_error_handler.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/fund_payment_with_crypto.dart';
 import 'package:lazervault/core/utils/kyc_error_handler.dart';
+import 'package:lazervault/core/exceptions/server_exception.dart';
+import 'package:lazervault/core/utils/tier_limit_refusal.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 class TransferCubit extends Cubit<TransferState> {
   final IPaymentsTransferDataSource paymentsTransferDataSource;
@@ -18,9 +22,26 @@ class TransferCubit extends Cubit<TransferState> {
   /// Cache the last fee lookup result so it can be used when building receipt details
   TransferFeeLoaded? lastFeeLoaded;
 
+  /// How a crypto-funded payment asks for its conversion.
+  ///
+  /// INJECTED rather than reached for through the service locator, because
+  /// this is the step that sells a customer's coin and it has to be provable
+  /// in a test: that it runs only after the payment is recorded, that it runs
+  /// exactly once, and that a refusal is reported differently from a lost
+  /// reply. Defaults to the real call, so production wiring is unchanged.
+  final Future<CryptoFundingStart> Function({
+    required String accountId,
+    required String paymentReference,
+    required int requiredMinor,
+    required String asset,
+    String service,
+    String currency,
+  }) fundWithCrypto;
+
   TransferCubit({
     required this.paymentsTransferDataSource,
     this.mutationQueue,
+    this.fundWithCrypto = fundPaymentWithCrypto,
   }) : super(const TransferInitial());
 
   /// Check if an error is a network-related error that should trigger offline queuing
@@ -215,6 +236,9 @@ class TransferCubit extends Cubit<TransferState> {
     int? expenseCategory, // Budget category enum value selected by user
     String?
         flow, // Funnel flow ("long"|"short"); falls back to last screen view
+    /// PAY WITH CRYPTO: the asset to sell to fund this transfer, lowercase
+    /// ("usdt"). Null means the ordinary wallet-funded transfer.
+    String? fundingAsset,
   }) async {
     if (isClosed) return;
 
@@ -234,8 +258,16 @@ class TransferCubit extends Cubit<TransferState> {
       );
     }
 
-    // Pre-flight balance check: reject early if amount exceeds available balance
-    if (availableBalance != null && amount > availableBalance) {
+    // Pre-flight balance check: reject early if amount exceeds available balance.
+    //
+    // SKIPPED FOR A CRYPTO-FUNDED TRANSFER. Being short in the wallet is the
+    // entire reason the customer chose to sell crypto, so applying this test
+    // would refuse exactly the transfers the feature exists to serve — and it
+    // would refuse them here, in the client, before the server ever saw them.
+    final isCryptoFunded = (fundingAsset ?? '').trim().isNotEmpty;
+    if (!isCryptoFunded &&
+        availableBalance != null &&
+        amount > availableBalance) {
       emit(TransferFailure(
         message:
             'Insufficient available balance. You have ${availableBalance.toStringAsFixed(2)} available.',
@@ -261,6 +293,7 @@ class TransferCubit extends Cubit<TransferState> {
         scheduledAt: scheduledAt,
         expenseCategory: expenseCategory,
         flow: sendFlow,
+        fundingAsset: fundingAsset,
       );
 
       if (isClosed) return;
@@ -272,8 +305,120 @@ class TransferCubit extends Cubit<TransferState> {
         // uses isInFlight to render a Processing badge and listens on the
         // balance WebSocket for the terminal Success/Failure event.
         final status = result.status?.toLowerCase() ?? '';
-        final isInFlight = type == 'external' &&
-            (status == 'pending' || status == 'processing');
+
+        // PAY WITH CRYPTO — STEP 2 OF THE ORDER, AND IT RUNS HERE ON PURPOSE.
+        //
+        // core-payments has now recorded the transfer at
+        // awaiting_crypto_funding and converted NOTHING. Asking for the
+        // conversion is a separate call, and it must happen even if the
+        // customer backgrounds the app or the screen that started this is
+        // disposed a moment later. Doing it in a screen's BlocListener would
+        // tie a money step to a widget's lifetime: navigate away at the wrong
+        // instant and the authorisation is left for the sweep to close, with
+        // the customer told their transfer was on its way.
+        if (isCryptoFunded) {
+          final reference = result.reference ?? '';
+          if (reference.isEmpty) {
+            // No reference means nothing to fund against, and funding a
+            // payment we cannot name is how crypto gets sold for an errand
+            // nothing tracks. Nothing has moved, so say so plainly.
+            emit(const TransferFailure(
+              message:
+                  'We could not set up that payment. You have not been charged.',
+              isRetryable: true,
+            ));
+            recordOutcome('failure');
+            return;
+          }
+          try {
+            // SIZE THE CONVERSION AGAINST WHAT THE TRANSFER WILL ACTUALLY
+            // COST, FEE INCLUDED.
+            //
+            // The server's figures are still preferred — but on THIS path it
+            // has none. A crypto-funded transfer is recorded at
+            // `awaiting_crypto_funding` and reserves nothing, so the
+            // authorising row is written before any fee is computed and
+            // `result.fee` comes back 0. The conversion was therefore sized
+            // to the amount alone and the wallet silently had to cover the
+            // fee.
+            //
+            // Measured on prod 2026-11-24: required ₦1,300 against a
+            // ₦1,323.00 charge. It went through only because that customer
+            // had a balance. Someone paying ENTIRELY from crypto with an
+            // empty wallet converts ~the amount, passes the sufficiency
+            // check, and then fails at the hold for want of the fee — their
+            // money is safe in their wallet, but the payment fails for a
+            // reason nobody can see and the conversion was avoidable.
+            //
+            // ensureFeeForAmount, not lastFeeLoaded: fees are
+            // amount-dependent, and that gate revalidates the quote against
+            // this exact amount and type rather than trusting a stale one
+            // from a different figure.
+            final amountMinor = result.amount ?? 0;
+            var feeMinor = result.fee ?? 0;
+            if (feeMinor == 0) {
+              final quote = await ensureFeeForAmount(
+                amountMinorUnits: amountMinor,
+                // The response's own currency when it has one. Empty is
+                // safe: GetTransferFee defaults to NGN, which is the only
+                // currency a crypto-funded transfer settles in today.
+                currency: (result.currency?.trim().isNotEmpty ?? false)
+                    ? result.currency!.trim()
+                    : 'NGN',
+                transferType: type,
+                destinationBankCode: destinationBankCode,
+              );
+              // Null means the re-quote failed. Fall through with 0 rather
+              // than blocking: the old behaviour, which usually works, beats
+              // refusing a payment the customer has already authorised.
+              feeMinor = quote?.fee ?? 0;
+            }
+            await fundWithCrypto(
+              accountId: fromAccountId,
+              paymentReference: reference,
+              requiredMinor: amountMinor + feeMinor,
+              asset: fundingAsset!.trim().toLowerCase(),
+            );
+          } on GrpcError catch (e) {
+            if (isClosed) return;
+            // A REFUSAL AND A TIMEOUT ARE NOT THE SAME EVENT, and telling the
+            // customer "you have not been charged" when we simply lost the
+            // reply would be a guess about their money. Only the codes that
+            // mean the server decided against it carry that promise.
+            final refused = e.code == StatusCode.invalidArgument ||
+                e.code == StatusCode.failedPrecondition ||
+                e.code == StatusCode.permissionDenied ||
+                e.code == StatusCode.notFound ||
+                e.code == StatusCode.outOfRange;
+            emit(TransferFailure(
+              message: refused
+                  ? _withNoChargePromise(GrpcErrorHandler.userFriendlyMessage(e))
+                  : 'We could not confirm the conversion. Check this transfer in your history before trying again.',
+              isRetryable: refused,
+              isSpendRefusal: refused,
+            ));
+            recordOutcome('failure');
+            return;
+          } catch (_) {
+            if (isClosed) return;
+            emit(const TransferFailure(
+              message:
+                  'We could not confirm the conversion. Check this transfer in your history before trying again.',
+              isRetryable: false,
+            ));
+            recordOutcome('failure');
+            return;
+          }
+        }
+
+        // IN-FLIGHT COVERS THE CONVERSION TOO. Without this a crypto-funded
+        // transfer renders a completed receipt while the coin is still being
+        // sold — the customer is shown money as sent that has not left, and
+        // may send it again.
+        final isInFlight = status == 'awaiting_crypto_funding' ||
+            isCryptoFunded ||
+            (type == 'external' &&
+                (status == 'pending' || status == 'processing'));
         emit(TransferSuccess(
             response: _toEntity(result), isInFlight: isInFlight));
         recordOutcome('success');
@@ -305,6 +450,14 @@ class TransferCubit extends Cubit<TransferState> {
           message:
               'Transaction limit reached. Upgrade your account to increase limits.',
           isKYCError: true,
+          // THE TIER HAS TO SURVIVE THE REWORDING. The copy above replaces the
+          // server's sentence, and the old handler then decided whether to show
+          // the upgrade sheet by searching that copy for 'KYC_TIER_INSUFFICIENT'
+          // — a string it does not contain. So the flag said "KYC" and the
+          // text-matching handler said "not KYC", the screen took the early
+          // return anyway, and the customer was shown NOTHING AT ALL. Carrying
+          // the parsed tier in the state removes the text round-trip entirely.
+          enforcedKycTier: enforcedTierFromRefusal(e.message),
         ));
         recordOutcome('kyc_error');
         return;
@@ -315,6 +468,7 @@ class TransferCubit extends Cubit<TransferState> {
       emit(TransferFailure(
         message: GrpcErrorHandler.userFriendlyMessage(e),
         isRetryable: GrpcErrorHandler.isRetryable(e),
+        enforcedKycTier: enforcedTierFromRefusal(e.message),
         // FailedPrecondition is core-payments' code for "we refused this on its
         // merits": a limit, a cap, a family allowance, an inactive account. The
         // message it carries is written for the payer and tells them what to
@@ -334,8 +488,37 @@ class TransferCubit extends Cubit<TransferState> {
         ));
         recordOutcome('network_error');
       } else {
-        emit(TransferFailure(message: 'Transfer failed. Please try again.'));
-        recordOutcome('failure');
+        // THE SERVER USUALLY SAYS WHY. Discarding `e` here is what turned
+        // "daily transfer amount limit exceeded" into "Transfer failed.
+        // Please try again." — advice to retry the one thing that cannot
+        // succeed until tomorrow. friendlyError unwraps the gRPC envelope and
+        // falls back to the generic line only when the message really is
+        // technical.
+        final limitMsg = spendingLimitMessage(e);
+        final raw = e.toString();
+
+        // THE BRANCH SEND FUNDS ACTUALLY TAKES.
+        //
+        // PaymentsTransferDataSourceImpl.sendFunds catches the GrpcError and
+        // rethrows a ServerException, so the `on GrpcError` handler above is
+        // unreachable for this call and everything it sets — the spend-refusal
+        // flag that routes a family wallet to its own dialog, the KYC flag, the
+        // enforcing tier — was never set for a transfer. The code now travels
+        // on the exception, so the same three decisions are made here.
+        final code = e is ServerException ? e.code : null;
+        final refusedOnMerits = code == StatusCode.failedPrecondition;
+
+        emit(TransferFailure(
+          message: friendlyError(e),
+          // A limit is a refusal, not a transient failure: offering Retry on
+          // it invites the customer to fail again. Same for anything the
+          // server refused on its merits.
+          isRetryable: limitMsg == null && !refusedOnMerits,
+          isKYCError: isKYCLimitError(raw),
+          isSpendRefusal: refusedOnMerits,
+          enforcedKycTier: enforcedTierFromRefusal(raw),
+        ));
+        recordOutcome(limitMsg != null ? 'spending_limit' : 'failure');
       }
     }
   }
@@ -364,4 +547,30 @@ class TransferCubit extends Cubit<TransferState> {
       internalReference: result.reference,
     );
   }
+}
+
+/// Append the money promise to a refusal, WITHOUT saying it twice.
+///
+/// Both ends of this flow know the same true thing and both want to say it:
+/// crypto-service closes the row `failed_no_charge` and words its refusal
+/// with "Nothing was converted", and this cubit adds the customer-facing
+/// promise for every refusal it classifies. Concatenating produced
+///
+///   "…Increase the amount and try again. Nothing was converted. Nothing was
+///    converted and you have not been charged."
+///
+/// — which reads like a system talking to itself at the exact moment a
+/// customer is deciding whether to trust it with money again.
+///
+/// The server's own wording wins when it already carries the promise; the
+/// client only fills the gap.
+String _withNoChargePromise(String message) {
+  final text = message.trim();
+  final lower = text.toLowerCase();
+  if (lower.contains('not been charged')) return text;
+  if (lower.contains('nothing was converted')) {
+    return '$text You have not been charged.';
+  }
+  const promise = 'Nothing was converted and you have not been charged.';
+  return text.isEmpty ? promise : '$text $promise';
 }

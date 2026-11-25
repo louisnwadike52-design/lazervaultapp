@@ -1,0 +1,7 @@
+Verification codes now last the full two minutes everywhere — the countdown you see, the code in your email and the one the server accepts are the same.
+
+Resend works properly: the button unlocks when the server is ready, and signing in no longer uses up the codes you asked for.
+
+A code that is nearly expired is replaced rather than re-sent, so what arrives is usable.
+
+Tapping a notification we can't place now opens your dashboard instead of a blank screen.

@@ -3,6 +3,7 @@
 // via `--flavor`, so those checks are gone — see `currentAppEnvironment`.
 
 import 'package:lazervault/core/services/install_referrer_service.dart';
+import 'package:lazervault/core/services/vendor_access.dart';
 import 'package:lazervault/src/features/app_status/widgets/outage_copy.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_entry_tile.dart';
@@ -28,7 +29,10 @@ import 'package:lazervault/core/notifications/notification_target.dart';
 import 'package:lazervault/core/services/pending_chat_navigation.dart';
 import 'package:lazervault/core/services/chat_sound_settings.dart';
 import 'package:lazervault/core/services/app_route_observer.dart';
+import 'package:lazervault/core/navigation/nav_stack.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/navigation/unknown_route_landing.dart';
+import 'package:lazervault/src/features/kyc/domain/onboarding_identity_route.dart';
 import 'package:lazervault/src/features/authentication/data/datasources/cms_data.dart';
 import 'package:lazervault/src/features/app_status/widgets/app_startup_gate.dart';
 import 'package:lazervault/src/features/presentation/app_router.dart';
@@ -72,6 +76,7 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
 import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 import 'package:lazervault/src/features/authentication/domain/phone_verification_step.dart';
 import 'package:lazervault/src/features/presentation/views/notification_feed_store.dart';
+import 'package:lazervault/core/services/saved_recipients_snapshot.dart';
 part 'main_widgets.dart';
 
 Future<void> _checkPermissions() async {
@@ -348,6 +353,13 @@ void main() {
     // The KYC mirror shares FeatureFlags' store and must be readable on the
     // first frame, for the same reason: the dashboard consults it synchronously.
     await KycSnapshot.init();
+    // Vendor access shares the same shape: the services grid asks
+    // VendorAccess.isActiveVendor synchronously while it builds, so the cache
+    // has to be loaded before the first frame. Loading it here only reads what
+    // the LAST session stored — the fresh answer is fetched after sign-in by
+    // VendorAccessRefresher, because this call has no session to authenticate
+    // with yet.
+    await VendorAccess.init();
     // Hydrate admin-toggled flags from the endpoint registry's cached snapshot
     // (same /internal/voice-agents/settings poll that feeds the URL cache). On a
     // brand-new install the keys aren't cached yet, so flags hold their safe
@@ -791,8 +803,18 @@ Future<String> _determineInitialRoute() async {
           print('📋 KYC flag stale (${known.name}) - clearing, not routing');
           await storage.delete(key: 'kyc_onboarding_pending');
         } else {
-          print('📋 KYC onboarding pending - showing progressive KYC');
-          return AppRoutes.kycBVNVerification;
+          // THE SAME DECISION PIN-SETUP MAKES, not a hardcoded gate.
+          //
+          // This returned AppRoutes.kycBVNVerification outright, which was
+          // right while the Mono gate was the only identity step. It stopped
+          // being right when onboarding gained an identity screen chosen by
+          // bvn_signup_screen_enabled: a customer killed ON that screen came
+          // back to the Mono widget instead of to the screen they were on,
+          // skipping BVN capture entirely (no Tier 2, no account number) or
+          // skipping the NIN name-fix that stops Mono refusing them.
+          final next = await resolveOnboardingIdentityRoute();
+          print('📋 KYC onboarding pending - resuming at $next');
+          return next;
         }
       }
 
@@ -1023,10 +1045,12 @@ class _MyAppState extends State<MyApp> {
         // dropping the invite on the dashboard.
         if (data.familyInviteToken != null &&
             data.familyInviteToken!.isNotEmpty) {
-          PendingDeepLink.instance.push(NotificationTarget(
-            route: AppRoutes.groupJoinLink,
-            arguments: {'token': data.familyInviteToken},
-          ));
+          PendingDeepLink.instance.push(
+              NotificationTarget(
+                route: AppRoutes.groupJoinLink,
+                arguments: {'token': data.familyInviteToken},
+              ),
+              fromSharedLink: true);
           break;
         }
         // No token in the URL: fall back to the user's pending-invites list
@@ -1045,10 +1069,12 @@ class _MyAppState extends State<MyApp> {
         // the dashboard with the link silently dropped.
         if (data.escrowOfferToken != null &&
             data.escrowOfferToken!.isNotEmpty) {
-          PendingDeepLink.instance.push(NotificationTarget(
-            route: AppRoutes.escrowOfferView,
-            arguments: {'shareToken': data.escrowOfferToken},
-          ));
+          PendingDeepLink.instance.push(
+              NotificationTarget(
+                route: AppRoutes.escrowOfferView,
+                arguments: {'shareToken': data.escrowOfferToken},
+              ),
+              fromSharedLink: true);
         }
         break;
       case DeepLinkType.crowdfundCampaign:
@@ -1065,10 +1091,34 @@ class _MyAppState extends State<MyApp> {
         // in-app tap path supplies.
         if (data.crowdfundCampaignId != null &&
             data.crowdfundCampaignId!.isNotEmpty) {
-          PendingDeepLink.instance.push(NotificationTarget(
-            route: AppRoutes.crowdfundDetails,
-            arguments: {'crowdfundId': data.crowdfundCampaignId},
-          ));
+          PendingDeepLink.instance.push(
+              NotificationTarget(
+                route: AppRoutes.crowdfundDetails,
+                arguments: {'crowdfundId': data.crowdfundCampaignId},
+              ),
+              fromSharedLink: true);
+        }
+        break;
+      case DeepLinkType.ticketEvent:
+        // A SHARED TICKETED EVENT. Through PendingDeepLink for the same reason
+        // as the escrow offer, the crowdfund campaign and the spray link: the
+        // person tapping an organiser's shared event is very often signed out
+        // — and for ticketing that is the NORMAL case, because the link is how
+        // an event is distributed in a group chat. A bare Get.toNamed would
+        // drop the event and leave them on the dashboard wondering what the
+        // link did.
+        //
+        // The route carries the id in its PATH (/events/:eventId), so the
+        // substitution happens here rather than being passed as an argument —
+        // the detail screen reads Get.parameters, and an argument would arrive
+        // as a null id and render the screen's own error state.
+        if (data.ticketEventId != null && data.ticketEventId!.isNotEmpty) {
+          PendingDeepLink.instance.push(
+              NotificationTarget(
+                route: AppRoutes.ticketingDetail
+                    .replaceFirst(':eventId', data.ticketEventId!),
+              ),
+              fromSharedLink: true);
         }
         break;
       case DeepLinkType.lazerSprayJoin:
@@ -1078,10 +1128,12 @@ class _MyAppState extends State<MyApp> {
         // and replay, or they sign in and land on the dashboard while the
         // session they were invited to carries on without them.
         if (data.lazerSprayCode != null && data.lazerSprayCode!.isNotEmpty) {
-          PendingDeepLink.instance.push(NotificationTarget(
-            route: AppRoutes.lazerSprayJoin,
-            arguments: {'code': data.lazerSprayCode},
-          ));
+          PendingDeepLink.instance.push(
+              NotificationTarget(
+                route: AppRoutes.lazerSprayJoin,
+                arguments: {'code': data.lazerSprayCode},
+              ),
+              fromSharedLink: true);
         }
         break;
       case DeepLinkType.groupAccount:
@@ -1090,10 +1142,12 @@ class _MyAppState extends State<MyApp> {
         // signed out, so the target has to survive the login gate and replay
         // rather than dumping them on the dashboard.
         if (data.groupAccountId != null && data.groupAccountId!.isNotEmpty) {
-          PendingDeepLink.instance.push(NotificationTarget(
-            route: AppRoutes.groupDetails,
-            arguments: data.groupAccountId,
-          ));
+          PendingDeepLink.instance.push(
+              NotificationTarget(
+                route: AppRoutes.groupDetails,
+                arguments: data.groupAccountId,
+              ),
+              fromSharedLink: true);
         }
         break;
       case DeepLinkType.paymentReceipt:
@@ -1146,6 +1200,9 @@ class _MyAppState extends State<MyApp> {
             // Lets every bank-destination surface see that a typed account
             // number is INTERNAL before it pays for an external rail.
             lazervaultLookup: serviceLocator<LazervaultAccountLookup>(),
+            // The payer's own saved payees, read synchronously so they are
+            // offered BEFORE a bank name-enquiry is attempted.
+            savedRecipients: () => SavedRecipientsSnapshot.current,
           ),
         ),
         BlocProvider<ContactSyncCubit>(
@@ -1175,7 +1232,17 @@ class _MyAppState extends State<MyApp> {
               // every route change, so replay no longer depends on the
               // dashboard being the first authenticated screen (it is not, when
               // login lands on KYC, a forced update, or a fraud freeze).
-              navigatorObservers: [appRouteObserver, deepLinkReplayObserver],
+              // navStackObserver records the route NAMES on the stack, which
+              // is what offAllKeepingHome needs to decide whether a dashboard
+              // is still underneath a finished flow. Without it the only
+              // honest answer is "rebuild one and hope", and with it the
+              // Android back button after a receipt lands on the dashboard
+              // instead of closing the app.
+              navigatorObservers: [
+                appRouteObserver,
+                deepLinkReplayObserver,
+                NavStackObserver(),
+              ],
               enableLog: true,
               logWriterCallback: localLogWriter,
               translations: CMSData(),
@@ -1221,12 +1288,12 @@ class _MyAppState extends State<MyApp> {
               initialRoute: widget.initialRoute,
               unknownRoute: GetPage(
                 name: '/not-found',
-                // Unknown route → empty purple frame matches the native
-                // splash, so a misrouted boot doesn't flash a white screen.
-                page: () => const Scaffold(
-                  backgroundColor: Color(0xFF3D2F8B),
-                  body: SizedBox.shrink(),
-                ),
+                // Unknown route → the purple splash frame for one frame, then
+                // somewhere real. It used to STAY on the empty frame, which
+                // left a customer who tapped a push this build cannot route
+                // staring at a blank screen with no control on it. See
+                // UnknownRouteLanding.
+                page: () => const UnknownRouteLanding(),
               ),
               getPages: AppRouter.routes,
             ),

@@ -114,6 +114,24 @@ class EndpointRegistry {
     // Must be persisted here or the gate falls back to its default on every
     // cold start, before the first snapshot lands.
     'voice_enabled_languages_csv',
+    // SMS DND delivery help shown after the first OTP cooldown. The short
+    // code and keyword are set by the networks/NCC, not by us, so they must
+    // be correctable without a release — which means they must survive here,
+    // or the hardcoded default wins on every cold start.
+    'sms_dnd_help_enabled',
+    'sms_dnd_help_code',
+    'sms_dnd_help_keyword',
+    'sms_dnd_help_message',
+    'sms_dnd_help_title',
+    'sms_dnd_help_distinction',
+    'sms_dnd_help_action',
+    'sms_dnd_help_cta',
+    'sms_dnd_help_after_attempts',
+    // Sender approved for the DND-exempt corporate/OTP route? True retires
+    // the DND notice everywhere.
+    'sms_otp_route_approved',
+    // How the rating sheet asks: emoji | stars | alternate.
+    'app_rating_scale_mode',
     // Exchange > Send Abroad. THE ADMIN SETTING IS THE SOURCE OF TRUTH.
     //
     // Every other link in this chain was already built — admin-gateway
@@ -138,6 +156,17 @@ class EndpointRegistry {
     'group_funds_enabled',
     'group_funds_one_time_enabled',
     'group_funds_esusu_enabled',
+    // Whether a new Piggyvault plan is held for review before its term starts.
+    //
+    // Transported because the CREATE WIZARD needs it, and needs it before the
+    // deposit. The created plan's own status tells every later screen the
+    // truth, but by then the user has paid on the strength of a maturity date
+    // and an interest figure that start at approval rather than today. Dropped
+    // here, the app would fall back to its code default — which is "reviewed",
+    // so nothing would MISLEAD; what would break is the day an operator turns
+    // the switch off, when the app would keep warning about a review that no
+    // longer happens, for ever, with the dashboard showing it disabled.
+    'piggyvault_manual_activation',
     // Which explanation the tab shows while payout is off ('generic' |
     // 'account' | 'country'). Same chain, same reason.
     'intl_payout_unavailable_scope',
@@ -163,6 +192,11 @@ class EndpointRegistry {
     'lifestyle_default_view',
     'auto_biometric_login_enabled',
     'crowdfund_donation_alerts_visible',
+    // Referral leaderboard. Without this the admin's value is dropped
+    // between the registry cache and FeatureFlags — nonUrlSnapshot()
+    // emits only these keys — so the compiled default (hidden) would
+    // win on every launch while the dashboard showed it as saved.
+    'referral_leaderboard_visible',
     // Omitting a key here is the documented way this wiring fails:
     // nonUrlSnapshot() only emits keys in this set, so the flag would
     // never reach the app and would sit on its code default for ever.
@@ -171,6 +205,11 @@ class EndpointRegistry {
     // or the admin toggle saves a value the app never sees and the hardcoded
     // default wins on every launch — silently, with nothing erroring.
     'theme_switch_visible',
+    // Quick-services page-turn placement ("bottom" | "grid"). Named here or
+    // nonUrlSnapshot() emits nothing for it and FeatureFlags never sees the
+    // operator's value — the exact gap that left the whole SMS chain dead
+    // further down this list.
+    'quick_services_more_placement',
     'receipt_format_sheet_visible',
     // ── SMS / phone-OTP master switches ──────────────────────────────────
     //
@@ -200,6 +239,15 @@ class EndpointRegistry {
     // compiled default on every launch and the gating "work only by accident".
     'maintenance_mode_enabled',
     'maintenance_message',
+    // Who still gets in during a DECLARED window. nonUrlSnapshot() emits only
+    // keys named here, so without this the operator's allow-list never
+    // reaches the app and every whitelisted tester is locked out while the
+    // dashboard shows the names saved.
+    'maintenance_whitelist',
+    // PiggyVault's provider disclosure URL. Transported so an operator can
+    // repoint it without a release; the app falls back to the published page
+    // when it is blank, so the disclosure is never unreachable.
+    'piggyvault_disclosure_url',
     'bvn_phone_notice_enabled',
     'locale_non_ngn_money_actions',
     'locale_non_ngn_account_tabs',
@@ -230,6 +278,18 @@ class EndpointRegistry {
     'splitbill_sendfunds_entry_visible',
     // Shows the "Skip for now" affordance on the new-device OTP screen.
     'auth_otp_skip_button_visible',
+    // The resend cooldown every OTP screen counts down from. Server-owned:
+    // auth-service enforces it (otp_resend.go) and the app must not disagree,
+    // or it offers a resend the server then refuses.
+    'auth_otp_resend_cooldown_seconds',
+    // Code lifetimes, per channel. Read by the OTP screens so what the app
+    // tells a holder matches what auth-service actually minted.
+    'auth_otp_ttl_email_seconds',
+    'auth_otp_ttl_sms_seconds',
+    // Kill switch for the Android SMS-retriever OTP field. See
+    // otpSmsAutofillEnabled below — this is the lever for an input path that
+    // only exists on Android.
+    'otp_sms_autofill_enabled',
     // The central chatbot's suggestion chips — see aiChatSuggestionsVisible.
     'ai_chat_suggestions_visible',
     // Flutter feature flags (admin-toggled). Cached here like every other
@@ -267,6 +327,10 @@ class EndpointRegistry {
     // flow reads these via FeatureFlags for instant, poor-network-safe routing.
     'send_funds_short_flow_enabled',
     'send_funds_pin_required',
+    // Numbers, not switches — without these the saved-payee bounds are lost
+    // on cold start and the field silently reverts to the compiled defaults.
+    'send_funds_saved_payee_min_digits',
+    'send_funds_saved_payee_max_rows',
     // Batch Transfer flow config (admin-toggled). Same internal poll; read via
     // FeatureFlags for instant, poor-network-safe short/long routing.
     'batch_transfer_short_flow_enabled',
@@ -903,6 +967,98 @@ class EndpointRegistry {
   bool get otpSkipButtonVisible =>
       _get('auth_otp_skip_button_visible', 'false').trim().toLowerCase() ==
       'true';
+
+  /// Seconds a user must wait before asking for another one-time code.
+  ///
+  /// Admin-tunable via `auth_otp_resend_cooldown_seconds`, and it is the SAME
+  /// key auth-service reads (otp_resend.go), so the countdown the app shows is
+  /// the rule the server will enforce.
+  ///
+  /// WHY THIS IS NOT A CONSTANT ANY MORE. Every OTP screen hardcoded 60 — the
+  /// phone verification screen, the login OTP screen, and the resend button's
+  /// own default. The server had five independent copies of its own. Moving the
+  /// dial on the dashboard therefore changed nothing a user could see, and the
+  /// one flow it did change (login step-up) immediately disagreed with the
+  /// client, so the button unlocked early and the request was refused.
+  ///
+  /// Clamped to the same 10..300 band auth-service clamps to, so a malformed
+  /// or hostile settings value cannot produce a button that never unlocks or
+  /// one that spams the provider at our cost.
+  ///
+  /// THE FALLBACK MUST EQUAL THE SERVER'S. An unreadable value falls back to
+  /// 90 — `defaultOTPResendCooldown` in auth-service's otp_resend.go, raised
+  /// from 60 on 2026-11-20 — and the two are pinned together by
+  /// scripts/check_otp_defaults.sh. A lower fallback here is not a cosmetic
+  /// drift: the button unlocks before the server will accept the request, so
+  /// the tap spends a resend from the budget, sends nothing, and reads to the
+  /// customer as the app being broken.
+  int get otpResendCooldownSeconds {
+    final raw =
+        int.tryParse(_get('auth_otp_resend_cooldown_seconds', '90').trim());
+    if (raw == null) return 90;
+    if (raw < 10) return 10;
+    if (raw > 300) return 300;
+    return raw;
+  }
+
+  /// How long an EMAILED one-time code lives, in seconds.
+  ///
+  /// The same key auth-service reads (`auth_otp_ttl_email_seconds`,
+  /// otp_ttl.go), so the window the app states is the window the server
+  /// minted. Default 120, matching auth-service's otpTTLDefault and the live
+  /// settings row, and clamped to auth-service's own 30..1800 band so a
+  /// malformed settings value cannot show a holder a window nobody honours.
+  ///
+  /// WHY THE APP READS THE SETTING RATHER THAN A RESPONSE FIELD. No
+  /// email-verification RPC carries an expiry: SignupResponse.expires_in is
+  /// the ACCESS TOKEN's lifetime, and ResendVerificationEmailResponse carries
+  /// only the resend cooldown. Adding one would mean a proto change across
+  /// auth-service and core-gateway, whose generated pb has gone stale before
+  /// and silently dropped new fields. Reading the shared key is exact for the
+  /// question actually being asked — "how long do codes live" — and cannot
+  /// drift, because there is only one value.
+  int get otpTtlEmailSeconds =>
+      _clampOtpTtl(_get('auth_otp_ttl_email_seconds', '120'), 120);
+
+  /// How long an SMS one-time code lives, in seconds. Same key as
+  /// auth-service's `auth_otp_ttl_sms_seconds`.
+  ///
+  /// 120, matching the email window and auth-service's OTPValidity. It said
+  /// 300 while the live row said 120, so an unreadable settings snapshot made
+  /// the app count down from five minutes on a two-minute code — the holder
+  /// watched a timer with three minutes left on a code that was already dead.
+  int get otpTtlSmsSeconds =>
+      _clampOtpTtl(_get('auth_otp_ttl_sms_seconds', '120'), 120);
+
+  /// Shared clamp, matching auth-service's minOTPTTL..maxOTPTTL.
+  int _clampOtpTtl(String raw, int fallback) {
+    final v = int.tryParse(raw.trim());
+    if (v == null) return fallback;
+    if (v < 30) return 30;
+    if (v > 1800) return 1800;
+    return v;
+  }
+
+  /// Whether SMS OTP screens LISTEN for an incoming code.
+  ///
+  /// It no longer selects between two input widgets, and that distinction is
+  /// the whole point. Until 2026-11-18 the autofill setting swapped the FIELD
+  /// itself for `PinFieldAutoFill` — a controlled component that tagged the
+  /// input `AutofillHints.oneTimeCode` and started the Android SMS Retriever,
+  /// neither of which happens on iOS. The SMS screens therefore ran an input
+  /// path the email screens never touched, on one platform, and a customer on
+  /// Android could not type a code he had received.
+  ///
+  /// The field is now `PinInputTextField` everywhere, so autofill sits beside
+  /// the input rather than inside it and can only ever fill an EMPTY field.
+  /// Turning this off costs the convenience and nothing else; it can no longer
+  /// be the difference between typing working and not.
+  ///
+  /// Kept as a setting because the SMS Retriever is a platform listener that
+  /// an operator may want to stop without a release — for instance if the
+  /// retriever starts matching the wrong messages.
+  bool get otpSmsAutofillEnabled =>
+      _get('otp_sms_autofill_enabled', 'true').trim().toLowerCase() != 'false';
 
   /// Whether the central chatbot shows its suggestion chips above the input.
   ///

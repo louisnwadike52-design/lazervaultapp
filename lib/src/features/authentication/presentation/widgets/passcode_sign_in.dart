@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/post_reset_handoff.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/verification_gate_routing.dart';
 import 'package:lazervault/core/services/login_flow_resolver.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -36,6 +38,7 @@ import 'dart:io' show Platform;
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/support/presentation/locked_out_support.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/post_login_navigator.dart';
 
 class PasscodeSignIn extends StatefulWidget {
@@ -266,6 +269,25 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
       // returning user cached on this device. If a fresh user reached it (e.g.
       // via AppRoutes.loginEntry), redirect to the correct full-login screen for
       // the mode instead of dead-ending on a lock with no identity to unlock.
+      // A RESET BY SOMEBODY ELSE MUST NOT LAND ON THIS USER'S LOCK SCREEN.
+      //
+      // This device can hold user A's cached profile while user B completes a
+      // reset on it — a shared phone, or a handset that changed hands. Without
+      // this check B finishes their reset and is shown A's name and avatar
+      // over a passcode pad that will never accept B's new passcode: confusing,
+      // a small disclosure of who last used the phone, and a dead end.
+      //
+      // Peeked rather than consumed: the full login screen we bounce to is
+      // what actually uses the value to pre-fill itself.
+      final pendingReset = PostResetHandoff.peek();
+      if (pendingReset != null &&
+          !await _cachedIdentityMatches(pendingReset)) {
+        debugPrint('🔒 passcode lock → login: a reset completed for a '
+            'different account than the one cached here');
+        if (mounted) Get.offNamed(AppRoutes.freshLoginEntry);
+        return;
+      }
+
       if (!await LoginFlowResolver.hasCachedReturningUser(
           storage: _secureStorage)) {
         // Log WHICH signal was missing so a wrongful bounce-to-login is
@@ -310,6 +332,40 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
       }
     } catch (e) {
       print('Error loading stored user data: $e');
+    }
+  }
+
+  /// Whether the account just reset is the one cached on this device.
+  ///
+  /// Compared on DIGITS for a phone — the cache may hold `+2348…` while the
+  /// reset flow carries `2348…` or the other way about, and a literal
+  /// comparison would call the same person a different one — and
+  /// case-insensitively for an email.
+  ///
+  /// Unknown means MATCH. If the cache holds nothing to compare against, the
+  /// checks below already decide what to do, and treating "cannot tell" as a
+  /// mismatch would bounce a legitimate returning user off their own lock
+  /// screen.
+  Future<bool> _cachedIdentityMatches(PostResetIdentity pending) async {
+    try {
+      if (pending.isEmail) {
+        final email = (await _secureStorage.read(key: 'stored_email'))?.trim();
+        if (email == null || email.isEmpty) return true;
+        return email.toLowerCase() == pending.identifier.toLowerCase();
+      }
+      final phone = await _secureStorage.read(key: 'stored_phone');
+      if (phone == null || phone.trim().isEmpty) return true;
+      String digits(String v) => v.replaceAll(RegExp(r'[^0-9]'), '');
+      final a = digits(phone);
+      final b = digits(pending.identifier);
+      if (a.isEmpty || b.isEmpty) return true;
+      // One may carry the dialing code and the other not, so compare on the
+      // shorter tail rather than demanding equal length.
+      final n = a.length < b.length ? a.length : b.length;
+      return a.substring(a.length - n) == b.substring(b.length - n);
+    } catch (_) {
+      // A storage read that throws is not evidence of a different user.
+      return true;
     }
   }
 
@@ -1057,11 +1113,33 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
             } else if (state.errorMessage!
                 .toLowerCase()
                 .contains('email_not_verified')) {
-              Get.toNamed(AppRoutes.emailVerification, arguments: {
-                'isRequired': true,
-                'codeSent': true,
-                'nextRoute': AppRoutes.passcodeLogin,
-              });
+              // ROUTING, NOT A BANNER — so it must survive a repeat.
+              //
+              // _lastError exists to shake the dots once per distinct error
+              // rather than on every rebuild. Navigation was later folded
+              // inside that same guard, which made it de-dupe on the MESSAGE
+              // TEXT. Get.toNamed PUSHES the verification screen on top, so
+              // this widget is never disposed and _lastError survives; when
+              // the user came back and re-entered their passcode the refusal
+              // was byte-identical, the guard swallowed it, and because
+              // email_not_verified maps to suppressBanner there was no
+              // snackbar either. The screen did nothing at all, for ever.
+              // (Reported 2026-11-19 by a user stuck on exactly this.)
+              //
+              // Clearing _lastError when the pushed route pops re-arms the
+              // branch, so every return-and-retry routes again. The shake's
+              // own de-dupe is untouched.
+              // Through the shared helper, which also carries the address
+              // auth-service attached to the refusal — without it this screen
+              // opened the code field with no inbox named and no address to
+              // resend to.
+              routeToVerificationGate(
+                state.errorMessage,
+                returnTo: AppRoutes.passcodeLogin,
+                onReturn: () {
+                  if (mounted) _lastError = null;
+                },
+              );
             } else {
               // Wrong passcode → shake the dots + a heavy haptic, once per error.
               _passcodeShakeKey.currentState?.shake();
@@ -1311,7 +1389,43 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 18.h),
+                              SizedBox(height: 10.h),
+                              // NEED HELP — the one route out for somebody the
+                              // lock will not let past.
+                              //
+                              // "Forgot your passcode?" and "Switch user" both
+                              // assume the problem is one this screen can
+                              // solve. When it is not — an email that will not
+                              // verify, a reset that never arrives, a state
+                              // that refuses to resume — the customer had
+                              // nowhere to go: every support route in the app
+                              // needs a session, which is the thing they do
+                              // not have. This files a ticket without one.
+                              //
+                              // Third, quiet, and under the two real actions:
+                              // most people are here to type six digits, and
+                              // this must be findable without competing with
+                              // that.
+                              Center(
+                                child: TextButton(
+                                  onPressed: isAuthenticating
+                                      ? null
+                                      : () => LockedOutSupport.open(
+                                            context,
+                                            stuckOn: 'Passcode screen',
+                                          ),
+                                  child: Text(
+                                    'Need help signing in?',
+                                    style: GoogleFonts.inter(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.6),
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 8.h),
                               // Alternate auth (biometrics + voice), dropped to the
                               // lower part of the screen — or the submit loader in
                               // its place while a passcode is being verified.

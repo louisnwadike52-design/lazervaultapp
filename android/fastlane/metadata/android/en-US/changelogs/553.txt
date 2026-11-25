@@ -1,0 +1,1 @@
+The bottom navigation bar sits flush at the bottom of the screen again.
