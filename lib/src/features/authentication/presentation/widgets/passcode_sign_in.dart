@@ -22,6 +22,7 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utils/double_shake_detector.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/voice_login_sheet.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/account_locked_modal.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/existing_user_passcode_cta.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/biometric_service.dart';
@@ -941,7 +942,14 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     if (_isPasswordless) {
       Get.toNamed(AppRoutes.phonePasscodeLogin);
     } else {
-      Get.offAllNamed(AppRoutes.emailSignIn);
+      // offAllNamed clears the stack, which is normally how a RESUMPTION
+      // looks — so without saying otherwise the destination would offer
+      // "log in as <previous user>" to somebody who just asked for a
+      // different account. See ExistingUserPasscodeCta.
+      Get.offAllNamed(
+        AppRoutes.emailSignIn,
+        arguments: {ExistingUserPasscodeCta.switchUserArg: true},
+      );
     }
   }
 

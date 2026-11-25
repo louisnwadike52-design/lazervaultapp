@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/core/services/help_config_service.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/profile/presentation/widgets/profile_qr_block.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/profile_picture_actions.dart';
 import 'package:lazervault/src/features/widgets/my_account.dart';
 import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
@@ -41,10 +42,28 @@ class ThemedDrawer extends StatelessWidget {
                 ? "${currentProfile.user.firstName} ${currentProfile.user.lastName}"
                 : "Guest User";
             final String userEmail = currentProfile?.user.email ?? "";
+            // The addressable handle. Trimmed, because a stray space here
+            // renders as "@ name" and reads as a typo in the customer's own
+            // identity.
+            final String userHandle =
+                (currentProfile?.user.username ?? '').trim();
             final String userInitials = currentProfile != null
                 ? "${currentProfile.user.firstName[0]}${currentProfile.user.lastName[0]}"
                 : "GU";
             final String? profilePicture = currentProfile?.user.profilePicture;
+            // THE CUSTOMER'S OWN CODE, built once per build rather than
+            // inside the widget tree: it is JSON encoding plus a QR matrix,
+            // and the drawer rebuilds on every auth tick.
+            //
+            // Null when the profile has no username — the scanners refuse a
+            // code without one and tell the customer it is "not a Lazervault
+            // profile", so showing an unscannable square would be worse than
+            // showing nothing.
+            final String? profileQr = buildProfileQrPayload(
+              userId: currentProfile?.user.id.toString(),
+              username: currentProfile?.user.username,
+              fullName: userName,
+            );
 
             return SafeArea(
               child: Column(
@@ -57,10 +76,6 @@ class ThemedDrawer extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.06),
                       borderRadius:
                           BorderRadius.vertical(bottom: Radius.circular(28.r)),
-                      border: Border(
-                        bottom: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.08)),
-                      ),
                     ),
                     child: Padding(
                       padding: EdgeInsets.all(24.w),
@@ -95,25 +110,68 @@ class ThemedDrawer extends StatelessWidget {
                           // User Name
                           Text(
                             userName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
-                              fontSize: 20.sp,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 19.sp,
+                              fontWeight: FontWeight.w700,
                               color: Colors.white,
+                              height: 1.2,
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: 4.h),
 
-                          // User Email
-                          Text(
-                            userEmail,
-                            style: GoogleFonts.inter(
-                              fontSize: 13.sp,
-                              color: Colors.white.withValues(alpha: 0.8),
+                          // THE USERNAME IS NOT REPEATED HERE.
+                          //
+                          // It used to sit directly under the name, on the
+                          // argument that the handle is the only addressable
+                          // identity and belongs beside what it qualifies.
+                          // That argument still holds — it is just already
+                          // satisfied: the profile-code card below shows
+                          // "@handle" beside the code, a few pixels down and
+                          // in the same type size. Printing it twice in one
+                          // 80-pixel column reads as a rendering fault, and
+                          // the copy next to the code is the more useful of
+                          // the two because it labels the thing being
+                          // scanned.
+                          //
+                          // If the code block is ever removed, the handle
+                          // must come back here.
+                          if (userEmail.isNotEmpty) ...[
+                            SizedBox(height: 3.h),
+                            Text(
+                              userEmail,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 12.sp,
+                                color: Colors.white.withValues(alpha: 0.62),
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
+                          ],
                           SizedBox(height: 16.h),
+
+                          // THE PROFILE CODE, with the identity it belongs to.
+                          //
+                          // Placed under the name and email rather than behind
+                          // the avatar tap: the avatar already owns the photo
+                          // actions, and burying the one code that is YOURS
+                          // under a photo menu is how it stayed three taps
+                          // deep inside the recipients feature — which is
+                          // where you go to pay somebody else.
+                          if (profileQr != null) ...[
+                            ProfileQrBlock(
+                              payload: profileQr,
+                              // The TRIMMED handle, not the raw column. This
+                              // read the raw value while the line above the
+                              // avatar used the trimmed one, so a stray space
+                              // rendered as "@ name" here — in the one place
+                              // the handle is now shown.
+                              username: userHandle,
+                            ),
+                            SizedBox(height: 16.h),
+                          ],
 
                           // View Profile Button
                           InkWell(
@@ -132,11 +190,14 @@ class ThemedDrawer extends StatelessWidget {
                                 vertical: 8.h,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(20.r),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                ),
+                                // FILL, NOT OUTLINE. A translucent pill with
+                                // a 1px white hairline on a frosted panel on
+                                // a brand curve is three edges stacked in the
+                                // same few pixels — it reads as a seam, not a
+                                // button. The fill is lifted slightly so the
+                                // control is just as findable without it.
+                                color: Colors.white.withValues(alpha: 0.26),
+                                borderRadius: BorderRadius.circular(999),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
