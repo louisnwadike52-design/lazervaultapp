@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:lazervault/src/features/recipients/presentation/cubit/saved_recipients_warmup.dart';
+import 'package:lazervault/core/services/post_reset_handoff.dart';
 import 'package:lazervault/core/utils/auth_error_copy.dart';
 import 'package:lazervault/src/features/betting/data/betting_platforms_store.dart';
 import 'package:lazervault/src/features/family_account/presentation/utils/family_archive_session.dart';
@@ -12,6 +14,8 @@ import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_ser
 import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/device_login_history.dart';
+import 'package:lazervault/core/services/vendor_access.dart';
+import 'package:lazervault/core/services/vendor_access_refresher.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -71,6 +75,8 @@ import '../domain/entities/two_factor_entity.dart';
 import 'authentication_state.dart';
 import 'package:lazervault/core/utilities/pending_referral.dart';
 import 'package:lazervault/src/features/group_account/data/services/group_funds_terms_prefs.dart';
+import 'package:lazervault/core/services/search_privacy_service.dart';
+import 'package:lazervault/core/services/saved_recipients_snapshot.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
   final LoginUseCase _loginUseCase;
@@ -288,6 +294,154 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   /// signup and downstream screens that read [currentProfile] (KYC readiness,
   /// dashboard, profile) see no email/user. No network round-trip — the caller
   /// already holds the freshly-issued profile.
+  /// Apply a corrected name to the CACHED session profile, in place.
+  ///
+  /// ## Why this is not hydrateProfile
+  ///
+  /// `hydrateProfile` emits `AuthenticationSuccess`, which every login surface
+  /// listens for and answers by calling `goAfterLogin` — it REPLACES the
+  /// navigation stack. Firing that from the KYC screen, mid-verification,
+  /// would throw the customer out of the flow they are in the middle of.
+  ///
+  /// ## Why it has to exist at all
+  ///
+  /// Two cubits hold a profile. `ProfileCubit` is what the profile editor
+  /// writes; `AuthenticationCubit._currentProfile` is the SESSION copy, and it
+  /// is the one the KYC screen reads the name from when it starts a Prove
+  /// session. So a name corrected through the editor left this copy stale, and
+  /// verification was retried with the OLD name — failing exactly as before,
+  /// which is the silent dead end the correction flow exists to remove.
+  ///
+  /// Worse than a plain stale read: the backend reuses an in-flight Prove
+  /// session when the identity is UNCHANGED, so sending the old name again
+  /// matches the previous session and reuses it — no new session, no cooldown
+  /// notice, and the same failure with nothing to explain it.
+  ///
+  /// No state is emitted: callers that need a rebuild already setState, and
+  /// the next real auth event will emit normally.
+  void applyCorrectedName(
+      {required String firstName, required String lastName}) {
+    final profile = _currentProfile;
+    if (profile == null) return;
+    _currentProfile = ProfileEntity(
+      user: profile.user.copyWith(firstName: firstName, lastName: lastName),
+      session: profile.session,
+    );
+  }
+
+  /// Re-fetch the session profile WITHOUT emitting, for a flow that is about
+  /// to navigate itself.
+  ///
+  /// ## Why not [refreshProfile]
+  ///
+  /// That one emits `AuthenticationSuccess`, which every login surface answers
+  /// by calling `goAfterLogin` — and `goAfterLogin` replaces the navigation
+  /// stack with wherever IT decides the holder belongs. Called from the last
+  /// screen of verification, a moment before that screen performs its own
+  /// `Get.offAllNamed`, that is two routers racing for the same stack.
+  ///
+  /// ## Why it has to exist
+  ///
+  /// Verification changes the profile SERVER-SIDE and tells the app nothing:
+  /// banking-service adopts the registry's name onto the account
+  /// (`pushAdoptedIdentityName`), raises `kyc_tier` and sets
+  /// `identity_verified`. The screen then navigated on the copy it had loaded
+  /// at login, so the dashboard greeted the holder by the name the registry
+  /// had just replaced and every tier gate read the stale tier — the app
+  /// showing Tier-1 limits while the ledger enforced Tier 2, which is the
+  /// two-sources split that made a limit modal show nothing at all.
+  ///
+  /// Best-effort and bounded by the caller: a failure leaves the existing
+  /// profile untouched, and the backend re-checks KYC authoritatively at every
+  /// operation boundary regardless.
+  Future<void> refreshProfileQuietly() async {
+    try {
+      final accessToken = _currentProfile?.session.accessToken ??
+          await _storage.read(key: _accessTokenKey);
+      if (accessToken == null || accessToken.isEmpty) return;
+
+      final result = await _validateTokenUseCase(accessToken: accessToken);
+      if (isClosed) return;
+      result.fold(
+        (_) {/* keep what we hold; the caller proceeds either way */},
+        (profile) => _currentProfile = profile,
+      );
+    } catch (_) {
+      // Never a reason to block the navigation that follows.
+    }
+  }
+
+  /// Apply a corrected date of birth to the CACHED session profile, in place.
+  ///
+  /// THE SAME DEFECT AS [applyCorrectedName], ON THE OTHER IDENTITY FIELD, and
+  /// it cost a customer his verification on 2026-11-24: he corrected his date
+  /// of birth from the KYC refusal, the save succeeded, and the retry sent the
+  /// OLD date — because `bvn_signup_screen._profile()` reads the date from THIS
+  /// copy (line 185), not from ProfileCubit. So verification failed identically,
+  /// with the one useful action looking like it had done nothing.
+  ///
+  /// It is worse than a plain stale read, for the reason spelled out above: the
+  /// backend reuses an in-flight Prove session when the identity is UNCHANGED,
+  /// so re-sending the old date matches the previous session and reuses it — no
+  /// new session, no cooldown notice, and the same refusal with nothing to
+  /// explain it. Tier 3 reads the same field (`bvn_verification_screen` line
+  /// 1797) when it opens Mono, so a stale copy there sends Mono a date the
+  /// customer has already corrected.
+  ///
+  /// ## Why the value is the one we SENT, not one read back
+  ///
+  /// `UpdateUserProfile` answers with a `CommonUser`, and that message has no
+  /// `date_of_birth` field at all (see `UserModel.fromProto`) — so the response
+  /// cannot carry the saved date and a read-back would compare against null.
+  /// auth-service is explicit instead of silent here: `UpdateDateOfBirth`
+  /// refuses a verified holder with `ErrDOBLockedByVerification` and the
+  /// handler returns `success:false`, so a LEFT is the refusal and a RIGHT
+  /// means the ISO we sent is what is now stored. Unlike the name — which
+  /// auth-service drops silently and which therefore has to be read back — a
+  /// success here is proof.
+  ///
+  /// No state is emitted, for the reason [applyCorrectedName] gives: emitting
+  /// `AuthenticationSuccess` makes every login surface call `goAfterLogin` and
+  /// replace the navigation stack, which would throw the customer out of the
+  /// verification they are in the middle of.
+  /// Record that the SERVER says this identity is verified.
+  ///
+  /// Learned the hard way, on a refusal: auth-service refuses a date-of-birth
+  /// change once `identity_verified` is true, and the session copy can be
+  /// behind — verification sets the flag server-side and tells the app
+  /// nothing. Without this, a customer who hit the refusal once would hit the
+  /// identical refusal on every later attempt, because the stale `false` would
+  /// keep waving them past the gate that exists to catch exactly this.
+  ///
+  /// IN PLACE, WITHOUT EMITTING — the same rule as [applyCorrectedDateOfBirth]
+  /// and [applyCorrectedName]. Emitting AuthenticationSuccess here would make
+  /// every login surface run goAfterLogin and replace the stack underneath a
+  /// customer who is mid-KYC.
+  ///
+  /// ONE DIRECTION ONLY. The flag never goes true→false in the product, so
+  /// this never clears it: a method that could would let a stale read
+  /// re-open an edit the server will refuse.
+  void applyIdentityVerified() {
+    final profile = _currentProfile;
+    if (profile == null) return;
+    if (profile.user.identityVerified) return;
+    _currentProfile = ProfileEntity(
+      user: profile.user.copyWith(identityVerified: true),
+      session: profile.session,
+    );
+  }
+
+  void applyCorrectedDateOfBirth(String isoDateOfBirth) {
+    final profile = _currentProfile;
+    if (profile == null) return;
+    final iso = isoDateOfBirth.trim();
+    if (iso.isEmpty) return;
+    _currentProfile = ProfileEntity(
+      user: profile.user.copyWith(dateOfBirth: iso),
+      session: profile.session,
+    );
+  }
+
   void hydrateProfile(ProfileEntity profile) {
     _currentProfile = profile;
     // Tag subsequent Loki logs with this user so a failed flow is traceable.
@@ -674,6 +828,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         final knownDeviceHere =
             await DeviceLoginHistory.hasSignedInBefore(email);
         emit(LoginStepUpRequired(
+          altMethod: failure.altMethod,
+          altDestination: failure.altDestination,
           stepUpToken: failure.stepUpToken,
           method: failure.stepUpMethod,
           destination: failure.destination,
@@ -735,6 +891,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         final knownDeviceHere =
             await DeviceLoginHistory.hasSignedInBefore(email);
         emit(LoginStepUpRequired(
+          altMethod: failure.altMethod,
+          altDestination: failure.altDestination,
           stepUpToken: failure.stepUpToken,
           method: failure.stepUpMethod,
           destination: failure.destination,
@@ -766,9 +924,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   /// null when the server refused; the reason surfaces as AuthenticationError
   /// with a stable code so the screen can distinguish "wait a moment" from
   /// "you are out of resends".
-  Future<int?> resendLoginOtp({required String stepUpToken}) async {
-    final result =
-        await _authRepository.resendLoginOtp(stepUpToken: stepUpToken);
+  Future<StepUpResend?> resendLoginOtp({
+    required String stepUpToken,
+    String method = '',
+  }) async {
+    final result = await _authRepository.resendLoginOtp(
+        stepUpToken: stepUpToken, method: method);
     if (isClosed) return null;
     return result.fold(
       (failure) {
@@ -778,7 +939,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         ));
         return null;
       },
-      (seconds) => seconds,
+      (resend) => resend,
     );
   }
 
@@ -912,6 +1073,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         // OAuth: the identity is not known until the provider returns, so stay cautious.
         const knownDeviceHere = false;
         emit(LoginStepUpRequired(
+          altMethod: failure.altMethod,
+          altDestination: failure.altDestination,
           stepUpToken: failure.stepUpToken,
           method: failure.stepUpMethod,
           destination: failure.destination,
@@ -1152,6 +1315,33 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   // --- Logout ---
   Future<void> logout() async {
+    // FORGET VENDOR ACCESS FIRST, before anything that can fail or await on
+    // the network. A vendor logging out of a shared till device would
+    // otherwise leave the Vendor Campaigns tile visible to whoever signs in
+    // next, and every scan they tried would be refused by the backend —
+    // which reads as a broken feature rather than a flag that was never
+    // theirs.
+    await VendorAccess.clear();
+    VendorAccessRefresher.resetForNewSession();
+
+    // Same reasoning for the cached search-privacy position: on a shared
+    // device the next holder would otherwise see the previous one's switch
+    // position on the first frame, which is a privacy claim about someone
+    // else. The server value is re-read on the next Settings open.
+    await SearchPrivacyService.clearCache();
+
+    // Same shared-device reasoning: the next holder must not be offered the
+    // previous holder's saved payees from memory.
+    SavedRecipientsSnapshot.clear();
+    // The "we already tried to warm this" flag is per-SESSION, not per-process:
+    // on a shared device the next holder must get their own attempt rather
+    // than inherit a flag saying somebody already looked.
+    resetSavedRecipientsWarmup();
+    // Drop any identifier carried out of a reset. On a shared device the next
+    // person to open the app must not find the previous one's number waiting
+    // in the login field.
+    PostResetHandoff.clear();
+
     // Mark the logout window so any background op (profile refresh, websocket
     // reconnect, token validation) that fails on the just-cleared session is
     // suppressed instead of popping a noisy auth-error snackbar. Cleared on the
@@ -1337,6 +1527,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         email: draft.email ?? '',
         firstName: draft.firstName ?? '',
         lastName: draft.lastName ?? '',
+        middleName: draft.middleName ?? '',
         username: draft.username ?? '',
         referralCode: (draft.referralCode?.trim().isNotEmpty ?? false)
             ? draft.referralCode!
@@ -1403,6 +1594,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             currentState.firstName.isNotEmpty ? currentState.firstName : null,
         lastName:
             currentState.lastName.isNotEmpty ? currentState.lastName : null,
+        middleName:
+            currentState.middleName.isNotEmpty ? currentState.middleName : null,
         username:
             currentState.username.isNotEmpty ? currentState.username : null,
         referralCode: currentState.referralCode.isNotEmpty
@@ -1476,6 +1669,18 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       emit(currentState.copyWith(
           firstName: value, clearErrorMessage: true, isLoading: false));
       _scheduleDraftSave(); // Auto-save draft
+    }
+  }
+
+  /// OPTIONAL, so unlike the other two an empty value is a legitimate final
+  /// state and must be persisted as such — a customer who clears it has
+  /// removed it, not failed to fill it in.
+  void signUpMiddleNameChanged(String value) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      emit(currentState.copyWith(
+          middleName: value, clearErrorMessage: true, isLoading: false));
+      _scheduleDraftSave();
     }
   }
 
@@ -2379,6 +2584,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         final signupResult = await _signUpUseCase(
           firstName: currentState.firstName,
           lastName: currentState.lastName,
+          middleName: currentState.middleName.trim().isEmpty
+              ? null
+              : currentState.middleName.trim(),
           email: currentState.email,
           password: currentState.password,
           primaryContact: primaryContact,
