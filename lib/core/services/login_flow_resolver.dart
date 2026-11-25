@@ -92,6 +92,45 @@ class LoginFlowResolver {
     return hasPasscodeFlag || passcodeMethod;
   }
 
+  /// Whether this device can open the passcode LOCK when the user ASKS for it.
+  ///
+  /// # Why this is not [hasCachedReturningUser]
+  ///
+  /// That method answers a DEFAULT-ROUTING question — "where should we send
+  /// this person on their own" — and deliberately answers `false` for a
+  /// genuine email+password account (step 2), so the boot router never drops
+  /// an email user onto a lock screen they did not choose.
+  ///
+  /// This is the other question: the user is looking at the email screen and
+  /// has just tapped "Use passcode instead". An explicit request outranks the
+  /// preference that step 2 protects — they are not being sent anywhere, they
+  /// are going. Reusing the routing answer here is what sent an email account
+  /// WITH a passcode to the full phone+passcode login instead of to their own
+  /// lock screen, because `false` was read as "nothing cached" when it meant
+  /// "not a lock candidate by default".
+  ///
+  /// So: a cached identity, and an actual passcode credential. Nothing about
+  /// which flow they prefer.
+  static Future<bool> hasPasscodeCredentialCached(
+      {FlutterSecureStorage? storage}) async {
+    final s = storage ?? _defaultStorage;
+    final phone = await s.read(key: _storedPhoneKey);
+    final email = await s.read(key: _storedEmailKey);
+    final userId = await s.read(key: _userIdKey);
+    final hasIdentity = (phone != null && phone.isNotEmpty) ||
+        (email != null && email.isNotEmpty) ||
+        (userId != null && userId.isNotEmpty);
+    if (!hasIdentity) return false;
+
+    // Same credential signal hasCachedReturningUser uses, and for the same
+    // reason it accepts either: `has_passcode` is mirrored from the backend
+    // profile and can legitimately be absent on older builds, while a
+    // passcode-family `login_method` is the legacy proof of the same thing.
+    final hasPasscodeFlag = (await s.read(key: _hasPasscodeKey)) == 'true';
+    final method = (await s.read(key: _legacyMethodKey))?.toLowerCase().trim();
+    return hasPasscodeFlag || method == 'passcode' || method == _phone;
+  }
+
   /// The route the "Log in" affordance should open, intelligent about whether a
   /// returning user is cached:
   ///   * email_password → the email+password screen (it handles fresh AND
@@ -101,9 +140,40 @@ class LoginFlowResolver {
   ///     passcode), so a fresh install can actually sign in.
   static Future<String> resolveLoginRoute(
       {FlutterSecureStorage? storage}) async {
-    if (FeatureFlags.isEmailPasswordLogin) return AppRoutes.emailSignIn;
+    // WHOSE FLOW IS THIS? Establish that FIRST.
+    //
+    // This asked `FeatureFlags.isEmailPasswordLogin` before checking whether
+    // any account is cached at all. That flag reads `effective_login_method`,
+    // which is the shape of the account that last signed in ON THIS DEVICE —
+    // the right authority for a returning user, and the wrong one for anybody
+    // else.
+    //
+    // The consequence showed up on deep links. Someone opens a shared event or
+    // a push link on a device that once held an email account (or whose cache
+    // was written during the email-only era), the app is logged out, and the
+    // stale `email_password` sent them to the email+password screen — on a
+    // platform whose active flow is phone+passcode, for an account they may
+    // not even own. AppRoutes.signupEntry already documents exactly this trap
+    // for signup: "a device that once held an email account sent every
+    // brand-new user to the email signup, no matter what the platform default
+    // said."
+    //
+    // So: identity first. With a cached returning user the per-account flow is
+    // authoritative; with none, the PLATFORM's auth_mode is.
     final returning = await hasCachedReturningUser(storage: storage);
-    return returning ? AppRoutes.passcodeLogin : AppRoutes.phonePasscodeLogin;
+    if (returning) {
+      // A cached email+password account never reaches here —
+      // hasCachedReturningUser returns false for it (step 2) — so a returning
+      // user at this point genuinely holds a passcode.
+      return AppRoutes.passcodeLogin;
+    }
+
+    // No cached identity, or a cached email account that needs its own screen.
+    // Both are answered by the device's resolved flow, which itself falls back
+    // to the platform `auth_mode` when nothing is cached
+    // (FeatureFlags.loginFlow = effective_login_method ?? authenticationMode).
+    if (FeatureFlags.isEmailPasswordLogin) return AppRoutes.emailSignIn;
+    return AppRoutes.phonePasscodeLogin;
   }
 
   /// Pure, deterministic resolution. Precedence:

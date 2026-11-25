@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:lazervault/core/services/post_reset_handoff.dart';
 import 'package:lazervault/core/services/login_flow_resolver.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/account_locked_modal.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/existing_user_passcode_cta.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/utils/login_identifier.dart';
@@ -31,6 +33,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/session_login_completer.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/voice_login_sheet.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/post_login_navigator.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class EmailSignInScreen extends StatefulWidget {
   const EmailSignInScreen({super.key});
@@ -172,6 +175,15 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
       ),
     );
     _checkPasscodeAvailability();
+    // Pre-fill from a reset the user just finished, if there is one. A PREFILL
+    // ONLY — the password is still required and still checked server-side.
+    // Consuming clears it, so it cannot reappear on a later visit.
+    final pendingReset = PostResetHandoff.consume();
+    if (pendingReset != null) {
+      // The field takes a phone or an email (see _startsWithPlus below), so a
+      // phone carried out of an OTP-based reset belongs here verbatim too.
+      _emailController.text = pendingReset.identifier;
+    }
     // Reflect an armed self-lock / emergency lock proactively (countdown modal)
     // on arrival — this is where an email-mode lock lands the user.
     WidgetsBinding.instance
@@ -180,44 +192,65 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
 
   Future<void> _checkPasscodeAvailability() async {
     try {
-      final loginMethod = await _storage.read(key: 'login_method');
-      final hasPasscode = await _storage.read(key: 'has_passcode');
-      final storedEmail = await _storage.read(key: 'stored_email');
-      final userEmail = await _storage.read(key: 'user_email');
-
-      final hasEmail = (storedEmail != null && storedEmail.isNotEmpty) ||
-          (userEmail != null && userEmail.isNotEmpty);
-
+      // THE SAME QUESTION THE BUTTON'S DESTINATION ASKS.
+      //
+      // This used to re-derive the answer from three secure-storage keys with
+      // its own precedence, while the tap handler asked the resolver a
+      // DIFFERENT question — so the button could appear for an account the
+      // destination then refused, which is how a customer ended up on a
+      // phone+passcode login they had no way to complete or leave.
+      //
+      // One signal now decides both: offer it exactly when the screen it
+      // opens will work.
+      final canUsePasscode =
+          await LoginFlowResolver.hasPasscodeCredentialCached(
+        storage: _storage,
+      );
       if (mounted) {
-        setState(() {
-          // Offer "Use Passcode Instead" whenever the account actually HAS a
-          // passcode — driven by the mirrored has_passcode flag (canonical) with
-          // the legacy login_method as a fallback. Consistent with the resolver.
-          _hasPasscodeSetup = hasPasscode == 'true' ||
-              (loginMethod == 'passcode' && hasEmail) ||
-              loginMethod == 'phone_passcode';
-        });
+        setState(() => _hasPasscodeSetup = canUsePasscode);
       }
     } catch (e) {
-      print('Error checking passcode availability: $e');
+      // Offering nothing is the safe failure: the email form on this screen
+      // still signs them in, whereas a button to a screen we could not verify
+      // is the dead end this replaces.
+      debugPrint('Error checking passcode availability: $e');
     }
   }
 
   Future<void> _switchToPasscodeLogin() async {
-    // passcodeLogin is the LOCK screen, and LoginFlowResolver is explicit that
-    // it is a dead end without a cached passcode user — fresh installs, wiped
-    // accounts and email/password-only accounts all bounce straight back to
-    // the full login screen. Which is THIS screen, so tapping Passcode simply
-    // reloaded the email form and looked like a dead button.
+    // TO, NOT OFF-ALL. This is an OPTIONAL ALTERNATIVE to the form the user is
+    // already looking at, and offAllNamed destroyed the way back to it — so
+    // somebody who tapped it out of curiosity, or whose passcode was not what
+    // they remembered, had no back button and no route home. That is the
+    // screen a customer reported being stuck on.
     //
-    // Resolve it properly: the lock only when a returning passcode user is
-    // actually cached, otherwise the full phone+passcode login where they can
-    // enter both.
-    final returning = await LoginFlowResolver.hasCachedReturningUser();
+    // WHICH SCREEN. The lock, because the button is only offered when a
+    // passcode credential is actually cached (see _checkPasscodeAvailability)
+    // — the same question, asked once.
+    //
+    // This previously asked hasCachedReturningUser, which answers a different
+    // question and returns FALSE for a genuine email+password account by
+    // design. Read as "nothing cached", it sent email users with a perfectly
+    // good passcode to the full phone+passcode login instead of their own
+    // lock.
+    if (!await LoginFlowResolver.hasPasscodeCredentialCached(
+      storage: _storage,
+    )) {
+      // The credential went away between building this screen and the tap —
+      // a sign-out on another tab, a cleared store. Say so rather than
+      // navigating somewhere they cannot finish.
+      if (!mounted) return;
+      setState(() => _hasPasscodeSetup = false);
+      Get.snackbar(
+        'Passcode unavailable',
+        'There is no passcode saved on this device. Sign in with your '
+            'password and you can set one up again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
     if (!mounted) return;
-    Get.offAllNamed(
-      returning ? AppRoutes.passcodeLogin : AppRoutes.phonePasscodeLogin,
-    );
+    Get.toNamed(AppRoutes.passcodeLogin);
   }
 
   /// Voice sign-in keyed off the EMAIL: check the account (entered email, else
@@ -435,6 +468,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                     destination: final dest,
                     expiresInSeconds: final ttl,
                     knownDevice: final known,
+                    altMethod: final altM,
+                    altDestination: final altD,
                   ):
                   // Risk-based step-up: collect the OTP. Same handoff as the
                   // 2FA branch — the OTP screen scopes the SAME app-wide
@@ -449,6 +484,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                         stepUpToken: token,
                         method: method,
                         destination: dest,
+                        altMethod: altM,
+                        altDestination: altD,
                         expiresInSeconds: ttl,
                         knownDevice: known,
                       ))?.then((_) {
@@ -686,18 +723,41 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
           // the right half legible over purple, the left half white-on-white
           // and effectively invisible. Pinning it keeps it wholly inside the
           // purple band whatever the column above does.
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 8.h),
-                child: _buildSignUpLink(context),
+          // AND NOT WHILE THE KEYBOARD IS UP.
+          //
+          // Pinning it to bottom:0 keeps it inside the purple band — until the
+          // keyboard opens. The Scaffold resizes, the pin rises with the new
+          // bottom, and the band does not: the background is one cover image,
+          // so the strip lands on the pale middle of it and the white text
+          // goes invisible again, now on top of the voice and passcode
+          // buttons it has been pushed over.
+          //
+          // Hidden rather than recoloured. Neither of these is wanted while
+          // somebody is typing a password, and a colour that works on both
+          // the band and the pale middle would be a compromise on the state
+          // that actually matters — the one at rest.
+          if (MediaQuery.of(context).viewInsets.bottom == 0)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 8.h),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // THE WAY BACK INTO THE ACCOUNT THIS DEVICE ALREADY
+                      // HOLDS. Renders nothing unless a returning passcode
+                      // user is cached — see ExistingUserPasscodeCta.
+                      const ExistingUserPasscodeCta(),
+                      _buildSignUpLink(context),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -798,7 +858,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
     final countries = CountryConfigs.activeCountries
         .where((c) => c.isAvailableForSignup)
         .toList();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
