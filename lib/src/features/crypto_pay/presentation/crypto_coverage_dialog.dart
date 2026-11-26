@@ -38,6 +38,22 @@ enum CryptoCoverage {
   /// The coin could not be priced, so no claim can be made either way.
   unknown,
 
+  /// THE PAYMENT IS TOO SMALL TO CONVERT FOR.
+  ///
+  /// A sell has a floor, and below it there is nothing to decide: the coin's
+  /// value, the wallet balance and the split are all irrelevant because no
+  /// conversion can happen at all. The server already refuses this with
+  /// `below_minimum` — but only once the customer has chosen a coin, read a
+  /// split and entered their PIN, and a refusal earned that way reads as a
+  /// failed payment rather than a rule.
+  ///
+  /// Reported from a ₦223 transfer: the sheet offered Confirm on 0.1549 USDT
+  /// and the exchange would have refused it. Measured on prod the same week,
+  /// a ₦1,000 attempt failed at the venue with "The minimum swap amount is
+  /// 1253.19... NGN" — no money moved, but the customer had already
+  /// committed.
+  belowMinimum,
+
   /// THE WALLET ALONE ALREADY COVERS THE PAYMENT.
   ///
   /// Not a problem, and emphatically not a failure — but the customer must be
@@ -70,8 +86,20 @@ CryptoCoverage assessCoverage({
   required int amountMinor,
   required int? coinValueMinor,
   required int? walletMinor,
+  int minFiatMinor = 0,
 }) {
   if (amountMinor <= 0) return CryptoCoverage.unknown;
+  // FIRST, because it settles the question on its own. Below the floor there
+  // is no conversion to describe, so a split, a rate or a coverage verdict
+  // would all be answering a question that cannot arise.
+  //
+  // Compared against the PAYMENT TOTAL, matching the server's own check
+  // (`requiredMinor < cfg.MinFiatMinor`) rather than against the shortfall —
+  // a client that refused on a different rule than the server would decline
+  // payments the server would have taken.
+  if (minFiatMinor > 0 && amountMinor < minFiatMinor) {
+    return CryptoCoverage.belowMinimum;
+  }
   if (coinValueMinor == null || coinValueMinor <= 0) {
     return CryptoCoverage.unknown;
   }

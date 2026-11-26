@@ -35,6 +35,9 @@ Future<CoverageChoice> showCryptoConversionSheet(
   BuildContext context, {
   required CryptoQuotePreview preview,
   required CryptoCoverage coverage,
+  /// The floor, in kobo, so the sheet can NAME it. A limit the customer is
+  /// told about without its number is not a limit they can act on.
+  int minFiatMinor = 0,
 }) async {
   final short = coverage == CryptoCoverage.insufficient;
   // The wallet alone is enough. Said BEFORE the PIN, because under the
@@ -42,6 +45,10 @@ Future<CoverageChoice> showCryptoConversionSheet(
   // customer came to see "Transfer Failed" on a transfer that had neither
   // failed nor charged them.
   final walletCovers = coverage == CryptoCoverage.walletAlreadyCovers;
+  // TOO SMALL TO CONVERT. The server refuses this with `below_minimum`, but
+  // only after a coin, a split and a PIN — so the rule is stated here, and
+  // there is no Confirm to press.
+  final belowMin = coverage == CryptoCoverage.belowMinimum;
   final result = await showAppBottomSheet<CoverageChoice>(
     context: context,
     isScrollControlled: true,
@@ -52,7 +59,11 @@ Future<CoverageChoice> showCryptoConversionSheet(
     isDismissible: false,
     enableDrag: false,
     builder: (ctx) => _ConversionSheet(
-        preview: preview, short: short, walletCovers: walletCovers),
+        preview: preview,
+        short: short,
+        walletCovers: walletCovers,
+        belowMin: belowMin,
+        minFiatMinor: minFiatMinor),
   );
   // A sheet closed by the system back gesture is a cancellation, never a yes.
   return result ?? CoverageChoice.cancel;
@@ -77,6 +88,8 @@ class _ConversionSheet extends StatelessWidget {
     required this.preview,
     required this.short,
     this.walletCovers = false,
+    this.belowMin = false,
+    this.minFiatMinor = 0,
   });
 
   final CryptoQuotePreview preview;
@@ -85,6 +98,12 @@ class _ConversionSheet extends StatelessWidget {
   /// The wallet alone already covers the payment. Not a failure and not a
   /// blocker — an informed choice, because converting is optional here.
   final bool walletCovers;
+
+  /// The payment is under the floor a sell requires.
+  final bool belowMin;
+
+  /// That floor, in kobo.
+  final int minFiatMinor;
 
   @override
   Widget build(BuildContext context) {
@@ -115,24 +134,30 @@ class _ConversionSheet extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  short
-                      ? Icons.error_outline_rounded
-                      : walletCovers
-                          ? Icons.account_balance_wallet_outlined
-                          : Icons.swap_horiz_rounded,
+                  belowMin
+                      ? Icons.do_not_disturb_on_outlined
+                      : short
+                          ? Icons.error_outline_rounded
+                          : walletCovers
+                              ? Icons.account_balance_wallet_outlined
+                              : Icons.swap_horiz_rounded,
                   size: 20.sp,
                   // Not danger red: nothing is wrong. A red sheet here reads
                   // as a failure, which is the exact misreading this fixes.
+                  // Not danger for belowMin either: a floor is a rule, not a
+                  // fault, and nothing has gone wrong for the customer.
                   color: short ? _danger : _brand,
                 ),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
-                    short
-                        ? '$coin is not enough'
-                        : walletCovers
-                            ? 'Your wallet already covers this'
-                            : 'Paying with $coin',
+                    belowMin
+                        ? 'Too small to pay with $coin'
+                        : short
+                            ? '$coin is not enough'
+                            : walletCovers
+                                ? 'Your wallet already covers this'
+                                : 'Paying with $coin',
                     style: GoogleFonts.inter(
                       fontSize: 16.5.sp,
                       fontWeight: FontWeight.w700,
@@ -150,7 +175,7 @@ class _ConversionSheet extends StatelessWidget {
                 label: 'Rate',
                 value: '1 $coin ≈ ${_naira(preview.unitPriceMinor!.round())}',
               ),
-            if (preview.sellQuantity != null && !short)
+            if (preview.sellQuantity != null && !short && !belowMin)
               _Row(
                 label: 'You sell',
                 value: '≈ ${preview.sellQuantity} $coin',
@@ -178,7 +203,19 @@ class _ConversionSheet extends StatelessWidget {
             ),
 
             SizedBox(height: 12.h),
-            if (walletCovers)
+            if (belowMin)
+              Text(
+                minFiatMinor > 0
+                    ? 'Paying with crypto starts at ${_naira(minFiatMinor)}, '
+                        'and this payment is ${_naira(preview.amountMinor)}. '
+                        'There is nothing small enough to sell, so pay from '
+                        'your wallet instead or change the amount.'
+                    : 'This payment is too small to fund by selling $coin. '
+                        'Pay from your wallet instead, or change the amount.',
+                style: GoogleFonts.inter(
+                    fontSize: 12.5.sp, height: 1.45, color: _muted),
+              )
+            else if (walletCovers)
               Text(
                 'Your wallet has enough for this payment on its own, so you '
                 'do not have to sell any $coin. Continue to pay with $coin '
@@ -232,6 +269,39 @@ class _ConversionSheet extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
 
+            // BELOW THE FLOOR: NO CONFIRM, AND NO 'CHANGE COIN'.
+            //
+            // The floor is in NAIRA, so it is the same for every asset — a coin
+            // picker here would send the customer round a loop that cannot end
+            // anywhere different. The only two real moves are to pay the way
+            // that works, or to leave.
+            //
+            // `cancel` is the choice that returns to paying from the wallet:
+            // confirm_crypto_payment treats it as backing out of crypto, which
+            // is exactly what the primary button here promises.
+            if (belowMin)
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          Navigator.of(context).pop(CoverageChoice.cancel),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _brand,
+                        padding: EdgeInsets.symmetric(vertical: 13.h),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
+                      ),
+                      child: Text('Pay from wallet',
+                          style: GoogleFonts.inter(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white)),
+                    ),
+                  ),
+                ],
+              )
+            else
             Row(
               children: [
                 Expanded(

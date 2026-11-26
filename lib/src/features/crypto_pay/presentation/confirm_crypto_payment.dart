@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -98,6 +99,9 @@ Future<PaySource?> _confirm(
       amountMinor: totalMinor,
       coinValueMinor: refreshed.source.assetFiatValueMinor,
       walletMinor: wallet,
+      // The floor the server enforces, so the customer meets it here rather
+      // than after their PIN. See FeatureFlags.payWithCryptoMinFiatMinor.
+      minFiatMinor: FeatureFlags.payWithCryptoMinFiatMinor,
     );
 
     // UNPRICEABLE IS NOT INSUFFICIENT. A coin with no market, or a provider
@@ -116,6 +120,8 @@ Future<PaySource?> _confirm(
       context,
       preview: preview,
       coverage: coverage,
+      // So the sheet can NAME the floor rather than just refuse at it.
+      minFiatMinor: FeatureFlags.payWithCryptoMinFiatMinor,
     );
     if (!context.mounted) return null;
 

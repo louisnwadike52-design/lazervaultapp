@@ -1708,6 +1708,34 @@ class FeatureFlags {
 
   static const String cryptoPayPrefix = 'feature_cryptopay';
 
+  /// `feature_cryptopay_min_fiat_minor` — the smallest payment that may be
+  /// funded by selling crypto, in KOBO. Default ₦1,000.
+  static const String cryptoPayMinFiatKey = 'feature_cryptopay_min_fiat_minor';
+
+  /// The floor below which a crypto-funded payment cannot be attempted.
+  ///
+  /// THE CLIENT HALF OF A SERVER RULE, exactly like
+  /// [payWithCryptoAvailable] above: crypto-service already refuses with
+  /// `below_minimum` and its refusal is the one that matters. What this buys
+  /// is the customer learning the rule BEFORE choosing a coin, reading a
+  /// split and entering their PIN — a refusal earned that way reads as a
+  /// failed payment rather than a limit.
+  ///
+  /// Mirrors `crypto.pay.min_fiat_minor` (itself seeded from
+  /// `crypto.min_order.ngn.minor_units`, live value 100000). Two settings in
+  /// two services is a drift risk, which is why this one may only ever REFUSE
+  /// EARLY: it is never consulted to allow anything, so a stale copy costs an
+  /// unnecessary message, never an unchecked conversion.
+  ///
+  /// NOTE FOR WHOEVER TUNES IT: the venue has its own minimum and it is
+  /// RATE-DEPENDENT. Measured 2026-11-24, a ₦1,000 attempt was refused by
+  /// Quidax with "The minimum swap amount is 1253.19... NGN" — so this floor
+  /// sitting at ₦1,000 lets customers through a gate the exchange then
+  /// closes. Raising it is an operator decision; the copy says the exchange
+  /// may ask for more either way.
+  static int get payWithCryptoMinFiatMinor =>
+      _positiveSetting(cryptoPayMinFiatKey, 100000, cap: 100000000);
+
   /// Whether the Fiat | Crypto choice may be offered at all.
   ///
   /// This is the CLIENT half of the gate and is only ever a courtesy: the
