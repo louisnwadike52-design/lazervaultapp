@@ -66,14 +66,30 @@ void main() {
     }
   });
 
-  test('"use passcode instead" does not bounce back to the email form', () {
-    // passcodeLogin is the LOCK screen and is a dead end without a cached
-    // passcode user — it redirects to the full login screen, which IS the
-    // email form, so the button looked dead. It must resolve.
+  test('"use passcode instead" is never a dead end', () {
+    // THE SAME CONCERN, A DIFFERENT MECHANISM — and the mechanism changed
+    // because the first one produced a worse bug.
+    //
+    // Originally the button bounced back to the email form, because
+    // passcodeLogin is the LOCK screen and redirects when no passcode user is
+    // cached. The fix was to send those cases to the full phone+passcode
+    // login instead. That routed EMAIL accounts holding a perfectly good
+    // passcode to a phone login they could not complete — with offAllNamed,
+    // so no back button either. A customer reported being stuck on it.
+    //
+    // It is now gated instead of redirected: the button is only offered when
+    // a passcode credential is actually cached, which is the same question
+    // its destination asks, so it cannot be offered for a journey that will
+    // fail. A button that is not there cannot look dead.
+    //
+    // The full contract is pinned in
+    // test/features/authentication/email_passcode_switch_test.dart.
     final s = read(
         'lib/src/features/authentication/presentation/views/email_sign_in_screen.dart');
-    expect(s, contains('hasCachedReturningUser'));
-    expect(s, contains('AppRoutes.phonePasscodeLogin'),
-        reason: 'no cached passcode user must land on the FULL passcode login');
+    expect(s, contains('hasPasscodeCredentialCached'),
+        reason: 'the button and its destination must ask one question');
+    expect(s.contains('AppRoutes.phonePasscodeLogin'), isFalse,
+        reason: 'an email+password account has no phone passcode to enter '
+            'there — that screen is the dead end this replaced');
   });
 }

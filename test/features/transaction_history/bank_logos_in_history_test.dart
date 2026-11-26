@@ -58,9 +58,14 @@ void main() {
     });
 
     test('the history row asks for a bank logo at all', () {
+      // THE AVATAR, NOT THE CARD. Both were private to transaction_card.dart,
+      // which is why the dashboard's first five rows showed a generic glyph
+      // while the full history showed the bank — one file could reach the
+      // logic. TransactionAvatar is now the single implementation both lists
+      // render, so this assertion covers both at once.
       final card = File(
         'lib/src/features/transaction_history/presentation/widgets/'
-        'transaction_card.dart',
+        'transaction_avatar.dart',
       ).readAsStringSync();
       expect(card, contains('BankLogo('));
       expect(card, contains("md?['bank_name']"));
