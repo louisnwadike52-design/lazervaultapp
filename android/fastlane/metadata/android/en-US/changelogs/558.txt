@@ -1,0 +1,8 @@
+Improvements and fixes:
+
+• Paying with crypto now tells you before you confirm if an amount is too small to convert, and the limit matches the exchange's own for each coin
+• Resetting your passcode fills in your email, and the countdown now shows how long your code actually lasts
+• A tidier account menu
+• Clearer support screens for our team, so replies reach you faster
+
+Thank you for using Lazervault.
