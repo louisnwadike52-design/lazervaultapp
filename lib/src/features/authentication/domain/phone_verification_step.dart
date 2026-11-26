@@ -49,7 +49,19 @@ bool get phoneOtpStepAvailable => SmsPolicy.showSignupOtpStep;
   String? secondaryEmail,
   bool isRequired = false,
   bool codeSent = false,
-  int expiresInSeconds = 600,
+
+  /// The window the SERVER reported, in seconds. ZERO — the default — means
+  /// nobody has said, and the screen then renders no countdown.
+  ///
+  /// IT DEFAULTED TO 600, AND THAT DEFEATED THE FIX ON THE SCREEN.
+  /// phone_verification_screen_widgets.dart reads `expiry ?? 0` with a long
+  /// note explaining why: it used to fall back to ten minutes against a
+  /// server TTL of 120 seconds, so "the customer watched a confident timer
+  /// for eight minutes after their code had already died". But `?? 0` only
+  /// catches a MISSING value, and this helper's single caller does not pass
+  /// the argument — so 600 was written into the route args as though the
+  /// server had said it, and the screen trusted it.
+  int expiresInSeconds = 0,
 }) {
   final hasPhone = phoneNumber != null && phoneNumber.isNotEmpty;
   if (hasPhone && phoneOtpStepAvailable) {
@@ -58,7 +70,10 @@ bool get phoneOtpStepAvailable => SmsPolicy.showSignupOtpStep;
       args: <String, dynamic>{
         'phoneNumber': phoneNumber,
         'codeSent': codeSent,
-        'expiresIn': expiresInSeconds,
+        // OMITTED when unknown rather than sent as zero, so the screen's own
+        // `?? 0` is reached and a later real expiry (from the send response)
+        // is what arms the countdown.
+        if (expiresInSeconds > 0) 'expiresIn': expiresInSeconds,
         'isRequired': isRequired,
         'secondaryEmail': secondaryEmail,
       },

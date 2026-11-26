@@ -135,6 +135,29 @@ void main() {
           AppRoutes.passcodeSetup);
     });
   });
+
+  test('the route never invents a code window of its own', () async {
+    // It defaulted to 600 seconds, and that silently defeated the fix on the
+    // screen: phone_verification_screen_widgets reads `expiry ?? 0` precisely
+    // so an unknown window renders no countdown, but `?? 0` only catches a
+    // MISSING key — and this helper's caller does not pass the argument, so
+    // 600 arrived in the args looking like something the server had said.
+    // Against the real 120-second TTL that is a confident timer with eight
+    // minutes left on a code that is already dead.
+    await smsOn();
+    final route = phoneVerificationStepRoute(phoneNumber: '+2348012345678');
+    expect(route.name, AppRoutes.phoneVerification);
+    expect(route.args!.containsKey('expiresIn'), isFalse,
+        reason: 'an unstated window must be ABSENT, not a number — the screen '
+            'arms its countdown from whatever key it finds');
+
+    // A real, server-reported window still travels.
+    final withWindow = phoneVerificationStepRoute(
+      phoneNumber: '+2348012345678',
+      expiresInSeconds: 120,
+    );
+    expect(withWindow.args!['expiresIn'], 120);
+  });
 }
 
 /// THE SKIP HATCH CLOSES ONCE A CODE CAN ACTUALLY ARRIVE.
