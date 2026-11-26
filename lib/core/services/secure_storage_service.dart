@@ -264,7 +264,27 @@ class SecureStorageService {
     await _storage.write(key: _keyUserEmail, value: email);
   }
 
+  /// The signed-in customer's email.
+  ///
+  /// READS `stored_email` FIRST, and that is the whole point of this method.
+  /// `_keyUserEmail` ('user_email') is what [saveUserEmail] writes — and
+  /// saveUserEmail is called from NOWHERE. Measured 2026-11-26: the only
+  /// reference to it in the app is its own definition, so 'user_email' has
+  /// never held a value on any device, and every caller of this method was
+  /// getting null.
+  ///
+  /// Three places were: the locked-out support sheet (so "Need help signing
+  /// in?" opened with an empty email field even though the passcode screen
+  /// right behind it knew exactly who was signing in), virtual-account
+  /// provisioning, and family-account creation.
+  ///
+  /// `stored_email` is the key AuthenticationCubit actually writes on every
+  /// sign-in, and the same one the passcode screen reads to decide whose
+  /// account it is showing. The old key is still read as a fallback so a
+  /// device that somehow holds one is not ignored.
   Future<String?> getUserEmail() async {
+    final stored = (await _storage.read(key: 'stored_email'))?.trim();
+    if (stored != null && stored.isNotEmpty) return stored;
     return await _storage.read(key: _keyUserEmail);
   }
 

@@ -175,8 +175,17 @@ class _PayWithCryptoSheetBodyState extends State<_PayWithCryptoSheetBody> {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h + keyboard),
-      child: Column(
+      // The keyboard inset is the CONTAINER's, so the white surface still
+      // reaches the bottom edge; the home-indicator / navigation-bar inset is
+      // applied INSIDE it by the SafeArea below. Same shape as
+      // TransactionPinModal — see the note on showAppBottomSheet for why the
+      // surface has to be the outer widget.
+      padding: EdgeInsets.only(bottom: keyboard),
+      child: SafeArea(
+        top: false,
+        // At least the original 12.h when there is no system inset to honour.
+        minimum: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Center(
@@ -228,7 +237,8 @@ class _PayWithCryptoSheetBodyState extends State<_PayWithCryptoSheetBody> {
             _empty(context)
           else
             Flexible(child: _list()),
-        ],
+          ],
+        ),
       ),
     );
   }
