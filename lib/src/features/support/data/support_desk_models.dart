@@ -56,6 +56,26 @@ class DeskTicket {
   final String userName;
   final String userEmail;
 
+  /// How the ticket was raised: "app", "email", or "pre_auth".
+  ///
+  /// PRE_AUTH CHANGES WHERE A REPLY GOES. Those threads are raised by
+  /// somebody who could not sign in, so they are parked under a sentinel
+  /// owner — which means there is no device to push to and no in-app thread
+  /// the customer can open. The address on the ticket is the only way to
+  /// reach them, and it is UNVERIFIED: typed by whoever was holding the
+  /// phone, never checked. A responder has to know both facts before they
+  /// answer, which is what [repliesGoToEmailOnly] and the badge are for.
+  final String channel;
+
+  /// True when the only route to this customer is the email on the ticket.
+  bool get repliesGoToEmailOnly =>
+      channel.trim().toLowerCase() == 'pre_auth' && userEmail.trim().isNotEmpty;
+
+  /// True when the ticket says it is pre-auth but carries no address at all —
+  /// nothing can reach them, and a responder must not be told otherwise.
+  bool get hasNoWayToReply =>
+      channel.trim().toLowerCase() == 'pre_auth' && userEmail.trim().isEmpty;
+
   /// Messages this agent has not read. The count that decides what to open
   /// next — `unread_for_user` is the customer's side and means nothing here.
   final int unreadForAdmin;
@@ -85,6 +105,7 @@ class DeskTicket {
     required this.kind,
     required this.userName,
     required this.userEmail,
+    this.channel = 'app',
     required this.unreadForAdmin,
     required this.assigned,
     this.lastMessageAt,
@@ -107,6 +128,7 @@ class DeskTicket {
       kind: (j['kind'] ?? 'chat').toString(),
       userName: (j['user_name'] ?? '').toString(),
       userEmail: (j['user_email'] ?? '').toString(),
+      channel: (j['channel'] ?? 'app').toString(),
       unreadForAdmin: asInt(j['unread_for_admin']),
       assigned: (j['assigned_admin_id'] ?? '').toString().isNotEmpty,
       lastMessageAt: DateTime.tryParse('${j['last_message_at'] ?? ''}'),

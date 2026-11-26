@@ -917,6 +917,7 @@ class _DeskThreadScreenState extends State<_DeskThreadScreen> {
                     },
                   ),
           ),
+          _replyDestinationBanner(theme),
           _composerBar(theme),
         ],
       ),
@@ -1087,6 +1088,99 @@ class _DeskThreadScreenState extends State<_DeskThreadScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// WHERE THIS REPLY IS GOING, said before it is written.
+  ///
+  /// A pre-auth ticket is raised by somebody who could not sign in, so it is
+  /// parked under a sentinel owner — no device to push to, and no in-app
+  /// thread they can open, because not being able to open it is why they
+  /// wrote. The address they typed is the only route, and it is UNVERIFIED:
+  /// nothing has checked they own it.
+  ///
+  /// Both facts belong above the composer rather than in the ticket header. A
+  /// responder is about to write to a stranger's inbox, and "do not put
+  /// anything in here you would not send to an unverified address" is only
+  /// useful before they type it.
+  Widget _replyDestinationBanner(ThemeData theme) {
+    final t = _ticket;
+    if (t == null) return const SizedBox.shrink();
+
+    // No address on a pre-auth ticket means nothing can reach them. Said
+    // plainly rather than hidden — a responder who types a careful answer
+    // into a void has been failed by the screen, not by the customer.
+    if (t.hasNoWayToReply) {
+      return Container(
+        width: double.infinity,
+        margin: EdgeInsets.fromLTRB(12.w, 0, 12.w, 6.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.errorContainer,
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.report_gmailerrorred_outlined,
+                size: 16.w, color: theme.colorScheme.onErrorContainer),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'This customer could not sign in and left no address. '
+                'Nothing you write here can reach them.',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onErrorContainer),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (!t.repliesGoToEmailOnly) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.fromLTRB(12.w, 0, 12.w, 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.alternate_email_rounded,
+              size: 16.w, color: theme.colorScheme.onTertiaryContainer),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Your reply is emailed to ${t.userEmail}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onTertiaryContainer,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  'They could not sign in, so this is the only way to reach '
+                  'them — and the address is unverified. Do not include '
+                  'anything you would not send to a stranger.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onTertiaryContainer
+                        .withValues(alpha: 0.85),
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
