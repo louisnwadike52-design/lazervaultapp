@@ -352,11 +352,38 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       final mergeRelevant =
           unfiltered || wantsExternalStatus || wantsTransferService;
 
-      if (page == 1 && mergeRelevant && !hasCounterparty) {
+      // MERGED ON EVERY PAGE, SCOPED TO THAT PAGE'S DATES — not once on page 1.
+      //
+      // It used to run only on page 1 with a flat newest-200 window, and the
+      // EXTERNAL filter is applied after the fetch, so most of that budget went
+      // on internal transfers the ledger already carries. The result: a
+      // customer's older failed, pending and refunded transfers were
+      // unreachable however far they scrolled, because nothing ever asked for
+      // them. Measured on the reported account: 23 failed, 9 refunded and 2
+      // processing rows exist ONLY in core-payments, spread from August to
+      // November, while the window reached back three weeks.
+      //
+      // The window is the date span of the ledger rows just returned, so the
+      // supplement arrives alongside the rows it belongs beside:
+      //   * page 1 leaves endDate OPEN, or a transfer newer than the newest
+      //     ledger row — a pending one, which writes no ledger row at all —
+      //     would fall outside every page's window and never appear;
+      //   * the LAST page leaves startDate OPEN, sweeping anything older than
+      //     the ledger itself reaches.
+      // Boundary rows can land in two windows; the cubit de-duplicates by id
+      // when it appends, and _mergeExternalTransfers de-duplicates by
+      // reference within the page, so neither produces a double row.
+      final pageDates = transactions.map((t) => t.createdAt).toList()..sort();
+      final hasLedgerRows = pageDates.isNotEmpty;
+      final moreLedgerPages = page * limit < response.total;
+      if (mergeRelevant && !hasCounterparty && hasLedgerRows) {
         try {
           var external = await _payments?.getExternalTransferHistory(
                 accountId: accountId,
                 limit: 200,
+                // Open below on the last page; open above on the first.
+                startDate: moreLedgerPages ? pageDates.first : null,
+                endDate: page == 1 ? null : pageDates.last,
               ) ??
               const <UnifiedTransaction>[];
           // Post-filter the external rows to match the active status/service/

@@ -1,0 +1,5 @@
+Improvements and fixes:
+
+• Transaction history now reaches your older transfers that did not go through — failed, pending and refunded ones appear alongside the rest instead of only in the last few weeks
+
+Thank you for using Lazervault.

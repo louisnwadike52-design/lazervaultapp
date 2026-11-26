@@ -232,6 +232,43 @@ void main() {
     });
   });
 
+  group('the external-transfer supplement follows the pages', () {
+    final repo = code(File('lib/src/features/transaction_history/data/'
+            'repository/transaction_history_repository_grpc.dart')
+        .readAsStringSync());
+
+    test('it is not pinned to page one', () {
+      // It ran only on page 1 with a flat newest-200 window, and because the
+      // EXTERNAL filter is applied AFTER the fetch, most of that budget went on
+      // internal transfers the ledger already carries. A customer's older
+      // failed, pending and refunded transfers were therefore unreachable
+      // however far they scrolled — nothing ever asked for them. Measured on
+      // the reported account: 23 failed, 9 refunded, 2 processing, spread from
+      // August to November, against a window reaching back three weeks.
+      expect(repo.contains('if (page == 1 && mergeRelevant'), isFalse,
+          reason: 'the supplement must be fetched for the page being '
+              'assembled, not once for the first one');
+    });
+
+    test('each fetch is scoped to the dates of the rows it accompanies', () {
+      expect(repo, contains('startDate:'),
+          reason: 'without a window the fetch can only ever return the newest '
+              'limit payments');
+      expect(repo, contains('endDate:'));
+    });
+
+    test('the first page stays open above and the last page open below', () {
+      // A PENDING external transfer writes no ledger row at all, so it can be
+      // NEWER than page one's newest ledger row; capping endDate on page 1
+      // would drop it from every window. Symmetrically, the last page must
+      // sweep whatever predates the ledger's own oldest row.
+      expect(repo, contains('page == 1 ? null : pageDates.last'),
+          reason: 'page 1 must leave endDate open');
+      expect(repo, contains('moreLedgerPages ? pageDates.first : null'),
+          reason: 'the last page must leave startDate open');
+    });
+  });
+
   group('hasMore describes the SERVER, not the assembled list', () {
     final repo = code(File('lib/src/features/transaction_history/data/'
             'repository/transaction_history_repository_grpc.dart')

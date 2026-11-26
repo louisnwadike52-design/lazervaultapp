@@ -329,12 +329,21 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
   Future<List<UnifiedTransaction>> getExternalTransferHistory({
     required String accountId,
     int limit = 200,
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
     if (accountId.isEmpty) return const [];
+    // The window is sent to the SERVER (core-payments filters on created_at),
+    // not applied after the fact — the point is to stop spending the row budget
+    // on payments outside the page being assembled. RFC3339 in UTC: the handler
+    // hands the string to Postgres, so an offset-bearing form is what makes the
+    // comparison unambiguous.
     final request = payments.GetPaymentHistoryRequest(
       accountId: accountId,
       limit: limit,
       offset: 0,
+      startDate: startDate?.toUtc().toIso8601String(),
+      endDate: endDate?.toUtc().toIso8601String(),
     );
     try {
       final response =

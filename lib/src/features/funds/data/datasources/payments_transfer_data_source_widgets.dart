@@ -231,9 +231,17 @@ abstract class IPaymentsTransferDataSource {
   /// live only in core-payments `payments` — a failed/pending external transfer
   /// never reaches the accounts-service ledger, so it wouldn't appear in history
   /// without this. Best-effort: returns [] on error.
+  /// [startDate]/[endDate] scope the window to the ledger page being
+  /// assembled. Without them this could only ever return the newest [limit]
+  /// payments, and since the EXTERNAL filter is applied after the fetch, most
+  /// of that window is spent on internal transfers that the ledger already
+  /// carries — so a customer's older failed and pending transfers were
+  /// unreachable however far they scrolled.
   Future<List<UnifiedTransaction>> getExternalTransferHistory({
     required String accountId,
     int limit,
+    DateTime? startDate,
+    DateTime? endDate,
   });
 }
 
