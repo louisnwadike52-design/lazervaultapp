@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/transaction_pin/cubit/pin_management_cub
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
+import 'package:lazervault/core/widgets/otp_expiry_countdown.dart';
 
 class ForgotPinScreen extends StatefulWidget {
   const ForgotPinScreen({super.key});
@@ -47,6 +48,18 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
   String _channelUsed = '';
   int _cooldownSeconds = 0;
   Timer? _cooldownTimer;
+
+  /// THE CODE'S OWN LIFETIME, as the server says it stamped on the row — not
+  /// the resend cooldown beside it, and not a constant. This screen showed
+  /// only `_cooldownSeconds`, so a customer whose code lives 120 seconds was
+  /// shown a 60-second number answering a different question, and nothing on
+  /// screen ever said when the code they were typing stopped working.
+  int _codeExpirySeconds = 0;
+
+  /// Bumped on every send so the countdown re-arms even when the new window is
+  /// the same number as the old one — without it a resend leaves the previous
+  /// code's clock running and expires one that was just issued.
+  int _sendKey = 0;
 
   // Step 3 state
   final TextEditingController _newPinController = TextEditingController();
@@ -299,6 +312,8 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
         _currentStep = 2;
         _maskedDestination = state.maskedDestination;
         _channelUsed = state.channel;
+        _codeExpirySeconds = state.expiresInSeconds;
+        _sendKey++;
       });
       _startCooldown(state.cooldownSeconds);
       _otpFocusNodes[0].requestFocus();
@@ -1112,28 +1127,42 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
             textAlign: TextAlign.center,
           )
         else
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Column(
             children: [
-              Text(
-                "Didn't receive a code? ",
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  color: Colors.grey.shade600,
-                ),
+              // Shown only for email/SMS: an authenticator code has no
+              // server-minted expiry, it rotates on the 30s TOTP step, which
+              // the branch above says instead.
+              OtpExpiryCountdown(
+                key: ValueKey('pin-reset-expiry-$_sendKey'),
+                seconds: _codeExpirySeconds,
+                color: Colors.grey.shade600,
               ),
-              GestureDetector(
-                onTap: _cooldownSeconds > 0 ? null : _onResendCode,
-                child: Text(
-                  _cooldownSeconds > 0
-                      ? 'Resend in ${_cooldownSeconds}s'
-                      : 'Resend Code',
-                  style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                    color: _cooldownSeconds > 0 ? Colors.grey : _purpleAccent,
+              if (_codeExpirySeconds > 0) SizedBox(height: 12.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Didn't receive a code? ",
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
-                ),
+                  GestureDetector(
+                    onTap: _cooldownSeconds > 0 ? null : _onResendCode,
+                    child: Text(
+                      _cooldownSeconds > 0
+                          ? 'Resend in ${_cooldownSeconds}s'
+                          : 'Resend Code',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color:
+                            _cooldownSeconds > 0 ? Colors.grey : _purpleAccent,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

@@ -9,7 +9,9 @@ import 'package:lazervault/src/features/authentication/domain/entities/two_facto
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
-import 'package:lazervault/src/features/widgets/sms_dnd_notice.dart';
+import 'package:lazervault/src/features/widgets/resend_code_button.dart';
+import 'package:lazervault/core/widgets/otp_expiry_countdown.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 /// Screen for setting up two-factor authentication
 class TwoFactorSetupScreen extends StatefulWidget {
@@ -28,6 +30,20 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
   String _verificationCode = '';
   TwoFactorSetup? _setupData;
   bool _showBackupCodes = false;
+
+  /// The emailed/SMS code's own lifetime in seconds.
+  ///
+  /// Seeded from the admin dial for the chosen channel because
+  /// `EnableTwoFactorResponse` carries no expiry — the same reason
+  /// endpoint_registry's otpTtlEmailSeconds exists, and it is the SAME KEY
+  /// auth-service mints from, so the number on screen is the number the row
+  /// holds. A RESEND then replaces it with the window the server reports
+  /// outright, which is better still.
+  int _codeWindowSeconds = 0;
+
+  /// Bumped per send so the countdown re-arms even when the new window equals
+  /// the old one.
+  int _codeSendKey = 0;
 
   // For code input
   final List<TextEditingController> _codeControllers = List.generate(
@@ -82,6 +98,10 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
         setState(() {
           _setupData = result;
           _isLoading = false;
+          // TOTP stays at zero: it has no server-minted expiry, it rotates on
+          // the 30-second step, which the authenticator branch says instead.
+          _codeWindowSeconds = _dialWindowForSelectedMethod();
+          _codeSendKey++;
         });
 
         // Show success message
@@ -109,6 +129,18 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
           borderRadius: 10.r,
         );
       }
+    }
+  }
+
+  /// The admin-dial window for the channel the user picked, or zero for TOTP.
+  int _dialWindowForSelectedMethod() {
+    switch (_selectedMethod) {
+      case TwoFactorMethod.sms:
+        return endpointRegistry.otpTtlSmsSeconds;
+      case TwoFactorMethod.email:
+        return endpointRegistry.otpTtlEmailSeconds;
+      case TwoFactorMethod.totp:
+        return 0;
     }
   }
 
@@ -925,57 +957,50 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
             ),
           ),
           SizedBox(height: 16.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Didn\'t receive the code? ',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              TextButton(
-                onPressed: _isLoading
-                    ? null
-                    : () async {
-                        try {
-                          await context
-                              .read<AuthenticationCubit>()
-                              .sendTwoFactorCode();
-                          // No confirmation toast — this screen exists to
-                          // collect the code and says where it went. The
-                          // resend button's own cooldown shows the tap landed.
-                          // The catch below still reports failures.
-                        } catch (e) {
-                          Get.snackbar(
-                            'Error',
-                            'Failed to send code: ${e.toString()}',
-                            backgroundColor: Colors.redAccent,
-                            colorText: Colors.white,
-                            snackPosition: SnackPosition.TOP,
-                            margin: EdgeInsets.all(15.w),
-                            borderRadius: 10.r,
-                          );
-                        }
-                      },
-                child: Text(
-                  'Resend',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4834D4),
-                  ),
-                ),
-              ),
-            ],
+          // THE CODE'S OWN CLOCK, which is not the resend cooldown below it.
+          Center(
+            child: OtpExpiryCountdown(
+              key: ValueKey('2fa-setup-expiry-$_codeSendKey'),
+              seconds: _codeWindowSeconds,
+              color: Colors.grey.shade600,
+            ),
           ),
-          // SMS method only — DND is a phone-network register and the advice
-          // is meaningless for TOTP or email. This screen has no resend
-          // cooldown of its own (Resend is live immediately), so the notice
-          // self-times instead of being gated by one.
-          if (_selectedMethod == TwoFactorMethod.sms)
-            const SmsDndNotice(revealAfter: Duration(seconds: 60)),
+          SizedBox(height: 12.h),
+          // THE SHARED RESEND CONTROL, which owns its own cooldown.
+          //
+          // This was a bare TextButton, live immediately and with no cooldown
+          // at all. auth-service refuses a resend inside
+          // `auth_otp_resend_cooldown_seconds` (90s), so every tap before then
+          // spent a resend from the budget, sent nothing, and read to the
+          // customer as the button not working. The widget below starts at the
+          // server's own cooldown and, per its contract, returns null when
+          // nothing was sent so no cooldown is started over a refusal.
+          Center(
+            child: ResendCodeButton(
+              key: ValueKey('2fa-setup-resend-$_codeSendKey'),
+              initialSeconds: endpointRegistry.otpResendCooldownSeconds,
+              prompt: "Didn't receive the code? ",
+              // DND is a phone-network register, so the advice is meaningless
+              // for an emailed code.
+              showSmsDndHelp: _selectedMethod == TwoFactorMethod.sms,
+              onResend: () async {
+                final sent = await context
+                    .read<AuthenticationCubit>()
+                    .sendTwoFactorCode();
+                if (sent == null) return null;
+                if (mounted) {
+                  setState(() {
+                    // The RESEND's window comes straight off the wire — the
+                    // server states what it minted, so prefer it over the dial
+                    // the first code was described with.
+                    if (sent > 0) _codeWindowSeconds = sent;
+                    _codeSendKey++;
+                  });
+                }
+                return endpointRegistry.otpResendCooldownSeconds;
+              },
+            ),
+          ),
         ],
       ),
     );

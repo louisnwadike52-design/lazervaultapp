@@ -218,8 +218,18 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
     final cubit = context.read<AuthenticationCubit>();
     final method = _status?.method ?? TwoFactorMethod.totp;
     // SMS/Email: make sure a fresh code is on its way before we ask for it.
+    //
+    // A REFUSED SEND NO LONGER OPENS THE SHEET. The send result used to be
+    // discarded, so a rate-limited or failed send still put up six empty boxes
+    // demanding a code that had never been issued — the customer typed the
+    // last code they had, watched it fail, and had no way to tell whether the
+    // problem was the code or the app. The cubit returns null on refusal and
+    // has already raised the reason.
+    var codeWindow = 0;
     if (method != TwoFactorMethod.totp) {
-      await cubit.sendTwoFactorCode();
+      final sent = await cubit.sendTwoFactorCode();
+      if (sent == null) return;
+      codeWindow = sent;
     }
     if (!mounted) return;
 
@@ -231,6 +241,7 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
       icon: Icons.gpp_bad_rounded,
       iconColor: Colors.red,
       destructive: true,
+      expiresInSeconds: codeWindow,
       onVerify: (code) async {
         try {
           return await cubit.disableTwoFactor(code);
@@ -335,9 +346,13 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
 
     // Collect the current code via the same 6-box PIN sheet, then regenerate.
     final method = _status?.method ?? TwoFactorMethod.totp;
+    var codeWindow = 0;
     if (method != TwoFactorMethod.totp) {
-      await context.read<AuthenticationCubit>().sendTwoFactorCode();
-      if (!mounted) return;
+      // Same rule as the disable flow: no code sent, no sheet.
+      final sent =
+          await context.read<AuthenticationCubit>().sendTwoFactorCode();
+      if (sent == null || !mounted) return;
+      codeWindow = sent;
     }
     List<String>? newCodes;
     await TwoFactorVerifySheet.show(
@@ -347,6 +362,7 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
       actionLabel: 'Regenerate codes',
       icon: Icons.key_rounded,
       iconColor: Colors.orange.shade700,
+      expiresInSeconds: codeWindow,
       onVerify: (code) async {
         try {
           final codes = await context

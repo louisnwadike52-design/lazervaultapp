@@ -25,6 +25,12 @@ void main() {
       'lib/src/features/authentication/presentation/views/phone_otp_screen.dart',
       'lib/src/features/authentication/presentation/views/login_otp_screen.dart',
       'lib/src/features/profile/presentation/view/change_phone_screen.dart',
+      // The 2FA surfaces gained a resend on 2026-11-26. The login screen had
+      // none at all, so a code that died left the customer with a backup code
+      // or an abandoned login; the setup screen's was live immediately, inside
+      // the server's own 90-second refusal window.
+      'lib/src/features/authentication/presentation/views/two_factor_verification_screen.dart',
+      'lib/src/features/authentication/presentation/views/two_factor_setup_screen.dart',
       'lib/src/features/widgets/resend_code_button.dart',
     ];
 

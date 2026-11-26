@@ -145,7 +145,14 @@ abstract class IAuthRepository {
   /// (Re)send a 2FA code for SMS/email methods. Pass the temp [twoFactorToken]
   /// during LOGIN (used as the Bearer). Pass null during SETUP (already authed —
   /// the normal access token is used). No-op-safe for TOTP.
-  Future<Either<Failure, void>> sendTwoFactorLoginCode({
+  ///
+  /// RETURNS THE WINDOW THE SERVER SAYS IT MINTED, in seconds
+  /// (`SendTwoFactorCodeResponse.expires_in`, which auth-service derives from
+  /// the row's own expiry). This used to return void: the field was on the
+  /// wire and discarded here, so every 2FA screen showed a code-entry field
+  /// with nothing saying when the code died. Zero means the server reported
+  /// no window — the screens render no countdown rather than invent one.
+  Future<Either<Failure, int>> sendTwoFactorLoginCode({
     String? twoFactorToken,
   });
 

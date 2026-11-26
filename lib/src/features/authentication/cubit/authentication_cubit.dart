@@ -3601,21 +3601,28 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   /// [twoFactorToken] from the login response (used as the Bearer); during 2FA
   /// SETUP call with no argument (the authed session's access token is used).
   /// No-op for TOTP.
-  Future<bool> sendTwoFactorCode([String? twoFactorToken]) async {
-    if (isClosed) return false;
+  ///
+  /// Returns the code's own lifetime in seconds as the SERVER reported it, or
+  /// null when nothing was sent. Null and zero mean different things and the
+  /// screens treat them differently: null is a refusal (no countdown, no
+  /// cooldown, the error is already on screen), zero is "sent, but the server
+  /// named no window" (code accepted, still no countdown — a screen must never
+  /// fill that silence with a number of its own).
+  Future<int?> sendTwoFactorCode([String? twoFactorToken]) async {
+    if (isClosed) return null;
     final result = await _authRepository.sendTwoFactorLoginCode(
         twoFactorToken: twoFactorToken);
-    if (isClosed) return false;
+    if (isClosed) return null;
     return result.fold(
       (failure) {
         _showErrorSnackbar('Could not send code', failure.message);
-        return false;
+        return null;
       },
-      (_) {
+      (expiresInSeconds) {
         // Deliberately silent on success: the screen the user is looking at
         // already states that a code was sent, and to where. Failures still
         // raise a snackbar (above) because those are NOT otherwise visible.
-        return true;
+        return expiresInSeconds;
       },
     );
   }

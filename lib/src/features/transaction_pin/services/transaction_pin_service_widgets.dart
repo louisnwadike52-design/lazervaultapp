@@ -184,7 +184,15 @@ class OTPInitiationResult {
     required this.message,
     this.channel = '',
     this.maskedDestination = '',
-    this.expiresInSeconds = 600,
+    // ZERO, NOT A GUESS. This defaulted to 600 — ten minutes — for a code
+    // whose window is the admin dial, 120 seconds. The server now always
+    // reports the window it actually stamped on the row (auth-service
+    // pin_otp_service.go), so this default only applies when it said nothing
+    // at all; and when nobody has said, the honest countdown is no countdown.
+    // A fabricated ten minutes over a two-minute code is the same defect the
+    // passcode-reset screen had, where a customer watched a timer promise
+    // time a code did not have.
+    this.expiresInSeconds = 0,
     this.cooldownSeconds = 60,
   });
 }

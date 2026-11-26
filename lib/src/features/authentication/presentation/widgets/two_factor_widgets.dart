@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/two_factor_entity.dart';
 import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
+import 'package:lazervault/core/widgets/otp_expiry_countdown.dart';
 
 /// Shared 2FA method picker (Authenticator / SMS / Email), reused by the setup
 /// screen and the settings screen. Extracted from the setup screen so the
@@ -146,6 +147,16 @@ class TwoFactorVerifySheet extends StatefulWidget {
   /// disable-2FA confirmation so the destructive action reads as destructive.
   final bool destructive;
 
+  /// Lifetime of the emailed/SMS code just sent, in seconds, AS THE SERVER
+  /// REPORTED IT (`SendTwoFactorCodeResponse.expires_in`).
+  ///
+  /// Zero — the default — renders no countdown, which is correct for an
+  /// authenticator code: a TOTP has no server-minted expiry, it rotates on the
+  /// 30-second step, and a sheet counting one down would be describing the
+  /// wrong clock. It is also what a caller gets when the server named no
+  /// window, and in that case silence is the honest answer.
+  final int expiresInSeconds;
+
   const TwoFactorVerifySheet({
     super.key,
     required this.subtitle,
@@ -155,6 +166,7 @@ class TwoFactorVerifySheet extends StatefulWidget {
     this.icon = Icons.verified_user_rounded,
     this.iconColor,
     this.destructive = false,
+    this.expiresInSeconds = 0,
   });
 
   /// Shows the sheet and returns true when verification succeeded.
@@ -167,6 +179,7 @@ class TwoFactorVerifySheet extends StatefulWidget {
     IconData icon = Icons.verified_user_rounded,
     Color? iconColor,
     bool destructive = false,
+    int expiresInSeconds = 0,
   }) {
     return showAppBottomSheet<bool>(
       context: context,
@@ -183,6 +196,7 @@ class TwoFactorVerifySheet extends StatefulWidget {
         icon: icon,
         iconColor: iconColor,
         destructive: destructive,
+        expiresInSeconds: expiresInSeconds,
       ),
     );
   }
@@ -280,6 +294,18 @@ class _TwoFactorVerifySheetState extends State<TwoFactorVerifySheet> {
             child: Text(widget.subtitle,
                 style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade700)),
           ),
+          // The code's own clock. Self-hides at zero (TOTP, or a server that
+          // named no window), so the TOTP callers are unchanged.
+          if (widget.expiresInSeconds > 0) ...[
+            SizedBox(height: 8.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OtpExpiryCountdown(
+                seconds: widget.expiresInSeconds,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ],
           SizedBox(height: 20.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -8,6 +8,9 @@ import 'package:lazervault/src/features/authentication/presentation/utils/post_l
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/widgets/otp_expiry_countdown.dart';
+import 'package:lazervault/src/features/widgets/resend_code_button.dart';
 
 /// Screen for two-factor authentication verification during login
 class TwoFactorVerificationScreen extends StatefulWidget {
@@ -40,17 +43,32 @@ class _TwoFactorVerificationScreenState
   String _verificationCode = '';
   bool _showBackupCodeInput = false;
 
+  /// True for the two channels that actually mint a code. A TOTP is generated
+  /// on the device, so it has neither a send, a resend, nor a server expiry.
+  bool get _isSentCode => widget.method == 'sms' || widget.method == 'email';
+
+  /// The code's own lifetime in seconds, as the server reported minting it.
+  int _codeWindowSeconds = 0;
+
+  /// Bumped per send so the countdown re-arms even when the window is
+  /// unchanged — otherwise a resend leaves the dead code's clock running.
+  int _codeSendKey = 0;
+
   @override
   void initState() {
     super.initState();
     // SMS/Email: request a fresh code on open. TOTP needs no send.
-    if (widget.method == 'sms' || widget.method == 'email') {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          context
-              .read<AuthenticationCubit>()
-              .sendTwoFactorCode(widget.twoFactorToken);
-        }
+    if (_isSentCode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final sent = await context
+            .read<AuthenticationCubit>()
+            .sendTwoFactorCode(widget.twoFactorToken);
+        if (!mounted || sent == null) return;
+        setState(() {
+          _codeWindowSeconds = sent;
+          _codeSendKey++;
+        });
       });
     }
   }
@@ -183,6 +201,43 @@ class _TwoFactorVerificationScreenState
                 _buildInstructions(),
                 SizedBox(height: 32.h),
                 _buildCodeInput(),
+                // SMS/EMAIL ONLY, AND THIS SCREEN HAD NEITHER.
+                //
+                // A login 2FA code lives ~120 seconds and there was no way to
+                // ask for another one: once it expired the only routes out
+                // were a backup code or abandoning the login. Both clocks are
+                // now shown, each labelled as what it is, and the code can be
+                // re-sent.
+                if (_isSentCode && !_showBackupCodeInput) ...[
+                  SizedBox(height: 16.h),
+                  OtpExpiryCountdown(
+                    key: ValueKey('2fa-login-expiry-$_codeSendKey'),
+                    seconds: _codeWindowSeconds,
+                    color: Colors.grey.shade600,
+                  ),
+                  SizedBox(height: 12.h),
+                  ResendCodeButton(
+                    key: ValueKey('2fa-login-resend-$_codeSendKey'),
+                    initialSeconds: endpointRegistry.otpResendCooldownSeconds,
+                    prompt: "Didn't receive the code? ",
+                    showSmsDndHelp: widget.method == 'sms',
+                    onResend: () async {
+                      final sent = await context
+                          .read<AuthenticationCubit>()
+                          .sendTwoFactorCode(widget.twoFactorToken);
+                      // null = nothing was sent; the contract says do not
+                      // start a cooldown over a refusal.
+                      if (sent == null) return null;
+                      if (mounted) {
+                        setState(() {
+                          if (sent > 0) _codeWindowSeconds = sent;
+                          _codeSendKey++;
+                        });
+                      }
+                      return endpointRegistry.otpResendCooldownSeconds;
+                    },
+                  ),
+                ],
                 if (!_showBackupCodeInput) ...[
                   SizedBox(height: 24.h),
                   _buildBackupCodeOption(),

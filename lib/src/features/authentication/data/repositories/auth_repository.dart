@@ -407,7 +407,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> sendTwoFactorLoginCode({
+  Future<Either<Failure, int>> sendTwoFactorLoginCode({
     String? twoFactorToken,
   }) async {
     try {
@@ -417,11 +417,22 @@ class AuthRepositoryImpl implements IAuthRepository {
       final options = twoFactorToken != null
           ? CallOptions(metadata: {'authorization': 'Bearer $twoFactorToken'})
           : await _callOptionsHelper.withAuth();
-      await _authServiceClient.sendTwoFactorCode(
+      final response = await _authServiceClient.sendTwoFactorCode(
         auth_req_resp.SendTwoFactorCodeRequest(),
         options: options,
       );
-      return const Right(null);
+      // A send the server refused is a FAILURE, not a quiet success. The
+      // screens open by requesting a code; without this they would arm a
+      // countdown over a code that was never issued.
+      if (!response.success) {
+        return Left(ServerFailure(
+          message: response.message.isEmpty
+              ? 'Could not send code.'
+              : response.message,
+          statusCode: 0,
+        ));
+      }
+      return Right(response.expiresIn.toInt());
     } on GrpcError catch (e) {
       return Left(ServerFailure(
           message: friendlyGrpcError(e, 'Could not send code.'),
@@ -1060,8 +1071,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         error: '${e.code.name}: ${e.description ?? "no description"}',
       );
 
-      return Left(ServerFailure(
-          message: _googleFailureMessage(e), statusCode: 401));
+      return Left(
+          ServerFailure(message: _googleFailureMessage(e), statusCode: 401));
     } catch (e) {
       AppLogger.error('Google sign-in failed', error: e);
       return Left(ServerFailure(
@@ -1598,8 +1609,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       return Left(ServerFailure(message: response.msg, statusCode: 0));
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Could not update your email.',
-          statusCode: 0));
+          message: e.message ?? 'Could not update your email.', statusCode: 0));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 0));
     }
