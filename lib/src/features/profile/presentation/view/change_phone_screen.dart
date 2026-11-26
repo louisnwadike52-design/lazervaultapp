@@ -19,6 +19,7 @@ import 'package:lazervault/src/features/widgets/resend_code_button.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/src/features/widgets/verification_decorations.dart';
 import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
+import 'package:lazervault/core/widgets/otp_expiry_countdown.dart';
 
 /// Change the signed-in user's phone number to a brand-new one.
 ///
@@ -83,6 +84,15 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
   String _submittedPhone = '';
   int _resendSeconds = 0;
 
+  /// THE CODE'S OWN LIFETIME, as the server reported minting it.
+  ///
+  /// PhoneChangeRequestResult has carried `expiresInSeconds` since the
+  /// repository stopped discarding it, and this screen still showed only the
+  /// resend cooldown — so the header note above, which names "no resend and no
+  /// countdown" as the defect, was only half true afterwards. Zero means the
+  /// server named no window, and nothing is drawn.
+  int _codeExpirySeconds = 0;
+
   /// Inline, beside the field that caused it. A snackbar for a validation
   /// failure disappears while the user is still reading the field it refers
   /// to; this stays until they fix it.
@@ -133,7 +143,8 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
                     ),
                   ),
                   SizedBox(height: 8.h),
-                  const VerificationBadgeIcon(icon: Icons.phone_android_rounded),
+                  const VerificationBadgeIcon(
+                      icon: Icons.phone_android_rounded),
                   SizedBox(height: 24.h),
                   if (_step == _Step.enterPhone)
                     ..._phoneStep()
@@ -313,7 +324,18 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
         SizedBox(height: 16.h),
         _errorBanner(_error!),
       ],
-      SizedBox(height: 24.h),
+      SizedBox(height: 20.h),
+      // THE CODE'S OWN CLOCK, which is not the resend cooldown below it. Keyed
+      // on the same per-send counter the boxes use, so a resend restarts it
+      // even when the new window is the same number as the old one.
+      Center(
+        child: OtpExpiryCountdown(
+          key: ValueKey('change-phone-expiry-$_codeResetKey'),
+          seconds: _codeExpirySeconds,
+          color: _muted,
+        ),
+      ),
+      SizedBox(height: 16.h),
       ResendCodeButton(
         // Seeded from the SERVER's resend_after_seconds, so the button offers
         // a resend exactly when the server will accept one.
@@ -424,6 +446,7 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
           _submittedPhone = _e164Phone;
           _step = _Step.enterOtp;
           _resendSeconds = ok.resendAfterSeconds;
+          _codeExpirySeconds = ok.expiresInSeconds;
           _codeResetKey++;
         });
       },
@@ -470,6 +493,7 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
           _error = null;
           _codeResetKey++;
           _resendSeconds = ok.resendAfterSeconds;
+          _codeExpirySeconds = ok.expiresInSeconds;
         });
         showAppSnackbar('Code sent', ok.message, type: AppSnackbarType.success);
         return ok.resendAfterSeconds;

@@ -84,6 +84,10 @@ void main() {
       'lib/src/features/authentication/presentation/widgets/two_factor_widgets.dart',
       // the original: passcode reset
       'lib/src/features/authentication/presentation/views/forgot_passcode_phone_screen.dart',
+      // settings → profile → change phone number. The repository stopped
+      // discarding expires_in, and the screen still showed only the cooldown —
+      // a half-fix of exactly the defect its own header note describes.
+      'lib/src/features/profile/presentation/view/change_phone_screen.dart',
     ];
     final missing = <String>[];
     for (final path in surfaces) {
@@ -116,6 +120,7 @@ void main() {
       'lib/src/features/authentication/presentation/views/two_factor_verification_screen.dart',
       'lib/src/features/authentication/presentation/views/two_factor_setup_screen.dart',
       'lib/src/features/authentication/presentation/views/forgot_passcode_phone_screen.dart',
+      'lib/src/features/profile/presentation/view/change_phone_screen.dart',
     ];
     final unkeyed = <String>[];
     for (final path in keyed) {
