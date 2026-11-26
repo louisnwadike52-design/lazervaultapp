@@ -1,6 +1,9 @@
 Improvements and fixes:
 
-• If you ask for help from the sign-in screen, our reply now reaches you by email, even while you are signed out
-• Support requests you raise before signing in keep the address you gave, so nothing you send goes unanswered
+• All your saved recipients now show up, and search looks through every one of them
+• Sheets sit flush against the bottom of the screen again
+• "Need help signing in?" fills in your email for you
+• On a crypto chart, lines you draw are kept, and the counter matches what you can see
+• Ask for help from the sign-in screen and our reply reaches you by email, even while signed out
 
 Thank you for using Lazervault.
