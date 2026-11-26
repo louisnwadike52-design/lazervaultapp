@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// One canonical reason a gift-card sell can be rejected by the processor,
 /// with the sample reviewer comment and a plain-language explanation/fix.
@@ -131,7 +132,7 @@ Future<void> showSellRejectionReasonsSheet(
   BuildContext context, {
   String? highlightReason,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

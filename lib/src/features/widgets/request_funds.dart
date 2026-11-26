@@ -6,6 +6,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/countries.dart';
 import 'package:lazervault/core/utilities/display_success_dialog.dart';
 import 'package:lazervault/src/features/widgets/country_selection_bottom_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class RequestFunds extends StatefulWidget {
   const RequestFunds({super.key});
@@ -21,7 +22,7 @@ class _RequestFundsState extends State<RequestFunds> {
   final TextEditingController notesController = TextEditingController();
 
   Future<void> _showCountrySelectionBottomSheet() async {
-    final selected = await showModalBottomSheet<Country>(
+    final selected = await showAppBottomSheet<Country>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

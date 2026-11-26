@@ -10,6 +10,7 @@ import '../../domain/entities/crowdfund_entities.dart';
 import 'progress_indicator_widget.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 import '../utils/crowdfund_status_display.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 final _amountFormat = NumberFormat('#,##0.00');
 
@@ -22,7 +23,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
   });
 
   static void show(BuildContext context, Crowdfund crowdfund) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

@@ -44,6 +44,7 @@ import 'package:lazervault/src/features/ai_chats/presentation/widgets/ai_chat_co
 import 'voice_session_tip_bar.dart';
 import 'package:lazervault/core/branding/assistant_identity.dart';
 import '../models/voice_end_reason.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'voice_command_sheet_widgets.dart';
 
 class VoiceCommandSheet extends StatefulWidget {
@@ -2205,7 +2206,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// route push would tear down / background the live LiveKit voice session.
   /// Dismissing returns straight to the conversation.
   Future<void> _presentSettingsInSheet(Widget child) {
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2224,7 +2225,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   void _showChatHistorySheet() {
     final cubit = context.read<VoiceSessionCubit>();
     final chatHistoryCubit = cubit.chatHistoryCubit;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -4424,7 +4425,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // the mic gated shut for the rest of the call.
     final receiptCubit = context.read<VoiceSessionCubit>();
     receiptCubit.onBlockingSheetShown();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

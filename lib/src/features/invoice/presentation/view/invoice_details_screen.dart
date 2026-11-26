@@ -25,6 +25,7 @@ import '../utils/share_origin.dart';
 import 'package:get_it/get_it.dart';
 import '../notifiers/invoice_refresh_notifier.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class InvoiceDetailsScreen extends StatefulWidget {
   final String invoiceId;
@@ -1451,7 +1452,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
 
   void _showTaggedUsersDetailSheet(Invoice invoice) {
     final users = invoice.taggedUsers!;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

@@ -9,6 +9,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart'
 import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
+import 'plan_topup_bounds.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class LockFundTopUpScreen extends StatefulWidget {
@@ -25,6 +26,26 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
   final _pinController = TextEditingController();
   bool _showPinField = false;
   bool _isSubmitting = false;
+
+  /// Plan bounds for this lock. Null until loaded, and null FOREVER if the
+  /// read fails — which is a skip, not a refusal: the server is authoritative
+  /// and a config outage must not block a legitimate top-up.
+  PiggyVaultConfig? _plan;
+
+  @override
+  void initState() {
+    super.initState();
+    resolvePlanConfigFor(widget.lockFund).then((cfg) {
+      if (mounted) setState(() => _plan = cfg);
+    });
+  }
+
+  /// Why this amount cannot be added, or null when it can.
+  ///
+  /// Ceiling only — the plan MINIMUM is "the least you may OPEN with" and does
+  /// not apply to a plan already open. See plan_topup_bounds.dart.
+  String? get _ceilingViolation =>
+      topUpCeilingViolation(_plan, widget.lockFund.amount, _amount);
 
   @override
   void dispose() {
@@ -166,13 +187,43 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
+                // Say WHY the button is dead. A disabled CTA with no reason
+                // reads as the app being broken, and the customer has no way
+                // to discover the plan's ceiling otherwise.
+                if (_ceilingViolation != null) ...[
+                  SizedBox(height: 8.h),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline,
+                          size: 15.sp, color: const Color(0xFFDC2626)),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          _ceilingViolation!,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.sp,
+                            height: 1.4,
+                            color: const Color(0xFFDC2626),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 SizedBox(height: 16.h),
 
                 // Quick amounts
                 Wrap(
                   spacing: 8.w,
                   runSpacing: 8.h,
-                  children: [500, 1000, 5000, 10000, 50000].map((amount) {
+                  // Admin-supplied pills, ceiling-filtered. The literals are
+                  // the fallback for a plan that publishes none, not the
+                  // source of truth.
+                  children: topUpQuickAmounts(
+                    _plan,
+                    const [500, 1000, 5000, 10000, 50000],
+                  ).map((amount) {
                     return GestureDetector(
                       onTap: () {
                         _amountController.text = amount.toString();
@@ -311,6 +362,8 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
   bool get _canSubmit {
     if (_isSubmitting) return false;
     if (_amount <= 0) return false;
+    // Refuse before the PIN is spent on a request the server will reject.
+    if (_ceilingViolation != null) return false;
     if (_showPinField && _pinController.text.length < 4) return false;
     return true;
   }

@@ -7,6 +7,7 @@ import '../../data/datasources/internet_beneficiary_remote_datasource.dart';
 import '../cubit/internet_beneficiary_cubit.dart';
 import '../cubit/internet_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Save / edit an internet ISP account. Mirrors
 /// `SaveDataBeneficiarySheet` — minimal single-field (nickname) sheet
@@ -38,7 +39,7 @@ class SaveInternetBeneficiarySheet extends StatefulWidget {
     String? existingBeneficiaryId,
     String? existingNickname,
   }) {
-    return showModalBottomSheet<bool>(
+    return showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

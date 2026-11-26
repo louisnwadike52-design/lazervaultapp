@@ -6,6 +6,7 @@ import '../../data/datasources/cable_tv_beneficiary_remote_datasource.dart';
 import '../cubit/cable_tv_beneficiary_cubit.dart';
 import '../cubit/cable_tv_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class SaveCableTVBeneficiarySheet extends StatefulWidget {
   final String smartCardNumber;
@@ -36,7 +37,7 @@ class SaveCableTVBeneficiarySheet extends StatefulWidget {
     String? existingBeneficiaryId,
     String? existingNickname,
   }) {
-    return showModalBottomSheet<bool>(
+    return showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

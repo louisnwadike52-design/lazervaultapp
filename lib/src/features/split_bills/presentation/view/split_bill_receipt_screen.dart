@@ -12,6 +12,7 @@ import '../../services/split_bill_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'dart:async';
 import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class SplitBillReceiptScreen extends StatefulWidget {
   const SplitBillReceiptScreen({super.key});
@@ -139,7 +140,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     if (_viewOnly) {
       Get.back();
     } else {
-      Get.offAllNamed(AppRoutes.splitBills);
+      offAllKeepingHome(AppRoutes.splitBills);
     }
   }
 

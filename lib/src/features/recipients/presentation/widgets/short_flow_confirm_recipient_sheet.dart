@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Result of the short-flow confirm sheet.
 class ShortFlowConfirmResult {
@@ -35,7 +36,7 @@ class ShortFlowConfirmRecipientSheet extends StatefulWidget {
     BuildContext context,
     RecipientModel recipient,
   ) {
-    return showModalBottomSheet<ShortFlowConfirmResult>(
+    return showAppBottomSheet<ShortFlowConfirmResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

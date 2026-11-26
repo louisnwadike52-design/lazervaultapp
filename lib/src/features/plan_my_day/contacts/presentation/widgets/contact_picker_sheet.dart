@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/plan_my_day/contacts/data/contact_repository.dart';
 import 'package:lazervault/src/features/plan_my_day/contacts/domain/entities/contact.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet that lists CRM contacts and returns the chosen one (or a
 /// sentinel "unlink" contact with an empty id). Loads via ContactRepository so
@@ -14,7 +15,7 @@ class ContactPickerSheet extends StatefulWidget {
 
   /// Returns the selected [Contact], a Contact with empty id to unlink, or null.
   static Future<Contact?> show(BuildContext context) {
-    return showModalBottomSheet<Contact>(
+    return showAppBottomSheet<Contact>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

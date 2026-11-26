@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// One row inside the [BillDetailsSheet] body. Use [icon]+[label]+[value]
 /// for the standard label/value layout. The optional [accent] override
@@ -55,7 +56,7 @@ class BillDetailsSheet {
     required List<BillDetailRow> rows,
     BillDetailAction? primaryAction,
   }) {
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

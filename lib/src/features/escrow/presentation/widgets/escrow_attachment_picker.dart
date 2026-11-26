@@ -7,6 +7,7 @@ import '../../data/services/escrow_media_upload_service.dart';
 import '../cubit/escrow_cubit.dart';
 import '../view/escrow_theme.dart';
 import 'escrow_media_viewer.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Attaches already-uploaded evidence [items] to [dealId] under [purpose], and
 /// returns HOW MANY FAILED to attach (0 means everything landed).
@@ -129,7 +130,7 @@ class _EscrowAttachmentPickerState extends State<EscrowAttachmentPicker> {
   void _emit() => widget.onChanged(List.unmodifiable(_items));
 
   Future<ImageSource?> _chooseSource() {
-    return showModalBottomSheet<ImageSource>(
+    return showAppBottomSheet<ImageSource>(
       context: context,
       backgroundColor: EscrowTheme.card,
       shape: RoundedRectangleBorder(

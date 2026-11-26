@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 // Note: voice_enrollment_state.dart is a part of voice_enrollment_cubit.dart, no need to import separately
 
 /// Voice Enrollment Screen
@@ -684,7 +685,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
     BuildContext context,
     VoiceEnrollmentSuccess state,
   ) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isDismissible: false,
       enableDrag: false,

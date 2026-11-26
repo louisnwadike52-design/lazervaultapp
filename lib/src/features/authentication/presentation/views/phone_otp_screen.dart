@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,6 +9,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_passcode_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_passcode_state.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/phone_flow_scaffold.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
 import 'package:lazervault/src/features/widgets/resend_code_button.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/src/features/widgets/verification_decorations.dart';
@@ -32,6 +34,21 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
   int _resendInitial = 0;
   int _resendKey = 0;
 
+  /// In-flight latch, set SYNCHRONOUSLY the instant a verify is dispatched.
+  ///
+  /// WHY NOT `isLoading`. Both submit paths guarded on the bloc state —
+  /// `onPrimary: isLoading ? null : _verify` and `if (!isLoading) _verify()`.
+  /// That state only arrives after the cubit emits, so between dispatching a
+  /// verify and the Loading state landing, `isLoading` is still false and a
+  /// second submit passes straight through. The sixth digit auto-submits while
+  /// the Verify button is still live, so one user action could send two
+  /// verifies — and the server counts each one.
+  ///
+  /// That is what "incorrect code. 2 attempt(s) remaining" after a single
+  /// wrong entry was: three attempts spent two at a time. A latch set before
+  /// the await closes the window the state round-trip leaves open.
+  bool _verifying = false;
+
   @override
   void initState() {
     super.initState();
@@ -42,11 +59,13 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
   }
 
   void _verify() {
+    if (_verifying) return;
     if (_code.length != 6) {
       showAppSnackbar('Incomplete', 'Enter the 6-digit code.',
           type: AppSnackbarType.error);
       return;
     }
+    _verifying = true;
     final cubit = context.read<PhonePasscodeCubit>();
     cubit.verifyOtp(phone: cubit.phone, code: _code);
   }
@@ -55,6 +74,11 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
   Widget build(BuildContext context) {
     return BlocConsumer<PhonePasscodeCubit, PhonePasscodeState>(
       listener: (context, state) {
+        // Released on EVERY outcome, not just failure: a verified code that
+        // navigates away still has to clear the latch, or coming back to this
+        // screen finds it permanently unable to submit.
+        if (state is! PhonePasscodeLoading) _verifying = false;
+
         if (state is PhoneOtpVerified) {
           Get.toNamed(AppRoutes.phonePasscodeCreate);
         } else if (state is PhonePasscodeFailure) {
@@ -95,6 +119,26 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
           // `isPhoneVerificationRequired` still vetoes, because then the
           // backend rejects an unverified SignupWithPhone and there is no skip
           // path to offer at all.
+          // THE WAY OUT OF A RESUMED SIGNUP — in the FOOTER, not the body.
+          //
+          // Entered two ways and only one has an exit: direct signup is pushed
+          // from phone entry so the stack pops and the scaffold derives a back
+          // arrow, while a RESUMPTION arrives as the initial route with an
+          // empty stack — correctly no arrow, and with SMS live no skip
+          // either. That left nothing to tap.
+          //
+          // IT BELONGS IN THE FOOTER AND I PUT IT IN THE BODY FIRST, WHICH IS
+          // WHY IT COULD NOT BE SEEN. `children` render above the primary CTA
+          // on the light part of the curve; the footer is the slot this
+          // scaffold designed for the purple band at the bottom, and it
+          // expects WHITE text there. Rendering the light-surface (grey)
+          // variant into the body put #6B7280 against the purple wave — the
+          // "items at the bottom are not visible" report. The footer is also
+          // hidden while the keyboard is up, so it can never cover the input.
+          //
+          // The widget gates itself on wasResumedThisLaunch, so first-run
+          // signup is untouched and nobody mid-signup is invited to abandon it.
+          footer: const SignupSwitchAccountCta(bottomPadding: 2),
           secondaryAction: !SmsPolicy.showOtpSkip
               ? null
               : TextButton(
@@ -129,11 +173,19 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
             SizedBox(height: 28.h),
             Center(
               child: ResendCodeButton(
+                // SMS screen: DND can block the code once it is
+                // actually delivered over a downgraded route.
+                showSmsDndHelp: true,
                 key: ValueKey('resend-$_resendKey'),
                 initialSeconds: _resendInitial,
                 onResend: () async {
                   context.read<PhonePasscodeCubit>().resendPhoneOtp();
-                  return 60;
+                  // The SERVER's cooldown, not a literal. auth-service reads
+                  // `auth_otp_resend_cooldown_seconds` (otp_resend.go) and
+                  // refuses an earlier request, so a hardcoded 60 here unlocks
+                  // the button at the wrong moment the instant an operator
+                  // changes it.
+                  return endpointRegistry.otpResendCooldownSeconds;
                 },
               ),
             ),
@@ -141,7 +193,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
             // Bottom "Secure Verification" reassurance note — shared widget.
             const SecureVerificationNote(
               message:
-                  'We sent a 6-digit code via SMS to verify your phone number. Standard message rates may apply.',
+                  'We sent a 6-digit code via SMS to verify your phone number.',
             ),
           ],
         );

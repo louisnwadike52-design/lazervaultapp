@@ -41,6 +41,24 @@ enum OutageKind {
   /// to better signal or Wi-Fi is the thing that will fix it.
   slowConnection,
 
+  /// WE are refusing, on purpose, because the device asked too often.
+  ///
+  /// Folded into [server] this becomes "our servers are being updated" — an
+  /// apology for an outage that is not happening, on a platform that is
+  /// answering every request it is willing to answer. Folded into
+  /// [slowConnection] it becomes "your connection is too slow", which blames
+  /// the user's network for a decision we made.
+  ///
+  /// Neither is true, and both send the user somewhere useless: one waits for
+  /// a deploy that was never running, the other walks outside looking for
+  /// signal. The one thing that actually works is waiting a short while, and
+  /// that is the only thing this says.
+  ///
+  /// Distinguished at the source by an explicit RESOURCE_EXHAUSTED / HTTP 429
+  /// from our own gateway — never inferred from a failure, because a rate
+  /// limit is something we KNOW rather than something we guess.
+  rateLimited,
+
   /// An operator DECLARED a maintenance window from the dashboard.
   ///
   /// Separate from [server], which is INFERRED from a failed probe. That
@@ -121,6 +139,23 @@ class OutageCopy {
               : 'Our servers are being updated right now. Your money and data '
                   'are safe. Please try again in a moment.',
           dismissible: false,
+        );
+      case OutageKind.rateLimited:
+        return const OutageCopy(
+          icon: Icons.hourglass_top_rounded,
+          // Not "something went wrong" — nothing did. The request was refused
+          // deliberately and briefly, and saying so plainly is less alarming
+          // than an outage notice, not more.
+          title: 'Just a moment',
+          message:
+              'You have made a lot of requests in a short time, so we have '
+              'paused them for a few seconds to keep things running smoothly. '
+              'Nothing is wrong and nothing has been lost — please try again '
+              'shortly.',
+          // DISMISSIBLE, unlike a server outage. There is a working app behind
+          // this and the limit clears itself in seconds; trapping the user
+          // behind a barrier would be a worse outcome than the limit.
+          dismissible: true,
         );
       case OutageKind.slowConnection:
         return const OutageCopy(

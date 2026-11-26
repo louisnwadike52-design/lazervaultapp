@@ -60,11 +60,24 @@ class SpendingLimitsTab extends StatelessWidget {
       // shared/kyctiers convention — surface it as "no cap" (null), never as a
       // literal ₦0 limit.
       final daily = (raw == null || raw <= 0) ? null : raw;
-      // Monthly heuristic: 4× daily for basic, 8× for standard, 20× for
-      // advanced — matches the typical regulator spread. Replace when
-      // CountryConfigs exposes an explicit monthly map. This was pinned at the
-      // standard 8× alongside the hard-coded tier above, so a Tier-1 holder
-      // was shown a monthly figure derived from someone else's tier.
+      // THE CANONICAL MONTHLY CAP, when the country records one.
+      //
+      // CountryConfigs now exposes monthlyLimits, which this used to say it
+      // was waiting for. For NG those come straight from shared/kyctiers:
+      // ₦300,000 at Tier 1 and ₦5,000,000 at Tier 2 — ratios of 6x and 25x,
+      // which is why the heuristic below could never have been right for both.
+      // It showed ₦200,000 and ₦1,600,000 against real caps of ₦300,000 and
+      // ₦5,000,000, understating one by a third and the other by more than
+      // two thirds, on the screen whose only job is to state the number.
+      final rawMonthly = country.monthlyLimits[tier]?.toDouble();
+      if (rawMonthly != null) {
+        // Same 0-means-Unlimited convention as daily, above.
+        return (daily, rawMonthly <= 0 ? null : rawMonthly);
+      }
+      // FALLBACK, for a country with no canonical monthly figure recorded.
+      // Explicitly a derived estimate, not a stated limit — kept only so a
+      // country we have not transcribed yet still shows something coherent
+      // with the daily figure beside it.
       final multiplier = switch (tier) {
         KycLevel.basic => 4.0,
         KycLevel.standard => 8.0,

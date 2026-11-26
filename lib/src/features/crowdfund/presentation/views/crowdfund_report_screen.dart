@@ -4,8 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
-import '../widgets/share_report_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+// The share path: the PDF service renders and shares the document, and the
+// report service supplies the iOS popover anchor. Both were reached through
+// the deleted custom share sheet before.
+import '../../data/services/crowdfund_report_service.dart';
+import '../../services/crowdfund_report_pdf_service.dart';
 part 'crowdfund_report_screen_widgets.dart';
 
 class _ShareCard extends StatelessWidget {

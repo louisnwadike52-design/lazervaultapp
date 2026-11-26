@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../view/escrow_theme.dart';
 import 'escrow_terms.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The three-slide "how this works" guide, shown once before a first deal
 /// and available any time from the info icon.
@@ -69,7 +70,7 @@ const List<EscrowGuideSlide> kEscrowGuideSlides = [
 /// Shows the guide. Returns true when the user reached the end, false when
 /// they backed out, so a first-run caller can decide whether to mark it seen.
 Future<bool> showEscrowHowItWorks(BuildContext context) async {
-  final done = await showModalBottomSheet<bool>(
+  final done = await showAppBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -305,7 +306,7 @@ class _Slide extends StatelessWidget {
 /// "how do I do this" are different questions and a user arrives with one
 /// of them, not both.
 Future<void> showEscrowInfoMenu(BuildContext context) async {
-  await showModalBottomSheet<void>(
+  await showAppBottomSheet<void>(
     context: context,
     backgroundColor: Colors.transparent,
     builder: (ctx) => Container(

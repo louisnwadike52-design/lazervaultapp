@@ -43,6 +43,7 @@ import 'package:lazervault/src/features/plan_my_day/habits/presentation/habits_s
 import 'package:lazervault/src/features/plan_my_day/presentation/screens/reminder_management_screen.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/widgets/upcoming_reminders_card.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/widgets/reminders_list_body.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'plan_my_day_screen_widgets.dart';
 
 class PlanMyDayScreen extends StatefulWidget {
@@ -1551,7 +1552,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
   }
 
   void _showCreateMenu() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
@@ -1639,7 +1640,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
   /// and must not be disposed when the sheet closes.
   Future<T?> _showPlanSheet<T>(Widget Function(PlanMyDayCubit cubit) build) {
     final cubit = context.read<PlanMyDayCubit>();
-    return showModalBottomSheet<T>(
+    return showAppBottomSheet<T>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1685,7 +1686,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
   }
 
   void _showTaskDetailBottomSheet(Task task) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1697,7 +1698,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
   }
 
   void _showEventDetailBottomSheet(Event event) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

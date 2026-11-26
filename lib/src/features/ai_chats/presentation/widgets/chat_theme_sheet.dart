@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:lazervault/core/services/chat_theme_preference.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// PICK WHAT THE ASSISTANT LOOKS LIKE.
 ///
@@ -19,7 +20,7 @@ class ChatThemeSheet extends StatefulWidget {
   const ChatThemeSheet({super.key});
 
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

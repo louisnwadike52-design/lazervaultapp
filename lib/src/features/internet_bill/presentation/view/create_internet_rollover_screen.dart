@@ -13,6 +13,7 @@ import '../cubit/internet_beneficiary_state.dart';
 import '../cubit/internet_bill_cubit.dart';
 import '../cubit/internet_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'create_internet_rollover_screen_widgets.dart';
 
 /// Create / edit an internet Rollover schedule. Mirrors the data
@@ -144,7 +145,7 @@ class _CreateInternetRolloverScreenState
     // Refresh in case the user switched beneficiary mid-session.
     cubit.getPackages(providerId: _serviceIdFor(_beneficiary!.providerCode));
     if (!mounted) return;
-    final picked = await showModalBottomSheet<InternetPackageEntity>(
+    final picked = await showAppBottomSheet<InternetPackageEntity>(
       context: context,
       isScrollControlled: true,
       backgroundColor: _card,

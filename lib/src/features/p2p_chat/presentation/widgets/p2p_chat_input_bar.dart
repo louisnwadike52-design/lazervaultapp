@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'p2p_chat_input_bar_widgets.dart';
 
 class P2PChatInputBar extends StatefulWidget {
@@ -201,7 +202,7 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
   }
 
   void _showAttachMenu() {
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

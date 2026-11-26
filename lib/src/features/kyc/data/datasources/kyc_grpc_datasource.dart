@@ -70,6 +70,15 @@ class KYCGrpcDataSource {
               ? response.errorMessage
               : 'ID verification failed',
           statusCode: 422,
+          // The server distinguishes "this NIN is not yours"
+          // (IDENTITY_DETAILS_MISMATCH) from "we could not reach the registry"
+          // (PROVIDER_UNAVAILABLE / BANKING_SERVICE_ERROR), and the caller must
+          // treat those oppositely — the first is the customer's to fix, the
+          // second must never block them. Dropping the code left only the
+          // prose to branch on.
+          code: response.hasErrorCode() && response.errorCode.isNotEmpty
+              ? response.errorCode
+              : null,
         );
       }
 
@@ -81,15 +90,21 @@ class KYCGrpcDataSource {
         status = 'approved';
       }
 
-      // Determine tier from status (don't hardcode — respect server response)
-      KYCTier currentTier;
-      if (response.verified) {
-        currentTier = KYCTier.tier2;
-      } else if (isPending || hasSessionUrl) {
-        currentTier = KYCTier.tier1; // Still tier1 until async completes
-      } else {
-        currentTier = KYCTier.tier1;
-      }
+      // THE RESPONSE DOES NOT CARRY A TIER, SO DO NOT INVENT ONE.
+      //
+      // This block was commented "don't hardcode — respect server response"
+      // while hardcoding tier2 for every successful verification. There is no
+      // tier field on VerifyIdentityResponse to respect, and tier2 is wrong
+      // for a NIN: the canonical ladder (shared/kyctiers.DeriveTier) is
+      // `hasBVN && hasNIN && liveness -> Tier3; hasBVN -> Tier2; else Tier1`,
+      // so a NIN on its own is Tier 1. The server computes the real tier and
+      // publishes it; callers that need it must read it back from the KYC
+      // status rather than from here.
+      //
+      // Floored at tier1 so this can only ever UNDER-claim. Over-claiming is
+      // what puts a "you're on Tier 2" badge in front of someone whose
+      // transfers will then be refused at a Tier 1 limit.
+      const currentTier = KYCTier.tier1;
 
       // Return success response
       return {

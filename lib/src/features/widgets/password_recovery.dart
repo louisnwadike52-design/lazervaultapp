@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -23,6 +26,21 @@ class _PasswordRecoveryState extends State<PasswordRecovery>
   late TabController _tabController;
   String _email = '';
   String _phone = '';
+
+  // PREFILLED FROM THIS DEVICE'S REMEMBERED ACCOUNT, and locked while it is.
+  //
+  // This screen had NO prefill on either tab, so someone recovering a password
+  // on the handset they use every day had to retype an address the app already
+  // knew — and every retype is a chance to typo into somebody else's account
+  // and send THEM a reset.
+  //
+  // Locked with a way out. The stored identity can belong to a different
+  // person (a shared or second-hand phone) or to nobody at all, and recovery
+  // is the last path a user has: a screen that will only ever address the
+  // previous owner's account has nothing to offer them.
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  bool _identityLocked = false;
   bool _isLoading = false;
   String? _errorMessage;
   String? _successMessage;
@@ -36,10 +54,62 @@ class _PasswordRecoveryState extends State<PasswordRecovery>
         _errorMessage = null;
       });
     });
+    _prefillFromDevice();
+  }
+
+  Future<void> _prefillFromDevice() async {
+    try {
+      final store = serviceLocator<FlutterSecureStorage>();
+      final email = (await store.read(key: 'stored_email'))?.trim() ?? '';
+      final phone = (await store.read(key: 'stored_phone'))?.trim() ?? '';
+      if (!mounted || (email.isEmpty && phone.isEmpty)) return;
+      setState(() {
+        _email = email;
+        _phone = phone;
+        _emailController.text = email;
+        _phoneController.text = phone;
+        // Locked only when there is actually something to lock to.
+        _identityLocked = true;
+      });
+    } catch (_) {
+      // A storage read that fails costs the prefill, never the screen — the
+      // user can still type their address, which is today's behaviour.
+    }
+  }
+
+  /// Clears the remembered account so a different one can be recovered.
+  void _useDifferentAccount() {
+    setState(() {
+      _identityLocked = false;
+      _email = '';
+      _phone = '';
+      _emailController.clear();
+      _phoneController.clear();
+      _errorMessage = null;
+    });
+  }
+
+  Widget _buildNotYouAction() {
+    if (!_identityLocked) return const SizedBox.shrink();
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton(
+        onPressed: _isLoading ? null : _useDifferentAccount,
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: Text('Not you? Use a different account',
+            style: TextStyle(fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
+      ),
+    );
   }
 
   @override
   void dispose() {
+    _emailController.dispose();
+    _phoneController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -425,6 +495,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery>
           name: 'email',
           placeholder: 'Enter your email',
           keyboardType: TextInputType.emailAddress,
+          controller: _emailController,
+          readOnly: _identityLocked,
           onChanged: (value) {
             setState(() {
               _email = value;
@@ -433,6 +505,7 @@ class _PasswordRecoveryState extends State<PasswordRecovery>
           },
           disabled: _isLoading,
         ),
+        _buildNotYouAction(),
         SizedBox(height: 12.h),
         Text(
           'We\'ll send a password reset link to your email.',
@@ -446,6 +519,56 @@ class _PasswordRecoveryState extends State<PasswordRecovery>
   }
 
   Widget _buildSMSTab() {
+    // THE ONE RECOVERY FLOW THAT BYPASSED SmsPolicy.
+    //
+    // Every other SMS-dependent surface asks the policy before offering the
+    // option — that module exists precisely so four screens in three features
+    // cannot answer the same question differently. This tab did not, so with
+    // no provider the user picked SMS, submitted a number, and waited for a
+    // code nothing had attempted to send.
+    //
+    // SHOWN AND REFUSED, not hidden — the same choice canUseSmsTwoFactor
+    // makes. A vanished SMS tab beside an Email one reads as the feature
+    // being broken; a stated reason is a fact the user can act on by
+    // switching tabs.
+    if (!SmsPolicy.available) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    size: 18.sp, color: Colors.blue),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    SmsPolicy.unavailableReason,
+                    style: TextStyle(
+                      fontSize: 12.5.sp,
+                      height: 1.4,
+                      color: AppColors.secondaryFont,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            'Use the Email tab to receive your reset code.',
+            style: TextStyle(fontSize: 13.sp, color: AppColors.secondaryFont),
+          ),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -463,6 +586,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery>
           name: 'phone',
           placeholder: '+234XXXXXXXXXX',
           keyboardType: TextInputType.phone,
+          controller: _phoneController,
+          readOnly: _identityLocked,
           onChanged: (value) {
             setState(() {
               _phone = value;

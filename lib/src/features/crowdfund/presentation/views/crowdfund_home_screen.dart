@@ -19,6 +19,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/widgets/crowdfund_status_badge.dart';
 
 class CrowdfundHomeScreen extends StatefulWidget {
   const CrowdfundHomeScreen({super.key});
@@ -1183,13 +1184,25 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(campaign.title,
-                      style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(campaign.title,
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                      ),
+                      SizedBox(width: 6.w),
+                      // THE STATUS, IN WORDS. This row said it with a colour
+                      // alone — and active and completed were the same green,
+                      // so a live campaign was indistinguishable from a
+                      // finished one in the owner's own list.
+                      CrowdfundStatusBadge.of(campaign, compact: true),
+                    ],
+                  ),
                   SizedBox(height: 3.h),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(2.r),
@@ -1275,28 +1288,11 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
   }
 
   Widget _buildDonationItem(CrowdfundDonation donation) {
-    final donationPalette = switch (donation.status) {
-      DonationStatus.completed => (
-          color: const Color(0xFF10B981),
-          label: 'Completed'
-        ),
-      DonationStatus.pending => (
-          color: const Color(0xFFF59E0B),
-          label: 'Pending'
-        ),
-      DonationStatus.processing => (
-          color: const Color(0xFFF59E0B),
-          label: 'Processing'
-        ),
-      DonationStatus.failed => (
-          color: const Color(0xFFEF4444),
-          label: 'Failed'
-        ),
-      DonationStatus.refunded => (
-          color: const Color(0xFF6B7280),
-          label: 'Refunded'
-        ),
-    };
+    // The shared vocabulary, not a fourth private copy of the same five
+    // states. The badge below renders the emoji with it.
+    final donationVisual = crowdfundDonationStatusVisual(donation.status);
+    final donationPalette =
+        (color: donationVisual.color, label: donationVisual.label);
     final meta = _donationMetaCache[donation.crowdfundId];
     final isUnresolvable =
         meta == null && _unresolvableDonationIds.contains(donation.crowdfundId);
@@ -1441,6 +1437,25 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                           child: Icon(Icons.verified,
                               size: 14.sp, color: const Color(0xFF10B981)),
                         ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Row(
+                    children: [
+                      // These rows carried NO status. A closed campaign sat
+                      // in the discover list looking exactly like one still
+                      // collecting, and the only way to find out was to open
+                      // it and meet a disabled Contribute button.
+                      CrowdfundStatusBadge.of(crowdfund, compact: true),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          crowdfundDeadlineLabel(crowdfund),
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF), fontSize: 10.sp),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                   SizedBox(height: 4.h),

@@ -25,6 +25,7 @@ import '../../cubit/create_policy_state.dart';
 import 'array_form_field.dart';
 import 'multi_select_array_field.dart';
 import 'monetary_form_field.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'insurance_form_screen_widgets.dart';
 
 /// Screen 2: Dynamic form fields from MyCover.ai product
@@ -264,7 +265,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   }
 
   void _showProductInfoSheet(BuildContext context, InsuranceProduct product) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1184,7 +1185,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
 
   void _showPhoneCountryPicker(String fieldName, CreatePolicyCubit cubit,
       InsuranceProductFormField field, TextEditingController controller) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1391,7 +1392,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
 
   void _showSelectBottomSheet(CreatePolicyCubit cubit,
       InsuranceProductFormField field, String currentValue) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1994,7 +1995,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     InsuranceProductFormField field,
   ) async {
     if (!mounted) return;
-    final choice = await showModalBottomSheet<_UploadSource>(
+    final choice = await showAppBottomSheet<_UploadSource>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -2356,7 +2357,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     required String? query,
     required String currentValue,
   }) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

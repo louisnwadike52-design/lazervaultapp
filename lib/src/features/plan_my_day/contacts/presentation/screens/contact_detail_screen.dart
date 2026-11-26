@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/plan_my_day/contacts/presentation/widget
 import 'package:lazervault/src/features/plan_my_day/domain/entities/task.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/task_status.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/widgets/plan_my_day_skeleton.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class ContactDetailScreen extends StatefulWidget {
   final String contactId;
@@ -324,7 +325,7 @@ class _ContactDetailScreenState extends State<ContactDetailScreen> {
   void _logInteraction(Contact c) {
     final noteController = TextEditingController();
     String type = 'call';
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

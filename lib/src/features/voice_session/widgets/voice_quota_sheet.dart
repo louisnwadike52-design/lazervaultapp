@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// What the server told us when it refused to start a voice session.
 ///
@@ -58,7 +59,7 @@ Future<bool> showVoiceQuotaSheet(
   required VoiceQuotaInfo info,
   required Future<bool> Function() onOptIn,
 }) async {
-  final result = await showModalBottomSheet<bool>(
+  final result = await showAppBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: const Color(0xFF1F1F1F),

@@ -1,4 +1,7 @@
+import 'package:lazervault/src/features/crypto_pay/domain/crypto_funding_failure.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/crypto_funding_info.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/fund_payment_with_crypto.dart';
 import '../../domain/repositories/internet_bill_repository.dart';
 import 'internet_bill_state.dart';
 
@@ -95,6 +98,10 @@ class InternetBillCubit extends Cubit<InternetBillState> {
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+
+    /// Pay with crypto: the asset to sell to fund this payment,
+    /// lowercase. Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   }) async {
     if (isClosed) return;
 
@@ -128,6 +135,7 @@ class InternetBillCubit extends Cubit<InternetBillState> {
       transactionId: transactionId,
       verificationToken: verificationToken,
       idempotencyKey: idempotencyKey,
+      fundingAsset: fundingAsset,
     );
 
     if (isClosed) return;
@@ -140,10 +148,40 @@ class InternetBillCubit extends Cubit<InternetBillState> {
     await Future.delayed(const Duration(milliseconds: 400));
     if (isClosed) return;
 
-    result.fold(
-      (failure) => emit(InternetBillPaymentFailed(
+    await result.fold(
+      (failure) async => emit(InternetBillPaymentFailed(
           message: failure.message, statusCode: failure.statusCode)),
-      (payment) {
+      (payment) async {
+        // ===== PAY WITH CRYPTO — STEP 2 OF THE ORDER =====
+        //
+        // Checked BEFORE the status branches below, because one of them
+        // treats "pending" as success — which for a parked purchase would
+        // tell the customer their package was active while nothing had even
+        // been converted.
+        final funding = CryptoFundingInfo.fromMetadata(payment.metadata);
+        if (funding != null) {
+          try {
+            await fundPaymentWithCrypto(
+              accountId: payment.accountId,
+              paymentReference: payment.reference,
+              // The SERVER's total — face plus platform fee.
+              requiredMinor: funding.requiredMinor,
+              asset: funding.asset,
+              service: 'internet',
+            );
+          } catch (e) {
+            if (isClosed) return;
+            // Not "you have not been charged": the conversion may have
+            // started and we simply lost the reply.
+            emit(InternetBillPaymentFailed(message: _fundingMessage(e)));
+            return;
+          }
+          if (isClosed) return;
+          emit(InternetBillAwaitingCryptoFunding(
+              payment: payment, asset: funding.asset));
+          return;
+        }
+
         if (payment.isCompleted) {
           emit(InternetBillPaymentSuccess(payment: payment));
         } else if (payment.isFailed) {
@@ -162,3 +200,14 @@ class InternetBillCubit extends Cubit<InternetBillState> {
     emit(InternetBillInitial());
   }
 }
+
+/// THE SERVER'S OWN SENTENCE, when the server actually decided.
+///
+/// A refusal — the feature gate, an unsupported coin, an amount below the
+/// conversion floor, a holding too small — means NOTHING was converted and
+/// nothing charged, and the server already says why in words written for a
+/// customer. Replacing that with "check your history" sent people to look for
+/// a record that was never written, about money that never moved. Only a LOST
+/// REPLY is genuinely ambiguous, and that is the one case the old sentence is
+/// right for. See CryptoFundingFailure.
+String _fundingMessage(Object error) => CryptoFundingFailure.from(error).message;

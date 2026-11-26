@@ -8,6 +8,7 @@ import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom-sheet that saves a meter as a beneficiary inline from the
 /// payment-history actions sheet. The user only picks a nickname — every
@@ -26,7 +27,7 @@ class SaveMeterSheet {
     BuildContext context, {
     required BillPaymentEntity payment,
   }) {
-    return showModalBottomSheet<BillBeneficiaryEntity>(
+    return showAppBottomSheet<BillBeneficiaryEntity>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

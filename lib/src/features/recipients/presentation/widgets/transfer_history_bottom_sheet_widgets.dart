@@ -221,7 +221,7 @@ class TransferHistoryItem extends StatelessWidget {
         ? counterpartyName
         : transaction.title;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(

@@ -22,6 +22,7 @@ import 'package:lazervault/src/features/recipients/domain/entities/unified_searc
 import 'package:lazervault/src/features/recipients/presentation/widgets/user_search_selection_guard.dart';
 import 'package:lazervault/core/utilities/invite_link.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_code_usecase.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'unified_user_search_sheet_widgets.dart';
 
 /// THE shared user-search bottom sheet for the whole app.
@@ -114,7 +115,7 @@ class UnifiedUserSearchSheet extends StatefulWidget {
     bool internalOnly = false,
     Future<bool> Function(UnifiedSearchResult result)? prepareSelection,
   }) {
-    return showModalBottomSheet<UnifiedSearchResult>(
+    return showAppBottomSheet<UnifiedSearchResult>(
       context: context,
       isScrollControlled: true,
       enableDrag: true,

@@ -4,6 +4,7 @@ import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -246,6 +247,34 @@ class AirtimePdfService {
                   '$currencySymbol${transaction.totalAmount.toStringAsFixed(2)}',
                   isBold: true,
                 ),
+                pw.SizedBox(height: 16),
+              ],
+
+              // HOW IT WAS PAID — the same rows the screen shows.
+              //
+              // The document a customer forwards has to say exactly what the
+              // screen said; two renderers of one split is how the two come to
+              // disagree, and the PDF is the copy other people read.
+              //
+              // ITS OWN BLOCK, NOT INSIDE "Payment Breakdown" ABOVE. That
+              // block only renders when there is a fee or a discount, so a
+              // crypto-funded top-up with neither — which is the ordinary
+              // case — would have shown no breakdown at all and the coin
+              // would have been invisible again.
+              //
+              // ASCII money: the embedded font falls back to Helvetica when
+              // the HTTP fetch fails, and that fallback throws on the naira
+              // sign.
+              if (nairaFundingRowsAscii(transaction.metadata).isNotEmpty) ...[
+                pw.Text(
+                  'How it was paid',
+                  style: _getTextStyle(fontSize: 16, isBold: true),
+                ),
+                pw.SizedBox(height: 12),
+                pw.Divider(color: const PdfColor.fromInt(0xFFE2E8F0)),
+                pw.SizedBox(height: 8),
+                ...nairaFundingRowsAscii(transaction.metadata)
+                    .map((e) => _buildDetailRow(e.key, e.value)),
                 pw.SizedBox(height: 16),
               ],
 

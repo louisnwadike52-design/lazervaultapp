@@ -118,7 +118,7 @@ class DocumentUploadErrorSheet extends StatelessWidget {
     final retryCallback = onRetry ?? () {};
     final manualEntryCallback = onManualEntry ?? () {};
     final supportCallback = onContactSupport ?? () {};
-    await Get.bottomSheet(
+    await showAppGetBottomSheet(
       DocumentUploadErrorSheet(
         errorMessage: errorMessage,
         errorType: errorType,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart'
     show kMyVoiceSentinelId;
 part 'voice_language_voice_sheet_widgets.dart';
@@ -57,7 +58,7 @@ class VoiceLanguageVoiceSheet extends StatefulWidget {
     required VoidCallback onAdvancedSettings,
     void Function(VoiceLangVoiceResult result)? onLiveChange,
   }) {
-    return showModalBottomSheet<VoiceLangVoiceResult>(
+    return showAppBottomSheet<VoiceLangVoiceResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

@@ -14,6 +14,7 @@ import 'status_pill.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/utils/logger.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Tap-into bottom sheet for a past group. Mirrors the
 /// PastContributionDetailsSheet layout: drag handle + title row, then
@@ -32,7 +33,7 @@ class PastGroupDetailsSheet extends StatefulWidget {
     required PastGroupEntry entry,
   }) {
     final cubit = context.read<GroupAccountCubit>();
-    return showModalBottomSheet(
+    return showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

@@ -1,3 +1,8 @@
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
+import 'package:lazervault/src/features/water_bill/presentation/cubit/water_bill_state.dart';
+import 'package:lazervault/src/features/water_bill/presentation/cubit/water_bill_cubit.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,6 +21,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:lazervault/core/widgets/bill_history_item.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class WaterBillPaymentReceiptScreen extends StatefulWidget {
   const WaterBillPaymentReceiptScreen({super.key});
@@ -26,16 +32,80 @@ class WaterBillPaymentReceiptScreen extends StatefulWidget {
 }
 
 class _WaterBillPaymentReceiptScreenState
-    extends State<WaterBillPaymentReceiptScreen> {
+    extends State<WaterBillPaymentReceiptScreen>
+    with
+        WidgetsBindingObserver,
+        BillStatusAutoRefresh<WaterBillPaymentReceiptScreen> {
   bool _isDownloading = false;
   bool _isSharing = false;
   bool _postPurchaseRan = false;
 
+  /// The payment as last read. Starts from the route arguments and is
+  /// replaced by each refresh, so the screen shows the CURRENT status rather
+  /// than the one it was pushed with.
+  WaterPaymentEntity? _payment;
+
+  /// WATER WAS THE ONE BILL RECEIPT WITH NO WAY TO LEARN IT HAD FINISHED.
+  ///
+  /// Airtime, data, electricity, cable TV, internet and betting all poll;
+  /// this one was pushed with a payment and then showed that snapshot for
+  /// ever. A purchase that completed two seconds later sat on "Processing"
+  /// until the customer left the screen and came back — and a crypto-funded
+  /// one is ALWAYS pending at this point, because the conversion runs after
+  /// the PIN sheet closes. So this screen was guaranteed to be wrong for
+  /// exactly the flow that needs it most.
+  @override
+  Future<void> refreshBillStatus() => _rereadPayment();
+
+  @override
+  bool get isBillStatusTerminal {
+    final p = _payment;
+    // UNKNOWN IS NOT TERMINAL. No payment means nothing to poll for, and
+    // treating that as "still going" would poll a screen that can never
+    // resolve; the mixin's own maxDuration is the backstop either way.
+    if (p == null) return true;
+    return p.isCompleted || p.isFailed;
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _runPostPurchaseActions());
+    final args = Get.arguments as Map<String, dynamic>?;
+    _payment = args?['payment'] as WaterPaymentEntity?;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _runPostPurchaseActions();
+      // Started AFTER the first frame so a receipt that arrives already
+      // completed — the ordinary wallet-funded case — never schedules a
+      // single request.
+      startBillStatusAutoRefresh();
+    });
+  }
+
+  @override
+  void dispose() {
+    disposeBillStatusAutoRefresh();
+    super.dispose();
+  }
+
+  /// Re-read this payment's status.
+  ///
+  /// MUST NOT THROW — the mixin calls it on a timer and a thrown refresh
+  /// would take the screen down behind the customer's back. A failed read
+  /// simply leaves the previous status in place and the next tick retries.
+  Future<void> _rereadPayment() async {
+    final id = _payment?.id;
+    if (id == null || id.isEmpty || !mounted) return;
+    try {
+      final cubit = context.read<WaterBillCubit>();
+      await cubit.getPaymentReceipt(paymentId: id);
+      if (!mounted) return;
+      final st = cubit.state;
+      if (st is ReceiptLoaded) {
+        setState(() => _payment = st.receipt);
+      }
+    } catch (_) {
+      // Opportunistic. Pull-to-refresh and the next tick both retry.
+    }
   }
 
   /// Save beneficiary + enable auto-pay if the confirm screen asked for
@@ -219,7 +289,7 @@ class _WaterBillPaymentReceiptScreenState
     if (rawArgs is! Map<String, dynamic> ||
         rawArgs['payment'] is! WaterPaymentEntity) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Get.offAllNamed(AppRoutes.waterBillHome);
+        if (mounted) offAllKeepingHome(AppRoutes.waterBillHome);
       });
       return const Scaffold(
         backgroundColor: Color(0xFF0A0A0A),
@@ -234,7 +304,7 @@ class _WaterBillPaymentReceiptScreenState
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Get.offAllNamed(AppRoutes.waterBillHome);
+        if (!didPop) offAllKeepingHome(AppRoutes.waterBillHome);
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
@@ -242,7 +312,7 @@ class _WaterBillPaymentReceiptScreenState
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.waterBillHome),
+            onPressed: () => offAllKeepingHome(AppRoutes.waterBillHome),
             icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
           ),
           title: Text(
@@ -348,6 +418,16 @@ class _WaterBillPaymentReceiptScreenState
                             _buildReceiptRow(
                                 'Amount', _formatAmount(payment.amount)),
                             _buildDivider(),
+                            // HOW IT WAS PAID, when crypto funded it.
+                            //
+                            // utility-payments records the split on the
+                            // payment when the conversion's outcome meets it.
+                            // Empty for an ordinary wallet payment.
+                            ...nairaFundingRows(payment.metadata)
+                                .expand((e) => [
+                                      _buildReceiptRow(e.key, e.value),
+                                      _buildDivider(),
+                                    ]),
                             if (payment.receiptNumber != null &&
                                 payment.receiptNumber!.isNotEmpty) ...[
                               _buildReceiptRow(

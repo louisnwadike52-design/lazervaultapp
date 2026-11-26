@@ -4,6 +4,7 @@ import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import '../entities/profile_entity.dart';
 import '../entities/user.dart';
 import '../entities/phone_verification_entity.dart';
+import '../entities/phone_change_request_result.dart';
 import '../entities/two_factor_entity.dart';
 import '../usecases/sign_up_usecase.dart';
 part 'i_auth_repository_widgets.dart';
@@ -46,6 +47,7 @@ abstract class IAuthRepository {
     required String passcode,
     required String firstName,
     required String lastName,
+    String? middleName,
     String? email,
     required String countryCode,
     String? locale,
@@ -62,9 +64,13 @@ abstract class IAuthRepository {
 
   /// Forgot passcode (phone+passcode): send a 6-digit SMS OTP to a phone-primary
   /// account to begin a passcode reset.
+  /// Begin a passcode reset. [phone] is the identifier the user typed — an
+  /// E.164 phone OR an email address. [deliveryChannel] is 'sms' or 'email';
+  /// empty lets the backend infer it from the identifier's shape.
   Future<Either<Failure, PhoneSignupOtpResult>> requestPasscodeReset({
     required String phone,
     required String countryCode,
+    String deliveryChannel,
   });
 
   /// Validate the reset OTP WITHOUT consuming it, so the code can be confirmed
@@ -106,7 +112,15 @@ abstract class IAuthRepository {
   /// Complete an adaptive step-up login by verifying the OTP that was sent when
   /// a login returned [StepUpRequiredFailure]. Returns a full session.
   /// Requests a fresh step-up code; returns the new lifetime in seconds.
-  Future<Either<Failure, int>> resendLoginOtp({required String stepUpToken});
+  /// Re-issues the step-up code, optionally on a DIFFERENT channel.
+  ///
+  /// [method] is "" for "keep the channel it was issued on" — the behaviour
+  /// every caller had before the switch existed. A requested channel that the
+  /// account cannot use is REFUSED, never silently redirected.
+  Future<Either<Failure, StepUpResend>> resendLoginOtp({
+    required String stepUpToken,
+    String method,
+  });
 
   /// Completes sign-in WITHOUT the code, when an operator has enabled the
   /// escape hatch. The device stays unverified server-side, so the next login
@@ -195,6 +209,7 @@ abstract class IAuthRepository {
   Future<Either<Failure, ProfileEntity>> signUp({
     required String firstName,
     required String lastName,
+    String? middleName,
     required String email,
     required String password,
     required SignupPrimaryContact primaryContact,
@@ -308,8 +323,12 @@ abstract class IAuthRepository {
 
   /// Change the signed-in user's phone to a brand-new number. Sends an SMS OTP
   /// to the NEW number; the change only applies after [verifyPhoneChange].
-  /// Returns a status message on success.
-  Future<Either<Failure, String>> requestPhoneChange({
+  ///
+  /// Returns the server's own expiry and resend windows alongside the message —
+  /// see [PhoneChangeRequestResult]. This used to return a bare String, so the
+  /// two numbers the RPC has always sent were discarded and the screen could
+  /// offer neither a countdown nor a resend.
+  Future<Either<Failure, PhoneChangeRequestResult>> requestPhoneChange({
     required String newPhone,
     String countryCode,
   });

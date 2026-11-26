@@ -3,6 +3,7 @@ import 'package:lazervault/src/core/network/grpc_client.dart';
 import '../models/cable_tv_provider_model.dart';
 import '../models/tv_package_model.dart';
 import '../models/smart_card_validation_model.dart';
+import 'package:lazervault/src/features/crypto_pay/data/funding_call_options.dart';
 import '../models/cable_tv_payment_model.dart';
 
 abstract class CableTVRemoteDataSource {
@@ -21,6 +22,10 @@ abstract class CableTVRemoteDataSource {
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+
+    /// Pay with crypto: the asset to sell to fund this payment, lowercase.
+    /// Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   });
   Future<List<CableTVPaymentModel>> getPaymentHistory({
     int limit = 50,
@@ -92,6 +97,10 @@ class CableTVRemoteDataSourceImpl implements CableTVRemoteDataSource {
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+
+    /// Pay with crypto: the asset to sell to fund this payment, lowercase.
+    /// Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   }) async {
     final request = pb.PayCableTVBillRequest()
       ..providerId = providerId
@@ -103,7 +112,10 @@ class CableTVRemoteDataSourceImpl implements CableTVRemoteDataSource {
       ..verificationToken = verificationToken
       ..idempotencyKey = idempotencyKey;
 
-    final options = await grpcClient.callOptions;
+    // PAY WITH CRYPTO — one shared rule; see funding_call_options.
+
+    final options =
+        (await grpcClient.callOptions).withCryptoFunding(fundingAsset);
     final response = await grpcClient.utilityPaymentsClient.payCableTVBill(
       request,
       options: options,

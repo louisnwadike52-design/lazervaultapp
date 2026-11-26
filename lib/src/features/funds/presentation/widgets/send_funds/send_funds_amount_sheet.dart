@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/confirm_crypto_payment.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
@@ -13,6 +14,11 @@ import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/insufficient_funds_sheet.dart';
 import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/pay_source.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/crypto_pay_unavailable_dialog.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/pay_with_crypto_selector.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/pay_with_crypto_sheet.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/grant_restriction_notice.dart';
 part 'send_funds_amount_sheet_widgets.dart';
 
@@ -121,8 +127,25 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
   // Optional extras (parity with the long flow). Schedule and recurring are
   // mutually exclusive — setting one clears the other.
   DateTime? _scheduledAt;
+
+  /// True while Continue is doing work the customer cannot see.
+  ///
+  /// Paying with crypto re-prices the coin over the network before any sheet
+  /// appears, so there was a visible pause with the button still live: a
+  /// second tap started a second pricing call and could stack a second
+  /// confirmation sheet on the first. The flag drives both the button's
+  /// spinner and its null onPressed, so the control says what it is doing and
+  /// cannot be tapped again while it does it.
+  bool _continuing = false;
+
   ServiceCategory? _category;
   RecurringTransferConfig? _recurring;
+
+  /// PAY WITH CRYPTO: how this transfer will be funded.
+  ///
+  /// Always starts on the wallet. Selling crypto is a decision, and one taken
+  /// for the LAST transfer must never carry into this one.
+  PaySource _paySource = PaySource.wallet;
 
   Future<void> _pickCategory() async {
     // Release the autofocused amount field BEFORE opening the child sheet — the
@@ -161,6 +184,29 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
       recurring: _recurring,
     );
     if (result == null || !mounted) return; // dismissed → keep current
+
+    // PAY WITH CRYPTO CANNOT BE SCHEDULED OR REPEATED, and this is the order
+    // the control cannot prevent: the customer picked a coin first and is
+    // only now choosing to send it later. Hiding the selector is no help once
+    // it has been used, so the clash is said out loud and resolved.
+    final choseLater = result.scheduledAt != null || result.recurring != null;
+    if (choseLater && _paySource.isCrypto) {
+      final useWallet = await CryptoPayUnavailableDialog.show(
+        context,
+        conflict: result.recurring != null
+            ? CryptoPayConflict.recurring
+            : CryptoPayConflict.scheduled,
+        assetLabel: _paySource.label,
+      );
+      if (!mounted) return;
+      if (!useWallet) {
+        // They would rather keep paying with crypto, so the schedule is the
+        // thing that is dropped.
+        return;
+      }
+      setState(() => _paySource = PaySource.wallet);
+    }
+
     setState(() {
       _scheduledAt = result.scheduledAt;
       _recurring = result.recurring;
@@ -174,7 +220,17 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
     return 'Send now';
   }
 
-  static const List<int> _quickAmounts = [1000, 2000, 5000, 10000];
+  /// The quick amounts, and they are ONE ROW.
+  ///
+  /// A small one leads because the commonest real transfer is not a round
+  /// thousand — airtime money, a share of a bill, paying someone back — and
+  /// starting at ₦1,000 made the shortcuts useless for exactly those.
+  ///
+  /// FIVE IS THE CEILING HERE. They are laid out in a Row (spaceBetween, each
+  /// Flexible), so a sixth cannot wrap to a second line — it would shrink the
+  /// others until "₦10,000" ellipsised into "₦10,0…", which is worse than not
+  /// offering it. Add one only by removing one.
+  static const List<int> _quickAmounts = [200, 1000, 2000, 5000, 10000];
 
   String get _symbol {
     switch (widget.currency.toUpperCase()) {
@@ -296,16 +352,60 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
     );
   }
 
-  void _continue() {
+  Future<void> _continue() async {
+    // Re-entrancy guard as well as a visual one: a tap that arrives in
+    // the same frame as the rebuild would otherwise still get through.
+    if (_continuing) return;
+    setState(() => _continuing = true);
+    try {
+      await _continueInner();
+    } finally {
+      // The sheet pops itself on success, so this may run unmounted.
+      if (mounted) setState(() => _continuing = false);
+    }
+  }
+
+  Future<void> _continueInner() async {
     final minor = _amountMinor;
     if (minor <= 0) {
       setState(() => _error = 'Enter a valid amount');
       return;
     }
-    // Include the fee in the balance check when a matching quote is loaded
-    // (best-effort; the backend hold is the authoritative guard).
     final lastFee = widget.transferCubit.lastFeeLoaded;
     final feeMinor = lastFee?.fee ?? 0;
+
+    // PAYING WITH CRYPTO IS CHECKED HERE, BEFORE THE WALLET CHECK BELOW.
+    //
+    // Order matters: when a coin is funding the payment, "your wallet is
+    // short" is the wrong thing to say — the wallet is not what is paying,
+    // and the customer would be sent to top it up for no reason. The crypto
+    // path answers for itself and returns.
+    //
+    // Selling crypto is irreversible, so the question is asked while it is
+    // still cheap. The server re-checks all of it; this only means the
+    // customer is not told from a refusal AFTER the PIN.
+    if (_paySource.isCrypto) {
+      // SHARED WITH EVERY OTHER SERVICE THAT TAKES CRYPTO. This used to be a
+      // private helper here, so send funds was the only flow that showed the
+      // customer anything before the PIN — airtime, data, electricity, cable
+      // TV, internet and water went straight to the pad and learned from a
+      // refusal afterwards.
+      final chosen = await confirmCryptoPayment(
+        context,
+        source: _paySource,
+        totalMinor: minor + feeMinor,
+        walletMinor: (widget.availableBalanceMajor * 100).round(),
+      );
+      if (chosen == null || !mounted) return;
+      // The customer may have switched coins inside the sheet; carry that
+      // choice forward rather than paying with the one they rejected.
+      if (chosen != _paySource) setState(() => _paySource = chosen);
+      _finish(minor, feeMinor);
+      return;
+    }
+
+    // Include the fee in the balance check when a matching quote is loaded
+    // (best-effort; the backend hold is the authoritative guard).
     if ((minor + feeMinor) / 100.0 > widget.availableBalanceMajor) {
       // A sheet, not a red line under the field.
       //
@@ -320,6 +420,20 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
         amountMajor: minor / 100.0,
         feeMajor: feeMinor / 100.0,
         availableMajor: widget.availableBalanceMajor,
+        // CRYPTO, OFFERED WHERE IT IS ACTUALLY WANTED. Being told the wallet
+        // is short is the moment this matters, and until now the only way to
+        // reach it was to dismiss this sheet and find the selector further up
+        // the form. Hidden when the gate is off — see showInsufficientFunds.
+        //
+        // NOT offered on a scheduled or repeating send, for the money reason
+        // the selector itself carries: the conversion runs when the transfer
+        // is authorised, so pairing it with a later payment would sell the
+        // customer's coin today to pay someone next month.
+        email: _authEmail,
+        userId: _authUserId,
+        onPayWithCrypto: (_scheduledAt == null && _recurring == null)
+            ? _chooseCryptoSource
+            : null,
       );
       // The inline line is still set, so the field stays visibly in an error
       // state behind the sheet and after it is dismissed.
@@ -383,6 +497,16 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
           : 'Your wallet must keep a minimum balance');
       return;
     }
+    _finish(minor, feeMinor);
+  }
+
+  /// The single exit from this sheet.
+  ///
+  /// Extracted so the crypto branch and the wallet branch cannot drift: both
+  /// have to return the SAME result shape, and a second `Navigator.pop` with
+  /// its own argument list is how one of them comes to drop the category or
+  /// the chosen coin.
+  void _finish(int minor, int feeMinor) {
     // Pass the raw note. Turning a category into narration is
     // ServiceCategory.buildTransferNarration's job — it is shared with the
     // long flow, so doing it here too would give the two flows two different
@@ -394,7 +518,39 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
       scheduledAt: _scheduledAt,
       category: _category,
       recurring: _recurring,
+      // Null unless the customer chose a coin — the ordinary path is
+      // unchanged.
+      fundingAsset: _paySource.asset,
     ));
+  }
+
+  String? get _authEmail =>
+      context.read<AuthenticationCubit>().currentProfile?.user.email;
+
+  String? get _authUserId =>
+      context.read<AuthenticationCubit>().currentProfile?.user.id;
+
+  /// Opens the asset sheet and, if a coin is chosen, switches the source.
+  ///
+  /// The SAME call the selector makes, so the two entry points cannot end up
+  /// doing different things — and a dismissed sheet still changes nothing,
+  /// which matters because leaving the source on "Crypto" with no asset would
+  /// send a request that cannot be priced.
+  Future<void> _chooseCryptoSource() async {
+    final picked = await PayWithCryptoSheet.open(
+      context,
+      amountMinor: _amountMinor,
+      walletBalanceMinor: (widget.availableBalanceMajor * 100).round(),
+      current: _paySource.isCrypto ? _paySource.asset : null,
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _paySource = picked;
+      // The inline error described a wallet that cannot cover this. It can
+      // now be covered another way, so leaving the field red would contradict
+      // the choice the customer just made.
+      _error = null;
+    });
   }
 
   /// True when this send is a payout to another bank.
@@ -734,41 +890,71 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                                   color: SendFundsAmountSheet._error,
                                   fontSize: 12.sp)),
                         ],
-                        SizedBox(height: 14.h),
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          spacing: 10.w,
-                          runSpacing: 10.h,
+                        SizedBox(height: 10.h),
+                        // SMALLER PILLS, AND TIGHTER.
+                        //
+                        // The sheet now carries a third option row (Pay with)
+                        // and still has to fit with the number pad up. These
+                        // are a convenience, not the input — the field above
+                        // is — so they are the right thing to give the space
+                        // back. At 16/9 padding and 13sp the four of them
+                        // crowded the row on a narrow phone and pushed
+                        // everything below the fold.
+                        // SPREAD ACROSS THE ROW, not bunched to one side.
+                        //
+                        // A Wrap lays its children out from the start of the
+                        // line and centres the LINE, so four pills narrower
+                        // than the sheet sat as one short centred block with
+                        // the slack split in two — reading as left-tilted
+                        // against the full-width field above and the
+                        // full-width button below.
+                        //
+                        // spaceBetween puts the slack BETWEEN them, so the
+                        // first and last align with the edges of everything
+                        // else on the sheet. Each pill stays Flexible so a
+                        // narrow phone shrinks them instead of overflowing —
+                        // which is what a plain Row would do, and the reason
+                        // the Wrap was there in the first place.
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: _quickAmounts.map((a) {
-                            return GestureDetector(
-                              onTap: () {
-                                _controller.text = a.toString();
-                                _onChanged();
-                              },
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 16.w, vertical: 9.h),
-                                decoration: BoxDecoration(
-                                  color: SendFundsAmountSheet._purple
-                                      .withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                      color: SendFundsAmountSheet._purple
-                                          .withValues(alpha: 0.25)),
-                                ),
-                                child: Text(
-                                  '$_symbol${_grouped(a)}',
-                                  style: GoogleFonts.inter(
-                                    color: SendFundsAmountSheet._purple,
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w600,
+                            return Flexible(
+                              child: GestureDetector(
+                                onTap: () {
+                                  _controller.text = a.toString();
+                                  _onChanged();
+                                },
+                                child: Container(
+                                  // Tighter than four pills needed: five of
+                                  // them share one row and must not shrink
+                                  // into ellipses on a narrow phone.
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10.w, vertical: 6.5.h),
+                                  decoration: BoxDecoration(
+                                    color: SendFundsAmountSheet._purple
+                                        .withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: SendFundsAmountSheet._purple
+                                            .withValues(alpha: 0.25)),
+                                  ),
+                                  child: Text(
+                                    '$_symbol${_grouped(a)}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      color: SendFundsAmountSheet._purple,
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ),
                             );
                           }).toList(),
                         ),
-                        SizedBox(height: 14.h),
+                        SizedBox(height: 10.h),
                         // Narration / note (optional) — below the amount, before category.
                         TextField(
                           controller: _narrationController,
@@ -842,8 +1028,18 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                             return const SizedBox.shrink();
                           },
                         ),
+                        // THE RULE STAYS; THE AIR AROUND IT DOES NOT.
+                        //
+                        // `Divider(height: 26.h)` reserves 26dp of ROW and
+                        // paints a 1dp line in the middle of it, so the line
+                        // arrived with ~12dp of empty space above and below —
+                        // which is what left Category floating a long way
+                        // from the narration field. The divider is useful: it
+                        // separates the amount block from the options below.
+                        // Only the gap was wrong, so the height comes down to
+                        // the line plus a hairline of breathing room.
                         Divider(
-                            color: SendFundsAmountSheet._card, height: 26.h),
+                            color: SendFundsAmountSheet._card, height: 14.h),
                         // Optional extras — parity with the long flow.
                         _optionTile(
                           icon: Icons.category_outlined,
@@ -854,6 +1050,36 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                         // One CTA for BOTH scheduling and recurring — opens the combined
                         // ScheduleRepeatSheet. Replaces the old inline Schedule tile +
                         // Repeat switch so the sheet stays clean.
+                        // PAY WITH CRYPTO. Directly above Schedule/repeat
+                        // because the two cannot both apply: the conversion
+                        // runs when the transfer is authorised, and a
+                        // schedule or repeat pays later. Hidden once either
+                        // is set, and the reverse order is caught in
+                        // _pickScheduleRepeat.
+                        //
+                        // NO EXTRA PADDING. The selector is now a row of the
+                        // same shape as the two `_optionTile`s around it and
+                        // carries its own 10.h, so a wrapper here would make
+                        // the middle row of three sit lower than its
+                        // neighbours — the uneven spacing that was reported.
+                        if (_scheduledAt == null && _recurring == null)
+                          PayWithCryptoSelector(
+                            onDarkSurface: false,
+                            value: _paySource,
+                            amountMinor: _amountMinor,
+                            email: context
+                                .read<AuthenticationCubit>()
+                                .currentProfile
+                                ?.user
+                                .email,
+                            userId: context
+                                .read<AuthenticationCubit>()
+                                .currentProfile
+                                ?.user
+                                .id,
+                            onChanged: (src) =>
+                                setState(() => _paySource = src),
+                          ),
                         _optionTile(
                           icon: _recurring != null
                               ? Icons.repeat_rounded
@@ -873,21 +1099,40 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _continue,
+                      // Null while busy: that is what actually stops a second
+                      // tap. The spinner only explains why.
+                      onPressed: _continuing ? null : _continue,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: SendFundsAmountSheet._purple,
+                        // The disabled default is a pale grey that reads as
+                        // "this button is broken". Holding the brand colour
+                        // keeps it recognisably the same control, just busy.
+                        disabledBackgroundColor:
+                            SendFundsAmountSheet._purple.withValues(alpha: 0.7),
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
                       ),
-                      child: Text(
-                        'Continue',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: _continuing
+                          // Sized to the text it replaces so the footer does
+                          // not jump when the state flips.
+                          ? SizedBox(
+                              height: 20.sp,
+                              width: 20.sp,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : Text(
+                              'Continue',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                 ),

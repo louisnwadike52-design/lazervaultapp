@@ -48,11 +48,21 @@ import '../../services/move_transfer_pdf_service.dart';
 import '../../services/wallet_transfer_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Dashboard screen for the Move Money feature.
 ///
 /// Two tabs: "External Banks" (linked accounts + Mono DirectPay) and
 /// "Lazervault Wallet" (move between own Lazervault virtual accounts).
+/// Height of the dashboard shell's bottom navigation bar, which is drawn over
+/// this screen because the shell sets `extendBody: true` for tab indices >= 2.
+///
+/// Measured, not guessed: `dashboard_screen.dart` hardcodes `height: 80` both
+/// for the opaque backing block and for the curved nav itself. If that number
+/// changes, this one has to change with it — there is no API that reports it,
+/// because the nav is a sibling of the body rather than its padding.
+const double _kShellBottomNavHeight = 80.0;
+
 class MoveMoneyDashboardScreen extends StatefulWidget {
   const MoveMoneyDashboardScreen({super.key});
 
@@ -216,7 +226,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   /// Direct Debit (default), false for DirectPay, null if cancelled.
   Future<bool?> _chooseDebitMode() {
     bool useDirectDebit = true;
-    return showModalBottomSheet<bool>(
+    return showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF15151B),
@@ -627,13 +637,57 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 SizedBox(height: 8.h),
 
                 // Tab content
+                //
+                // PADDED FOR THE SHELL'S BOTTOM NAV, WHICH PAINTS OVER US.
+                //
+                // Lazerbeam is tab index 3 of the dashboard shell, and that
+                // shell sets `extendBody: true` for every index >= 2 — so this
+                // Scaffold's body is laid out to the full screen height and the
+                // nav is drawn ON TOP of its last 80 logical pixels. The shell
+                // additionally paints an OPAQUE Color(0xFF1E1E1E) block there
+                // (dashboard_screen.dart, the `Positioned(bottom: 0, height:
+                // 80)` branch), so anything we render in that band is not
+                // merely overlapped, it is covered.
+                //
+                // On Android that hid the last ~3 rows of the transaction list
+                // with no way to reach them: the list believed its viewport ran
+                // to the bottom of the screen, so those rows were "visible" as
+                // far as the scroll extent was concerned and scrolling would
+                // not bring them up.
+                //
+                // Padding the TabBarView rather than each list inside it gets
+                // every tab and every state — list, loading, error and empty —
+                // from one place, and keeps the lists' own scroll extents
+                // honest. viewPaddingOf is the physical inset (gesture bar /
+                // home indicator) and is NOT consumed by anything above us
+                // here, so it has to be added rather than assumed handled.
                 Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildExternalBanksTab(),
-                      _buildWalletTab(),
-                    ],
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      bottom: _kShellBottomNavHeight +
+                          MediaQuery.viewPaddingOf(context).bottom,
+                    ),
+                    child: TabBarView(
+                      controller: _tabController,
+                      // SWIPE OFF, matching the shell's own TabBarView.
+                      //
+                      // Tabs are switched by tapping the segmented control
+                      // above, which is what it looks like it does. Leaving
+                      // horizontal drag enabled put a page-swipe recogniser
+                      // under every list on the screen, and a drag that is a
+                      // few degrees off vertical — which is most real thumb
+                      // drags — was being won by it. The reported symptom was
+                      // that scrolling up or down changed tabs instead.
+                      //
+                      // dashboard_screen.dart does exactly this on the shell's
+                      // TabBarView for the same reason; a screen with a visible
+                      // segmented control loses nothing by it.
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _buildExternalBanksTab(),
+                        _buildWalletTab(),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -1223,7 +1277,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   }) {
     final filtered = accounts.where((a) => a.id != excludeId).toList();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -2008,7 +2062,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
         context.read<MandateCubit>().getMandateForAccount(account.id);
     final bankColor = _getBankColor(account.bankName);
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,
@@ -2698,7 +2752,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
 
   /// Shows detail sheet for external bank transfer (MoveTransfer)
   void _showMoveTransferDetailSheet(MoveTransfer transfer) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,
@@ -2731,7 +2785,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
 
   /// Shows detail sheet for wallet transfer (PaymentsTransferResult)
   void _showWalletTransferDetailSheet(PaymentsTransferResult transfer) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,

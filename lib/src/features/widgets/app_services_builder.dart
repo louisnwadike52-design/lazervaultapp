@@ -1,4 +1,9 @@
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_state.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
+import 'package:lazervault/core/utils/logger.dart';
 import 'dart:async';
+import 'package:lazervault/core/services/vendor_access_refresher.dart';
+import 'package:lazervault/core/services/vendor_access.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/widgets/dashboard/dashboard_refresh_signal.dart';
@@ -34,6 +39,7 @@ import 'quick_services_more_tile.dart';
 import 'quick_services_ordering.dart';
 import 'quick_services_policy.dart';
 import 'quick_services_paging.dart';
+import 'package:lazervault/core/config/dashboard_widgets.dart';
 
 class AppServicesBuilder extends StatefulWidget {
   /// When true the quick-service tiles render slightly shorter (the showcase
@@ -235,6 +241,23 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.idPay, serviceImg: AppServiceImg.idPay),
     AppService(
         serviceName: AppServiceName.bulkSms, serviceImg: AppServiceImg.bulkSms),
+    // VENDOR CAMPAIGNS IS NOT A QUICK SERVICE ANY MORE — it lives in the
+    // Lifestyle tab, beside Lazerspray (lifestyle_screen.dart `_entries`).
+    //
+    // It was listed here and hidden for all but enrolled vendors, which put a
+    // scanner only a handful of users can open inside a grid whose premise is
+    // that every tile is for everyone. The enum member, the route map and the
+    // dispatcher case all REMAIN, so deep links stay gated and the service
+    // keeps its identity in transaction history; only the dashboard tile has
+    // moved. The hide rule in _effectiveHiddenServices also remains, so a
+    // non-vendor cannot reach it through the All-Services search either.
+    // Event ticketing — open to every user: anyone can buy a ticket, and
+    // anyone can publish an event. Unlike vendorCampaigns above there is no
+    // enrolment gate, so the quick_service_ticketing switch is the only thing
+    // that hides it.
+    AppService(
+        serviceName: AppServiceName.ticketing,
+        serviceImg: AppServiceImg.ticketing),
   ];
 
   // Business services (shown when Business card is active).
@@ -412,6 +435,21 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     // compiled in, only the entry points are withheld.
     if (!FeatureFlags.bulkSmsVisible) {
       hidden.add(AppServiceName.bulkSms);
+    }
+    // VENDOR CAMPAIGNS IS HIDDEN UNLESS THIS USER IS AN ENROLLED VENDOR.
+    //
+    // Not an admin switch and not an account type — a per-user ROLE, which
+    // nothing else in this file expresses. VendorAccess holds the answer the
+    // server gave for THIS session, cached in SharedPreferences so it can be
+    // read synchronously here; it answers false when unknown, so a failed or
+    // not-yet-made call hides the tile rather than offering a scanner that
+    // every attempt would be refused by.
+    //
+    // The quick_service_vendorCampaigns_* switches still apply below, so the
+    // feature can be withdrawn from everyone without a release even while
+    // vendors are enrolled.
+    if (!VendorAccess.isActiveVendor) {
+      hidden.add(AppServiceName.vendorCampaigns);
     }
     // Card acceptance is admin-gated and hidden by DEFAULT. Same mechanics as
     // Insurance and Bulk SMS — and doubly warranted here, because the backend
@@ -750,7 +788,25 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   List<AppService> get _activeServices {
     final raw = _rawServicesForActiveAccount();
     final hidden = _effectiveHiddenServices;
-    final filtered = raw.where((s) => !hidden.contains(s.serviceName)).toList();
+    var filtered = raw.where((s) => !hidden.contains(s.serviceName)).toList();
+    // BASIC MODE SHOWS THE MONEY SERVICES AND STOPS.
+    //
+    // The operator's set, not a compiled one: transfers, bills, gift cards,
+    // tap-to-pay, contactless and P2P crypto by default, editable from the
+    // console. Everything else is still reachable from "View all" — this
+    // narrows the GRID, it does not withdraw a service, so nothing a user
+    // could already do stops working.
+    //
+    // Guarded on the result being non-empty. A console list naming only
+    // services this account type does not offer would otherwise leave a
+    // business or savings user staring at an empty grid, and an empty grid
+    // is indistinguishable from a broken one.
+    if (DashboardWidgets.isBasic) {
+      final basic = filtered
+          .where((s) => DashboardWidgets.showsService(s.serviceName.name))
+          .toList();
+      if (basic.isNotEmpty) filtered = basic;
+    }
     // Only the crowded personal grid is re-ordered; the curated per-type lists
     // (business/savings/investment/multi-currency/family) keep their hand-picked
     // order. `_getServicePages` inherits whatever order we return here.
@@ -896,6 +952,19 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   @override
   void initState() {
     super.initState();
+    // Ask the server whether this user is an enrolled vendor. Fire and
+    // forget: the Vendor Campaigns tile stays hidden until the answer lands,
+    // which is the safe direction, and no user waits on a network call for a
+    // tile almost none of them have.
+    VendorAccessRefresher.refreshInBackground();
+    // SEED THE UNREAD COUNT so the badge is right on a cold start.
+    //
+    // The conversations cubit was only ever loaded by Send Funds → Select
+    // Recipient, so a customer who never opened that screen saw no badge
+    // here no matter how many messages were waiting. Fire and forget on the
+    // shared singleton: nothing on this card waits for it, and the
+    // BlocBuilder repaints when the answer lands.
+    serviceLocator<P2PConversationsCubit>().loadConversations();
     // REPLAY THE STAGGER ON AN EXPLICIT REFRESH.
     //
     // _introPlayed makes the tiles animate once and then hold still through
@@ -922,7 +991,19 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     try {
       _currencySubscription =
           serviceLocator<LocaleManager>().currencyStream.listen((_) {
-        if (mounted) setState(() {});
+        if (!mounted) return;
+        // RE-RESOLVE THE ACCOUNT TYPE, not just the locale gates.
+        //
+        // A region switch re-selects the active account (the cards cubit picks
+        // the wallet in the new currency), and _activeAccountType is a cached
+        // field only _checkActiveAccountType writes. A plain setState therefore
+        // re-filtered the grid for the new currency while still building it
+        // from the PREVIOUS account's service list — the "Family Services"
+        // header over a personal card. The id-stream listener covers the case
+        // where the selection moves; this covers the case where it does not,
+        // and is idempotent when both fire.
+        _checkActiveAccountType();
+        setState(() {});
       });
     } catch (_) {
       // Locale service unavailable (early startup, widget test): the grid
@@ -999,13 +1080,25 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         // activated by its shared virtual-account id (spendingAccountId), not
         // its group id. For every other account type spendingAccountId == id,
         // so the id fallback keeps them working.
-        final activeAccount = summaries.firstWhere(
-          (a) => a.spendingAccountId == activeId,
-          orElse: () => summaries.firstWhere(
-            (a) => a.id == activeId,
-            orElse: () => summaries.first,
-          ),
-        );
+        var index =
+            summaries.indexWhere((a) => a.spendingAccountId == activeId);
+        if (index < 0) index = summaries.indexWhere((a) => a.id == activeId);
+        if (index < 0) {
+          // THE SELECTION IS NOT IN THIS LIST.
+          //
+          // This used to fall back to `summaries.first` — which does not
+          // resolve the active account, it INVENTS one, and the grid then
+          // offers the service set of a wallet the user is not on. Mid-switch
+          // the two genuinely disagree for a frame (the rows arrive, the
+          // selection follows), so the honest answer is to keep whatever was
+          // last resolved and let the next event settle it.
+          //
+          // Only a grid that has never resolved anything takes the first card,
+          // because it has to render something and card 0 is the one on screen.
+          if (_activeAccountType != null) return;
+          index = 0;
+        }
+        final activeAccount = summaries[index];
         final accountType = activeAccount.accountTypeEnum;
         final isFamily = accountType == VirtualAccountType.family;
         final isFamilyPending = isFamily &&
@@ -1056,8 +1149,64 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   /// exactly 12 services that creates the second page, which is the intended
   /// trade — one service moved one swipe away, in exchange for the carousel
   /// advertising that it can be swiped at all.
+  /// Whether the page-turn control takes a GRID CELL.
+  ///
+  /// Two conditions, and both are necessary. There must be something to turn
+  /// to (showsMoreTile), and the operator must have chosen the in-grid
+  /// arrangement — the default puts the control on the indicator row instead,
+  /// where it reads as a control rather than a service called "More" and
+  /// gives the cell back to an actual errand.
+  ///
+  /// Admin-switchable with no release: the flag arrives on the settings poll,
+  /// so flipping it in the dashboard rearranges the next build of this card.
   bool _showMoreTileFor(List<AppService> services) =>
+      FeatureFlags.quickServicesMoreInGrid &&
       showsMoreTile(services.length, _itemsPerPage);
+
+  /// Whether a page-turn control is warranted AT ALL, wherever it is drawn.
+  ///
+  /// Separate from [_showMoreTileFor] because the bottom-row arrangement must
+  /// still appear when the grid cell is suppressed — asking the grid question
+  /// for the bottom control is how the control vanishes entirely.
+  /// Counted from the PAGES, not from the service total.
+  ///
+  /// It asked `showsMoreTile` — "are there more than 11 services" — which is
+  /// the right question only while the grid is giving up a cell. With the
+  /// control on the indicator row a 12-service account fits on one page, and
+  /// the old rule still rendered a pill reading "More 0" that turned to a page
+  /// which did not exist. A control is warranted exactly when there is
+  /// somewhere to go.
+  bool _pageTurnWarranted(List<AppService> services) =>
+      quickServicePageSizes(services.length, _itemsPerPage,
+                  reservesCell: _showMoreTileFor(services))
+              .length >
+          1;
+
+  /// Turn the carousel, forward or back. Shared by the grid cell and the
+  /// bottom-row pill so the two can never disagree about what the control
+  /// does — the reason this was lifted out of the grid's itemBuilder.
+  void _turnPage({required bool back}) {
+    // Guarded: _pageCount is recomputed on every build, so a tap racing a
+    // rebuild that dropped a page (a service gate flipping, an account
+    // switch) must not animate past the end — or, going back, onto a page
+    // that no longer exists.
+    if (_pageCount <= 1) return;
+    if (back) {
+      // Jump to page one rather than stepping back one at a time: with three
+      // or more pages the control is a way OUT of the deep end, and animating
+      // through every intermediate page reads as a glitch.
+      _carouselController.animateToPage(
+        0,
+        duration: const Duration(milliseconds: 380),
+        curve: Curves.easeOutCubic,
+      );
+      return;
+    }
+    _carouselController.nextPage(
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
 
   /// Index into [_activeServices] for the tile at [indexOnPage] of [pageIndex].
   ///
@@ -1077,7 +1226,12 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     final services = _activeServices;
     final pages = <List<AppService>>[];
     var cursor = 0;
-    for (final size in quickServicePageSizes(services.length, _itemsPerPage)) {
+    // The grid only gives up a cell when the control is actually DRAWN in it.
+    // This used to ask the placement-blind question, so with the control on
+    // the indicator row (the default) every page reserved a square nothing
+    // occupied — the blank slot beside "Exchange" on a full 4x3 page.
+    for (final size in quickServicePageSizes(services.length, _itemsPerPage,
+        reservesCell: _showMoreTileFor(services))) {
       pages.add(services.sublist(cursor, cursor + size));
       cursor += size;
     }
@@ -1204,6 +1358,27 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     _pageCount = servicePages.length;
     final carouselHeight = _calculateCarouselHeight(context);
     final activeServices = _activeServices;
+
+    // THE BOTTOM-ROW PAGE TURN, resolved once for the whole card.
+    //
+    // Shown when a turn is warranted at all AND the operator has not put the
+    // control back in the grid. Its label follows the SAME rule as the grid
+    // cell — forward everywhere, Back on the last page — because it is the
+    // same control in a different place, and a user who learns one must not
+    // have to relearn the other.
+    final bottomPageTurn = !FeatureFlags.quickServicesMoreInGrid &&
+        _pageTurnWarranted(activeServices);
+    final bottomTurnGoesBack =
+        quickServiceTileGoesBack(_currentIndex, servicePages.length);
+    // How many services are still unseen, which is only meaningful going
+    // forward. Counted from the pages actually built, so the promise stays
+    // true on a middle page and cannot outlive a gate that just closed.
+    final bottomTurnRemaining = bottomTurnGoesBack
+        ? null
+        : activeServices.length -
+            servicePages
+                .take(_currentIndex + 1)
+                .fold<int>(0, (n, page) => n + page.length);
     final accentColor = _accentColor;
 
     // Clamp index to valid range in case page count changed
@@ -1427,31 +1602,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                       remainingCount: tileGoesBack
                           ? null
                           : activeServices.length - seenThrough,
-                      onTap: () {
-                        // Guarded: _pageCount is recomputed on every build, so
-                        // a tap racing a rebuild that dropped the second page
-                        // (a service gate flipping, an account switch) must
-                        // not animate past the end — or, going back, onto a
-                        // page that no longer exists.
-                        if (_pageCount <= 1) return;
-                        if (tileGoesBack) {
-                          // Jump to page one rather than stepping back one at
-                          // a time: with three or more pages the tile is a way
-                          // OUT of the deep end, and animating through every
-                          // intermediate page to get there is slower and reads
-                          // as a glitch.
-                          _carouselController.animateToPage(
-                            0,
-                            duration: const Duration(milliseconds: 380),
-                            curve: Curves.easeOutCubic,
-                          );
-                          return;
-                        }
-                        _carouselController.nextPage(
-                          duration: const Duration(milliseconds: 320),
-                          curve: Curves.easeOutCubic,
-                        );
-                      },
+                      onTap: () => _turnPage(back: tileGoesBack),
                     );
                   }
                   // The tile displaces one cell, so every cell after it maps
@@ -1546,29 +1697,292 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
             ),
           ],
 
-          // Carousel Indicators (only show if more than 1 page).
-          if (servicePages.length > 1) ...[
-            SizedBox(height: 3.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                servicePages.length,
-                (index) => AnimatedContainer(
-                  duration: Duration(milliseconds: 200),
-                  width: _currentIndex == index ? 24.w : 8.w,
-                  height: 8.h,
-                  margin: EdgeInsets.symmetric(horizontal: 4.w),
-                  decoration: BoxDecoration(
-                    color: _currentIndex == index
-                        ? accentColor
-                        : accentColor.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(4.r),
+          // Carousel indicators, with the Financial Connections entry pinned
+          // to the trailing edge of the same row.
+          //
+          // NOT A SERVICE TILE. It was briefly added to the grid, which was
+          // wrong twice over: it competed for a quick-action slot it does not
+          // deserve, and the thing it opens is an existing PAGE, not an
+          // errand you run from a tile. It belongs here — a quiet affordance
+          // on the edge of the card, present on every page.
+          //
+          // A Stack rather than a Row so the dots keep their true centre: put
+          // the icon in the row and the dots shift left by half its width,
+          // which reads as a misalignment on a card that is otherwise
+          // symmetrical.
+          // Tight to the last row of tiles. The dots and the corner icon are
+          // an affordance on the edge of the card, not a section of their
+          // own, and the gap made the card read as having a footer.
+          SizedBox(
+            // 26.h, down from 28.h plus a 3.h gap above — a real tightening
+            // against the last row of tiles, but NOT below the icon's own
+            // height. At 22.h the glyph itself was taller than its row and
+            // clipped, which is the sort of fix that trades one complaint
+            // for another.
+            height: 26.h,
+            child: Stack(
+              alignment: Alignment.center,
+              // THE BADGE SITS PROUD OF THE ICON'S CORNER, so this Stack must
+              // not clip. It defaults to Clip.hardEdge, which silently cut
+              // the pill off at the row boundary — visible as a half-drawn
+              // dot, or nothing at all on a low count.
+              clipBehavior: Clip.none,
+              children: [
+                if (servicePages.length > 1)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      servicePages.length,
+                      (index) => AnimatedContainer(
+                        duration: Duration(milliseconds: 200),
+                        width: _currentIndex == index ? 24.w : 8.w,
+                        height: 8.h,
+                        margin: EdgeInsets.symmetric(horizontal: 4.w),
+                        decoration: BoxDecoration(
+                          color: _currentIndex == index
+                              ? accentColor
+                              : accentColor.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                      ),
+                    ),
                   ),
+                // THE TWO CONTROLS BRACKET THE DOTS, OR SHARE A CORNER.
+                //
+                // With the page-turn control on this row (the default) it
+                // takes the TRAILING edge — the side the eye leaves on, and
+                // the side "View All" already uses for the same kind of
+                // "there is more" promise at the top of the card. Financial
+                // Connections then moves to the LEADING edge rather than
+                // stacking beside it: two controls in one corner read as a
+                // toolbar, and the dots lose their frame.
+                //
+                // With the control back in the grid, this row has only one
+                // occupant and Financial Connections keeps the trailing edge
+                // it has always had.
+                if (bottomPageTurn) ...[
+                  Positioned(
+                    left: 4.w,
+                    child: _buildFinancialConnectionsCta(accentColor),
+                  ),
+                  Positioned(
+                    right: 4.w,
+                    child: _buildPageTurnPill(
+                      accentColor,
+                      back: bottomTurnGoesBack,
+                      remaining: bottomTurnRemaining,
+                    ),
+                  ),
+                ] else
+                  Positioned(
+                    right: 4.w,
+                    child: _buildFinancialConnectionsCta(accentColor),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The page-turn control, as a pill on the indicator row.
+  ///
+  /// STYLED FROM "VIEW ALL", BUT FILLED. The section already has a pill that
+  /// says "there is more this way" — the View All at the top right — and
+  /// reusing its geometry means a user does not have to learn a second shape
+  /// for the same kind of promise. It is FILLED brand rather than the 10%
+  /// tint, because View All opens a sheet you come back from while this one
+  /// moves the card underneath you: the more consequential control carries
+  /// the more prominent weight.
+  ///
+  /// The arrow follows the direction of travel and the label flips to "Back"
+  /// on the last page, matching the grid cell exactly — same words, same
+  /// rule, same corner, wherever the operator has put it.
+  Widget _buildPageTurnPill(
+    Color accentColor, {
+    required bool back,
+    int? remaining,
+  }) {
+    final label = back ? 'Back' : 'More';
+    // THE COUNT IS NOT PRINTED ON THE PILL.
+    //
+    // It used to render as "More 11", which reads as a service named "More 11"
+    // — the one thing the whole page-turn design is trying not to look like —
+    // and it sits beside a page-dot indicator that already says there is
+    // another page. A number there answers a question nobody asked while
+    // making the control itself less legible.
+    //
+    // It is KEPT for the screen reader, where the opposite is true: a
+    // non-visual user has no page dots, so "Show 11 more services" is the only
+    // place the shape of what is hidden can be stated. Hence showCount still
+    // exists and still guards against a meaningless "0".
+    final showCount = !back && remaining != null && remaining > 0;
+    return Semantics(
+      button: true,
+      label: back
+          ? 'Back to the first page of services'
+          : showCount
+              ? 'Show $remaining more services'
+              : 'Show more services',
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          _turnPage(back: back);
+        },
+        // Opaque so the whole pill answers the tap, not just the glyphs.
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: accentColor,
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (back) ...[
+                Icon(Icons.arrow_back_rounded, size: 14.sp, color: Colors.white),
+                SizedBox(width: 4.w),
+              ],
+              Text(
+                // Always the bare word — see _buildPageTurnPill's note on why
+                // the count is announced but not drawn.
+                label,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
+              if (!back) ...[
+                SizedBox(width: 4.w),
+                Icon(Icons.arrow_forward_rounded,
+                    size: 14.sp, color: Colors.white),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The Financial Connections entry point.
+  ///
+  /// Opens the FINANCIAL CONNECTIONS page — the messaging surface, the same
+  /// one the dashboard tile and the send-funds sheet open.
+  ///
+  /// It used to open the linked-banks page instead, which never matched the
+  /// glyph beside it (mark_unread_chat_alt — a conversation, not a bank) and
+  /// never matched where the other two entry points to this feature go. A
+  /// customer tapping a message icon and landing on a list of banks has to
+  /// work out for themselves that they took a wrong turn.
+  ///
+  /// Deliberately an ICON rather than a labelled tile: it is a place you go to
+  /// check something, not a service you perform, and giving it a grid slot
+  /// pushed a real errand off page one.
+  Widget _buildFinancialConnectionsCta(Color accentColor) {
+    // UNREAD COUNT, LIVE — the same source and the same arithmetic as the
+    // icon on Send Funds → Select Recipient, so the two can never disagree
+    // about how many messages are waiting.
+    //
+    // BlocBuilder on the SHARED singleton cubit, not a local copy: the count
+    // has to fall to zero the moment the customer reads a conversation, and a
+    // second instance would hold its own stale total. Returning from the
+    // list also reloads, because messages can be read there without this
+    // widget ever rebuilding.
+    return BlocBuilder<P2PConversationsCubit, P2PConversationsState>(
+      bloc: serviceLocator<P2PConversationsCubit>(),
+      builder: (context, p2pState) {
+        final unreadCount = p2pState is P2PConversationsLoaded
+            ? p2pState.totalUnread + p2pState.requestCount
+            : 0;
+        return _financialConnectionsIcon(accentColor, unreadCount);
+      },
+    );
+  }
+
+  Widget _financialConnectionsIcon(Color accentColor, int unreadCount) {
+    return Semantics(
+      button: true,
+      label: unreadCount > 0
+          ? 'Financial connections, $unreadCount unread'
+          : 'Financial connections',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20.r),
+          onTap: () {
+            // INSTRUMENTED on purpose. This control was reported as still
+            // opening the linked-banks screen after the destination was
+            // changed, and nothing in the source can produce that: there is
+            // one definition of this CTA, '/financial-connections' is
+            // declared once and registered once, and the screen it names has
+            // no path to linked banks. Logging the route actually requested
+            // settles which of those assumptions is wrong, instead of
+            // another theory.
+            AppLogger.event('quick_services', 'financial_connections_tap',
+                screen: 'dashboard',
+                fields: {'route': AppRoutes.financialConnections});
+            // Reload on return: a conversation read on that screen must clear
+            // the badge here without waiting for anything else to rebuild.
+            Get.toNamed(AppRoutes.financialConnections)?.then((_) {
+              serviceLocator<P2PConversationsCubit>().loadConversations();
+            });
+          },
+          child: Padding(
+            // Generous around a small glyph: the tap target has to clear the
+            // minimum even though the icon does not.
+            padding: EdgeInsets.all(6.w),
+            // Clip.none so the pill may sit proud of the glyph's corner. The
+            // TAP TARGET is the padded icon beneath it, which stays inside
+            // the row — a badge drawn outside its parent is not hit-testable,
+            // and a customer tapping the number itself must still open the
+            // list.
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  Icons.mark_unread_chat_alt_outlined,
+                  size: 20.sp,
+                  color: accentColor,
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    right: -5.w,
+                    top: -5.h,
+                    child: Container(
+                      // Same pill as Select Recipient: red, 18 minimum so a
+                      // single digit stays circular, widening only when the
+                      // number needs it, and capped at 99+ so a busy inbox
+                      // cannot push it across the card.
+                      padding: EdgeInsets.symmetric(
+                        horizontal: unreadCount > 9 ? 4.w : 0,
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 16.w,
+                        minHeight: 16.w,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        unreadCount > 99 ? '99+' : '$unreadCount',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9.sp,
+                          fontWeight: FontWeight.w700,
+                          height: 1.1,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ],
-        ],
+          ),
+        ),
       ),
     );
   }

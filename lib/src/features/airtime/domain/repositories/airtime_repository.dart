@@ -27,6 +27,10 @@ abstract class AirtimeRepository {
     String? verificationToken,
     String? operatorId,
     String? reloadlyOperatorId,
+
+    /// Pay with crypto: the asset to sell to fund this purchase, lowercase.
+    /// Null means the ordinary wallet-funded purchase.
+    String? fundingAsset,
   });
 
   // Transfer operations

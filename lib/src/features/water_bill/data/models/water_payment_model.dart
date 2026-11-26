@@ -17,6 +17,7 @@ class WaterPaymentModel extends WaterPaymentEntity {
     super.completedAt,
     super.transactionReference,
     super.refundSource,
+    super.metadata,
   });
 
   factory WaterPaymentModel.fromJson(Map<String, dynamic> json) {
@@ -92,6 +93,7 @@ class WaterPaymentModel extends WaterPaymentEntity {
       refundSource: payment.hasRefundSource() ? payment.refundSource : '',
       createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
       transactionReference: payment.reference,
+      metadata: payment.metadata,
     );
   }
 

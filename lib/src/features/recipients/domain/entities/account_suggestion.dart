@@ -36,6 +36,19 @@ class AccountSuggestion {
   final String internalUserId;
   final String internalAccountId;
 
+  /// True when this row came from the payer's OWN SAVED RECIPIENTS rather than
+  /// from a bank name-enquiry or the directory.
+  ///
+  /// It ranks first because it is the only source that knows what the payer
+  /// calls this person and which account they pinned them to. An external
+  /// name-enquiry for the same number returns the bank's registered name,
+  /// which is frequently not the name the payer would recognise.
+  final bool isSavedRecipient;
+
+  /// The payer's own label for this payee, when they set one. Shown instead of
+  /// the registered account name on a saved row.
+  final String savedAlias;
+
   const AccountSuggestion({
     required this.bankCode,
     required this.bankName,
@@ -44,7 +57,45 @@ class AccountSuggestion {
     this.isLazervault = false,
     this.internalUserId = '',
     this.internalAccountId = '',
+    this.isSavedRecipient = false,
+    this.savedAlias = '',
   });
+
+  /// A suggestion built from one of the payer's saved recipients.
+  ///
+  /// Carries the saved routing identities verbatim — including
+  /// [internalAccountId], which is what makes a saved Lazervault payee keep
+  /// taking the internal rail instead of being re-resolved as an external
+  /// NUBAN. [isLazervault] is derived from the stored bank name through
+  /// BrandBank.isOurs rather than from a separate flag, so one decision
+  /// governs internal-vs-external everywhere (see brand_bank.dart).
+  factory AccountSuggestion.savedRecipient({
+    required String accountNumber,
+    required String accountName,
+    required String bankName,
+    required String bankCode,
+    String alias = '',
+    String internalUserId = '',
+    String internalAccountId = '',
+  }) {
+    final ours = BrandBank.isOurs(bankName);
+    return AccountSuggestion(
+      bankCode: ours ? '' : bankCode,
+      bankName: ours ? BrandBank.displayName : bankName,
+      accountName: accountName,
+      accountNumber: accountNumber,
+      isLazervault: ours,
+      internalUserId: internalUserId,
+      internalAccountId: internalAccountId,
+      isSavedRecipient: true,
+      savedAlias: alias,
+    );
+  }
+
+  /// What to show as the primary line: the payer's own label when they set
+  /// one, otherwise the resolved account name.
+  String get displayName =>
+      savedAlias.trim().isNotEmpty ? savedAlias.trim() : accountName;
 
   /// The Lazervault (internal) suggestion for a number that resolved to an
   /// account on this platform.

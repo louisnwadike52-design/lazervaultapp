@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// WHAT THE CUSTOMER SAYS WHEN A HELD NAME IS WRONG.
 ///
@@ -36,7 +37,7 @@ Future<KycNameCorrectionResult?> showKycNameCorrectionSheet(
   required String bvnName,
   required String profileName,
 }) {
-  return showModalBottomSheet<KycNameCorrectionResult>(
+  return showAppBottomSheet<KycNameCorrectionResult>(
     context: context,
     isScrollControlled: true, // the keyboard must not cover the field
     // Dark, matching this screen's other sheet (0xFF1A1A1A) — a white sheet
@@ -204,11 +205,21 @@ class _SheetState extends State<_Sheet> {
         margin: EdgeInsets.only(bottom: 8.h),
         padding: EdgeInsets.all(11.w),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(
-            color: selected ? const Color(0xFF6366F1) : const Color(0xFF2D2D2D),
-            width: selected ? 1.6 : 1,
-          ),
+          // SELECTION IS A FILL, NOT A RING.
+          //
+          // Both states used to be a 1px outline differing only in colour and
+          // 0.6px of width — nearly invisible on a dark sheet, and the same
+          // hairline treatment the KYC screens dropped. An unselected option
+          // is now a plain raised surface and a selected one is tinted with
+          // the accent, which is legible at a glance and still leaves a
+          // (thicker) accent edge on the selected row to anchor it.
+          color: selected
+              ? const Color(0xFF6366F1).withValues(alpha: 0.16)
+              : const Color(0xFF212128),
+          borderRadius: BorderRadius.circular(14.r),
+          border: selected
+              ? Border.all(color: const Color(0xFF6366F1), width: 1.6)
+              : null,
         ),
         child: Row(
           children: [

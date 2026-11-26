@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../../../transaction_pin/presentation/utils/pin_step_prefetch.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/utilities/auth_background.dart';
@@ -36,6 +37,23 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
       (Get.arguments as Map<String, dynamic>?)?['hasTransactionPin'] == true;
   bool get _fromForgotPasscode =>
       (Get.arguments as Map<String, dynamic>?)?['fromForgotPasscode'] == true;
+
+  /// An ADMIN set this account's passcode and the holder has not replaced it.
+  ///
+  /// The post-login router puts this screen ahead of every other gate for such
+  /// a holder (see signup_resume.dart). Without saying so, the screen is
+  /// indistinguishable from ordinary setup — and the one person who needs to
+  /// understand that someone else knows their current passcode is the person
+  /// looking at it. Somebody onboarded in a branch, handed six digits, is
+  /// otherwise given no reason to believe those digits matter or that
+  /// replacing them is anything more than a formality.
+  ///
+  /// Only the COPY depends on this. The enforcement is `_allowSkip`, which is
+  /// already false here because the router passes `fromLoginFlow` — so a
+  /// client that ignored this flag entirely would still be unable to skip.
+  bool get _mustChangeCredentials =>
+      (Get.arguments as Map<String, dynamic>?)?['mustChangeCredentials'] ==
+      true;
 
   /// "Skip for now" belongs to FIRST-RUN SIGNUP only. Reached from a login —
   /// a returning account without a passcode, a social sign-in that has never
@@ -100,11 +118,22 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
         }
         if (state is AuthenticationSuccess) {
           if (_skipped) {
-            // Skip passcode, continue to transaction PIN setup
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                Get.offNamed(AppRoutes.transactionPinSetup);
-              }
+            // Skip passcode, continue to transaction PIN setup.
+            //
+            // Resolved first — see pin_step_prefetch.dart. The builder below
+            // already renders a full-screen loader for any state that is not
+            // PasscodeSetupInProgress, and AuthenticationSuccess is one, so
+            // this await extends a spinner the user is ALREADY watching rather
+            // than adding the black logo screen the PIN step used to paint
+            // while it asked the server the same question.
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              if (!mounted) return;
+              final hasPin = await prefetchHasTransactionPin();
+              if (!mounted) return;
+              Get.offNamed(
+                AppRoutes.transactionPinSetup,
+                arguments: pinSetupArgs(hasPin),
+              );
             });
           } else if (_fromLoginFlow || _fromForgotPasscode) {
             // Reached from a login: the passcode is now set, so hand the
@@ -120,13 +149,19 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
             });
           } else {
             // Navigate to Transaction PIN setup after successful passcode setup
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                Get.offNamed(
-                  AppRoutes.transactionPinSetup,
-                  arguments: _fromLoginFlow ? {'fromLoginFlow': true} : null,
-                );
-              }
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              if (!mounted) return;
+              final hasPin = await prefetchHasTransactionPin();
+              if (!mounted) return;
+              // Merged, not replaced: `fromLoginFlow` still has to reach the
+              // PIN screen alongside the prefetched answer.
+              Get.offNamed(
+                AppRoutes.transactionPinSetup,
+                arguments: pinSetupArgs(
+                  hasPin,
+                  _fromLoginFlow ? {'fromLoginFlow': true} : null,
+                ),
+              );
             });
           }
         }
@@ -188,9 +223,16 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                           Text(
                             isConfirmMode
                                 ? 'Confirm Passcode'
-                                : _fromForgotPasscode
-                                    ? 'Reset Your Passcode'
-                                    : 'Set Up Passcode',
+                                : _mustChangeCredentials
+                                    // Ahead of _fromForgotPasscode: the two
+                                    // cannot both be true on this path, and if
+                                    // a future one made them so, the
+                                    // admin-set case is the more important
+                                    // thing to tell someone.
+                                    ? 'Choose Your Own Passcode'
+                                    : _fromForgotPasscode
+                                        ? 'Reset Your Passcode'
+                                        : 'Set Up Passcode',
                             style: TextStyle(
                               fontSize: 28.sp,
                               fontWeight: FontWeight.bold,
@@ -202,9 +244,19 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                           Text(
                             isConfirmMode
                                 ? 'Enter your passcode again to confirm'
-                                : _fromForgotPasscode
-                                    ? 'Create a new 6-digit passcode'
-                                    : 'Create a 6-digit passcode for quick login',
+                                : _mustChangeCredentials
+                                    // SAYS WHY, PLAINLY. The passcode they
+                                    // just signed in with was chosen by
+                                    // somebody else and is known to them, so
+                                    // "for security" would be vague about the
+                                    // one fact that matters.
+                                    ? 'Your account was set up for you, so someone '
+                                        'else knows the passcode you just used. '
+                                        'Choose your own now — the old one stops '
+                                        'working.'
+                                    : _fromForgotPasscode
+                                        ? 'Create a new 6-digit passcode'
+                                        : 'Create a 6-digit passcode for quick login',
                             style: textTheme.titleMedium?.copyWith(
                               color: Colors.white.withValues(alpha: 0.8),
                             ),

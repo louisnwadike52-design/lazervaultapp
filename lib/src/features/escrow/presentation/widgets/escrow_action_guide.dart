@@ -7,6 +7,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart'
 
 import '../../domain/entities/escrow_deal_entity.dart';
 import '../view/escrow_theme.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The escrow action a party is about to take.
 enum EscrowAction { release, markDelivered, cancel, dispute }
@@ -149,7 +150,7 @@ Future<bool> showEscrowActionGuide(
   EscrowDealEntity deal,
 ) async {
   final g = EscrowActionGuide.of(action, deal);
-  final ok = await showModalBottomSheet<bool>(
+  final ok = await showAppBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

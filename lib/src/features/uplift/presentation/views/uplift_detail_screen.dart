@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/uplift/presentation/views/uplift_funding
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_milestones_screen.dart';
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Fund detail — the shared hub for both journeys. The funder sees the pool /
 /// escrow state, can commit funds (PIN), and reviews/selects applicants.
@@ -369,7 +370,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
     final amountCtrl = TextEditingController();
     final equityCtrl = TextEditingController();
     final noteCtrl = TextEditingController();
-    final ok = await showModalBottomSheet<bool>(
+    final ok = await showAppBottomSheet<bool>(
       context: context,
       backgroundColor: kUpBg,
       isScrollControlled: true,

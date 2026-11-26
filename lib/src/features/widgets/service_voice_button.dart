@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/voice/screens/per_service_voice_settings
 
 import '../voice_session/widgets/voice_command_sheet.dart';
 import 'service_display_name.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Reusable voice button widget for service screens
 ///
@@ -218,7 +219,7 @@ class ServiceVoiceButton extends StatelessWidget {
     // identical to how the dashboard opens the general session. Self-sizing
     // sheet (DraggableScrollableSheet: 90% → full screen); enableDrag false
     // so the outer Get sheet doesn't fight drag-to-resize.
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       VoiceCommandSheet(
         serviceName: serviceName,
         conversationId: conversationId,

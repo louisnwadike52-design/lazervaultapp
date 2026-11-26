@@ -1,4 +1,5 @@
 import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/saved_recipients_warmup.dart';
 import 'package:lazervault/core/utils/masked_account_number.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'dart:math';
@@ -32,10 +33,13 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/utils/destination_account_number.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'batch_transfer_form_part1.dart';
 part 'batch_transfer_form_part2.dart';
 
@@ -339,7 +343,7 @@ class BatchTransferFormState extends State<BatchTransferForm>
       );
       return;
     }
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1207,7 +1211,7 @@ class BatchTransferFormState extends State<BatchTransferForm>
   }
 
   void _showAccountSelectionSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) {

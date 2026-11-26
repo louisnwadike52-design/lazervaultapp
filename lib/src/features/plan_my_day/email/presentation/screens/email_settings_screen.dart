@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/plan_my_day/email/presentation/cubit/ema
 import 'package:lazervault/src/features/plan_my_day/email/presentation/cubit/email_state.dart';
 import 'package:lazervault/src/features/plan_my_day/email/presentation/widgets/email_palette.dart';
 import 'package:lazervault/src/features/plan_my_day/email/presentation/widgets/tone_selector.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'email_settings_screen_widgets.dart';
 
 /// Settings: connect/disconnect, auto-reply on/off, daily digest hour, and
@@ -421,7 +422,7 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
 
   void _pickDigestHour(int current) async {
     final cubit = context.read<EmailCubit>();
-    final picked = await showModalBottomSheet<int>(
+    final picked = await showAppBottomSheet<int>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
@@ -469,7 +470,7 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
 
   void _showRuleSheet() async {
     final cubit = context.read<EmailCubit>();
-    final rule = await showModalBottomSheet<EmailRule>(
+    final rule = await showAppBottomSheet<EmailRule>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

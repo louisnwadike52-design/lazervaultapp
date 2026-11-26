@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/otp_field_behaviour.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -25,12 +26,20 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
   bool _isLoading = false;
   bool _isResending = false;
   String? _errorMessage;
-  int _expiresInSeconds = 900; // 15 minutes default
   String _maskedContact = '';
   String _phone = '';
   String _deliveryMethod = 'sms';
   Timer? _expiryTimer;
-  int _remainingSeconds = 900;
+  int _remainingSeconds = 0;
+
+  /// Whether the SERVER has told us how long this code lives.
+  ///
+  /// Without this, an expiry of 0 — which is what an unset field decodes to —
+  /// was indistinguishable from a code that had genuinely run out, and the
+  /// screen greeted a freshly-sent code with "Code has expired". Unknown now
+  /// renders NOTHING, which is the same rule phone_verification_screen
+  /// applies (`if (_expirySeconds > 0)`).
+  bool _expiryKnown = false;
 
   @override
   void initState() {
@@ -42,10 +51,15 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
           _phone = args['phone'] as String? ?? '';
           _maskedContact = args['maskedContact'] as String? ?? '';
           _deliveryMethod = args['deliveryMethod'] as String? ?? 'sms';
-          _expiresInSeconds = args['expiresInSeconds'] as int? ?? 900;
-          _remainingSeconds = _expiresInSeconds;
+          // 0 is what an unset proto field decodes to, so it must NOT be
+          // treated as a real lifetime — and must not fall back to a
+          // fabricated 900 either, which would count down from fifteen
+          // minutes against a TTL nobody checked.
+          final ttl = args['expiresInSeconds'] as int? ?? 0;
+          _remainingSeconds = ttl;
+          _expiryKnown = ttl > 0;
         });
-        _startExpiryTimer();
+        if (_expiryKnown) _startExpiryTimer();
       }
     });
 
@@ -84,12 +98,6 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
         }
       }
     });
-  }
-
-  String _formatDuration(int seconds) {
-    final minutes = seconds ~/ 60;
-    final secs = seconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
   void _showErrorSnackbar(String title, String message) {
@@ -208,8 +216,8 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
           // the visible proof a fresh code was issued. Failures still toast
           // (the Left branch above).
           setState(() {
-            _expiresInSeconds = data.expiresInSeconds;
             _remainingSeconds = data.expiresInSeconds;
+            _expiryKnown = data.expiresInSeconds > 0;
             _pinController.clear();
           });
           _startExpiryTimer();
@@ -290,58 +298,99 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
         ),
         SizedBox(height: 8.h),
 
-        // Expiry timer
-        Text(
-          _remainingSeconds > 0
-              ? 'Code expires in ${_formatDuration(_remainingSeconds)}'
-              : 'Code has expired',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: _remainingSeconds > 300
-                ? AppColors.secondaryFont.withValues(alpha: 0.8)
-                : Colors.orange.withValues(alpha: 0.8),
+        // Expiry line.
+        //
+        // THREE STATES, NOT TWO. Unknown renders nothing: a lifetime the
+        // server never sent is not an expired code, and saying so on a code
+        // that was just delivered is the worst of the three.
+        //
+        // The running countdown also honours the admin switch — these screens
+        // already carry a resend timer, which is the number a user can act
+        // on. A code that has genuinely RUN OUT still says so either way,
+        // because that explains why the button stopped working.
+        // ONLY THE EXPIRED NOTICE, never a live countdown.
+        //
+        // "Code has expired" explains why the button stopped working, which is
+        // a fact the customer has to act on. A running "expires in 14:43" is a
+        // window they cannot influence, sitting beside a resend countdown that
+        // says when they may actually do something — the pair was read as one
+        // number and people waited on the wrong one.
+        if (_expiryKnown && _remainingSeconds <= 0)
+          Text(
+            'Code has expired',
+            textAlign: TextAlign.center,
+            // ORANGE, UNCONDITIONALLY. The branch here read
+            // `_remainingSeconds > 300 ? muted : orange`, inside a widget that
+            // only renders when `_remainingSeconds <= 0` — so the muted arm
+            // was unreachable. It was also a leftover of the old five-minute
+            // window: with the code lifetime now an admin dial (90 seconds in
+            // production) a 300-second threshold could never be crossed even
+            // if the branch were reachable. An expired code is a thing the
+            // customer must act on, so it is always the warning colour.
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.orange.withValues(alpha: 0.8),
+            ),
           ),
-        ),
         SizedBox(height: 32.h),
 
         // PIN Input
-        Pinput(
-          controller: _pinController,
-          focusNode: _focusNode,
-          length: 6,
-          defaultPinTheme: defaultPinTheme,
-          focusedPinTheme: defaultPinTheme.copyWith(
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFF4834D4), width: 2),
+        //
+        // AN AutofillGroup IS REQUIRED EVEN THOUGH Pinput ALREADY SETS THE
+        // HINT. It defaults `autofillHints` to `[AutofillHints.oneTimeCode]`,
+        // which is why the comment below used to say autofill was "handled by
+        // the platform" — but Pinput does NOT wrap itself in an AutofillGroup,
+        // and Flutter forwards hints to the platform only when one is an
+        // ancestor. So the tag was there, correct, and inert: no "From
+        // Messages" suggestion on iOS, and the field never offered to
+        // Android's autofill framework.
+        AutofillGroup(
+          child: Pinput(
+            controller: _pinController,
+            focusNode: _focusNode,
+            length: 6,
+            // PASTE. Pinput defaults this to false, so a long press produced no
+            // handles and no menu — there was no way to paste a code the
+            // customer had copied out of their messages. Its contextMenuBuilder
+            // already defaults to a real toolbar, so this is the only half that
+            // was missing.
+            enableInteractiveSelection: true,
+            // And the paste has to survive being pasted: people paste the whole
+            // line they copied, so digits are extracted before the length limit
+            // can cut "Your code is 123456" down to its first six characters.
+            inputFormatters: otpInputFormatters(6),
+            defaultPinTheme: defaultPinTheme,
+            focusedPinTheme: defaultPinTheme.copyWith(
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: const Color(0xFF4834D4), width: 2),
+              ),
             ),
-          ),
-          submittedPinTheme: defaultPinTheme.copyWith(
-            decoration: BoxDecoration(
-              color: const Color(0xFF4834D4).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFF4834D4)),
+            submittedPinTheme: defaultPinTheme.copyWith(
+              decoration: BoxDecoration(
+                color: const Color(0xFF4834D4).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: const Color(0xFF4834D4)),
+              ),
             ),
-          ),
-          errorPinTheme: defaultPinTheme.copyWith(
-            decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.red),
+            errorPinTheme: defaultPinTheme.copyWith(
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: Colors.red),
+              ),
             ),
+            enabled: !_isLoading && _remainingSeconds > 0,
+            autofocus: true,
+            // Validate as soon as the 6th digit lands — the code is verified with
+            // the backend and we only advance to the new-password screen on
+            // success (invalid/expired codes never proceed). The button remains
+            // for manual retry.
+            onCompleted: (_) {
+              if (!_isLoading && _remainingSeconds > 0) _verifyOTP();
+            },
           ),
-          enabled: !_isLoading && _remainingSeconds > 0,
-          autofocus: true,
-          // Validate as soon as the 6th digit lands — the code is verified with
-          // the backend and we only advance to the new-password screen on
-          // success (invalid/expired codes never proceed). The button remains
-          // for manual retry.
-          onCompleted: (_) {
-            if (!_isLoading && _remainingSeconds > 0) _verifyOTP();
-          },
-          // SMS autofill handled by platform
         ),
 
         // Error message

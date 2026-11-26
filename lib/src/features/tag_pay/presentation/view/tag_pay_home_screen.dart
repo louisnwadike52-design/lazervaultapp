@@ -20,6 +20,7 @@ import '../widgets/tag_details_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'tag_pay_home_screen_widgets.dart';
 
 class _TagPayHomeViewState extends State<_TagPayHomeView>
@@ -420,7 +421,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
   void _showSetUsernameModal(BuildContext outerContext) {
     final profileCubit = outerContext.read<ProfileCubit>();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: outerContext,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -705,7 +706,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
     } else {
       // Own cubit instance so a cancel/decline inside the sheet does not blank
       // the list behind it; the sheet pops with `true` when the tag changed.
-      showModalBottomSheet<bool>(
+      showAppBottomSheet<bool>(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,

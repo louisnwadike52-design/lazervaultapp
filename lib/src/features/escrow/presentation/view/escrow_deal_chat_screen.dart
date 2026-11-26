@@ -20,6 +20,7 @@ import 'package:lazervault/core/services/voice_record_configs.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_voice_note_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The conversation attached to ONE escrow deal.
 ///
@@ -273,7 +274,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
   /// a seller could not show the parcel moving.
   Future<void> _showAttachSheet() async {
     if (_uploading || _recording) return;
-    final choice = await showModalBottomSheet<String>(
+    final choice = await showAppBottomSheet<String>(
       context: context,
       backgroundColor: _card,
       shape: RoundedRectangleBorder(

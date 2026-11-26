@@ -22,6 +22,7 @@ import 'package:lazervault/src/features/recipients/domain/usecases/get_recipient
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'p2p_transfer_bubble_widgets.dart';
 
 class P2PTransferBubble extends StatelessWidget {
@@ -340,7 +341,7 @@ class P2PTransferBubble extends StatelessWidget {
         (message.isCryptoTransfer && sheetFailed && (ref?.isNotEmpty ?? false));
     final hasActions = showReceipt || canSendAgain;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

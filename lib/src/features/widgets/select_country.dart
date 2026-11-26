@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/themed_app_bar.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class SelectCountry extends StatefulWidget {
   const SelectCountry({super.key});
@@ -57,7 +58,7 @@ class _SelectCountryState extends State<SelectCountry> {
   }
 
   void _openBottomSheet(BuildContext context) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

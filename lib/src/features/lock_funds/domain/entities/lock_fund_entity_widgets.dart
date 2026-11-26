@@ -289,6 +289,33 @@ class PiggyVaultConfig {
     }
   }
 
+  /// Quick-amount pills for a deposit into an ALREADY-OPEN plan (top-up,
+  /// auto-save).
+  ///
+  /// Same source as [parsedQuickAmountOptions] but filtered by the CEILING
+  /// only. The minimum means "the least you may OPEN this plan with", so it
+  /// does not apply to a plan that is already open — and at a ₦200,000
+  /// minimum the min-filtered list would discard every pill and leave the row
+  /// empty. See presentation/screens/plan_topup_bounds.dart.
+  List<double> get quickAmountOptionsForTopUp {
+    final raw = quickAmountOptions.trim();
+    if (raw.isEmpty || raw == '[]') return const [];
+    try {
+      final decoded = _safeDecode(raw);
+      if (decoded is! List) return const [];
+      return decoded
+          .map((v) {
+            if (v is num) return v.toDouble();
+            return double.tryParse('$v') ?? -1;
+          })
+          .where((a) => a > 0 && (maxAmount == 0 || a <= maxAmount))
+          .toList()
+        ..sort();
+    } catch (_) {
+      return const [];
+    }
+  }
+
   /// Parsed quick-amount pills from the admin-supplied JSON array.
   /// Filters against [minAmount] / [maxAmount] so an out-of-range
   /// pill can't sneak past the wizard's per-step validators.

@@ -27,6 +27,7 @@ import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'widgets/gift_card_error_widget.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'my_gift_cards_screen_widgets.dart';
 
 class MyGiftCardsScreen extends StatefulWidget {
@@ -528,7 +529,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
   //    pre-selected so the user can re-purchase quickly.
   //  • View receipt — opens the full receipt detail screen.
   void _showCardActionsSheet(GiftCard card) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       // isScrollControlled lets the sheet expand for long content;

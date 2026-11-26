@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet that handles the member-exit flow end-to-end:
 ///
@@ -66,7 +67,7 @@ class ExitContributionBottomSheet extends StatefulWidget {
     // Same shape every other sheet in this feature already uses (see
     // cycle_details_bottom_sheet, past_contribution_details_sheet).
     final cubit = context.read<GroupAccountCubit>();
-    return showModalBottomSheet<bool>(
+    return showAppBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

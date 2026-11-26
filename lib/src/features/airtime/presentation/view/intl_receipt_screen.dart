@@ -9,6 +9,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../widgets/bill_receipt_qr_block.dart';
 import '../../domain/entities/airtime_transaction.dart';
 import '../../services/intl_airtime_pdf_service.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// International airtime receipt. Mirrors the electricity bill receipt
 /// layout (status hero → consolidated details card → BillReceiptQrBlock →
@@ -109,7 +110,7 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
         if (fromHistory) {
           Get.back();
         } else {
-          Get.offAllNamed(AppRoutes.airtime);
+          offAllKeepingHome(AppRoutes.airtime);
         }
       },
       child: Scaffold(
@@ -132,7 +133,7 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
                         if (fromHistory) {
                           Get.back();
                         } else {
-                          Get.offAllNamed(AppRoutes.airtime);
+                          offAllKeepingHome(AppRoutes.airtime);
                         }
                       },
                       icon: Icon(Icons.arrow_back,
@@ -573,7 +574,7 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.airtime),
+            onPressed: () => offAllKeepingHome(AppRoutes.airtime),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4E03D0),
               padding: EdgeInsets.symmetric(vertical: 14.h),

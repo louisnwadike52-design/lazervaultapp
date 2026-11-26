@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class DashboardCardSummary extends StatefulWidget {
   const DashboardCardSummary({super.key});
@@ -345,7 +346,7 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
   }
 
   void _showNotifications() {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       FractionallySizedBox(
         heightFactor: 0.9,
         child: Container(
@@ -562,7 +563,7 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
   }
 
   void _showCardDetails(Map<String, dynamic> account) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       StatefulBuilder(
         builder: (context, setState) {
           return FractionallySizedBox(

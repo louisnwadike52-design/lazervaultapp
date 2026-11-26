@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_modal.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// What the user changed. Every field is null when untouched.
 ///
@@ -75,7 +76,7 @@ Future<RecurringScheduleEdit?> showEditRecurringScheduleSheet(
   BuildContext context, {
   required RecurringTransferEntity transfer,
 }) async {
-  return showModalBottomSheet<RecurringScheduleEdit>(
+  return showAppBottomSheet<RecurringScheduleEdit>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -125,7 +126,7 @@ class _EditRecurringSheetState extends State<_EditRecurringSheet> {
 
   Future<void> _openScheduleEditor() async {
     final tz = widget.transfer.scheduleTimezoneLabel;
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

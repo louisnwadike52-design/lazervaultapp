@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'employee_list_screen_widgets.dart';
 
 class EmployeeListScreen extends StatefulWidget {
@@ -391,7 +392,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen>
   }
 
   void _showEmployeeDetails(EmployeeEntity employee) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

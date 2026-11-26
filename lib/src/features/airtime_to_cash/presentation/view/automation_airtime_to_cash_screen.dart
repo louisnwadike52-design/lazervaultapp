@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/otp_field_behaviour.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -869,14 +870,23 @@ class _AutomationAirtimeToCashScreenState
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(14.r),
             ),
-            child: TextField(
+            // AutofillGroup: Flutter forwards autofillHints to the platform
+            // only inside one, so the tag below is inert without it. This
+            // screen had neither — no iOS "From Messages" suggestion, and the
+            // field never offered to Android's autofill framework.
+            child: AutofillGroup(
+                child: TextField(
               controller: _otpController,
               focusNode: _otpFocusNode,
               keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(6),
-              ],
+              autofillHints: otpAutofillHints,
+              // Stated rather than left to the default: a plain TextField does
+              // enable selection, but every code field in this app now says so
+              // explicitly, so "can this be pasted into" is answerable by
+              // reading the field instead of knowing which widget it is.
+              enableInteractiveSelection: true,
+              contextMenuBuilder: otpContextMenu,
+              inputFormatters: otpInputFormatters(6),
               // Re-render so _canVerifyOTP (which checks
               // _otpController.text.length == 6) flips and the Verify OTP
               // button enables as soon as the 6th digit is entered.
@@ -898,7 +908,7 @@ class _AutomationAirtimeToCashScreenState
                 contentPadding:
                     EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
               ),
-            ),
+            )),
           ),
           SizedBox(height: 12.h),
           Row(

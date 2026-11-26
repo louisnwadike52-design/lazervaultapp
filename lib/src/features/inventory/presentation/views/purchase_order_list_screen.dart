@@ -19,6 +19,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/entity_create_sheet.dart';
 import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'purchase_order_list_screen_widgets.dart';
 
 class PurchaseOrderListScreen extends StatefulWidget {
@@ -649,7 +650,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
     _PurchaseOrderItemInput item,
     StateSetter setDialogState,
   ) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,
@@ -1198,7 +1199,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
       controllers[it.itemId] = TextEditingController(text: '$outstanding');
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

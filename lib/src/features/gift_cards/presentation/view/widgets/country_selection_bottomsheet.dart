@@ -3,6 +3,7 @@ import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../domain/entities/gift_card_entity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Country selection bottomsheet for filtering gift cards by country.
 /// Supports dynamic countries from Reloadly API with fallback to hardcoded list.
@@ -41,7 +42,7 @@ class CountrySelectionBottomsheet extends StatefulWidget {
     required Function(String countryCode, String countryName) onCountrySelected,
     List<GiftCardCountry> dynamicCountries = const [],
   }) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

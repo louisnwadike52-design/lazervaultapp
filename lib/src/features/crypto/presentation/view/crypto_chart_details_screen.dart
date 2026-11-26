@@ -22,6 +22,7 @@ import '../../../stocks/presentation/widgets/technical_indicators_bottom_sheet.d
 import 'package:flutter/services.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'crypto_chart_details_screen_widgets.dart';
 
 // Available indicators surfaced in the bottom-sheet picker. Order matters —
@@ -2024,7 +2025,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   }
 
   void _showTimeframeBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2115,7 +2116,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   }
 
   void _showChartTypeBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       // 7 chart types (Line, Candles, Area, Bars, Volume, Heikin-Ashi,
@@ -2169,7 +2170,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   }
 
   void _showCryptoInfoBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2340,7 +2341,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     // they're on the stocks or crypto expanded chart. Selection updates flow
     // back via `onIndicatorsChanged`; setState rerenders the chart with the
     // chosen overlays + bottom panels in one frame.
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2379,7 +2380,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       DrawingToolInfo(
           DrawingTool.elliottWave, 'Elliott Wave', 'Multi-point wave pattern'),
     ];
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1A1A3E),
       shape: RoundedRectangleBorder(
@@ -2501,7 +2502,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     }
     variance /= (visible.length - 1);
     final volPct = math.sqrt(variance) * 100;
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1A1A3E),
       shape: RoundedRectangleBorder(
@@ -2585,7 +2586,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     // primary control bar. Currently: clear indicators, clear drawings,
     // reset zoom. Kept lean — large feature menus belong in their own
     // settings screen, not a bottom sheet.
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1A1A3E),
       shape: RoundedRectangleBorder(

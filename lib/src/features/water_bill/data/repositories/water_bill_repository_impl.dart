@@ -59,6 +59,10 @@ class WaterBillRepositoryImpl implements WaterBillRepository {
     String? paymentGateway,
     String? transactionId,
     String? verificationToken,
+
+    /// Pay with crypto: the asset to sell to fund this payment,
+    /// lowercase. Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   }) async {
     try {
       final payment = await remoteDataSource.initiatePayment(
@@ -70,6 +74,7 @@ class WaterBillRepositoryImpl implements WaterBillRepository {
         paymentGateway: paymentGateway,
         transactionId: transactionId,
         verificationToken: verificationToken,
+        fundingAsset: fundingAsset,
       );
       return Right(payment);
     } catch (e) {

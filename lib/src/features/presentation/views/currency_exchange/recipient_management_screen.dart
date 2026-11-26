@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../currency_exchange/domain/entities/recipient_entity.dart';
 import '../../../currency_exchange/data/currency_data.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class RecipientManagementScreen extends StatefulWidget {
   const RecipientManagementScreen({super.key});
@@ -591,7 +592,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
   }
 
   void _showRecipientDetails(Recipient recipient) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
@@ -759,7 +760,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
   }
 
   void _showSortOptions() {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(

@@ -17,6 +17,7 @@ class SignUpUseCase {
   Future<Either<Failure, ProfileEntity>> call({
     required String firstName,
     required String lastName,
+    String? middleName,
     required String email,
     required String password,
     required SignupPrimaryContact primaryContact,
@@ -31,6 +32,7 @@ class SignUpUseCase {
     // Input validation could go here if needed
     return _repository.signUp(
       firstName: firstName,
+      middleName: middleName,
       lastName: lastName,
       email: email,
       password: password,

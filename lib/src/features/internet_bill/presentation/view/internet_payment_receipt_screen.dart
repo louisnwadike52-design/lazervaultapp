@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -24,6 +25,7 @@ import 'package:lazervault/core/utils/route_args.dart';
 
 import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:lazervault/core/widgets/bill_history_item.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class InternetPaymentReceiptScreen extends StatefulWidget {
   const InternetPaymentReceiptScreen({super.key});
@@ -393,7 +395,7 @@ class _InternetPaymentReceiptScreenState
   /// will actually charge, and whatever they pick is addressable in its own
   /// payload by construction.
   void _reselectPackage(InternetPaymentEntity payment) {
-    Get.offAllNamed(
+    offAllKeepingHome(
       AppRoutes.internetBillHome,
       arguments: <String, dynamic>{
         if (payment.customerNumber.isNotEmpty)
@@ -420,7 +422,7 @@ class _InternetPaymentReceiptScreenState
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Get.offAllNamed(AppRoutes.internetBillHome);
+        if (!didPop) offAllKeepingHome(AppRoutes.internetBillHome);
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
@@ -428,7 +430,7 @@ class _InternetPaymentReceiptScreenState
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.internetBillHome),
+            onPressed: () => offAllKeepingHome(AppRoutes.internetBillHome),
             icon: Icon(
               Icons.arrow_back,
               color: Colors.white,
@@ -666,6 +668,17 @@ class _InternetPaymentReceiptScreenState
                                 _formatAmount(payment.amount),
                               ),
                               _buildDivider(),
+                              // HOW IT WAS PAID, when crypto funded it.
+                              //
+                              // utility-payments records the split on the
+                              // payment the moment the conversion's outcome
+                              // meets it; this is where the customer checks it
+                              // later. Empty for an ordinary wallet payment.
+                              ...nairaFundingRows(payment.metadata)
+                                  .expand((e) => [
+                                        _buildReceiptRow(e.key, e.value),
+                                        _buildDivider(),
+                                      ]),
                               _buildReceiptRow(
                                 'Reference',
                                 payment.reference,

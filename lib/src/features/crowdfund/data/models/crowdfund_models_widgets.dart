@@ -61,6 +61,8 @@ class CrowdfundModel extends Crowdfund {
     super.refundsCompleted,
     super.refundsFailed,
     super.totalRefunded,
+    super.totalRaised,
+    super.moderation,
   });
 
   factory CrowdfundModel.fromProto(pb.CrowdfundMessage proto) {
@@ -99,6 +101,29 @@ class CrowdfundModel extends Crowdfund {
       refundsCompleted: proto.refundsCompleted,
       refundsFailed: proto.refundsFailed,
       totalRefunded: proto.totalRefunded.toDouble() / 100,
+      totalRaised: proto.totalRaised.toDouble() / 100,
+      // MODERATION, FORWARDED AS-IS — including the fields the backend
+      // deliberately left empty.
+      //
+      // The audience split (status to everyone, reason to the creator and
+      // operators, note to operators alone) is decided in
+      // financial-products-service, which is the only layer that knows who is
+      // asking. This mapper must NOT re-derive it: it cannot see the viewer,
+      // and a second opinion here would either blank the creator's own
+      // explanation or render an operator's private note.
+      //
+      // `moderation_note` is read off the wire NOWHERE in this app. It
+      // arrives empty for every app caller, and the entity has no field for
+      // it, so there is no path by which it could be rendered.
+      moderation: CrowdfundModeration(
+        status: crowdfundModerationStateFrom(proto.moderationStatus),
+        category: proto.moderationCategory,
+        reason: proto.moderationReason,
+        moderatedAt:
+            proto.hasModeratedAt() ? proto.moderatedAt.toDateTime() : null,
+        appealCount: proto.appealCount,
+        canAppeal: proto.canAppeal,
+      ),
     );
   }
 

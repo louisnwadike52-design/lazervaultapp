@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:lazervault/core/widgets/bill_history_item.dart';
 
@@ -21,6 +22,7 @@ import '../../services/cable_tv_pdf_service.dart';
 import '../widgets/cable_tv_rollover_preference_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class CableTVPaymentReceiptScreen extends StatefulWidget {
   const CableTVPaymentReceiptScreen({super.key});
@@ -366,7 +368,7 @@ class _CableTVPaymentReceiptScreenState
     if (rawArgs is! Map<String, dynamic> ||
         rawArgs['payment'] is! CableTVPaymentEntity) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Get.offAllNamed(AppRoutes.cableTVHome);
+        if (mounted) offAllKeepingHome(AppRoutes.cableTVHome);
       });
       return const Scaffold(
         backgroundColor: Color(0xFF0A0A0A),
@@ -384,7 +386,7 @@ class _CableTVPaymentReceiptScreenState
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Get.offAllNamed(AppRoutes.cableTVHome);
+        if (!didPop) offAllKeepingHome(AppRoutes.cableTVHome);
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
@@ -392,7 +394,7 @@ class _CableTVPaymentReceiptScreenState
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.cableTVHome),
+            onPressed: () => offAllKeepingHome(AppRoutes.cableTVHome),
             icon: Icon(
               Icons.arrow_back,
               color: Colors.white,
@@ -568,6 +570,17 @@ class _CableTVPaymentReceiptScreenState
                                 _formatAmount(payment.amount),
                               ),
                               _buildDivider(),
+                              // HOW IT WAS PAID, when crypto funded it.
+                              //
+                              // utility-payments records the split on the
+                              // payment the moment the conversion's outcome
+                              // meets it; this is where the customer checks it
+                              // later. Empty for an ordinary wallet payment.
+                              ...nairaFundingRows(payment.metadata)
+                                  .expand((e) => [
+                                        _buildReceiptRow(e.key, e.value),
+                                        _buildDivider(),
+                                      ]),
                               _buildReceiptRow(
                                 'Reference',
                                 payment.reference,
@@ -749,10 +762,10 @@ class _CableTVPaymentReceiptScreenState
     // them somewhere that works instead of somewhere that fails politely.
     final code = payment.providerId.trim();
     if (code.isEmpty) {
-      Get.offAllNamed(AppRoutes.cableTVHome);
+      offAllKeepingHome(AppRoutes.cableTVHome);
       return;
     }
-    Get.offAllNamed(
+    offAllKeepingHome(
       AppRoutes.cableTVSmartCardInput,
       arguments: {
         'smartCardNumber': payment.customerNumber,

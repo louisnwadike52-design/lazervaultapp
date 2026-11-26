@@ -247,6 +247,28 @@ class SettingsSearchVocabulary {
   ];
 
   /// Everything the Notifications & Display section can answer to.
+  /// Privacy — search discoverability.
+  ///
+  /// Registered here or the tile is unreachable by settings search, which is
+  /// how a setting ends up existing and being undiscoverable. Includes the
+  /// words a holder would actually type when looking for this ("hide me",
+  /// "invisible", "stop people finding me"), not only its title.
+  static const privacy = [
+    'privacy',
+    'hide me',
+    'hide from search',
+    'hidden',
+    'invisible',
+    'discoverable',
+    'discoverability',
+    'search visibility',
+    'appear in search',
+    'find me',
+    'stop people finding me',
+    'unlisted',
+    'directory',
+  ];
+
   static const notifications = [
     ...escrowNotice,
     ...chatToneVolume,

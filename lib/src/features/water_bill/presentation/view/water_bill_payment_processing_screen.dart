@@ -11,6 +11,7 @@ import '../../domain/entities/water_payment_entity.dart';
 import '../cubit/water_bill_cubit.dart';
 import '../cubit/water_bill_state.dart';
 import 'package:lazervault/core/utils/route_args.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class WaterBillPaymentProcessingScreen extends StatefulWidget {
   const WaterBillPaymentProcessingScreen({super.key});
@@ -106,7 +107,7 @@ class _WaterBillPaymentProcessingScreenState
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         if (_hasFailed) {
-          Get.offAllNamed(AppRoutes.waterBillHome);
+          offAllKeepingHome(AppRoutes.waterBillHome);
           return;
         }
         Get.snackbar(
@@ -295,7 +296,7 @@ class _WaterBillPaymentProcessingScreenState
                           height: 52.h,
                           child: ElevatedButton.icon(
                             onPressed: () =>
-                                Get.offAllNamed(AppRoutes.waterBillHome),
+                                offAllKeepingHome(AppRoutes.waterBillHome),
                             icon: Icon(Icons.arrow_back,
                                 size: 18.sp, color: Colors.white),
                             label: Text(

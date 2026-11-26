@@ -315,6 +315,38 @@ const CrowdfundMessage$json = {
     {'1': 'refunds_failed', '3': 28, '4': 1, '5': 5, '10': 'refundsFailed'},
     {'1': 'total_refunded', '3': 29, '4': 1, '5': 4, '10': 'totalRefunded'},
     {'1': 'total_raised', '3': 30, '4': 1, '5': 4, '10': 'totalRaised'},
+    {
+      '1': 'moderation_status',
+      '3': 31,
+      '4': 1,
+      '5': 9,
+      '10': 'moderationStatus'
+    },
+    {
+      '1': 'moderation_category',
+      '3': 32,
+      '4': 1,
+      '5': 9,
+      '10': 'moderationCategory'
+    },
+    {
+      '1': 'moderation_reason',
+      '3': 33,
+      '4': 1,
+      '5': 9,
+      '10': 'moderationReason'
+    },
+    {'1': 'moderation_note', '3': 34, '4': 1, '5': 9, '10': 'moderationNote'},
+    {
+      '1': 'moderated_at',
+      '3': 35,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'moderatedAt'
+    },
+    {'1': 'appeal_count', '3': 36, '4': 1, '5': 5, '10': 'appealCount'},
+    {'1': 'can_appeal', '3': 37, '4': 1, '5': 8, '10': 'canAppeal'},
   ],
 };
 
@@ -342,7 +374,144 @@ final $typed_data.Uint8List crowdfundMessageDescriptor = $convert.base64Decode(
     'RhbXBSC2NhbmNlbGxlZEF0EicKD3JlZnVuZHNfcGVuZGluZxgaIAEoBVIOcmVmdW5kc1BlbmRp'
     'bmcSKwoRcmVmdW5kc19jb21wbGV0ZWQYGyABKAVSEHJlZnVuZHNDb21wbGV0ZWQSJQoOcmVmdW'
     '5kc19mYWlsZWQYHCABKAVSDXJlZnVuZHNGYWlsZWQSJQoOdG90YWxfcmVmdW5kZWQYHSABKARS'
-    'DXRvdGFsUmVmdW5kZWQSIQoMdG90YWxfcmFpc2VkGB4gASgEUgt0b3RhbFJhaXNlZA==');
+    'DXRvdGFsUmVmdW5kZWQSIQoMdG90YWxfcmFpc2VkGB4gASgEUgt0b3RhbFJhaXNlZBIrChFtb2'
+    'RlcmF0aW9uX3N0YXR1cxgfIAEoCVIQbW9kZXJhdGlvblN0YXR1cxIvChNtb2RlcmF0aW9uX2Nh'
+    'dGVnb3J5GCAgASgJUhJtb2RlcmF0aW9uQ2F0ZWdvcnkSKwoRbW9kZXJhdGlvbl9yZWFzb24YIS'
+    'ABKAlSEG1vZGVyYXRpb25SZWFzb24SJwoPbW9kZXJhdGlvbl9ub3RlGCIgASgJUg5tb2RlcmF0'
+    'aW9uTm90ZRI9Cgxtb2RlcmF0ZWRfYXQYIyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW'
+    '1wUgttb2RlcmF0ZWRBdBIhCgxhcHBlYWxfY291bnQYJCABKAVSC2FwcGVhbENvdW50Eh0KCmNh'
+    'bl9hcHBlYWwYJSABKAhSCWNhbkFwcGVhbA==');
+
+@$core.Deprecated('Use crowdfundAppealMessageDescriptor instead')
+const CrowdfundAppealMessage$json = {
+  '1': 'CrowdfundAppealMessage',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'crowdfund_id', '3': 2, '4': 1, '5': 9, '10': 'crowdfundId'},
+    {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'status', '3': 5, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'decision', '3': 6, '4': 1, '5': 9, '10': 'decision'},
+    {'1': 'reviewed_by', '3': 7, '4': 1, '5': 9, '10': 'reviewedBy'},
+    {
+      '1': 'reviewed_at',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'reviewedAt'
+    },
+    {'1': 'appealed_status', '3': 9, '4': 1, '5': 9, '10': 'appealedStatus'},
+    {
+      '1': 'appealed_category',
+      '3': 10,
+      '4': 1,
+      '5': 9,
+      '10': 'appealedCategory'
+    },
+    {
+      '1': 'created_at',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {'1': 'crowdfund_title', '3': 12, '4': 1, '5': 9, '10': 'crowdfundTitle'},
+    {'1': 'crowdfund_code', '3': 13, '4': 1, '5': 9, '10': 'crowdfundCode'},
+  ],
+};
+
+/// Descriptor for `CrowdfundAppealMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List crowdfundAppealMessageDescriptor = $convert.base64Decode(
+    'ChZDcm93ZGZ1bmRBcHBlYWxNZXNzYWdlEg4KAmlkGAEgASgJUgJpZBIhCgxjcm93ZGZ1bmRfaW'
+    'QYAiABKAlSC2Nyb3dkZnVuZElkEhcKB3VzZXJfaWQYAyABKAlSBnVzZXJJZBIYCgdtZXNzYWdl'
+    'GAQgASgJUgdtZXNzYWdlEhYKBnN0YXR1cxgFIAEoCVIGc3RhdHVzEhoKCGRlY2lzaW9uGAYgAS'
+    'gJUghkZWNpc2lvbhIfCgtyZXZpZXdlZF9ieRgHIAEoCVIKcmV2aWV3ZWRCeRI7CgtyZXZpZXdl'
+    'ZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCnJldmlld2VkQXQSJwoPYX'
+    'BwZWFsZWRfc3RhdHVzGAkgASgJUg5hcHBlYWxlZFN0YXR1cxIrChFhcHBlYWxlZF9jYXRlZ29y'
+    'eRgKIAEoCVIQYXBwZWFsZWRDYXRlZ29yeRI5CgpjcmVhdGVkX2F0GAsgASgLMhouZ29vZ2xlLn'
+    'Byb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EicKD2Nyb3dkZnVuZF90aXRsZRgMIAEoCVIO'
+    'Y3Jvd2RmdW5kVGl0bGUSJQoOY3Jvd2RmdW5kX2NvZGUYDSABKAlSDWNyb3dkZnVuZENvZGU=');
+
+@$core.Deprecated('Use submitCrowdfundAppealRequestDescriptor instead')
+const SubmitCrowdfundAppealRequest$json = {
+  '1': 'SubmitCrowdfundAppealRequest',
+  '2': [
+    {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `SubmitCrowdfundAppealRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List submitCrowdfundAppealRequestDescriptor =
+    $convert.base64Decode(
+        'ChxTdWJtaXRDcm93ZGZ1bmRBcHBlYWxSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3'
+        'Jvd2RmdW5kSWQSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+
+@$core.Deprecated('Use submitCrowdfundAppealResponseDescriptor instead')
+const SubmitCrowdfundAppealResponse$json = {
+  '1': 'SubmitCrowdfundAppealResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'appeal',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.CrowdfundAppealMessage',
+      '10': 'appeal'
+    },
+  ],
+};
+
+/// Descriptor for `SubmitCrowdfundAppealResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List submitCrowdfundAppealResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1TdWJtaXRDcm93ZGZ1bmRBcHBlYWxSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
+        'NzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USMgoGYXBwZWFsGAMgASgLMhoucGIuQ3Jvd2Rm'
+        'dW5kQXBwZWFsTWVzc2FnZVIGYXBwZWFs');
+
+@$core.Deprecated('Use listCrowdfundAppealsRequestDescriptor instead')
+const ListCrowdfundAppealsRequest$json = {
+  '1': 'ListCrowdfundAppealsRequest',
+  '2': [
+    {'1': 'status', '3': 1, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'crowdfund_id', '3': 2, '4': 1, '5': 9, '10': 'crowdfundId'},
+    {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `ListCrowdfundAppealsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listCrowdfundAppealsRequestDescriptor =
+    $convert.base64Decode(
+        'ChtMaXN0Q3Jvd2RmdW5kQXBwZWFsc1JlcXVlc3QSFgoGc3RhdHVzGAEgASgJUgZzdGF0dXMSIQ'
+        'oMY3Jvd2RmdW5kX2lkGAIgASgJUgtjcm93ZGZ1bmRJZBIUCgVsaW1pdBgDIAEoBVIFbGltaXQ=');
+
+@$core.Deprecated('Use listCrowdfundAppealsResponseDescriptor instead')
+const ListCrowdfundAppealsResponse$json = {
+  '1': 'ListCrowdfundAppealsResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {
+      '1': 'appeals',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.CrowdfundAppealMessage',
+      '10': 'appeals'
+    },
+    {'1': 'total', '3': 3, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `ListCrowdfundAppealsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listCrowdfundAppealsResponseDescriptor =
+    $convert.base64Decode(
+        'ChxMaXN0Q3Jvd2RmdW5kQXBwZWFsc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+        'MSNAoHYXBwZWFscxgCIAMoCzIaLnBiLkNyb3dkZnVuZEFwcGVhbE1lc3NhZ2VSB2FwcGVhbHMS'
+        'FAoFdG90YWwYAyABKAVSBXRvdGFs');
 
 @$core.Deprecated('Use crowdfundDonorMessageDescriptor instead')
 const CrowdfundDonorMessage$json = {

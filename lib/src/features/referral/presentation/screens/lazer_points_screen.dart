@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/load_more_footer.dart'
+    show ScrollEndLoader;
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +18,7 @@ import '../widgets/convert_points_sheet.dart';
 import '../widgets/points_breakdown_section.dart';
 import '../../domain/repositories/i_referral_repository.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'lazer_points_screen_widgets.dart';
 
 class LazerPointsScreen extends StatefulWidget {
@@ -137,30 +140,43 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
             onRefresh: _onRefresh,
             color: const Color(0xFF3B82F6),
             backgroundColor: const Color(0xFF1F1F1F),
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 16.h),
-                  if (_balance != null) _buildBalanceCard(_balance!),
-                  SizedBox(height: 20.h),
-                  // Directly under the balance: it explains the number above
-                  // it, and the first thing anyone does with a rewards total is
-                  // try to work out where it came from. Hides itself when there
-                  // is nothing to account for yet.
-                  if (!_breakdown.isEmpty) ...[
-                    PointsBreakdownSection(breakdown: _breakdown),
+            // SCROLL TO THE BOTTOM AND THE NEXT PAGE ARRIVES.
+            //
+            // The "Load More" button below stays — the trigger needs
+            // something to fall back on when a page fails at the very end of
+            // the list, where no further scroll notification is generated.
+            // `hasMore` is read off the state inside the builder, so it is
+            // false until a history page has actually loaded.
+            child: ScrollEndLoader(
+              hasMore: state is PointsHistoryLoaded && state.hasMore,
+              loading: false,
+              onReachEnd: () =>
+                  context.read<ReferralCubit>().loadMorePointsHistory(),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 16.h),
+                    if (_balance != null) _buildBalanceCard(_balance!),
                     SizedBox(height: 20.h),
+                    // Directly under the balance: it explains the number above
+                    // it, and the first thing anyone does with a rewards total is
+                    // try to work out where it came from. Hides itself when there
+                    // is nothing to account for yet.
+                    if (!_breakdown.isEmpty) ...[
+                      PointsBreakdownSection(breakdown: _breakdown),
+                      SizedBox(height: 20.h),
+                    ],
+                    if (_configs.isNotEmpty) ...[
+                      _buildHowToEarnSection(),
+                      SizedBox(height: 20.h),
+                    ],
+                    _buildHistorySection(state),
+                    SizedBox(height: 32.h),
                   ],
-                  if (_configs.isNotEmpty) ...[
-                    _buildHowToEarnSection(),
-                    SizedBox(height: 20.h),
-                  ],
-                  _buildHistorySection(state),
-                  SizedBox(height: 32.h),
-                ],
+                ),
               ),
             ),
           );
@@ -328,7 +344,7 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
       );
       return;
     }
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

@@ -30,6 +30,16 @@ class EmailVerificationInProgress extends EmailVerificationState {
     this.cooldownSeconds,
   });
 
+  /// [clearCooldown] exists because `cooldownSeconds` is nullable and
+  /// `??` cannot express "set this back to nothing".
+  ///
+  /// THE BUG THIS FIXES. A rate-limited resend stored `cooldownSeconds: 120`,
+  /// and because every later `copyWith` passed null for it, that 120 rode
+  /// along on every subsequent state for the life of the screen. The screen's
+  /// listener restarts its countdown when it sees an error carrying a
+  /// cooldown — so an unrelated failure minutes later, a mistyped code for
+  /// instance, re-armed a two-minute wait the server had never asked for.
+  /// That is the "the timing resets" the user reported.
   EmailVerificationInProgress copyWith({
     String? verificationCode,
     bool? isLoading,
@@ -37,6 +47,7 @@ class EmailVerificationInProgress extends EmailVerificationState {
     String? errorMessage,
     String? successMessage,
     int? cooldownSeconds,
+    bool clearCooldown = false,
   }) {
     return EmailVerificationInProgress(
       verificationCode: verificationCode ?? this.verificationCode,
@@ -44,7 +55,8 @@ class EmailVerificationInProgress extends EmailVerificationState {
       isResending: isResending ?? this.isResending,
       errorMessage: errorMessage ?? this.errorMessage,
       successMessage: successMessage ?? this.successMessage,
-      cooldownSeconds: cooldownSeconds ?? this.cooldownSeconds,
+      cooldownSeconds:
+          clearCooldown ? null : (cooldownSeconds ?? this.cooldownSeconds),
     );
   }
 

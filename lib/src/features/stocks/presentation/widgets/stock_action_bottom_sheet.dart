@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/stocks/cubit/stock_state.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'stock_action_bottom_sheet_widgets.dart';
 
 class StockActionBottomSheet extends StatefulWidget {
@@ -698,7 +699,7 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
   }
 
   void _showStockActions(Stock stock) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
@@ -878,7 +879,7 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
   }
 
   void _showOrderDetails(Map<String, String> order) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(

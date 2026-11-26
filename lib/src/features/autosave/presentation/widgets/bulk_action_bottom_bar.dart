@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/widgets/system_bottom_inset.dart';
 
 class BulkActionBottomBar extends StatelessWidget {
   final int selectedCount;
@@ -34,7 +35,11 @@ class BulkActionBottomBar extends StatelessWidget {
           ),
         ],
       ),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      // + the system navigation bar. This sits in a Scaffold's
+      // bottomNavigationBar slot, which on an edge-to-edge Android (15+)
+      // reaches under the phone's own buttons.
+      padding: EdgeInsets.fromLTRB(
+          16.w, 12.h, 16.w, 12.h + systemBottomInset(context)),
       child: Row(
         children: [
           Expanded(

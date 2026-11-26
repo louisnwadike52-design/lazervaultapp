@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/entities/group_entities.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// "You have cycles to pay" — shown once a day when the member opens Group
 /// Funds while behind on something.
@@ -65,7 +66,7 @@ Future<Contribution?> showCyclesDueReminder(
   List<Contribution> overdue,
 ) async {
   if (overdue.isEmpty) return null;
-  return showModalBottomSheet<Contribution>(
+  return showAppBottomSheet<Contribution>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

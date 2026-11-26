@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:lazervault/src/features/gift_cards/utils/gift_card_txn_details.dart';
 import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_entity.dart';
 import 'package:lazervault/src/features/gift_cards/domain/repositories/i_gift_card_repository.dart';
@@ -29,7 +30,9 @@ import 'package:lazervault/core/utils/transfer_bank_display.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
 import 'package:lazervault/src/features/escrow/utils/escrow_receipt_fields.dart';
+import 'package:lazervault/src/features/ticketing/utils/ticket_receipt_fields.dart';
 import 'package:lazervault/src/features/invoice/utils/invoice_receipt_fields.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'unified_transaction_receipt_widgets.dart';
 
 /// The business-flow service types that produce a receipt.
@@ -805,6 +808,30 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       ]);
     }
 
+    // A TICKETING LEG RENDERS THE ORDER, NOT A BARE DEBIT.
+    //
+    // Same shape and the same reason as escrow above: these rows carried only
+    // "Tickets: <event>" and an amount, so a buyer could not see how many
+    // tickets, what the fee was or who bore it, and an organiser's payout could
+    // not say which event it settled. financial-products stamps the purchase on
+    // the buyer's legs and the event on the organiser's payout, and
+    // TicketReceiptFields projects whichever one this row is.
+    //
+    // Rows predating the payload are not matched and keep today's rendering.
+    final ticketRows = TicketReceiptFields.rows(
+      tx.metadata,
+      fiatSymbol: _currencySymbol,
+      reference: tx.displayReference,
+    );
+    if (ticketRows.isNotEmpty) {
+      return _detailsCardFrom([
+        for (final r in ticketRows)
+          _DetailEntry(r.key, r.value,
+              copyable: r.key == 'Ticket reference' ||
+                  r.key == 'Transaction reference'),
+      ]);
+    }
+
     // AN INVOICE PAYMENT RENDERS THE INVOICE, NOT A BARE TRANSFER.
     //
     // invoice-service settles through core-payments, so the ledger legs are
@@ -878,6 +905,13 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           tx.flow != TransactionFlow.incoming)
         _DetailEntry(
             'Total paid', _fmtMoney(_externalPrincipal! + _externalFee!)),
+      // PRIMARY / SECONDARY PAYMENT METHOD, above the description.
+      //
+      // Placed with the money rows rather than among Type/Category, because
+      // "which of my balances did this come out of" is a question about the
+      // amount, and it is the question a crypto-funded payment's receipt
+      // exists to answer.
+      ..._fundingRows.map((e) => _DetailEntry(e.key, e.value)),
       if (tx.description != null && !_isPlaceholderValue(tx.description!))
         _DetailEntry('Description', _cleanDescription(tx.description!)),
       if (tx.displayReference != null)
@@ -1553,7 +1587,43 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   /// Without these the exported document is an anonymous debit for an
   /// arbitrary amount — useless as proof that a specific deal was funded,
   /// released or refunded, which is the entire reason either party saves it.
+  /// HOW THIS PAYMENT WAS FUNDED — for a payment paid out of crypto.
+  ///
+  /// Empty for every ordinary payment, which is almost all of them: the
+  /// breakdown reads itself off the record and refuses to exist without a
+  /// declared funding source, so there is no condition to write here.
+  ///
+  /// SHARED WITH THE PDF through [extraRows], like the bill and escrow rows
+  /// above, so the document a customer forwards says exactly what the screen
+  /// said. Two renderers of the same figures is how a shared receipt comes to
+  /// disagree with the app it was taken from — and the PDF is the copy other
+  /// people see.
+  ///
+  /// SUPPRESSED ON A RECIPIENT COPY. Which of the SENDER's balances paid is
+  /// the sender's business; a beneficiary's copy stating that ₦3,000 of it
+  /// came out of someone's USDT discloses the sender's holdings to the one
+  /// person who should not learn them from a receipt. The same reasoning
+  /// already hides the fee rows from an incoming copy.
+  List<MapEntry<String, String>> get _fundingRows {
+    if (tx.flow == TransactionFlow.incoming) return const [];
+    final b = PaymentMethodBreakdown.from(tx.metadata);
+    if (b == null) return const [];
+    return breakdownEntries(b, (minor) => _fmtMoney(minor / 100));
+  }
+
   List<MapEntry<String, String>> get _escrowRows => EscrowReceiptFields.rows(
+        tx.metadata,
+        fiatSymbol: _currencySymbol,
+        reference: tx.displayReference,
+      );
+
+  /// Ticketing-payload rows for the PDF body, mirroring [_escrowRows].
+  ///
+  /// Without these the exported document is an anonymous debit for an arbitrary
+  /// amount — useless as the proof of purchase a buyer saves, or as the record
+  /// of what an event paid out, which is the entire reason either party keeps
+  /// it.
+  List<MapEntry<String, String>> get _ticketRows => TicketReceiptFields.rows(
         tx.metadata,
         fiatSymbol: _currencySymbol,
         reference: tx.displayReference,
@@ -1900,7 +1970,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   Future<ReceiptCopyType?> _showReceiptCopySheet() {
-    return showModalBottomSheet<ReceiptCopyType>(
+    return showAppBottomSheet<ReceiptCopyType>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -1947,7 +2017,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   Future<ReceiptFileFormat?> _showReceiptFormatSheet(String actionLabel) {
-    return showModalBottomSheet<ReceiptFileFormat>(
+    return showAppBottomSheet<ReceiptFileFormat>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -2098,13 +2168,19 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
               format: _chosenFormat,
               // The card the on-screen receipt resolved, so the SAVED document
               // names it too rather than being a strictly poorer copy.
-              extraRows: _giftCard?.rows ??
-                  _invoiceRows +
-                      _contributionRows +
-                      _billRows +
-                      _sprayRows +
-                      _escrowRows +
-                      _businessRows,
+              // The funding rows are APPENDED to whichever set applies,
+              // including the gift-card branch — a gift card bought out of
+              // crypto needs the split as much as a transfer does, and the
+              // `??` meant that branch skipped every other row type.
+              extraRows: (_giftCard?.rows ??
+                      _invoiceRows +
+                          _contributionRows +
+                          _billRows +
+                          _sprayRows +
+                          _escrowRows +
+                          _ticketRows +
+                          _businessRows) +
+                  _fundingRows,
               currentUserName: _currentUserName,
             );
 
@@ -2133,13 +2209,15 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           transaction: tx,
           copyType: _chosenCopy,
           format: _chosenFormat,
-          extraRows: _giftCard?.rows ??
-              _invoiceRows +
-                  _contributionRows +
-                  _billRows +
-                  _sprayRows +
-                  _escrowRows +
-                  _businessRows,
+          extraRows: (_giftCard?.rows ??
+                  _invoiceRows +
+                      _contributionRows +
+                      _billRows +
+                      _sprayRows +
+                      _escrowRows +
+                      _ticketRows +
+                      _businessRows) +
+              _fundingRows,
           currentUserName: _currentUserName,
           // Anchors the iPad share popover; omitted it anchored top-left.
           sharePositionOrigin: _shareOrigin(),

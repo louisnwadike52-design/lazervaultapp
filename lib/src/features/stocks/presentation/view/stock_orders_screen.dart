@@ -8,6 +8,7 @@ import '../../cubit/stock_state.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bamboo-style Orders Screen
 /// Order history with status indicators and filtering
@@ -355,7 +356,7 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
   }
 
   void _showOrderDetails(StockOrder order) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(

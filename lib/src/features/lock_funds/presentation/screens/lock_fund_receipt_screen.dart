@@ -8,6 +8,7 @@ import '../../services/lock_funds_pdf_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Receipt screen displayed after successfully creating a lock fund.
 ///
@@ -108,7 +109,7 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
         // returns to the locks landing, so the old "View My Locks" / "Back to
         // Home" CTAs are gone (they duplicated this).
         leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.lockFunds),
+          onPressed: () => offAllKeepingHome(AppRoutes.lockFunds),
           icon: Icon(
             Icons.arrow_back,
             color: const Color(0xFFA78BFA),
@@ -138,6 +139,10 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
                     _buildSuccessHeader(),
                     SizedBox(height: 16.h),
                     _buildAmountCard(),
+                    if (lockFund.status.awaitingDecision) ...[
+                      SizedBox(height: 14.h),
+                      _buildReviewNotice(),
+                    ],
                     SizedBox(height: 14.h),
                     _buildDetailsAndReturns(),
                   ],
@@ -191,7 +196,22 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
 
   /// Compact success header: a small circular icon beside the headline, instead
   /// of the old 100px circle + 24sp title stack that pushed content off-screen.
+  ///
+  /// IT NO LONGER CLAIMS THE PLAN IS EARNING. This said "Your funds are now
+  /// earning interest" unconditionally, on the screen the user lands on the
+  /// instant their money leaves their spendable balance. On a plan created
+  /// `pending_approval` — which, while Piggyvault deposits are placed with the
+  /// asset company by hand, is every plan — that was false at the moment it
+  /// was shown: the term had not started and nothing was accruing.
+  ///
+  /// The status on the created plan is the server's own answer, so the header
+  /// reads it rather than inferring anything. A tick and "earning interest"
+  /// for a plan that is running; a clock and the review wording for one that
+  /// is waiting on a person.
   Widget _buildSuccessHeader() {
+    final pending = lockFund.status.awaitingDecision;
+    final accent =
+        pending ? const Color(0xFFF59E0B) : const Color(0xFF10B981);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -201,8 +221,8 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF10B981).withValues(alpha: 0.2),
-                const Color(0xFF059669).withValues(alpha: 0.1),
+                accent.withValues(alpha: 0.2),
+                accent.withValues(alpha: 0.1),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -210,8 +230,8 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
             shape: BoxShape.circle,
           ),
           child: Icon(
-            Icons.check_circle_rounded,
-            color: const Color(0xFF10B981),
+            pending ? Icons.hourglass_top_rounded : Icons.check_circle_rounded,
+            color: accent,
             size: 24.sp,
           ),
         ),
@@ -222,7 +242,7 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Funds Locked Successfully',
+                pending ? 'Plan submitted for review' : 'Funds Locked Successfully',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 17.sp,
@@ -230,7 +250,9 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
                 ),
               ),
               Text(
-                'Your funds are now earning interest',
+                pending
+                    ? 'Set aside and waiting on approval — it is not earning yet'
+                    : 'Your funds are now earning interest',
                 style: GoogleFonts.inter(
                   color: const Color(0xFF9CA3AF),
                   fontSize: 12.sp,
@@ -241,6 +263,104 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  /// What happens next, for a plan that is waiting on a person.
+  ///
+  /// THE THREE FACTS A USER NEEDS HERE, and the reason this is a card rather
+  /// than a line in the status row:
+  ///
+  ///  1. Their available balance has already dropped. They will see that on
+  ///     the dashboard within seconds and the receipt is the only place that
+  ///     can explain it before they go looking.
+  ///  2. The money is still theirs. It was reserved, not spent — the account
+  ///     total is unchanged — and a rejection releases it in full.
+  ///  3. The dates and figures below are provisional. The term starts at
+  ///     approval, so the maturity date moves by however long the review
+  ///     takes, and the interest figure is what the plan will earn once it is
+  ///     running, not what it is earning now.
+  ///
+  /// No promised turnaround time. Review is a human step whose duration
+  /// depends on when funds reach the asset-management company, and a receipt
+  /// that guesses "within 24 hours" would be making a commitment nothing in
+  /// the system can keep.
+  Widget _buildReviewNotice() {
+    const amber = Color(0xFFF59E0B);
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: amber.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: amber.withValues(alpha: 0.28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.schedule_rounded, color: amber, size: 15.sp),
+              SizedBox(width: 6.w),
+              Text(
+                'What happens next',
+                style: GoogleFonts.inter(
+                  color: amber,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          _noticeLine(
+            'We review your plan before it starts. You will get a '
+            'notification the moment it is approved.',
+          ),
+          _noticeLine(
+            'Your deposit is set aside from your spendable balance. It has '
+            'not left your account, and it is returned in full if the plan '
+            'is not approved.',
+          ),
+          _noticeLine(
+            'The term and interest below start on approval, so the maturity '
+            'date shifts by however long the review takes.',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _noticeLine(String text) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 6.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: 5.h, right: 7.w),
+            child: Container(
+              width: 4.w,
+              height: 4.w,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF59E0B),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.inter(
+                color: const Color(0xFFD1D5DB),
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w400,
+                height: 1.45,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -325,6 +445,11 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     final currencySymbol = CurrencySymbols.getSymbol(lockFund.currency);
     final calc = interestCalculation;
     final isUpfront = calc != null && calc.qualifiesForUpfrontInterest;
+    // A plan under review has not been paid its upfront interest yet — the
+    // credit happens at approval, alongside the term starting, because paying
+    // a whole term's interest on a deposit that may still be released would
+    // hand out money the rejection path has no way to take back.
+    final upfrontPending = isUpfront && lockFund.status.awaitingDecision;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -350,7 +475,10 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
           SizedBox(height: 8.h),
           _buildDetailRow('Interest Rate', lockFund.formattedInterestRate),
           SizedBox(height: 8.h),
-          _buildDetailRow('Matures On', _formatDate(lockFund.unlockAt)),
+          _buildDetailRow(
+            lockFund.status.awaitingDecision ? 'Matures On (est.)' : 'Matures On',
+            _formatDate(lockFund.unlockAt),
+          ),
           if (lockFund.status == LockStatus.active &&
               lockFund.daysRemaining > 0) ...[
             SizedBox(height: 8.h),
@@ -436,7 +564,11 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
             ),
             SizedBox(height: 8.h),
             _buildReturnRow(
-              isUpfront ? 'Interest Paid Upfront' : 'Interest at Maturity',
+              isUpfront
+                  ? (upfrontPending
+                      ? 'Interest Paid On Approval'
+                      : 'Interest Paid Upfront')
+                  : 'Interest at Maturity',
               '+$currencySymbol${calc.estimatedInterest.toStringAsFixed(2)}',
               isHighlighted: true,
             ),
@@ -459,14 +591,19 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.check_circle_outline,
+                      upfrontPending
+                          ? Icons.schedule_rounded
+                          : Icons.check_circle_outline,
                       color: const Color(0xFF10B981),
                       size: 14.sp,
                     ),
                     SizedBox(width: 6.w),
                     Expanded(
                       child: Text(
-                        'Interest credited to your savings account immediately',
+                        upfrontPending
+                            ? 'Interest is credited to your savings account '
+                                'as soon as the plan is approved'
+                            : 'Interest credited to your savings account immediately',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF10B981),
                           fontSize: 11.sp,

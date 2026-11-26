@@ -88,7 +88,8 @@ class KYCRepositoryImpl implements KYCRepository {
         reference: data['reference'] as String?,
       ));
     } on APIException catch (e) {
-      return Left(APIFailure(message: e.message, statusCode: e.statusCode));
+      return Left(APIFailure(
+          message: e.message, statusCode: e.statusCode, code: e.code));
     } catch (e) {
       return Left(APIFailure(
         message: 'An unexpected error occurred',

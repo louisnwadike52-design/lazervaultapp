@@ -63,6 +63,21 @@ class CustomerValidationFailed extends WaterBillState {
 // Payment States
 class PaymentInitiating extends WaterBillState {}
 
+/// PAY WITH CRYPTO: the payment is authorised and recorded, and the conversion
+/// that funds it is running. Neither success nor failure — see the note on
+/// CableTVAwaitingCryptoFunding.
+class WaterAwaitingCryptoFunding extends WaterBillState {
+  final WaterPaymentEntity payment;
+
+  /// The coin being sold, lowercase.
+  final String asset;
+
+  WaterAwaitingCryptoFunding({required this.payment, required this.asset});
+
+  @override
+  List<Object?> get props => [payment, asset];
+}
+
 class PaymentInitiated extends WaterBillState {
   final WaterPaymentEntity payment;
 

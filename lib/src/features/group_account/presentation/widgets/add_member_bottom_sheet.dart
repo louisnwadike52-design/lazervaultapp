@@ -21,6 +21,7 @@ import '../../data/datasources/group_join_link_remote_data_source.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/utils/logger.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'add_member_bottom_sheet_widgets.dart';
 
 class AddMemberBottomSheet extends StatefulWidget {
@@ -268,7 +269,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
   }
 
   void _openContactPicker() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -476,7 +477,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     // transitionable state churning. A sync pop in the same frame as
     // the awaits resolved sidesteps that.
     final messenger = ScaffoldMessenger.maybeOf(context);
-    // The sheet is typed `showModalBottomSheet<GroupMember?>` so the
+    // The sheet is typed `showAppBottomSheet<GroupMember?>` so the
     // pop result MUST be `GroupMember?`. Passing a bool here threw
     // `type 'bool' is not a subtype of type 'GroupMember?'` inside
     // _flushHistoryUpdates and left the navigator wedged in a locked
@@ -1469,7 +1470,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
   }
 
   void _showRoleSelectionModal() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(

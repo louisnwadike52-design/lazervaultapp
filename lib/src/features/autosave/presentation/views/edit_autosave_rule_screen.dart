@@ -12,6 +12,8 @@ import 'package:lazervault/core/utils/currency_formatter.dart'
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/autosave/utils/autosave_schedule_time.dart';
 import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class EditAutoSaveRuleScreen extends StatefulWidget {
   const EditAutoSaveRuleScreen({super.key});
@@ -53,7 +55,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
     if (args is! AutoSaveRuleEntity) {
       _invalidArgs = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
+        if (mounted) offAllKeepingHome(AppRoutes.autoSaveDashboard);
       });
       return;
     }
@@ -220,7 +222,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
   }
 
   void _showPreview() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,
@@ -652,7 +654,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
         actionLabel: 'Go to Auto-Save',
         // The label names a destination, so the button must go there
         // rather than pop to whatever happens to be underneath.
-        onAction: () => Get.offAllNamed(AppRoutes.autoSaveDashboard),
+        onAction: () => offAllKeepingHome(AppRoutes.autoSaveDashboard),
       );
     }
     return PopScope(

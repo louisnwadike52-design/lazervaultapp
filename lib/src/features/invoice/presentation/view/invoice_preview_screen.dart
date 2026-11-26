@@ -38,6 +38,8 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'invoice_preview_screen_part1.dart';
 part 'invoice_preview_screen_part2.dart';
 
@@ -1016,7 +1018,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                 if (state is InvoiceUnlockSuccess) {
                   setState(() => _isProcessingPayment = false);
                   // Show receipt and remove "newly created" flag
-                  Get.offAllNamed(AppRoutes.invoicePaymentReceipt, arguments: {
+                  offAllKeepingHome(AppRoutes.invoicePaymentReceipt, arguments: {
                     'invoice_id': invoice.id,
                     'payment_reference': state.invoice != null
                         ? 'UNLOCK-${state.invoice!.id.substring(0, 8)}'
@@ -1033,7 +1035,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                 } else if (state is InvoiceServiceFeePaid) {
                   setState(() => _isProcessingPayment = false);
                   // Show receipt and remove "newly created" flag
-                  Get.offAllNamed(AppRoutes.invoicePaymentReceipt, arguments: {
+                  offAllKeepingHome(AppRoutes.invoicePaymentReceipt, arguments: {
                     'invoice_id': invoice.id,
                     'payment_reference': state.serviceFeeRef,
                     'amount': _feeAmount,
@@ -1295,7 +1297,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
 
   void _showTaggedUsersDetailSheet(BuildContext context) {
     final users = invoice.taggedUsers!;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1651,7 +1653,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
   }
 
   void _showTagUserBottomSheet(BuildContext context) async {
-    await showModalBottomSheet(
+    await showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1774,7 +1776,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
   }
 
   void _showSendEmailBottomSheet(BuildContext context) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

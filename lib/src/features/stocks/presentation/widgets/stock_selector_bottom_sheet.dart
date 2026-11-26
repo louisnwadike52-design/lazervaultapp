@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart
 import 'package:lazervault/src/features/stocks/utils/debouncer.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Stock Selector Bottom Sheet
 /// Bamboo-style stock discovery interface with search and filtering
@@ -636,7 +637,7 @@ Future<Stock?> showStockSelector(
   bool showOnlyHoldings = false,
   List<Stock>? initialStocks,
 }) {
-  return showModalBottomSheet<Stock>(
+  return showAppBottomSheet<Stock>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

@@ -13,6 +13,7 @@ import '../../cubit/mandate_cubit.dart';
 import '../../cubit/mandate_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/move_money/domain/mandate_auth_attempt_store.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet shown after account linking to offer mandate setup.
 ///
@@ -29,7 +30,7 @@ Future<bool> showMandateSetupBottomSheet({
   String? userPhone,
   VoidCallback? onKycRequired,
 }) async {
-  final result = await showModalBottomSheet<bool>(
+  final result = await showAppBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: const Color(0xFF1F1F1F),

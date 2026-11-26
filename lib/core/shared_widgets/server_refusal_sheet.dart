@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// When the server REFUSES an action and explains why.
 ///
@@ -137,7 +138,7 @@ Future<bool> _present(
   String? hint,
   List<RefusalLink> links = const [],
 }) async {
-  final result = await showModalBottomSheet<bool>(
+  final result = await showAppBottomSheet<bool>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

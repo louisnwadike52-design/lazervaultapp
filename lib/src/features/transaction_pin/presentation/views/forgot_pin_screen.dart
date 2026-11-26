@@ -10,10 +10,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/passcode_policy.dart';
+import 'package:lazervault/core/shared_widgets/otp_field_behaviour.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/pin_management_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class ForgotPinScreen extends StatefulWidget {
   const ForgotPinScreen({super.key});
@@ -37,6 +39,10 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
   final List<TextEditingController> _otpControllers =
       List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
+
+  /// Kept so dispose can remove them — a focus listener outliving its node is
+  /// a leak per visit to this screen.
+  final List<VoidCallback> _selectAllListeners = <VoidCallback>[];
   String _maskedDestination = '';
   String _channelUsed = '';
   int _cooldownSeconds = 0;
@@ -54,6 +60,16 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
   void initState() {
     super.initState();
     _cubit = serviceLocator<PinManagementCubit>();
+    // FOCUSING A BOX SELECTS IT, so the next input REPLACES rather than
+    // appends. Required now that every box accepts a full-length paste: a box
+    // holding "3" that the customer taps and types "9" into would otherwise
+    // report "39", which the paste path reads as a pasted code and spreads
+    // across the boxes — wiping the rest of what they had entered. See
+    // selectAllOnFocus.
+    for (var i = 0; i < _otpControllers.length; i++) {
+      _selectAllListeners
+          .add(selectAllOnFocus(_otpControllers[i], _otpFocusNodes[i]));
+    }
     _cubit.initialize();
   }
 
@@ -62,8 +78,11 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
     for (final c in _otpControllers) {
       c.dispose();
     }
-    for (final f in _otpFocusNodes) {
-      f.dispose();
+    for (var i = 0; i < _otpFocusNodes.length; i++) {
+      if (i < _selectAllListeners.length) {
+        _otpFocusNodes[i].removeListener(_selectAllListeners[i]);
+      }
+      _otpFocusNodes[i].dispose();
     }
     _newPinController.dispose();
     _confirmPinController.dispose();
@@ -148,6 +167,28 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
   }
 
   void _onOtpChanged(int index, String value) {
+    // A PASTE OR AN AUTOFILL ARRIVES AS ONE VALUE, in whichever box had the
+    // caret. Spread it across the boxes — the shared helper sets each
+    // controller's selection explicitly, because assigning `.text` alone
+    // leaves it at the invalid default (-1) and on Android that is a caret the
+    // input connection cannot place, so the next keypress goes nowhere.
+    if (value.length > 1) {
+      final digits = applyOtpPaste(_otpControllers, value);
+      final next = digits.length >= 6 ? 5 : digits.length;
+      _otpFocusNodes[next].requestFocus();
+      if (digits.length == 6) {
+        // Deferred: this runs inside onChanged having just rewritten every
+        // controller, and verifying synchronously from there races the edit it
+        // would be reading. `_verifyingOtp` guards the double-fire.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _getOtpCode().length == 6) {
+            _verifyThenAdvance(_getOtpCode());
+          }
+        });
+      }
+      return;
+    }
+
     if (value.length == 1 && index < 5) {
       _otpFocusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
@@ -732,7 +773,7 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
   }
 
   Future<void> _showAuthenticatorSetupModal() async {
-    final goSetup = await showModalBottomSheet<bool>(
+    final goSetup = await showAppBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
@@ -964,7 +1005,11 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
         if (_useBackupCode)
           _buildBackupCodeField()
         else
-          Row(
+          // AN AutofillGroup IS REQUIRED for the hint on box one to reach the
+          // platform — Flutter forwards autofillHints only when one is an
+          // ancestor, so the tag alone would be inert.
+          AutofillGroup(
+              child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(6, (index) {
               return Container(
@@ -976,7 +1021,12 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
                   focusNode: _otpFocusNodes[index],
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
-                  maxLength: 1,
+                  // SIX, NOT ONE. Every box was capped at a single
+                  // character, so a pasted code was truncated to its first
+                  // digit wherever it landed and `_onOtpChanged` never saw a
+                  // multi-character value — paste did not half-work here, it
+                  // could not work at all.
+                  maxLength: 6,
                   style: GoogleFonts.inter(
                     fontSize: 22.sp,
                     fontWeight: FontWeight.w700,
@@ -1002,6 +1052,16 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
                     ),
                   ),
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  // The hint goes on box one only: it is where the caret
+                  // starts, so the platform's one-time-code suggestion appears
+                  // when the screen opens. Tagging all six would invite the OS
+                  // to fill each with the whole code.
+                  autofillHints: index == 0 ? otpAutofillHints : null,
+                  // Paste needs BOTH: nothing to long-press without
+                  // interactive selection, and no Paste item without a
+                  // contextMenuBuilder.
+                  enableInteractiveSelection: true,
+                  contextMenuBuilder: otpContextMenu,
                   // Locked while the typed code is being checked, so a stray
                   // keystroke cannot edit the code mid-request and leave the
                   // boxes disagreeing with what was sent.
@@ -1010,7 +1070,7 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
                 ),
               );
             }),
-          ),
+          )),
         // The way back in when the authenticator itself is gone. Only on that
         // channel: email and SMS codes have no backup-code equivalent.
         if (isAuthenticator) _buildBackupCodeToggle(),

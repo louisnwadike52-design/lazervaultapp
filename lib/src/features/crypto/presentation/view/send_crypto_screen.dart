@@ -15,6 +15,7 @@ import 'all_assets_screen.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/top_up_before_send_sheet.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_config_cubit.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_state.dart';
@@ -36,6 +37,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 import 'package:grpc/grpc.dart' show GrpcError;
 import '../../domain/trade_precision.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'send_crypto_screen_widgets.dart';
 
 // SendCryptoScreen (PR6) — single-screen send flow:
@@ -464,7 +466,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       String network, String token) async {
     final net = network.toUpperCase();
     final canChange = _networks.length > 1;
-    final res = await showModalBottomSheet<_NetworkCheckOutcome>(
+    final res = await showAppBottomSheet<_NetworkCheckOutcome>(
       context: context,
       isDismissible: false,
       backgroundColor: const Color(0xFF1A1A1A),
@@ -563,7 +565,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   /// Modal (not a toast) for network-incompatibility on the advanced internal
   /// path — the user needs to actually read this and pick another network.
   void _showNetworkIssueSheet(String title, String message) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(
@@ -633,10 +635,35 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       return;
     }
     if (amount > _selected!.quantity) {
-      _toast(
-          'Amount exceeds your ${_selected!.cryptoSymbol.toUpperCase()} balance');
-      _releaseSend();
-      return;
+      // SHORT, NOT STUCK. The naira to buy the difference is usually sitting
+      // in the wallet, and this used to be a dead-end toast — the one place
+      // the flow told a customer what was wrong and nothing about fixing it.
+      //
+      // The purchase is a SEPARATE authorisation with its own PIN, and the
+      // send only resumes once the coin has actually landed. If anything goes
+      // wrong the customer is left holding either their naira or their
+      // crypto; there is no in-between state for a worker to clean up.
+      final bought = await _offerTopUp(amount);
+      if (!mounted) return;
+      if (!bought) {
+        _releaseSend();
+        return;
+      }
+      // Re-read the holding rather than assuming the fill. The sheet only
+      // returns true once the asset is there, but the amount delivered is the
+      // exchange's, not ours, and a send over the new balance must still be
+      // refused rather than attempted.
+      await _refreshHoldings();
+      if (!mounted) {
+        _releaseSend();
+        return;
+      }
+      if (amount > _selected!.quantity) {
+        _toast('Your ${_selected!.cryptoSymbol.toUpperCase()} is still '
+            'settling. Try the send again in a moment.');
+        _releaseSend();
+        return;
+      }
     }
     // Quidax minimum: the crypto amount must clear Quidax's floor (from
     // GetCryptoConfig — Quidax /markets minimum_order_size + the ~$1 notional).
@@ -896,7 +923,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     final symbol = _selected!.cryptoSymbol.toUpperCase();
     final networkLabel = _networkLabel();
     final note = _noteController.text.trim();
-    return showModalBottomSheet<bool>(
+    return showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1120,20 +1147,41 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           }
           final holdings =
               cryptoState.holdings.where((h) => h.quantity > 0).toList();
-          if (holdings.isEmpty) {
+          // SENDABLE INCLUDES COINS NOT YET HELD. "Send 40 USDT" when the
+          // balance is zero was unreachable: the asset was never offered, so
+          // the customer with naira in the wallet and no USDT had no way to
+          // start. The picker now also lists supported assets at a zero
+          // balance, and the amount check offers to buy what is missing.
+          //
+          // DELIBERATELY NOT MERGED INTO `holdings`. That list drives
+          // auto-select, the empty state and the Max button; adding zero
+          // balances to it would auto-select a coin the customer does not
+          // own and offer "Max" of nothing.
+          final sendable = _withUnheldAssets(holdings, cryptoState);
+          if (sendable.isEmpty) {
             return _buildEmptyState();
           }
-          // Auto-select the first sendable asset so the form is immediately
-          // usable. The old screen showed "No asset selected" with no picker,
-          // which dead-ended the whole send flow from the main entry.
+          // Auto-select so the form is immediately usable. The old screen
+          // showed "No asset selected" with no picker, which dead-ended the
+          // whole send flow from the main entry.
+          //
+          // VALIDITY IS CHECKED AGAINST `sendable`, NOT `holdings`. Checking
+          // the held list would reject a coin the customer had just chosen
+          // from the picker at a zero balance and silently auto-select
+          // something else out from under them — the top-up flow could never
+          // be reached. The PREFERENCE for a held coin stays, though: with a
+          // balance to send from, that is what the screen opens on.
           final hasValidSelection = _selected != null &&
-              holdings.any((h) => h.cryptoId == _selected!.cryptoId);
+              sendable.any((h) => h.cryptoId == _selected!.cryptoId);
           if (!hasValidSelection) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
               final stillInvalid = _selected == null ||
-                  !holdings.any((h) => h.cryptoId == _selected!.cryptoId);
-              if (stillInvalid) _selectAsset(holdings.first);
+                  !sendable.any((h) => h.cryptoId == _selected!.cryptoId);
+              if (stillInvalid) {
+                _selectAsset(
+                    holdings.isNotEmpty ? holdings.first : sendable.first);
+              }
             });
           }
           return SafeArea(
@@ -1141,7 +1189,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
               padding: EdgeInsets.all(16.w),
               child: ListView(
                 children: [
-                  _buildAssetCard(holdings),
+                  _buildAssetCard(sendable),
                   // One row: the asset's active network badge (left) and the
                   // user's personal fiat wallet balance as a compact chip at
                   // the row's right edge — declutters two stacked full-width
@@ -1427,6 +1475,86 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     return null;
   }
 
+  /// Offers to buy the missing amount, and reports whether it landed.
+  ///
+  /// Only the DIFFERENCE is bought — what the customer already holds is left
+  /// alone — and the purchase takes its own PIN, because buying from the
+  /// naira wallet and sending on-chain are two movements of money and the
+  /// second one cannot be undone.
+  Future<bool> _offerTopUp(double wanted) async {
+    final holding = _selected;
+    final accountId = _resolveAccountId();
+    if (holding == null || accountId == null) return false;
+
+    final shortfall = wanted - holding.quantity;
+    if (shortfall <= 0) return true;
+
+    final sym = holding.cryptoSymbol.toLowerCase();
+    int decimals;
+    try {
+      decimals = GetIt.I<CryptoConfigCubit>().config.decimalsFor(sym);
+    } catch (_) {
+      // The ledger scale is config-driven everywhere else and must not be
+      // guessed here either: with no config there is no reliable minor-unit
+      // scale to quote a target in, so decline rather than buy the wrong
+      // amount.
+      return false;
+    }
+
+    return TopUpBeforeSendSheet.open(
+      context,
+      accountId: accountId,
+      symbol: holding.cryptoSymbol,
+      shortfall: shortfall,
+      unitPrice: _priceOf,
+      decimals: decimals,
+      // The PIN is raised by the SCREEN, not the sheet: validateTransactionPin
+      // comes from TransactionPinMixin and mints a token bound to the id it
+      // is given, which is the contract the swap saga validates against.
+      requestPin: (costMajor, label) async {
+        String? token;
+        final purchaseIntent = 'TOPUP-${DateTime.now().microsecondsSinceEpoch}';
+        await validateTransactionPin(
+          context: context,
+          transactionId: purchaseIntent,
+          transactionType: 'crypto_buy',
+          amount: costMajor,
+          currency: CurrencySymbols.currentCurrency,
+          title: 'Confirm purchase',
+          message: label,
+          showProcessingPhase: false,
+          onPinValidated: (verificationToken) async {
+            token = verificationToken;
+          },
+        );
+        return token;
+      },
+    );
+  }
+
+  /// Re-reads holdings from the backend and re-points [_selected] at the
+  /// fresh row.
+  ///
+  /// THE RE-POINT IS THE POINT. `_selected` is a snapshot taken when the asset
+  /// was picked, so refreshing the cubit alone leaves this screen comparing
+  /// the send against a stale quantity — which after a top-up is precisely the
+  /// number that changed.
+  Future<void> _refreshHoldings() async {
+    final cubit = context.read<CryptoCubit>();
+    await cubit.refreshHoldingsAfterSwap();
+    if (!mounted) return;
+    final st = cubit.state;
+    if (st is! CryptosLoaded) return;
+    final id = _selected?.cryptoId;
+    if (id == null) return;
+    for (final h in st.holdings) {
+      if (h.cryptoId == id) {
+        setState(() => _selected = h);
+        return;
+      }
+    }
+  }
+
   /// Set the asset to send: reset the network selection + reload the network
   /// catalogue for the new asset.
   void _selectAsset(CryptoHolding h) {
@@ -1442,9 +1570,48 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     _loadNetworks();
   }
 
+  /// Appends the supported-but-unheld assets to the sendable list.
+  ///
+  /// Zero-balance rows exist so the top-up path is reachable at all; the
+  /// amount check turns "you don't have this" into "buy the difference and
+  /// continue". Held coins stay first, so nothing about the common case
+  /// changes.
+  ///
+  /// Price is carried across from the catalogue entry — without it the sheet
+  /// cannot show an indicative cost, and the fiat/crypto toggle on this screen
+  /// has nothing to convert with.
+  List<CryptoHolding> _withUnheldAssets(
+    List<CryptoHolding> held,
+    CryptosLoaded state,
+  ) {
+    final out = List<CryptoHolding>.of(held);
+    final have = held.map((h) => h.cryptoSymbol.toLowerCase()).toSet();
+    final now = DateTime.now();
+    for (final a in state.supportedAssets) {
+      final sym = a.symbol.toLowerCase();
+      if (sym.isEmpty || have.contains(sym)) continue;
+      have.add(sym);
+      out.add(CryptoHolding(
+        id: 'unheld-$sym',
+        cryptoId: a.id,
+        cryptoSymbol: a.symbol,
+        cryptoName: a.name,
+        quantity: 0,
+        averagePrice: 0,
+        currentPrice: a.currentPrice,
+        totalValue: 0,
+        totalGainLoss: 0,
+        totalGainLossPercentage: 0,
+        purchaseDate: now,
+        lastUpdated: now,
+      ));
+    }
+    return out;
+  }
+
   /// Bottom-sheet asset picker over the user's sendable holdings.
   Future<void> _pickAsset(List<CryptoHolding> holdings) async {
-    final picked = await showModalBottomSheet<CryptoHolding>(
+    final picked = await showAppBottomSheet<CryptoHolding>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

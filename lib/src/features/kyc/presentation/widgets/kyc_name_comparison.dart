@@ -50,7 +50,6 @@ class KycNameComparison extends StatelessWidget {
     this.textPrimary = const Color(0xFF111827),
     this.textSecondary = const Color(0xFF6B7280),
     this.accent = const Color(0xFF4E03D0),
-    this.divider = const Color(0xFFE5E7EB),
     this.surface = Colors.white,
   });
 
@@ -78,7 +77,6 @@ class KycNameComparison extends StatelessWidget {
   final Color textPrimary;
   final Color textSecondary;
   final Color accent;
-  final Color divider;
 
   /// The card's own background.
   ///
@@ -95,9 +93,11 @@ class KycNameComparison extends StatelessWidget {
       margin: EdgeInsets.only(top: 10.h),
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
+        // No outline: this sits INSIDE the tier card, whose tinted gradient
+        // already separates it, so the hairline only added the grey fuzz the
+        // KYC screen was redesigned to remove.
         color: surface,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: divider),
+        borderRadius: BorderRadius.circular(14.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

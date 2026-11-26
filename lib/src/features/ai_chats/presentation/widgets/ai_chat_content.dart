@@ -47,6 +47,7 @@ import '../../domain/entities/ai_chat_message_entity.dart';
 import 'package:lazervault/core/services/voice_record_configs.dart';
 import 'package:lazervault/core/services/chat_theme_preference.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/chat_theme_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'ai_chat_content_widgets.dart';
 
 class AiChatContent extends StatefulWidget {
@@ -545,7 +546,7 @@ class _AiChatContentState extends State<AiChatContent>
     final captionController = TextEditingController(
       text: _messageController.text.trim(),
     );
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -744,7 +745,7 @@ class _AiChatContentState extends State<AiChatContent>
   }
 
   void _showOptionsSheet() {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
@@ -883,7 +884,7 @@ class _AiChatContentState extends State<AiChatContent>
       );
     }
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
         decoration: BoxDecoration(
@@ -1078,7 +1079,7 @@ class _AiChatContentState extends State<AiChatContent>
 
   void _showAiSettingsModal() {
     // Use a StatefulBuilder inside the modal to enable local state updates
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2657,7 +2658,7 @@ class _AiChatContentState extends State<AiChatContent>
   /// app (P2P + service chats) and is reliably tappable.
   void _showImageSourceSheet() {
     FocusScope.of(context).unfocus();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(

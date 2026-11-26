@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+
+import 'crowdfund_moderation.dart';
 part 'crowdfund_entities_widgets.dart';
 
 /// One page of a ListCrowdfunds call, carrying the SERVER's pagination
@@ -56,6 +58,19 @@ class Crowdfund extends Equatable {
   final int refundsCompleted;
   final int refundsFailed;
   final double totalRefunded;
+  // Lifetime completed contributions (major units). Monotonic on the
+  // server: withdrawals and refunds never reduce it, unlike currentAmount,
+  // which is the live pot. 0 only on a campaign that never took money.
+  final double totalRaised;
+
+  /// WHAT THE PLATFORM HAS DECIDED ABOUT THIS CAMPAIGN.
+  ///
+  /// Defaults to [CrowdfundModeration.unreviewed] so every existing
+  /// construction of this entity — tests, caches, the dozens of call sites
+  /// that build a Crowdfund by hand — keeps compiling and keeps behaving.
+  /// `unreviewed` reads as pending, which is the safe reading: a campaign the
+  /// backend said nothing about is not one the app presents as endorsed.
+  final CrowdfundModeration moderation;
 
   const Crowdfund({
     required this.id,
@@ -86,7 +101,17 @@ class Crowdfund extends Equatable {
     this.refundsCompleted = 0,
     this.refundsFailed = 0,
     this.totalRefunded = 0.0,
+    this.totalRaised = 0.0,
+    this.moderation = CrowdfundModeration.unreviewed,
   });
+
+  /// Whether this campaign can take money RIGHT NOW.
+  ///
+  /// Both gates, in one place. `isActive` alone was the test every contribute
+  /// surface used, and moderation adds a second one that must not be
+  /// forgotten by any of them: a campaign under review is active and
+  /// unfundable at the same time.
+  bool get canAcceptMoney => isActive && moderation.isFundable;
 
   bool get isActive => status == CrowdfundStatus.active;
   bool get isCompleted => status == CrowdfundStatus.completed;
@@ -128,6 +153,23 @@ class Crowdfund extends Equatable {
         'progressPercentage': progressPercentage,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
+        // MODERATION MUST SURVIVE THE CACHE.
+        //
+        // This map is the cache serializer (CrowdfundCubit caches whole pages
+        // through it). Leaving moderation out meant every campaign read back
+        // from cache arrived as `unreviewed` — which resolves to PENDING, so
+        // an approved campaign would render "Under review" and its Donate
+        // button would be hidden, on every cache hit. The cache is the normal
+        // path, not the exception, so that is what most users would have seen.
+        //
+        // `moderation_note` is deliberately absent: it never reaches the app
+        // and has no field to persist.
+        'moderationStatus': moderation.status.name,
+        'moderationCategory': moderation.category,
+        'moderationReason': moderation.reason,
+        'moderatedAt': moderation.moderatedAt?.toIso8601String(),
+        'appealCount': moderation.appealCount,
+        'canAppeal': moderation.canAppeal,
       };
 
   factory Crowdfund.fromJson(Map<String, dynamic> json) {
@@ -168,10 +210,27 @@ class Crowdfund extends Equatable {
       refundsCompleted: (json['refundsCompleted'] as int?) ?? 0,
       refundsFailed: (json['refundsFailed'] as int?) ?? 0,
       totalRefunded: (json['totalRefunded'] as num?)?.toDouble() ?? 0.0,
+      totalRaised: (json['totalRaised'] as num?)?.toDouble() ?? 0.0,
+      moderation: CrowdfundModeration(
+        // An ABSENT key — a page cached by an older build — resolves to
+        // pending via crowdfundModerationStateFrom. That is the safe
+        // direction for a stranger's view, and the first network
+        // revalidation replaces it; the alternative, defaulting to approved,
+        // would show a cached blocked campaign as live.
+        status: crowdfundModerationStateFrom(json['moderationStatus'] as String?),
+        category: json['moderationCategory'] as String? ?? '',
+        reason: json['moderationReason'] as String? ?? '',
+        moderatedAt: json['moderatedAt'] != null
+            ? DateTime.tryParse(json['moderatedAt'] as String)
+            : null,
+        appealCount: (json['appealCount'] as int?) ?? 0,
+        canAppeal: json['canAppeal'] as bool? ?? false,
+      ),
     );
   }
 
   Crowdfund copyWith({
+    CrowdfundModeration? moderation,
     String? id,
     int? creatorUserId,
     CrowdfundCreator? creator,
@@ -200,6 +259,7 @@ class Crowdfund extends Equatable {
     int? refundsCompleted,
     int? refundsFailed,
     double? totalRefunded,
+    double? totalRaised,
   }) {
     return Crowdfund(
       id: id ?? this.id,
@@ -231,6 +291,11 @@ class Crowdfund extends Equatable {
       refundsCompleted: refundsCompleted ?? this.refundsCompleted,
       refundsFailed: refundsFailed ?? this.refundsFailed,
       totalRefunded: totalRefunded ?? this.totalRefunded,
+      totalRaised: totalRaised ?? this.totalRaised,
+      // Carried through copyWith, or any screen that copies a campaign to
+      // change one field would silently reset its moderation to `unreviewed`
+      // — hiding the Donate button on a perfectly approved campaign.
+      moderation: moderation ?? this.moderation,
     );
   }
 
@@ -256,5 +321,11 @@ class Crowdfund extends Equatable {
         createdAt,
         updatedAt,
         recentDonations,
+        // IN props, and this matters more than it looks. Equatable drops an
+        // emit whose state compares equal, so a campaign that was blocked
+        // while the screen was open would re-fetch, compare equal on every
+        // other field, and never repaint — the creator would keep seeing a
+        // live campaign the platform had refused.
+        moderation,
       ];
 }

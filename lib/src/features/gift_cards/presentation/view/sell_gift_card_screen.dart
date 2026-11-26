@@ -29,6 +29,8 @@ import 'widgets/sell_rejection_reasons_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/legal_links_service.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'sell_gift_card_screen_widgets.dart';
 
 class SellGiftCardScreen extends StatefulWidget {
@@ -159,7 +161,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     if (widget.preselectedCard == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        Get.offAllNamed(AppRoutes.giftCards);
+        offAllKeepingHome(AppRoutes.giftCards);
       });
       return;
     }
@@ -311,7 +313,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     if (_currentStep > 1 && _currentStep < 4) {
       setState(() => _currentStep--);
     } else if (_currentStep == 4) {
-      Get.offAllNamed(AppRoutes.giftCards);
+      offAllKeepingHome(AppRoutes.giftCards);
     } else {
       Get.back();
     }
@@ -481,7 +483,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       // instant-settle short-circuit) already credited the user.
       // Skip the in-screen "submitted for review" copy and route
       // straight to My Sales where the row shows status=paid.
-      Get.offAllNamed(AppRoutes.mySales);
+      offAllKeepingHome(AppRoutes.mySales);
     } else if (state is SellRejected) {
       // Show a dedicated rejection receipt at step 4 instead of just
       // a transient snackbar. The reason text comes from the sale's
@@ -993,7 +995,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   }
 
   void _showImagePickerOptions(int slotIndex) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -2222,7 +2224,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               width: double.infinity,
               height: 52.h,
               child: TextButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.giftCards),
+                onPressed: () => offAllKeepingHome(AppRoutes.giftCards),
                 style: TextButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),

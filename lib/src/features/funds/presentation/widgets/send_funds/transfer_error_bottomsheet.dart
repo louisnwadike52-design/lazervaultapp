@@ -3,6 +3,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'package:lazervault/core/utils/budget_refusal.dart';
+import 'package:lazervault/core/utils/tier_limit_refusal.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
+
+// isTierCapRefusal moved to core/utils/tier_limit_refusal.dart, where the
+// REMEDY lives too — the classifier and the sheet it decides to show had been
+// drifting apart, and three screens held their own copy of the latter. Kept
+// visible from here so the screens that already import this file for it are
+// unaffected.
+export 'package:lazervault/core/utils/tier_limit_refusal.dart'
+    show isTierCapRefusal, showTierLimitRefusalIfAny;
 
 /// Categorized transfer error types for appropriate UI treatment.
 enum TransferErrorType {
@@ -59,14 +69,32 @@ TransferErrorInfo parseTransferError(String errorMessage,
     );
   }
 
-  if (lower.contains('daily') &&
-      (lower.contains('limit') || lower.contains('exceeded'))) {
+  // MONTHLY COUNTS TOO, AND THE BUTTON HAS TO WORK.
+  //
+  // This matched only 'daily', so a MONTHLY cap — enforced by
+  // accounts-service on exactly these transfers — fell through to the generic
+  // branch and lost the upgrade route entirely. And the daily branch set
+  // `actionLabel: 'View Limits'` with NO onAction, so the one control offered
+  // to somebody who had just been refused did nothing when tapped.
+  //
+  // 'rate limit' is excluded explicitly: it is a throttle, not a tier cap, and
+  // it is handled by the branch below. Sending someone to identity
+  // verification because they tapped too fast would be a worse dead end than
+  // the one this replaces.
+  if (isTierCapRefusal(errorMessage)) {
+    final monthly = lower.contains('monthly');
     return TransferErrorInfo(
       type: TransferErrorType.dailyLimitExceeded,
-      title: 'Daily Limit Reached',
-      message: 'You have reached your daily transfer limit. '
-          'Your limit resets at midnight. Upgrade your account tier for higher limits.',
-      actionLabel: 'View Limits',
+      title: monthly ? 'Monthly Limit Reached' : 'Daily Limit Reached',
+      message: monthly
+          ? 'You have reached the transfer limit for your account tier this '
+              'month. Verifying your identity raises it.'
+          : 'You have reached your daily transfer limit. It resets at '
+              'midnight, or you can raise it now by verifying your identity.',
+      // No actionLabel: callers reaching this struct directly have no
+      // upgrade route to offer, and a labelled button with no handler is what
+      // this whole branch is fixing. showTransferErrorBottomSheet intercepts
+      // tier caps above and shows KYCUpgradeModal instead.
       icon: Icons.timer_outlined,
       iconColor: const Color(0xFFFB923C),
       iconBgColor: const Color(0xFFFB923C),
@@ -185,14 +213,23 @@ TransferErrorInfo parseTransferError(String errorMessage,
 
 /// Shows a financial-grade error bottom sheet for transfer failures.
 ///
-/// Use this instead of snackbars for errors that require user attention
-/// (daily limits, insufficient funds, account restrictions, lock contention).
-void showTransferErrorBottomSheet(
+/// AWAITABLE ON PURPOSE. It pushes a route, and a caller that also has a sheet
+/// of its own to take down has to be able to order the two: the original bug
+/// here was a `pop()` scheduled against the PIN sheet landing on the sheet this
+/// pushes, two seconds later, so the refusal disappeared and the PIN sheet
+/// stayed.
+///
+/// [enforcedKycTier] is the tier accounts-service said it applied, where the
+/// caller has it (TransferFailure.enforcedKycTier). Without it the sheet falls
+/// back to the auth-service profile tier, which is right in the ordinary case
+/// and wrong exactly when the two have drifted.
+Future<void> showTransferErrorBottomSheet(
   BuildContext context,
   String errorMessage, {
   VoidCallback? onRetry,
   VoidCallback? onDismiss,
-}) {
+  int? enforcedKycTier,
+}) async {
   // A budget refusal is handled whole, by the shared classifier, before the
   // generic parse. It needs a different action from everything this sheet
   // offers — "Adjust budget", not "Try again", because retrying into the same
@@ -204,9 +241,30 @@ void showTransferErrorBottomSheet(
     return;
   }
 
+  // A TIER CAP IS ALSO HANDLED WHOLE, for the same reason a budget refusal
+  // is: retrying into the same cap fails identically, so the generic sheet's
+  // "Try again" is the wrong answer, and the one tailored answer it did offer
+  // — `actionLabel: 'View Limits'` — carried NO handler and did nothing when
+  // tapped.
+  //
+  // KYCUpgradeModal is the component the crypto gate and the gRPC
+  // KYC_TIER_INSUFFICIENT path already use. Reusing it means a customer sees
+  // the same explanation and the same route wherever a tier stops them, and
+  // it already knows not to tell someone whose documents are under review to
+  // submit them again.
+  if (await showTierLimitRefusalIfAny(
+    context,
+    errorMessage,
+    operationName: 'make this transfer',
+    enforcedTier: enforcedKycTier,
+  )) {
+    return;
+  }
+  if (!context.mounted) return;
+
   final info = parseTransferError(errorMessage, onRetry: onRetry);
 
-  showModalBottomSheet(
+  await showAppBottomSheet<void>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

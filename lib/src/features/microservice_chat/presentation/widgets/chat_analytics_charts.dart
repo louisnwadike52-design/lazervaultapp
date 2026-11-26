@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The chart primitives behind [ChatAnalyticsCard].
 ///
@@ -259,7 +260,7 @@ class AnalyticsBars extends StatelessWidget {
   /// the problem it solves — thirteen rows under a 168px chart is most of a
   /// screen — and a tooltip cannot be read next to the bar it describes.
   void _showKey(BuildContext context) {
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF17172A),
       shape: RoundedRectangleBorder(

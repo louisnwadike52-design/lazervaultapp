@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/presentation/view/scheduled_transfers_list_screen.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Entry chooser for the SendFunds "Scheduled" quick action.
 ///
@@ -18,7 +19,7 @@ class ScheduledEntrySheet {
   ScheduledEntrySheet._();
 
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(

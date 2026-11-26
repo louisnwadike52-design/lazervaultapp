@@ -20,6 +20,8 @@ import '../cubit/id_pay_state.dart';
 import 'id_pay_payment_guards.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class IDPayPaymentScreen extends StatefulWidget {
   const IDPayPaymentScreen({super.key});
@@ -367,7 +369,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
             setState(() {
               _isProcessing = false;
             });
-            Get.offAllNamed(AppRoutes.idPayReceipt, arguments: {
+            offAllKeepingHome(AppRoutes.idPayReceipt, arguments: {
               'transaction': state.transaction,
               'idPay': _idPay,
               'newBalance': state.newBalance,
@@ -896,7 +898,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
         .where((a) => a.currency.toUpperCase() != _idPay.currency.toUpperCase())
         .toList();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

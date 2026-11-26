@@ -25,6 +25,7 @@ import 'package:lazervault/src/features/group_account/domain/entities/group_enti
 import 'package:lazervault/src/generated/group_account.pb.dart' as pb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class SelectPayoutReceiverBottomSheet extends StatefulWidget {
   final Contribution contribution;
@@ -51,7 +52,7 @@ class SelectPayoutReceiverBottomSheet extends StatefulWidget {
     int cycleIndex = 0,
     String? currentReceiverUserId,
   }) {
-    return showModalBottomSheet<pb.SetPayoutReceiverResponse>(
+    return showAppBottomSheet<pb.SetPayoutReceiverResponse>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

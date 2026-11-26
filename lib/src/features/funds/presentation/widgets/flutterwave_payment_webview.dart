@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Result from the Flutterwave payment WebView
 class FlutterwavePaymentResult {
@@ -71,7 +72,7 @@ Future<FlutterwavePaymentResult> showFlutterwavePaymentSheet({
   String redirectScheme = 'lazervault',
   String redirectPath = '/deposit/flutterwave/callback',
 }) async {
-  final result = await showModalBottomSheet<FlutterwavePaymentResult>(
+  final result = await showAppBottomSheet<FlutterwavePaymentResult>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,

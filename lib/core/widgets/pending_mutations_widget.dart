@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../offline/mutation.dart';
 import '../offline/mutation_queue.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Widget that displays pending mutations (offline queued operations).
 ///
@@ -296,7 +297,7 @@ class _PendingMutationsWidgetState extends State<PendingMutationsWidget> {
   }
 
   void _showMutationsSheet(BuildContext context) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF0A0A0A),
       shape: const RoundedRectangleBorder(

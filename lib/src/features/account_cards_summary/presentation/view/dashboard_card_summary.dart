@@ -29,6 +29,7 @@ import 'package:lazervault/src/features/multi_country/cubit/multi_country_state.
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/funds/presentation/view/deposit_receipt_screen.dart';
 import 'package:lazervault/core/config/locale_gating.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 // Wrapper Widget to Provide the Cubit
 class DashboardCardSummary extends StatelessWidget {
@@ -201,7 +202,7 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
 
   // Method to show the account actions bottom sheet widget
   Future<void> _showCardDetailsSheet(Map<String, dynamic> accountArgs) async {
-    await Get.bottomSheet(
+    await showAppGetBottomSheet(
       BlocProvider.value(
         value: serviceLocator<AccountActionsCubit>(),
         child: AccountActionsBottomSheet(accountArgs: accountArgs),
@@ -312,6 +313,41 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
 
     return MultiBlocListener(
       listeners: [
+        // THE ACCOUNT CARDS LOST A RACE AND NEVER RECOVERED.
+        //
+        // _fetchData() runs ONCE, from initState, and returns early when the
+        // AuthenticationCubit is not yet AuthenticationSuccess. Restoring the
+        // session is asynchronous, so on a device where that lands AFTER this
+        // widget mounts, the early return was final: nothing re-ran the fetch,
+        // the card area kept its spinner for ever, and the rest of the
+        // dashboard — quick services, adverts, the nav bar, none of which read
+        // auth state — rendered perfectly around it. The build() below watches
+        // auth only to read the user's NAME for the header, so it never
+        // retriggered the fetch either.
+        //
+        // Reported 2026-11-19 by a user whose dashboard "just keeps loading and
+        // spinning". The server was never asked: GetUserAccounts was called 320
+        // times that day by other users and ZERO times by him, while his
+        // stored-token calls (notifications, family invitations) kept working —
+        // which is exactly the signature of a client that never sent the
+        // request rather than a backend that failed to answer.
+        //
+        // Listening closes the race: whenever auth becomes successful we fetch,
+        // whether that happened before this widget existed or long after.
+        BlocListener<AuthenticationCubit, AuthenticationState>(
+          listenWhen: (prev, curr) =>
+              curr is AuthenticationSuccess && prev is! AuthenticationSuccess,
+          listener: (context, state) {
+            final userId = (state as AuthenticationSuccess).profile.user.id;
+            // Already populated for this user — initState won the race after
+            // all, or a previous listener fire did the work. Re-fetching here
+            // would put a second request behind every login.
+            if (context.read<AccountCardsSummaryCubit>().hasDataForUser(userId)) {
+              return;
+            }
+            _fetchData();
+          },
+        ),
         // Listen for multi-country account creation events
         BlocListener<MultiCountryCubit, MultiCountryState>(
           listener: (context, state) {

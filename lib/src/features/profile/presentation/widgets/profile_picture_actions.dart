@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/fullscreen_image_viewer.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Hero tag shared by the dashboard/settings avatars and the full-screen viewer
 /// so "view photo" animates in from wherever it was tapped.
@@ -39,7 +40,7 @@ Future<void> showProfilePictureActions(
     return;
   }
 
-  await showModalBottomSheet<void>(
+  await showAppBottomSheet<void>(
     context: context,
     backgroundColor: Colors.white,
     shape: RoundedRectangleBorder(
@@ -113,7 +114,7 @@ Future<void> _showChangeSheet(
   ProfileCubit cubit, {
   required bool hasPicture,
 }) async {
-  await showModalBottomSheet<void>(
+  await showAppBottomSheet<void>(
     context: context,
     backgroundColor: Colors.white,
     shape: RoundedRectangleBorder(

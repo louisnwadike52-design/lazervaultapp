@@ -27,6 +27,7 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/scan_ban
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart'
     show SmartScanResult;
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class AiScanToPayScreen extends StatefulWidget {
   const AiScanToPayScreen({super.key});
@@ -648,7 +649,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
         .inMinutes
         .clamp(0, 999);
 
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       isDismissible: false,
       enableDrag: false,

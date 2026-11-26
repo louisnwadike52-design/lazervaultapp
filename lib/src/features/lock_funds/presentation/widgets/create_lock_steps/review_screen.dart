@@ -9,6 +9,7 @@ import '../../../domain/entities/lock_fund_entity.dart';
 import '../../cubit/create_lock_cubit.dart';
 import '../../cubit/lock_funds_cubit.dart';
 import '../../cubit/lock_funds_state.dart';
+import 'package:lazervault/src/features/lock_funds/presentation/widgets/piggyvault_disclosure_footer.dart';
 
 /// Review slide — wizard step 3 (Review & Confirm).
 ///
@@ -33,6 +34,15 @@ class ReviewScreen extends StatelessWidget {
         final durationDays = cubit.lockDurationDays ?? 0;
         final goalName = cubit.goalName;
         final goalDescription = cubit.goalDescription;
+        // THE MATURITY DATE ON THIS SCREEN IS A PROJECTION FROM TODAY.
+        //
+        // The server computes unlock_date from the creation instant too, but
+        // on an approval-gated plan it SHIFTS that date forward by the review
+        // duration when the plan is approved, so the term the user agreed to
+        // runs from when the plan actually became live. This date is therefore
+        // the earliest it could be, not the date it will be, and the label
+        // below says so rather than quietly presenting an estimate as fact.
+        final reviewed = cubit.planIsHeldForReview;
         final maturity = DateTime.now().add(Duration(days: durationDays));
 
         return Padding(
@@ -70,6 +80,7 @@ class ReviewScreen extends StatelessWidget {
                 maturity: maturity,
                 goalName: goalName,
                 goalDescription: goalDescription,
+                reviewed: reviewed,
               ),
               SizedBox(height: 16.h),
               // Interest breakdown — only the rows that aren't already
@@ -90,9 +101,13 @@ class ReviewScreen extends StatelessWidget {
                   );
                 },
               ),
+              if (reviewed) ...[
+                SizedBox(height: 14.h),
+                _buildReviewPill(),
+              ],
               if (cubit.qualifiesForUpfrontInterest) ...[
                 SizedBox(height: 14.h),
-                _buildUpfrontPill(),
+                _buildUpfrontPill(reviewed: reviewed),
               ],
             ],
           ),
@@ -109,6 +124,7 @@ class ReviewScreen extends StatelessWidget {
     required String currency,
     required int durationDays,
     required DateTime maturity,
+    required bool reviewed,
     String? goalName,
     String? goalDescription,
   }) {
@@ -192,7 +208,7 @@ class ReviewScreen extends StatelessWidget {
               SizedBox(width: 12.w),
               Expanded(
                 child: _kpi(
-                  label: 'Matures',
+                  label: reviewed ? 'Matures (est.)' : 'Matures',
                   value: DateFormat('MMM d, yyyy').format(maturity),
                 ),
               ),
@@ -366,7 +382,46 @@ class ReviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUpfrontPill() {
+  /// The review gate, on the screen where the user is still deciding.
+  ///
+  /// Short, and placed under the figures it qualifies. The full explanation —
+  /// what happens to the balance, what a rejection does — belongs on the
+  /// confirm step's "Before you confirm" panel, which is the last thing read
+  /// before payment. Here the job is only to stop the interest card and the
+  /// maturity date being read as a promise about today.
+  Widget _buildReviewPill() {
+    const amber = Color(0xFFF59E0B);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: amber.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: amber.withValues(alpha: 0.30)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.schedule_rounded, color: amber, size: 18.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              'Plans are reviewed before they start. Your deposit is set '
+              'aside right away and begins earning once approved — the '
+              'dates above start from then.',
+              style: GoogleFonts.inter(
+                color: const Color(0xFFFDE68A),
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpfrontPill({required bool reviewed}) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
@@ -389,13 +444,28 @@ class ReviewScreen extends StatelessWidget {
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
-              'Interest is paid upfront to your destination account when the lock is created.',
+              reviewed
+                  ? 'Interest is paid upfront to your destination account as '
+                      'soon as your plan is approved.'
+                  : 'Interest is paid upfront to your destination account '
+                      'when the lock is created.',
               style: GoogleFonts.inter(
                 color: const Color(0xFFE9D5FF),
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
                 height: 1.4,
               ),
+            ),
+          ),
+          // THE PROVIDER DISCLOSURE, on the screen where the money is
+          // actually committed. The landing page carries it too, but a user
+          // can reach this step straight from a deep link or a quick action
+          // without ever seeing that page — and this is the moment the term
+          // becomes binding.
+          SizedBox(height: 18.h),
+          const Center(
+            child: PiggyVaultDisclosureFooter(
+              padding: EdgeInsets.zero,
             ),
           ),
         ],

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/saved_recipients_warmup.dart';
+import 'package:lazervault/core/utils/destination_account_number.dart';
 import 'package:lazervault/src/features/split_bills/presentation/utils/split_method_copy.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
@@ -96,6 +98,12 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   // Account-number-FIRST flow (mirrors Send Funds): on 10 digits we auto-suggest
   // the bank(s) with the holder name already resolved; tap one to prefill + confirm.
   List<AccountSuggestion> _receiverBankSuggestions = const [];
+
+  /// True while the list holds SAVED PAYEES for a PARTIAL number — the creator
+  /// is still typing and nothing has been resolved against a bank. Only the
+  /// heading depends on it: the manual picker is already gated on
+  /// [_receiverSuggestAttempted], which a partial number never sets.
+  bool _receiverSavedOnlyPreview = false;
   bool _suggestingReceiverBanks = false;
 
   /// True once an auto-resolution attempt has FINISHED for the account number
@@ -163,6 +171,14 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   @override
   void initState() {
     super.initState();
+    // WARM THE SAVED-PAYEE SNAPSHOT. See add_recipient.dart for the full
+    // reasoning: the as-you-type suggestions read it synchronously and it only
+    // holds what RecipientCubit last emitted, so a payer who came straight
+    // here was offered nothing. Fire-and-forget.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ensureSavedRecipientsWarm(context);
+    });
+
     // Warm the dynamic (Flutterwave) bank list for the external-bank picker
     // (only NG has a dynamic source; non-NG is a no-op).
     GetIt.I<BankRepository>().warmUp('NG');
@@ -475,7 +491,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     if (_bankReceiverActive && !_isBankReceiverReady) {
       showAppSnackbar(
         'Bank Account Required',
-        'Select a bank and verify a 10-digit account number to be paid to.',
+        'Select a bank and verify an account number to be paid to.',
         type: AppSnackbarType.error,
         duration: const Duration(seconds: 4),
       );
@@ -956,10 +972,10 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     return out;
   }
 
-  /// True once a bank + a verified 10-digit account are selected.
+  /// True once a bank + a verified destination account are selected.
   bool get _isBankReceiverReady =>
       _receiverBankCode != null &&
-      (_receiverAccountNumber?.length == 10) &&
+      isCompleteDestinationAccount(_receiverAccountNumber ?? '') &&
       (_receiverBankAccountName?.isNotEmpty ?? false);
 
   String get _receiverSummaryLabel {
@@ -1336,10 +1352,10 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       );
       return;
     }
-    if (acct.length != 10) {
+    if (!isCompleteDestinationAccount(acct)) {
       showAppSnackbar(
         'Not a bank account',
-        'Choose a saved bank recipient with a 10-digit account number.',
+        'Choose a saved bank recipient with a 10- or 11-digit account number.',
         type: AppSnackbarType.error,
       );
       return;
@@ -1489,10 +1505,14 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       );
       return;
     }
-    if (acct.length != 10 || !RegExp(r'^\d{10}$').hasMatch(acct)) {
+    // Widened WITH the field. Left at ^\d{10}$ this refuses an 11-digit
+    // wallet number the box now accepts — the payer sees a number they know
+    // is right rejected as invalid, with nothing to change.
+    if (!isCompleteDestinationAccount(acct)) {
       showAppSnackbar(
         'Invalid Account Number',
-        'Account number must be exactly 10 digits',
+        'Enter a 10-digit account number, or an 11-digit wallet number '
+            'starting with 0',
         type: AppSnackbarType.error,
       );
       return;
@@ -1532,6 +1552,37 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       bankName: _receiverBankName ?? '',
       country: _bankCountry,
     );
+  }
+
+  /// The creator's own saved payees matching the digits typed so far.
+  ///
+  /// Network-free and undebounced: the saved set is already in memory, so it
+  /// answers before the bank name-enquiry could. Filtered to numbers THIS field
+  /// can hold), because a row that cannot be typed back into the box would be
+  /// an offer that dead-ends.
+  List<AccountSuggestion> _savedReceiverMatches(String value) {
+    final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length < FeatureFlags.savedPayeeMinDigits) {
+      return const <AccountSuggestion>[];
+    }
+    return context
+        .read<AccountVerificationCubit>()
+        .savedRecipientMatches(digits, limit: FeatureFlags.savedPayeeMaxRows)
+        .where((s) => isCompleteDestinationAccount(s.accountNumber))
+        .toList(growable: false);
+  }
+
+  /// Put the chosen destination's FULL number in the field.
+  ///
+  /// Needed now that a row can be tapped from a PARTIAL number: the verify path
+  /// reads this controller, so a three-digit entry beside a resolved bank would
+  /// be a state the form cannot act on. A no-op once the number is complete.
+  void _syncReceiverAccountField(String number) {
+    final want = number.replaceAll(RegExp(r'[^0-9]'), '');
+    if (want.isEmpty || _receiverAccountNumberController.text == want) return;
+    _receiverAccountNumberController.text = want;
+    _receiverAccountNumberController.selection =
+        TextSelection.collapsed(offset: want.length);
   }
 
   /// Account-first: on a full 10-digit number with no bank chosen yet, ask the
@@ -1575,9 +1626,17 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       _selectReceiverSuggestion(suggestions.first);
       return;
     }
+    // A RESOLUTION THAT FOUND NOTHING MUST NOT TAKE BACK THE SAVED ROWS.
+    // suggestBanks already merges saved payees matching this exact number, so
+    // whenever it returns anything they are in it; when it returns nothing
+    // they would simply be erased, and they can still be right.
+    final resolved = suggestions.isNotEmpty
+        ? suggestions
+        : _savedReceiverMatches(accountNumber);
     setState(() {
       _suggestingReceiverBanks = false;
-      _receiverBankSuggestions = suggestions;
+      _receiverBankSuggestions = resolved;
+      _receiverSavedOnlyPreview = suggestions.isEmpty && resolved.isNotEmpty;
       // Attempted — whether or not it resolved anything. An empty result is
       // exactly the case the manual picker exists for.
       _receiverSuggestAttempted = true;
@@ -1587,11 +1646,13 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   /// Tapping a suggestion prefills the bank + confirms the receiver (the holder
   /// name came back resolved from the suggest call), so no second verify is needed.
   void _selectReceiverSuggestion(AccountSuggestion s) {
+    _syncReceiverAccountField(s.accountNumber);
     if (s.isLazervault) {
       _selectLazervaultReceiver(s);
       return;
     }
     setState(() {
+      _receiverSavedOnlyPreview = false;
       _receiverBankCode = s.bankCode;
       _receiverBankName = s.bankName;
       _receiverAccountNumber = s.accountNumber;
@@ -1792,18 +1853,42 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         TextField(
           controller: _receiverAccountNumberController,
           keyboardType: TextInputType.number,
-          maxLength: 10,
+          // 11 so a wallet phone with a leading zero (OPay, PalmPay,
+          // Moniepoint) fits; a 10-digit NUBAN still works. Cap and rule
+          // come from one place, so the field cannot be capped below what
+          // counts as complete.
+          maxLength: kDestinationAccountMaxLength,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           style: const TextStyle(color: Colors.white, fontSize: 14),
           onChanged: (value) {
+            // SAVED PAYEES ANSWER ON THE KEYSTROKE, with no network at all.
+            // Computed before setState so the rows land in the same frame as
+            // the digit rather than a frame later, which reads as a flicker.
+            final saved = _savedReceiverMatches(value);
+            // AN EMPTY SNAPSHOT HEALS ITSELF ON THE KEYSTROKE THAT NEEDS IT.
+            //
+            // The third surface sharing this matcher, and it needs the same
+            // call as send funds and batch transfer: initState warms one frame
+            // after mount and can find the session or the recipient cubit not
+            // yet reachable, and a single early miss used to leave the matcher
+            // dead for the whole session. Typing is when the snapshot is
+            // actually wanted. Idempotent and near-free when warm.
+            if (saved.isEmpty) ensureSavedRecipientsWarm(context);
             // Any change invalidates a previous verification + suggestions.
             if (_receiverBankAccountName != null ||
                 _receiverAccountNumber != null ||
-                _receiverBankSuggestions.isNotEmpty) {
+                _receiverBankSuggestions.isNotEmpty ||
+                saved.isNotEmpty) {
               setState(() {
                 _receiverBankAccountName = null;
                 _receiverAccountNumber = null;
-                _receiverBankSuggestions = const [];
+                // Saved rows show at BOTH lengths: alone while the number is
+                // partial, and kept under the bank lookup once it is complete,
+                // so the row the creator was reaching for does not vanish at
+                // the tenth digit.
+                _receiverBankSuggestions = saved;
+                _receiverSavedOnlyPreview =
+                    !isCompleteDestinationAccount(value) && saved.isNotEmpty;
                 // A new number has not been looked up yet, so hide the manual
                 // fallback again until this one has had its chance.
                 _receiverSuggestAttempted = false;
@@ -1812,7 +1897,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                 _suggestingReceiverBanks = false;
               });
             }
-            if (value.length == 10) {
+            if (isCompleteDestinationAccount(value)) {
               // If a bank is already chosen, verify directly; otherwise suggest banks.
               if (_receiverBankCode != null) {
                 _verifyReceiverBankAccount();
@@ -1823,7 +1908,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           },
           decoration: InputDecoration(
             counterText: '',
-            hintText: 'Enter the 10-digit account number',
+            hintText: 'Account or phone (OPay, PalmPay…)',
             hintStyle: const TextStyle(color: Color(0xFF6B7280)),
             prefixIcon: const Icon(Icons.numbers, color: Color(0xFF6B7280)),
             suffixIcon: (_isVerifyingReceiverBank || _suggestingReceiverBanks)
@@ -1858,9 +1943,16 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         // confirm — the holder name is already resolved).
         if (!verified && _receiverBankSuggestions.isNotEmpty) ...[
           const SizedBox(height: 10),
-          const Text(
-            'Select the account holder’s bank',
-            style: TextStyle(
+          Text(
+            // Saved payees are the creator's own book matched on the digits so
+            // far — nothing has been resolved against a bank yet, and the
+            // bank-picking copy would claim it had.
+            _receiverSavedOnlyPreview
+                ? (_receiverBankSuggestions.length == 1
+                    ? 'Saved recipient'
+                    : 'Saved recipients')
+                : 'Select the account holder’s bank',
+            style: const TextStyle(
                 color: Color(0xFF9CA3AF),
                 fontSize: 12,
                 fontWeight: FontWeight.w500),
@@ -1982,7 +2074,8 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       _receiverAccountNumber = null;
       _receiverBankSuggestions = const [];
     });
-    if (_receiverAccountNumberController.text.trim().length == 10) {
+    if (isCompleteDestinationAccount(
+        _receiverAccountNumberController.text.trim())) {
       _verifyReceiverBankAccount();
     }
   }

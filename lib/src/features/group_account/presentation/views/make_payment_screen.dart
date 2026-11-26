@@ -23,6 +23,7 @@ import 'contribution_payment_confirmation_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../../data/datasources/group_fee_remote_data_source.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class MakePaymentScreen extends StatefulWidget {
   final String contributionId;
@@ -1691,7 +1692,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
     if (_pickerOpen) return;
     _pickerOpen = true;
     final amount = double.tryParse(_amountController.text) ?? 0;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

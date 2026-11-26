@@ -358,8 +358,15 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
         // cache (and the counter animates cache → fresh) instead of a spinner.
         _saveCachedSummaries(userId, sorted);
 
-        // Auto-select personal account matching current locale's currency
-        _autoSelectPersonalAccount(summaries);
+        // Auto-select personal account matching current locale's currency.
+        //
+        // The SORTED rows, not the raw ones. Everything else here — the emit,
+        // the cache, _currentSummaries — is the ordered list, and the selector
+        // walks its input in order to break ties ("the first account in this
+        // currency"). Handing it the unsorted response made that tie-break
+        // depend on backend row order, so the same account set could select a
+        // different wallet on a refresh than on a region switch.
+        _autoSelectPersonalAccount(sorted);
 
         // A Naira account with no NUBAN yet is a provisioning race, not a
         // steady state — go and look for it.
@@ -460,6 +467,24 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
 
   static String _cacheKey(String userId) => 'acct_summaries_cache_$userId';
 
+  /// How long a CACHED ACCOUNT NUMBER may still be shown.
+  ///
+  /// Balances going stale is harmless — the figure tweens to the fresh one a
+  /// moment later. An account number is different: it is copied and handed to
+  /// someone else's bank app, and a number that has been replaced is not
+  /// merely out of date, it is unpayable. Money sent to it does not bounce, it
+  /// lands nowhere.
+  ///
+  /// An admin CAN now replace a customer's deposit account from the console,
+  /// so "the number on this device is no longer the number" is a real state
+  /// rather than a theoretical one. Past this window the cached balances are
+  /// still painted instantly; only the NUMBER is withheld, which shows the
+  /// activating state for the one round trip it takes to confirm.
+  static const Duration _cachedNumberMaxAge = Duration(hours: 12);
+
+  static String _cacheStampKey(String userId) =>
+      'acct_summaries_cached_at_$userId';
+
   /// Persist the latest summaries for instant cached render on next login.
   /// Best-effort — a storage failure must never break the live dashboard.
   Future<void> _saveCachedSummaries(
@@ -468,6 +493,8 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       final prefs = await SharedPreferences.getInstance();
       final payload = jsonEncode(summaries.map((s) => s.toJson()).toList());
       await prefs.setString(_cacheKey(userId), payload);
+      await prefs.setInt(
+          _cacheStampKey(userId), DateTime.now().millisecondsSinceEpoch);
     } catch (_) {/* cache is an optimization, not a source of truth */}
   }
 
@@ -481,6 +508,22 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       final list = (jsonDecode(raw) as List)
           .map((e) => AccountSummaryEntity.fromJson(e as Map<String, dynamic>))
           .toList();
+
+      // WITHHOLD A STALE ACCOUNT NUMBER, KEEP THE STALE BALANCE.
+      //
+      // See _cachedNumberMaxAge. A number that was replaced while this device
+      // was closed would otherwise be painted on the deposit screen, ready to
+      // copy, until the first fetch returns. Balances carry no such risk.
+      final stampedAt = prefs.getInt(_cacheStampKey(userId));
+      final tooOld = stampedAt == null ||
+          DateTime.now()
+                  .difference(
+                      DateTime.fromMillisecondsSinceEpoch(stampedAt))
+                  .compareTo(_cachedNumberMaxAge) >
+              0;
+      if (tooOld) {
+        return list.map((a) => a.withheldAccountNumber()).toList();
+      }
       return list;
     } catch (_) {
       return null;
@@ -522,21 +565,34 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     }
 
     // Prefer the PERSONAL account in the expected currency.
+    //
+    // `main` counts as personal — the two share one service list and are the
+    // same wallet to a customer (see AppServicesBuilder.activeAccountIsPersonal
+    // for the other half of that rule). This compared the raw `accountType`
+    // string against 'personal', which the normalised display value `Main`
+    // never matches, so a user whose Naira wallet comes back as Main fell
+    // through to the any-account branch below and had their SAVINGS account
+    // auto-selected on every region switch.
     AccountSummaryEntity? chosen;
     for (final acc in summaries) {
-      if (acc.accountType.toLowerCase() == 'personal' &&
+      final type = acc.accountTypeEnum;
+      if ((type == VirtualAccountType.personal ||
+              type == VirtualAccountType.main) &&
           _sameCurrency(acc.currency, expectedCurrency)) {
         chosen = acc;
         break;
       }
     }
-    // Then ANY account in that currency. Currency beats account type here:
-    // the question this selection answers is "which wallet is the user
+    // Then ANY ORDINARY account in that currency. Currency beats account type
+    // here: the question this selection answers is "which wallet is the user
     // looking at", and a savings account in the right currency is a better
     // answer than a personal account in the wrong one.
     chosen ??= () {
       for (final acc in summaries) {
-        if (_sameCurrency(acc.currency, expectedCurrency)) return acc;
+        if (_autoSelectable(acc) &&
+            _sameCurrency(acc.currency, expectedCurrency)) {
+          return acc;
+        }
       }
       return null;
     }();
@@ -562,12 +618,56 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
             'currency');
         return;
       }
-      chosen = summaries.first;
+      chosen =
+          summaries.firstWhere(_autoSelectable, orElse: () => summaries.first);
     }
 
-    _accountManager.setActiveAccount(chosen.id);
+    // The SPENDING id, never the row id.
+    //
+    // For a family card `id` is the GROUP id — not a row in accounts.accounts —
+    // so setting it as the active account broke every account-scoped fetch
+    // (authorizeAccountRead cannot find it: the dashboard's "Could not load
+    // transactions") while AppServicesBuilder still resolved that same id back
+    // to the family summary and rendered "Family Services" over a personal
+    // card. Every other caller of setActiveAccount already passes
+    // spendingAccountId; this one did not.
+    _accountManager.setActiveAccount(chosen.spendingAccountId);
+    // Mirror the two flags the carousel keeps in step on a swipe. They are
+    // plain fields on AccountManager — read by the frozen-account guard in
+    // openAppService and by refusal dialogs opened from screens without the
+    // summaries cubit in scope — so left behind they describe the account the
+    // user was on BEFORE the region switch.
+    _accountManager.setActiveAccountFrozen(chosen.isFrozen);
+    _accountManager.setActiveFamilyContext(
+      isFamily: chosen.isFamilyAccount,
+      fundMode: chosen.fundDistributionMode,
+    );
     print(
         'AccountCardsSummaryCubit: Auto-selected account ${chosen.accountNumber} (${chosen.accountType}) for locale $currentLocale ($expectedCurrency)');
+  }
+
+  /// Whether the auto-selector may put the user on this wallet unasked.
+  ///
+  /// Three types are off limits, and all three had been reachable:
+  ///
+  ///  * a FAMILY pot — shared money a customer enters deliberately by tapping
+  ///    its card, whose spendable virtual account may still be provisioning;
+  ///  * a CROWDFUND CAMPAIGN wallet — contributions other people made, not the
+  ///    organiser's spending money;
+  ///  * an UNKNOWN type — a wallet this build cannot name cannot be reasoned
+  ///    about, and guessing is exactly how `unknown` used to become `personal`.
+  ///
+  /// A deliberate tap on any of those cards still selects it; this governs only
+  /// what we choose on the user's behalf.
+  static bool _autoSelectable(AccountSummaryEntity a) {
+    if (a.isFamilyAccount) return false;
+    return switch (a.accountTypeEnum) {
+      VirtualAccountType.family ||
+      VirtualAccountType.campaign ||
+      VirtualAccountType.unknown =>
+        false,
+      _ => true,
+    };
   }
 
   /// Currency codes compared case- and whitespace-insensitively.

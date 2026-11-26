@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../domain/entities/invoice_entity.dart';
 import '../../cubit/create_invoice_cubit.dart';
 import '../../../../../../core/services/locale_manager.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Screen 1: Invoice Type & Basic Information
 ///
@@ -452,7 +453,7 @@ class _InvoiceTypeBasicInfoScreenState extends State<InvoiceTypeBasicInfoScreen>
     CreateInvoiceCubit cubit,
     List<CountryLocale> countries,
   ) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(

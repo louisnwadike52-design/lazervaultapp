@@ -133,17 +133,31 @@ class PhoneLoginStepUpRequired extends PhonePasscodeState {
   /// half the app still claiming every sign-in is from a new device.
   final bool knownDevice;
 
+  /// The OTHER channel the server says is usable, masked. Empty = offer no
+  /// switch; see StepUpResend for why the client is told rather than inferring.
+  final String altMethod;
+  final String altDestination;
+
   const PhoneLoginStepUpRequired({
     required this.stepUpToken,
     required this.method,
     required this.destination,
     this.expiresInSeconds = 0,
     this.knownDevice = false,
+    this.altMethod = '',
+    this.altDestination = '',
   });
 
   @override
-  List<Object?> get props =>
-      [stepUpToken, method, destination, expiresInSeconds, knownDevice];
+  List<Object?> get props => [
+        stepUpToken,
+        method,
+        destination,
+        expiresInSeconds,
+        knownDevice,
+        altMethod,
+        altDestination,
+      ];
 }
 
 /// A failure; [message] is safe to surface to the user.

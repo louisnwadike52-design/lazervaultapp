@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/tier_limit_refusal.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -22,6 +24,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/grant_restriction_notice.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class BatchTransferReviewScreen extends StatefulWidget {
   const BatchTransferReviewScreen({super.key});
@@ -434,6 +437,26 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
   void _showError(String message) {
     if (!mounted) return;
+    // A TIER CAP IS NOT A SNACKBAR.
+    //
+    // A batch is refused by the SAME accounts-service spending check as a
+    // single transfer (checkSpendingLimits runs on the debit), so "daily
+    // limit exceeded" lands here — as a red snackbar that scrolls away and
+    // offers nothing. The customer is left at the last screen before the PIN
+    // with no idea that the fix is two taps away in verification.
+    //
+    // Routed to the same modal the send-funds sheet and the crypto gate use,
+    // so a tier stops you the same way wherever you meet it.
+    // Shared presenter — see core/utils/tier_limit_refusal.dart for why the
+    // three copies of this block were wrong in the same two ways.
+    if (isTierCapRefusal(message)) {
+      unawaited(showTierLimitRefusalIfAny(
+        context,
+        message,
+        operationName: 'send this batch',
+      ));
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message,
@@ -626,7 +649,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             const <AccountSummaryEntity>[];
     if (accounts.isEmpty) return;
     final current = transferData['selectedAccount'] as AccountSummaryEntity?;
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: btCard,
       shape: RoundedRectangleBorder(

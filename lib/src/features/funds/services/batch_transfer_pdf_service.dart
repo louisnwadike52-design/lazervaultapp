@@ -11,6 +11,7 @@ import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'dart:ui' show Rect;
 import 'package:lazervault/core/config/receipt_footer.dart';
+import 'package:lazervault/src/features/support/data/support_contact_info.dart';
 
 /// Production-grade batch transfer receipt PDF service
 /// Generates professional, Revolut-style downloadable and shareable PDF receipts
@@ -82,6 +83,11 @@ class BatchTransferPdfService {
   static Future<File> generateReceipt({
     required Map<String, dynamic> receiptData,
   }) async {
+    // Warm the published support address before any page is built: a
+    // document cannot re-render when a late answer arrives, so an
+    // un-warmed cache would silently drop the address from the footer.
+    // Cheap when warm, and never throws. See SupportContactInfo.
+    await SupportContactInfo.refresh();
     await _loadFonts();
     final pdf = pw.Document();
     final logo = await _loadLogo();
@@ -637,7 +643,9 @@ class BatchTransferPdfService {
                     style: _getTextStyle(fontSize: 10, isBold: true)),
                 pw.SizedBox(height: 4),
                 pw.Text(
-                  'Get help directly in-app or email support@lazervault.com',
+                  // Reads the operator's published address — never a
+                  // literal. See SupportContactInfo.
+                  SupportContactInfo.sentence('For help'),
                   style: _getTextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
               ],

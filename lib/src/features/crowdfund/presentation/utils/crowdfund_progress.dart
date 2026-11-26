@@ -67,7 +67,13 @@ class CrowdfundProgress {
   static CrowdfundProgress of(Crowdfund c) {
     final target = c.targetAmount;
     // Refunded money was raised before it went back.
-    var raised = c.currentAmount + c.totalRefunded;
+    // The server's lifetime counter is the figure. It is monotonic and
+    // backfilled for every campaign that ever took money, so a fully
+    // withdrawn campaign keeps what it raised. The pot-plus-refunds sum below
+    // is the pre-counter derivation, kept only for a response from a gateway
+    // that does not send the field (0 there means "unknown", not "nothing").
+    var raised =
+        c.totalRaised > 0 ? c.totalRaised : c.currentAmount + c.totalRefunded;
 
     final finished = c.status == CrowdfundStatus.completed ||
         c.status == CrowdfundStatus.cancelled ||

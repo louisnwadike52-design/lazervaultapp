@@ -38,6 +38,8 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Landing screen for the Batch Transfer surface. Switches the previous
 /// nested `Column → Expanded(SingleChildScrollView(Column))` layout —
@@ -568,7 +570,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
 
   void _navShortReceipt() {
     if (_shortPendingReceipt != null) {
-      Get.offAllNamed(AppRoutes.transferProof, arguments: _shortPendingReceipt);
+      offAllKeepingHome(AppRoutes.transferProof, arguments: _shortPendingReceipt);
     }
   }
 
@@ -772,7 +774,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     final subtitle = isInternal
         ? 'Lazervault • ${r.name}'
         : '${r.displayBankName} •••• ${r.accountNumber.length >= 4 ? r.accountNumber.substring(r.accountNumber.length - 4) : r.accountNumber}';
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         decoration: BoxDecoration(
           color: btCard,
@@ -891,7 +893,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
 
   void _renameBeneficiary(RecipientModel r) {
     final controller = TextEditingController(text: r.alias ?? '');
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Padding(
         padding: EdgeInsets.only(
             bottom: MediaQuery.of(Get.context!).viewInsets.bottom),
@@ -1005,7 +1007,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
 
   // ignore: unused_element
   void _openAddBeneficiarySheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

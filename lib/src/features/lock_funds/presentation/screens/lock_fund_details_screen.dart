@@ -173,7 +173,27 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                         children: [
                           _buildAmountCard(),
                           SizedBox(height: 20.h),
-                          _buildProgressSection(),
+                          // A PLAN UNDER REVIEW HAS NO PROGRESS TO REPORT.
+                          //
+                          // The progress card measures the term from
+                          // `lockedAt`, which on a pending plan is the
+                          // creation instant — so a day in the review queue
+                          // rendered as a term already underway, complete with
+                          // a percentage and a countdown, for a plan that has
+                          // not started and is earning nothing. On a flex plan
+                          // it read "Day 2".
+                          //
+                          // The review explainer takes its place rather than
+                          // sitting beside it: this is the one thing the user
+                          // opened the screen to find out, and the status
+                          // badge in the header alone never said why their
+                          // available balance had dropped or what happens
+                          // next. It is also where the plan's own status
+                          // copy finally gets rendered.
+                          if (_lock.status.awaitingDecision)
+                            _buildReviewBanner()
+                          else
+                            _buildProgressSection(),
                           SizedBox(height: 20.h),
                           _buildDetailsCard(),
                           SizedBox(height: 20.h),
@@ -638,6 +658,118 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     );
   }
 
+  /// Why this plan is not running yet, and what the user can expect.
+  ///
+  /// Deliberately offers no turnaround time. A plan leaves review when its
+  /// deposit has been placed with the asset-management company, which happens
+  /// by hand and on no schedule this app can see; a date or a "within X hours"
+  /// would be a promise the platform cannot keep, and the user would measure
+  /// us against it.
+  Widget _buildReviewBanner() {
+    const amber = Color(0xFFF59E0B);
+    final lock = _lock;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F2E),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: amber.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.hourglass_top_rounded, color: amber, size: 18.sp),
+              SizedBox(width: 8.w),
+              Text(
+                'Awaiting approval',
+                style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            lock.status.description,
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+              color: const Color(0xFFD1D5DB),
+            ),
+          ),
+          SizedBox(height: 14.h),
+          _reviewFact(
+            Icons.account_balance_wallet_outlined,
+            'Still your money',
+            'Your balance total has not changed — the deposit is set aside '
+                'from what you can spend. If the plan is not approved it is '
+                'released in full.',
+          ),
+          SizedBox(height: 12.h),
+          _reviewFact(
+            Icons.trending_up_rounded,
+            'Not earning yet',
+            lock.isFlexibleTerm
+                ? 'Interest starts accruing the day your plan is approved.'
+                : 'The ${lock.durationText} term starts on approval, so the '
+                    'maturity date moves to match. Nothing accrues while it '
+                    'is under review.',
+          ),
+          SizedBox(height: 12.h),
+          _reviewFact(
+            Icons.notifications_active_outlined,
+            'We will tell you',
+            'You will get a notification as soon as a decision is made — '
+                'there is nothing more for you to do here.',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _reviewFact(IconData icon, String title, String body) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(top: 2.h, right: 10.w),
+          child: Icon(icon, color: const Color(0xFF9CA3AF), size: 15.sp),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 12.5.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 3.h),
+              Text(
+                body,
+                style: GoogleFonts.inter(
+                  fontSize: 11.5.sp,
+                  fontWeight: FontWeight.w400,
+                  height: 1.45,
+                  color: const Color(0xFF9CA3AF),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildProgressSection() {
     final lock = _lock;
     final isFlexible = lock.isFlexibleTerm;
@@ -951,7 +1083,14 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Total at Maturity',
+                  // On a plan still awaiting a decision this figure is what
+                  // the plan WILL be worth once it runs its term, and the
+                  // term has not begun. Unqualified, next to a principal
+                  // that really has left the spendable balance, it reads as
+                  // a maturity value already in flight.
+                  lock.status.awaitingDecision
+                      ? 'At maturity, once approved'
+                      : 'Total at Maturity',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     color: const Color(0xFFB7ABDA),

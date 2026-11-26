@@ -5,6 +5,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
 import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/tag_people_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Opening the picker and sending the invites, in one place.
 ///
@@ -21,7 +22,7 @@ class TagPeopleAction {
     Set<String> alreadyTagged = const {},
     List<SprayInvitee> initialSelection = const [],
   }) {
-    return showModalBottomSheet<List<SprayInvitee>>(
+    return showAppBottomSheet<List<SprayInvitee>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

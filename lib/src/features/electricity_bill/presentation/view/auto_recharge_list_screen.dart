@@ -18,6 +18,7 @@ import '../cubit/auto_recharge_state.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Electricity Auto-Recharge management. Mirrors `DataAutoRechargeScreen`
 /// visually: solid dark background, standard AppBar, shared
@@ -465,7 +466,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
   Future<BillBeneficiaryEntity?> _pickBeneficiary(
     List<BillBeneficiaryEntity> beneficiaries,
   ) {
-    return showModalBottomSheet<BillBeneficiaryEntity>(
+    return showAppBottomSheet<BillBeneficiaryEntity>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

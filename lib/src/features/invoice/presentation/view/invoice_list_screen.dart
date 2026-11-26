@@ -18,6 +18,7 @@ import '../widgets/invoice_filter_chip.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class InvoiceListScreen extends StatefulWidget {
   const InvoiceListScreen({super.key});
@@ -491,7 +492,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   void _showOptionsMenu() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
@@ -534,7 +535,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   void _showInvoiceOptions(Invoice invoice) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(

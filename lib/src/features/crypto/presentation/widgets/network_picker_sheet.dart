@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart' show QuidaxAssetNetwork;
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Loads the enabled networks for [symbol], opens the shared picker, and — when
 /// the user chooses one — provisions that chain's deposit address and marks it
@@ -70,7 +71,7 @@ Future<String?> showNetworkPickerSheet(
   String title = 'Select network',
   String? subtitle,
 }) {
-  return showModalBottomSheet<String>(
+  return showAppBottomSheet<String>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

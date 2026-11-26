@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_progress_indicator.dart';
+import 'package:lazervault/src/features/autosave/presentation/helpers/autosave_funding_health.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_state.dart';
 import 'package:lazervault/src/features/move_money/domain/mandate_auth_attempt_store.dart';
@@ -245,6 +246,24 @@ class AutoSaveSwipeableCard extends StatelessWidget {
   /// is actually known, so it never false-alarms.
   Widget _buildMandateAlertChip() {
     if (!_isLinkedBankRule) return const SizedBox.shrink();
+
+    // THE BANK LINK WINS OVER THE MANDATE, same rule as the details banner.
+    //
+    // Every label below is about the Direct Debit, and none of them can be
+    // acted on when the bank is no longer linked — "Re-authorize Direct Debit"
+    // on a disconnected account sends the customer to a sheet with nothing in
+    // it. The decision is shared with the banner
+    // (autosave_funding_health.dart) so the list and the detail screen cannot
+    // say different things about the same rule.
+    final funding = resolveAutosaveFundingProblem(rule);
+    if (funding.overridesMandateState) {
+      return _alertChip(
+        label: funding.chipLabel,
+        color: const Color(0xFFEF4444),
+        icon: Icons.link_off_rounded,
+      );
+    }
+
     final cubit = serviceLocator<MandateCubit>();
     // Idempotent; the pill below reads the auth-granted stamp synchronously.
     MandateAuthAttemptStore.hydrate();
@@ -404,6 +423,41 @@ class AutoSaveSwipeableCard extends StatelessWidget {
           height: 4,
         ),
       ],
+    );
+  }
+
+  /// A one-line alert pill. Shared by the bank-link and mandate chips so the
+  /// two read as the same kind of warning rather than two separate designs.
+  Widget _alertChip({
+    required String label,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(top: 8.h),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12.sp, color: color),
+            SizedBox(width: 5.w),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

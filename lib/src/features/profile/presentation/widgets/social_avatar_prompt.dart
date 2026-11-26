@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// "Use your Google photo?" — offered once, to someone who has no picture.
 ///
@@ -79,7 +80,7 @@ class SocialAvatarPrompt {
     required String pictureUrl,
   }) async {
     final label = _providerLabel(provider);
-    final accepted = await showModalBottomSheet<bool>(
+    final accepted = await showAppBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

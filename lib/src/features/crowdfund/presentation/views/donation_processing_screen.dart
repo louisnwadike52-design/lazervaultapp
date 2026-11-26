@@ -42,6 +42,41 @@ class DonationAttempt {
   });
 }
 
+/// A LOCAL, PENDING DONATION — what the customer chose, before the server
+/// has said anything.
+///
+/// The receipt opens on this the instant the PIN is verified, so there has to
+/// be something to render; it carries only facts the user themselves supplied
+/// (the amount, the campaign, their message) and is replaced WHOLESALE by the
+/// server's own row the moment it arrives. Nothing derived from it is ever
+/// presented as settled: its status is `processing`, which every surface
+/// already renders as in-flight.
+CrowdfundDonation pendingDonationFor(DonationAttempt a, Crowdfund c) =>
+    CrowdfundDonation(
+      // The client-minted intent key, which IS the identity of this payment
+      // until the server mints a row id for it.
+      id: a.transactionId,
+      crowdfundId: a.crowdfundId,
+      donorUserId: 0,
+      donor: CrowdfundDonor(
+        userId: 0,
+        // Blank, not a guess. The server names the donor; until it answers,
+        // the only honest value is "we have not been told yet", and
+        // displayLabel already paints a safe placeholder for that.
+        displayName: '',
+        isAnonymous: a.isAnonymous,
+        isCreator: false,
+      ),
+      amount: a.amount,
+      currency: c.currency,
+      donationDate: DateTime.now(),
+      status: DonationStatus.processing,
+      transactionId: a.transactionId,
+      message: a.message,
+      isAnonymous: a.isAnonymous,
+      paymentMethod: 'wallet',
+    );
+
 /// Where the screen currently is. Only [processing] blocks the back
 /// gesture — the other two are terminal as far as this screen is
 /// concerned, so the user always has a way out.

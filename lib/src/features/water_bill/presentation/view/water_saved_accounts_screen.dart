@@ -16,6 +16,7 @@ import '../cubit/water_auto_recharge_state.dart';
 import '../cubit/water_beneficiary_cubit.dart';
 import '../cubit/water_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Saved water accounts. Mirrors the internet / data-bundles saved-contacts
 /// UX: list + tap-for-options + delete-with-rollover warning. Options:
@@ -271,7 +272,7 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
       _navigateEditAutoRecharge(b, autos.first);
       return;
     }
-    final picked = await showModalBottomSheet<WaterAutoRecharge>(
+    final picked = await showAppBottomSheet<WaterAutoRecharge>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

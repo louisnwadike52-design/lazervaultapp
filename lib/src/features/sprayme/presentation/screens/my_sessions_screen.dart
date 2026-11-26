@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 
+import 'package:lazervault/core/shared_widgets/load_more_footer.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_session.dart';
@@ -15,7 +16,7 @@ import 'package:lazervault/src/features/sprayme/presentation/screens/session_det
 import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart'
     show OccasionTheme, CreateSessionScreen;
 import 'package:lazervault/src/features/sprayme/presentation/screens/join_session_screen.dart';
-import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// My Sessions Screen - shows sessions created by user and sessions they joined
 /// with tabs for "Created" and "Joined", pagination, and navigation to session details/stats
@@ -335,26 +336,35 @@ class _MySessionsScreenState extends State<MySessionsScreen>
       onRefresh: _refresh,
       color: const Color(0xFF3B82F6),
       backgroundColor: const Color(0xFF1F1F1F),
-      child: ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: sessions.length + (hasMore ? 1 : 0),
-        separatorBuilder: (_, __) => SizedBox(height: 10.h),
-        itemBuilder: (context, index) {
-          if (index >= sessions.length) {
-            // Load more indicator
-            loadMore();
-            return Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                child: isLoading
-                    ? LazerVaultLoader.small()
-                    : const SizedBox.shrink(),
-              ),
-            );
-          }
-          return _buildSessionCard(sessions[index]);
-        },
+      // THE NEXT PAGE IS FETCHED ON SCROLL, NOT DURING BUILD.
+      //
+      // The footer row used to call `loadMore()` from inside `itemBuilder`,
+      // and `loadMore` opens with `setState` — so the first build of that row
+      // called setState during build, which Flutter rejects outright. It also
+      // meant the fetch fired on every rebuild while the row was on screen,
+      // which is the "rebuild → loadMore → error → rebuild" loop the
+      // `_errorMessage == null` gate at the call site was added to contain.
+      // With the trigger moved out of build, that gate is belt and braces
+      // rather than the only thing holding the screen together.
+      child: ScrollEndLoader(
+        hasMore: hasMore,
+        loading: isLoading,
+        onReachEnd: loadMore,
+        child: ListView.separated(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          itemCount: sessions.length + (hasMore ? 1 : 0),
+          separatorBuilder: (_, __) => SizedBox(height: 10.h),
+          itemBuilder: (context, index) {
+            if (index >= sessions.length) {
+              return LoadMoreFooter(
+                loading: isLoading,
+                onLoadMore: loadMore,
+              );
+            }
+            return _buildSessionCard(sessions[index]);
+          },
+        ),
       ),
     );
   }
@@ -689,7 +699,7 @@ class _MySessionsScreenState extends State<MySessionsScreen>
     // Show action sheet with options
     if (!mounted) return;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

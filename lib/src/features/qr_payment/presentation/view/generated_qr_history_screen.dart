@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/widgets/qr_code_details_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class GeneratedQRHistoryScreen extends StatefulWidget {
   const GeneratedQRHistoryScreen({super.key});
@@ -237,7 +238,7 @@ class _GeneratedQRHistoryScreenState extends State<GeneratedQRHistoryScreen> {
   Widget _buildQRCodeTile(QRPaymentEntity qr) {
     return GestureDetector(
       onTap: () {
-        showModalBottomSheet(
+        showAppBottomSheet(
           context: context,
           backgroundColor: Colors.transparent,
           isScrollControlled: true,

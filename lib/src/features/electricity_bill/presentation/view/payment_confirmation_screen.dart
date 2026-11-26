@@ -29,6 +29,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'meter_entry_mode.dart';
 import '../../../../../core/widgets/amount_preset_row.dart';
 import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'payment_confirmation_screen_widgets.dart';
 
 class PaymentConfirmationScreen extends StatefulWidget {
@@ -399,7 +401,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     // a clean UX — a plain Get.back() would also work but we make the
     // intent explicit and skip any transient screens in between.
     if (_isRepeatPayment) {
-      Get.offAllNamed(
+      offAllKeepingHome(
         AppRoutes.electricityBillHistory,
       );
       return;
@@ -1327,7 +1329,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     final ngnAccounts =
         allAccounts.where((a) => a.currency.toUpperCase() == 'NGN').toList();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -1740,7 +1742,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
   }
 
   void _showCountryCodePicker() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

@@ -19,6 +19,7 @@ import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart
 import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Screen 3: Review quote details - premium, coverage breakdown, provider info
 class InsuranceQuoteReviewScreen extends StatefulWidget {
@@ -933,7 +934,7 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
   }
 
   void _showProductInfoSheet(BuildContext context, InsuranceProduct product) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

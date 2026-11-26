@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Called when the user taps "Create Reminder". Must throw on failure so the
 /// sheet can surface a retryable snackbar. The caller owns the cubit/repo
@@ -59,7 +60,7 @@ class BillReminderCreateSheet extends StatefulWidget {
     String currencySymbol = '\u20A6',
     String successMessage = 'Reminder created',
   }) {
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

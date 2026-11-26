@@ -13,6 +13,8 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../services/exchange_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/services/remote_log_sink.dart';
 part 'exchange_detail_screen_widgets.dart';
 
 /// Transaction detail for a past exchange — opened from the history list.
@@ -74,7 +76,8 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
     try {
       final path = await ExchangePdfService.downloadReceipt(transaction: _tx!);
       _toast('Receipt saved to $path', success: true);
-    } catch (_) {
+    } catch (e, st) {
+      _reportReceiptFailure('download', e, st);
       _toast('Could not save receipt. Please try again.', success: false);
     } finally {
       if (mounted) setState(() => _isDownloading = false);
@@ -85,12 +88,51 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
     if (_isSharing || _tx == null) return;
     setState(() => _isSharing = true);
     try {
-      await ExchangePdfService.shareReceipt(transaction: _tx!);
-    } catch (_) {
+      // Anchor the iOS/iPad share sheet to this screen. Passing nothing
+      // throws on iPad, and a zero-sized rect throws too — the service
+      // substitutes a usable one either way.
+      final box = context.findRenderObject() as RenderBox?;
+      final origin =
+          box != null ? box.localToGlobal(Offset.zero) & box.size : null;
+      await ExchangePdfService.shareReceipt(
+        transaction: _tx!,
+        sharePositionOrigin: origin,
+      );
+    } catch (e, st) {
+      _reportReceiptFailure('share', e, st);
       _toast('Could not share receipt. Please try again.', success: false);
     } finally {
       if (mounted) setState(() => _isSharing = false);
     }
+  }
+
+
+  /// REPORT THE REAL REASON, because the toast cannot.
+  ///
+  /// Both of these used to `catch (_)` and show "Please try again" — which
+  /// is all a customer needs, and nothing at all for whoever has to fix it.
+  /// Reported 2026-11-25 on a completed GHS to EUR conversion: the document
+  /// builds correctly in isolation (verified — the arrow and the layout are
+  /// both fine), so the failure is in a platform call, and a platform call
+  /// that reports nothing cannot be diagnosed from a screenshot.
+  ///
+  /// Goes to the remote sink at error level, which ships regardless of
+  /// whether verbose logging is on.
+  void _reportReceiptFailure(String action, Object error, StackTrace stack) {
+    RemoteLogSink.instance.log(
+      level: 'error',
+      flow: 'exchange_receipt',
+      message: 'exchange receipt $action failed: $error',
+      screen: 'exchange_detail_screen',
+      fields: {
+        'action': action,
+        'error_type': error.runtimeType.toString(),
+        'transaction_id': _tx?.id ?? '',
+        'from_currency': _tx?.fromCurrency ?? '',
+        'to_currency': _tx?.toCurrency ?? '',
+        'stack': stack.toString(),
+      },
+    );
   }
 
   void _toast(String message, {required bool success}) {
@@ -541,7 +583,7 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
                 ),
                 SizedBox(height: 20.h),
                 ElevatedButton(
-                  onPressed: () => Get.offAllNamed(AppRoutes.exchangeHome),
+                  onPressed: () => offAllKeepingHome(AppRoutes.exchangeHome),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4E03D0),
                   ),

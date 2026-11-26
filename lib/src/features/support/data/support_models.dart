@@ -58,6 +58,16 @@ class SupportMessage {
   /// URL to decide how to render.
   final String messageType;
 
+  /// Set when support has REWRITTEN this reply after sending it.
+  ///
+  /// Surfaced to the customer on purpose. An agent can now correct a wrong
+  /// figure or a half-sent sentence in place, which is better for the reader
+  /// than a second message contradicting the first — but someone who already
+  /// read the original has to be able to tell that what they are looking at
+  /// now is not what they read before. A silent substitution damages trust
+  /// more than the original mistake did.
+  final DateTime? editedAt;
+
   const SupportMessage({
     required this.id,
     required this.ticketId,
@@ -68,6 +78,7 @@ class SupportMessage {
     this.createdAt,
     this.mediaUrl = '',
     this.messageType = 'text',
+    this.editedAt,
   });
 
   bool get isStaff => senderType == 'staff';
@@ -77,6 +88,11 @@ class SupportMessage {
   /// message_type alone would leave an empty bubble if the type said 'image'
   /// and the URL was lost.
   bool get hasImage => mediaUrl.trim().isNotEmpty;
+
+  /// Whether to show the "edited" marker. Only ever true on a staff reply —
+  /// a customer's own message cannot be edited, and the server refuses it,
+  /// so a marker on one would mean something had gone badly wrong.
+  bool get wasEdited => editedAt != null && isStaff;
 
   factory SupportMessage.fromJson(Map<String, dynamic> j) => SupportMessage(
         id: (j['id'] ?? '').toString(),
@@ -88,5 +104,9 @@ class SupportMessage {
         createdAt: DateTime.tryParse('${j['created_at'] ?? ''}'),
         mediaUrl: (j['media_url'] ?? '').toString(),
         messageType: (j['message_type'] ?? 'text').toString(),
+        // Absent on every message that has never been edited, and on every
+        // app version talking to an older server — tryParse on '' yields
+        // null, which is exactly "not edited".
+        editedAt: DateTime.tryParse('${j['edited_at'] ?? ''}'),
       );
 }

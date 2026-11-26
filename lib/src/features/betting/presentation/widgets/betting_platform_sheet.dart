@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/widgets/biller_logo.dart';
 import '../../domain/entities/betting_entities.dart';
 import '../view/betting_theme.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Pick a bookmaker from a searchable sheet.
 ///
@@ -22,7 +23,7 @@ Future<BettingPlatform?> showBettingPlatformSheet(
   required List<BettingPlatform> platforms,
   BettingPlatform? selected,
 }) {
-  return showModalBottomSheet<BettingPlatform>(
+  return showAppBottomSheet<BettingPlatform>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

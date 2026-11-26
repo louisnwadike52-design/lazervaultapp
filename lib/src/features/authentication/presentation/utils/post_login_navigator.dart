@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:get/get.dart';
 
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/kyc/presentation/views/bvn_signup_screen.dart';
 import 'package:lazervault/core/services/login_facts_store.dart';
 import 'package:lazervault/core/utils/kyc_completion.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
@@ -118,8 +120,46 @@ void goAfterLogin(
     phoneVerified: user.verified,
     emailVerificationRequired: FeatureFlags.isEmailVerificationRequired,
     isEmailVerified: user.isEmailVerified,
+    // An admin set this account's login credential and the holder has not
+    // replaced it. The resolver puts this ABOVE every other gate — see
+    // signup_resume.dart for why nothing may come before replacing a
+    // credential somebody else chose.
+    mustChangeCredentials: user.mustChangeCredentials,
     // A Google/Apple account is OFFERED a passcode rather than required to
     // set one — the provider link is already its credential.
   );
-  Get.offAllNamed(route.name, arguments: route.args);
+  // LAND ON THE SCREEN THAT ASKS FOR THE NUMBER, NOT THE ONE BEFORE IT.
+  //
+  // resolvePostLoginRoute is pure and testable, so it cannot read the admin
+  // switch or the keystore — it returns the KYC gate for anyone the gate
+  // blocks, which was the only identity screen when it was written. Now
+  // there are two, and which one applies depends on
+  // bvn_signup_screen_enabled plus whether we already hold a number.
+  //
+  // Left alone, every social, biometric and passcode login by an unverified
+  // holder opened the Mono gate — a page describing BVN, NIN and a liveness
+  // check — and only moved to the BVN screen once they tapped. Two different
+  // screens for one step, the first of them describing a flow the admin
+  // setting has switched off.
+  //
+  // Resolved HERE, beside KycLoginGate.forHolder, which is already the place
+  // admin-dependent login routing lives. resolveOnboardingIdentityRoute is
+  // the same function PIN-setup and the boot router use, so all three agree.
+  // Resolved WITHOUT a storage read, so this stays synchronous — making
+  // goAfterLogin async would change navigation timing at six call sites to
+  // answer a question we can already answer by reasoning:
+  //
+  //   blocksDashboard is only ever true for an UNVERIFIED holder, and
+  //   SecureStorageService.saveBvn is only ever called after a verification
+  //   has succeeded. So a holder standing here cannot have a stored BVN, and
+  //   the capture screen is always the right destination on that branch.
+  //
+  // The NIN branch deliberately still goes to the gate: a NIN mints nothing,
+  // so the Mono flow is what actually earns these holders a tier, and the
+  // gate is where it starts.
+  var dest = route;
+  if (route.name == AppRoutes.kycBVNVerification && IdentityKind.active.isBvn) {
+    dest = (name: AppRoutes.bvnSignup, args: null);
+  }
+  Get.offAllNamed(dest.name, arguments: dest.args);
 }

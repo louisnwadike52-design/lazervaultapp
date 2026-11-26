@@ -2,6 +2,7 @@ library;
 
 import 'package:get/get.dart';
 
+import 'package:lazervault/core/navigation/nav_stack.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 /// GO BACK IF THERE IS A BACK TO GO TO.
@@ -71,3 +72,52 @@ void popServiceLandingScreen({String fallbackRoute = AppRoutes.billsHub}) =>
 void onServiceLandingPopInvoked(bool didPop,
         {String fallbackRoute = AppRoutes.billsHub}) =>
     backOrHomeOnPopInvoked(didPop, fallbackRoute: fallbackRoute);
+
+/// FINISH A FLOW WITHOUT TAKING THE WAY HOME WITH IT.
+///
+/// `Get.offAllNamed(AppRoutes.tagPay)` is the shape this replaces. It is right
+/// about the thing it was written for — after a tag is created, the amount
+/// screen and the processing screen must not be behind the back button — and
+/// wrong about everything else, because `offAllNamed` empties the stack
+/// completely. What is left is ONE route, and on that route:
+///
+///   * the in-app back arrow still works (it is wired to a route of its own),
+///     which is why this survived review for so long, and
+///   * the Android back button, the Android back gesture and the iOS edge
+///     swipe pop the only route there is — and the app CLOSES.
+///
+/// Reported on tag pay ("clicking the back button on the OS on Android exits
+/// the app"), and true of roughly seventy other call sites: every bill
+/// receipt, every processing screen, every receipt that returned the user to
+/// its own service home.
+///
+/// So: land on [route] with the dashboard UNDERNEATH it. The completed flow is
+/// still gone — nothing between the dashboard and [route] survives — and the
+/// OS back button lands on the dashboard, which is where a person who has just
+/// finished paying for something expects to be.
+///
+/// When the dashboard is already on the stack it is KEPT, not rebuilt: the
+/// predicate stops the removal there, so its state, its scroll position and
+/// its in-flight requests are untouched. Only when there is no dashboard at
+/// all — a cold start straight into a deep link — is one created, and that is
+/// exactly the case that otherwise strands the user.
+Future<T?>? offAllKeepingHome<T>(String route, {dynamic arguments}) {
+  // Going home IS the destination — nothing to keep underneath.
+  if (route == AppRoutes.dashboard) {
+    return Get.offAllNamed<T>(AppRoutes.dashboard, arguments: arguments);
+  }
+  if (NavStackObserver.contains(AppRoutes.dashboard)) {
+    return Get.offAllNamed<T>(
+      route,
+      arguments: arguments,
+      // Removal walks DOWN from the new route and stops at the first match,
+      // so everything below the dashboard is kept and everything above it —
+      // the whole flow being finished — is discarded.
+      predicate: (r) => r.settings.name == AppRoutes.dashboard,
+    );
+  }
+  // No dashboard to keep. Build the stack bottom-up in one frame: both calls
+  // land before the next paint, so the dashboard is never visible as a flash.
+  Get.offAllNamed(AppRoutes.dashboard);
+  return Get.toNamed<T>(route, arguments: arguments);
+}

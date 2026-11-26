@@ -8,6 +8,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Picks a saved EXTERNAL bank recipient for a split bill's receiver.
 ///
@@ -27,7 +28,7 @@ class SavedBankRecipientSheet extends StatefulWidget {
   const SavedBankRecipientSheet({super.key});
 
   static Future<RecipientModel?> show(BuildContext context) {
-    return showModalBottomSheet<RecipientModel>(
+    return showAppBottomSheet<RecipientModel>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

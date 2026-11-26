@@ -43,6 +43,18 @@ class CountryConfigs {
       KycLevel.standard: 200000, // ₦200,000 (CBN Tier-2 daily)
       KycLevel.advanced: 0, // Unlimited
     },
+    // CANONICAL, from shared/kyctiers.Matrix["NG"] (kobo -> naira):
+    //   Tier 1  30_000_000 kobo = ₦300,000
+    //   Tier 2 500_000_000 kobo = ₦5,000,000
+    //   Tier 3  Unlimited (0)
+    // Transcribed rather than derived: the ratios are 6x and 25x, which no
+    // single multiplier produces, which is exactly why the old heuristic was
+    // wrong. If these ever change, change shared/kyctiers first.
+    monthlyLimits: {
+      KycLevel.basic: 300000, // ₦300,000
+      KycLevel.standard: 5000000, // ₦5,000,000
+      KycLevel.advanced: 0, // Unlimited
+    },
     regulatoryNotes: [
       'BVN verification required for Tier 2 (CBN mandate)',
       'NIN + address proof required for Tier 3 (Enhanced KYC)',

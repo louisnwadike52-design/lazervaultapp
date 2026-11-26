@@ -12,6 +12,17 @@ import 'support_models.dart';
 /// Thrown when the user is already at the maximum number of open tickets and
 /// tries to create another (support-service returns HTTP 409). Carries the cap
 /// and the user's current open count so the UI can explain the block.
+/// Raised when a locked-out customer already has a support request open.
+///
+/// NOT AN ERROR TO APOLOGISE FOR: the right answer is "we already have this,
+/// somebody will reply", which is reassuring rather than a failure.
+class SupportPreAuthOpenException implements Exception {
+  const SupportPreAuthOpenException(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
+
 class SupportTicketLimitException implements Exception {
   final int limit;
   final int openCount;
@@ -26,6 +37,23 @@ class SupportTicketLimitException implements Exception {
 /// (`/api/v1/support/*`) — the app never talks to the support microservice port
 /// directly, matching the platform's "frontend always goes through a gateway"
 /// rule. Local dev can override with SUPPORT_HOST/SUPPORT_PORT to hit :8030.
+/// The operator-tunable support settings, as the app sees them.
+///
+/// Both fields are null when unset or unreachable, and every consumer must
+/// render correctly without them — see [SupportApi.supportSettings].
+class SupportSettings {
+  const SupportSettings({this.responseSlaText, this.contactEmail});
+
+  /// The reply-time promise shown on support surfaces.
+  final String? responseSlaText;
+
+  /// The PUBLIC address customers are told to write to, e.g. on a KYC failure
+  /// where the in-app ticket is not enough. NEVER hardcoded in the app: it is
+  /// a commitment that somebody reads that inbox, and the support team changes
+  /// it without waiting on an app-store review.
+  final String? contactEmail;
+}
+
 class SupportApi {
   final SecureStorageService _storage;
   SupportApi(this._storage);
@@ -70,6 +98,34 @@ class SupportApi {
         : core;
     return Uri.parse('$origin$path');
   }
+
+  // ── Raw verbs, for the support DESK ──────────────────────────────────────
+  //
+  // The desk calls support-service's ADMIN ticket routes. Those share this
+  // client's origin resolution, timeout and auth header exactly; what differs
+  // is only the path. Exposing the verbs is how the desk reuses all of that
+  // without a second copy of _uri() — and a second copy is how a dev-port
+  // override comes to apply to one support surface and not the other.
+  //
+  // Deliberately thin: no status interpretation here, because the desk's
+  // reaction to a 403 ("you are no longer support") is not the customer
+  // surface's reaction to one.
+  Future<http.Response> rawGet(String path,
+          {Map<String, String>? query}) async =>
+      _send(() async => http.get(
+            query == null || query.isEmpty
+                ? _uri(path)
+                : _uri(path).replace(queryParameters: query),
+            headers: await _headers(),
+          ));
+
+  Future<http.Response> rawPost(String path, String body) async =>
+      _send(() async => http.post(_uri(path),
+          headers: await _headers(), body: body.isEmpty ? null : body));
+
+  Future<http.Response> rawPatch(String path, String body) async =>
+      _send(() async => http.patch(_uri(path),
+          headers: await _headers(), body: body.isEmpty ? null : body));
 
   Future<Map<String, String>> _headers() async {
     final token = await _storage.getAccessToken();
@@ -123,6 +179,55 @@ class SupportApi {
     return SupportTicket.fromJson(jsonDecode(res.body)['ticket']);
   }
 
+  /// Raises a support request for somebody who CANNOT SIGN IN.
+  ///
+  /// The one support call that carries no token, because the customer it
+  /// exists for has none: stuck at the passcode screen, on an email they
+  /// cannot verify, in a resumption state that will not resume. Every other
+  /// route here would answer 401 — the platform refusing to hear from exactly
+  /// the person it has locked out.
+  ///
+  /// IT IS NOT A LOGIN, AND IT PROVES NOTHING. The address is simply what the
+  /// device had cached; support files these on a separate, visibly unverified
+  /// channel and still verifies identity before touching an account.
+  ///
+  /// Throws [SupportPreAuthOpenException] when this address already has a
+  /// request open — which is not a failure, and the caller should say so.
+  Future<String> createPreAuthTicket({
+    required String email,
+    required String message,
+    String subject = '',
+    String context = '',
+  }) async {
+    final res = await _send(() async => http.post(
+          _uri('/api/v1/support/pre-auth/tickets'),
+          // NO AUTH HEADER, deliberately — not even an expired one. _headers()
+          // would attach whatever stale token is lying in storage, and a
+          // rejected token on an unauthenticated route is a confusing 401
+          // instead of a filed ticket.
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'email': email,
+            'subject': subject,
+            'message': message,
+            'context': context,
+          }),
+        ));
+    if (res.statusCode == 409) {
+      String msg = 'You already have a support request open about this.';
+      try {
+        final b = jsonDecode(res.body);
+        if (b is Map && b['error'] is String) msg = b['error'] as String;
+      } catch (_) {}
+      throw SupportPreAuthOpenException(msg);
+    }
+    _ensureOk(res);
+    final body = jsonDecode(res.body);
+    return (body is Map && body['ticket_number'] is String)
+        ? body['ticket_number'] as String
+        : '';
+  }
+
   /// The reply-time promise shown on every support surface.
   ///
   /// Served by support-service from the same row the admin console writes,
@@ -134,17 +239,41 @@ class SupportApi {
   /// Returns null on any failure — the notice is reassurance, not content,
   /// and a support screen must never fail to open because a banner could
   /// not be fetched.
-  Future<String?> responseSlaText() async {
+  Future<String?> responseSlaText() async =>
+      (await supportSettings()).responseSlaText;
+
+  /// The operator-tunable support settings the app renders.
+  ///
+  /// ONE CALL FOR BOTH VALUES. responseSlaText() used to fetch this payload and
+  /// throw away everything except one field, so adding the contact address
+  /// would have meant a second request to the same endpoint on the same screen.
+  ///
+  /// Never throws, and every field is nullable: these are reassurance and a
+  /// fallback route, not content. A support surface must open even when the
+  /// settings call fails — a customer who cannot reach support is exactly who
+  /// this screen exists for.
+  Future<SupportSettings> supportSettings() async {
     try {
       final res = await _send(() async => http.get(
           _uri('/api/v1/support/settings'),
           headers: await _headers()));
-      if (res.statusCode != 200) return null;
-      final v = jsonDecode(res.body)['response_sla_text'];
-      if (v is String && v.trim().isNotEmpty) return v.trim();
-      return null;
+      if (res.statusCode != 200) return const SupportSettings();
+      final body = jsonDecode(res.body);
+      if (body is! Map) return const SupportSettings();
+      String? pick(String key) {
+        final v = body[key];
+        return (v is String && v.trim().isNotEmpty) ? v.trim() : null;
+      }
+
+      return SupportSettings(
+        responseSlaText: pick('response_sla_text'),
+        // "" from the server is MEANINGFUL: no public address is configured,
+        // and the app must then omit the line rather than invent one. pick()
+        // turns it into null, which every caller already treats as "hide".
+        contactEmail: pick('contact_email'),
+      );
     } catch (_) {
-      return null;
+      return const SupportSettings();
     }
   }
 
@@ -206,6 +335,81 @@ class SupportApi {
         if (b is Map && b['error'] is String) msg = b['error'] as String;
       } catch (_) {}
       throw Exception(msg);
+    }
+  }
+}
+
+/// The app-rating prompt's calls.
+///
+/// On SupportApi rather than a client of its own: the endpoints live on
+/// support-service, share its base-URL resolution, its auth header and its
+/// timeout, and a second client would be three copies of that for four calls.
+extension SupportApiAppRating on SupportApi {
+  /// Asks the SERVER whether to show the prompt.
+  ///
+  /// The schedule is entirely server-side — a device-side interval is defeated
+  /// by clearing app storage or reinstalling. The app's only input is how old
+  /// the account is, which the server cannot see from support-service; a client
+  /// that lies about it can at worst be offered a prompt, and cannot touch the
+  /// interval, the snooze or the post-rating quiet.
+  ///
+  /// NEVER THROWS. A rating prompt is the least important thing on the
+  /// dashboard: if this fails for any reason the answer is "do not ask".
+  Future<bool> shouldAskForRating({required int accountAgeDays}) async {
+    try {
+      final headers = await _headers();
+      final res = await _send(() => http.get(
+            _uri('/api/v1/support/app-rating/should-ask'
+                '?account_age_days=$accountAgeDays'),
+            headers: headers,
+          ));
+      if (res.statusCode != 200) return false;
+      final body = jsonDecode(res.body);
+      return body is Map && body['ask'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Records a rating. Returns whether it was stored.
+  Future<bool> submitRating({
+    required int stars,
+    String comment = '',
+    String platform = '',
+    String appVersion = '',
+    bool sentToStore = false,
+  }) async {
+    try {
+      final headers = await _headers();
+      final res = await _send(() => http.post(
+            _uri('/api/v1/support/app-rating'),
+            headers: headers,
+            body: jsonEncode({
+              'stars': stars,
+              'comment': comment,
+              'platform': platform,
+              'app_version': appVersion,
+              'sent_to_store': sentToStore,
+            }),
+          ));
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Records a "not now". Best-effort: if it fails the server's interval still
+  /// applies, so the worst case is being asked again at the normal cadence
+  /// rather than immediately.
+  Future<void> snoozeRating() async {
+    try {
+      final headers = await _headers();
+      await _send(() => http.post(
+            _uri('/api/v1/support/app-rating/snooze'),
+            headers: headers,
+          ));
+    } catch (_) {
+      // Deliberately silent — see above.
     }
   }
 }

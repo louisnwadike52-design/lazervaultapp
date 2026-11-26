@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.da
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Mono Direct Debit Bottomsheet - Matches exact Mono Connect design
 /// Custom bottomsheet that displays Mono info before launching Mono Connect WebView
@@ -568,7 +569,7 @@ void showMonoDirectDebitBottomsheet({
   bool useRecurringAccess = false,
   Future<void> Function(String paymentUrl, String paymentId)? onDirectPayAuth,
 }) {
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

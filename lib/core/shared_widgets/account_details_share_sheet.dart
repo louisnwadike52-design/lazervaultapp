@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// One "view / copy / share my account details" sheet, for every account type
 /// that holds a NUBAN.
@@ -98,7 +99,7 @@ class AccountDetailsShareSheet extends StatelessWidget {
     String accountNameLabel = 'Account name',
     String? subtitle,
   }) {
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

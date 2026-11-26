@@ -8,7 +8,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'webview_file_selector.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'directpay_authorization_sheet_widgets.dart';
 
 /// DirectPay Authorization Bottom Sheet
@@ -37,7 +39,7 @@ Future<DirectPayAuthResult> showDirectPayAuthorizationSheet({
   String redirectPath = '/deposit/callback',
   DirectPayFlow flow = DirectPayFlow.deposit,
 }) async {
-  final result = await showModalBottomSheet<DirectPayAuthResult>(
+  final result = await showAppBottomSheet<DirectPayAuthResult>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
@@ -201,6 +203,13 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       platform.setOnPlatformPermissionRequest((request) {
         request.grant();
       });
+      // MAKE `<input type="file">` WORK. Android's WebView opens no picker on
+      // its own: without this callback the tap does nothing at all — no
+      // picker, no error. Mono's documentary-verification step is exactly
+      // such an input ("Scan or Upload your NIMC Slip"), so a customer who
+      // got through OTP and their BVN/NIN check could be stopped dead with
+      // the app showing no reason why. See WebViewFileSelector.
+      WebViewFileSelector.attach(platform);
     } else if (platform is WebKitWebViewController) {
       // iOS (WKWebView) denies camera/mic to the page unless we explicitly grant
       // the permission request — omitting this made the liveness check fail on

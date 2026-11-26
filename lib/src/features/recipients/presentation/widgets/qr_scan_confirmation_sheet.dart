@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'qr_scan_confirmation_sheet_widgets.dart';
 
 class QrScanConfirmationSheet extends StatefulWidget {
@@ -27,7 +28,7 @@ class QrScanConfirmationSheet extends StatefulWidget {
     String? requestedCurrency,
   }) async {
     QrScanAction? action;
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

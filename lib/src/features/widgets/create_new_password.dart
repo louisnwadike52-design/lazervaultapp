@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/authentication/utils/login_identifier.dart';
+import 'package:lazervault/core/services/post_reset_handoff.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -36,6 +38,12 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
   bool _hasSpecialChar = false;
   String _resetToken = '';
   String _deliveryMethod = 'email';
+  /// The account being recovered. BOTH callers already pass this — password
+  /// recovery sends `email`, the OTP path sends `phone` — and this screen read
+  /// neither, so the identifier died here and the login screen that follows
+  /// had to ask for it again.
+  String _identifier = '';
+  bool _identifierIsEmail = true;
   String? _errorMessage;
   // Where to land after a successful reset. Defaults to email sign-in; switched
   // to passcode login when the user's stored preference is phone+passcode.
@@ -53,28 +61,82 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
               args['resetToken'] as String? ?? args['token'] as String? ?? '';
           _requireToken = args['requireToken'] as bool? ?? false;
           _deliveryMethod = args['deliveryMethod'] as String? ?? 'email';
+          // Prefer whichever the caller actually filled: password recovery
+          // sends an email, the OTP path a phone (and an empty email beside
+          // it), so a bare `?? ''` on one key would pick the blank one.
+          final email = (args['email'] as String? ?? '').trim();
+          final phone = (args['phone'] as String? ?? '').trim();
+          _identifier = email.isNotEmpty ? email : phone;
+          _identifierIsEmail = email.isNotEmpty;
 
           if (_resetToken.isNotEmpty) {
             _tokenController.text = _resetToken;
           }
         });
       }
+      // AFTER the arguments: the destination depends on whether the cached
+      // identity is this account, which needs the identifier they carry.
+      _resolvePostResetRoute();
     });
-    // Resolve the post-reset destination from the stored login preference so a
-    // phone+passcode user lands on the passcode screen, not email sign-in.
-    _resolvePostResetRoute();
+
   }
 
+  /// Where to send the user once the password is changed.
+  ///
+  /// THE CACHED PREFERENCE BELONGS TO WHOEVER LAST LOGGED IN HERE, NOT TO THE
+  /// ACCOUNT BEING RECOVERED. This read `preferred_login_method` unconditionally,
+  /// so on a shared device where A (phone+passcode) was cached and B reset their
+  /// PASSWORD, B — who has a password and may have no passcode at all — was sent
+  /// to the passcode lock screen.
+  ///
+  /// The flow itself is better evidence than the cache: somebody who just
+  /// completed a PASSWORD reset has a password, so a password screen can always
+  /// serve them. The cached preference is therefore honoured only when the
+  /// cache describes THIS account; otherwise the email screen is the safe
+  /// answer.
+  ///
+  /// Called after the route arguments land, because the comparison needs the
+  /// identifier they carry.
   Future<void> _resolvePostResetRoute() async {
     try {
-      final pref = await serviceLocator<FlutterSecureStorage>()
-          .read(key: 'preferred_login_method');
+      final storage = serviceLocator<FlutterSecureStorage>();
+      final pref = await storage.read(key: 'preferred_login_method');
       final phoneMode = pref == 'phone_passcode' ||
           (pref == null && FeatureFlags.isPhonePasscodeMode);
-      if (mounted && phoneMode) {
+      if (!phoneMode) return; // email sign-in default already set
+      if (!await _cacheDescribesThisAccount(storage)) {
+        // A different person's device state. Keep the email default — the
+        // password they just set is a credential that screen accepts.
+        return;
+      }
+      if (mounted) {
         setState(() => _postResetRoute = AppRoutes.passcodeLogin);
       }
     } catch (_) {/* keep the email sign-in default */}
+  }
+
+  /// Whether the identity cached on this device is the account just recovered.
+  ///
+  /// Unknown means YES: with nothing cached to contradict it, the device-level
+  /// preference is the best signal available and the behaviour is what it has
+  /// always been. Only a POSITIVE disagreement redirects.
+  Future<bool> _cacheDescribesThisAccount(FlutterSecureStorage storage) async {
+    final id = _identifier.trim();
+    if (id.isEmpty) return true;
+    if (_identifierIsEmail) {
+      final cached = (await storage.read(key: 'stored_email'))?.trim();
+      if (cached == null || cached.isEmpty) return true;
+      return cached.toLowerCase() == id.toLowerCase();
+    }
+    final cached = await storage.read(key: 'stored_phone');
+    if (cached == null || cached.trim().isEmpty) return true;
+    String digits(String v) => v.replaceAll(RegExp(r'[^0-9]'), '');
+    final a = digits(cached);
+    final b = digits(id);
+    if (a.isEmpty || b.isEmpty) return true;
+    // One side may carry the dialing code and the other not.
+    final n = a.length < b.length ? a.length : b.length;
+    return a.substring(a.length - n) == b.substring(b.length - n);
   }
 
   @override
@@ -233,7 +295,18 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
             message:
                 'Your password has been reset. Please sign in with your new password.',
             primaryLabel: 'Sign in',
-            onPrimary: () => Get.offAllNamed(_postResetRoute),
+            onPrimary: () {
+              // Carry the account forward so the sign-in screen opens knowing
+              // who this is. A prefill, never a proof — the new password is
+              // still required, which is what confirms they remember it.
+              PostResetHandoff.publish(
+                _identifier,
+                _identifierIsEmail
+                    ? LoginIdentifierType.email
+                    : LoginIdentifierType.phone,
+              );
+              Get.offAllNamed(_postResetRoute);
+            },
           );
         } else if (state is AuthenticationError) {
           setState(() {

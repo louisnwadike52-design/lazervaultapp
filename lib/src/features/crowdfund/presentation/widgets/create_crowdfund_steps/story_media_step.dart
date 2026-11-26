@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class StoryMediaStep extends StatefulWidget {
   final TextEditingController storyController;
@@ -102,7 +103,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
   // ─── Image Source Selection ──────────────────────────────────
 
   void _showImageSourceBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

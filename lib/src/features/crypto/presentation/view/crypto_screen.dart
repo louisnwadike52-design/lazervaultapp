@@ -38,6 +38,7 @@ import '../widgets/crypto_shimmer_loading.dart';
 import '../widgets/crypto_asset_avatar.dart';
 import '../widgets/watchlist_manager_sheet.dart';
 import '../../../../generated/crypto.pb.dart' show PriceAlert;
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class CryptoScreen extends StatefulWidget {
   const CryptoScreen({super.key});
@@ -178,7 +179,7 @@ class _CryptoScreenState extends State<CryptoScreen>
     // (LocaleManager) and actually connects to LiveKit. Replaces the legacy
     // gRPC VoiceInputWidget stub that sent only serviceName+language and
     // returned canned responses.
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       const VoiceCommandSheet(serviceName: 'crypto'),
       isScrollControlled: true,
       enableDrag: false,
@@ -463,7 +464,7 @@ class _CryptoScreenState extends State<CryptoScreen>
   void _showPortfolioValueSheet(CryptosLoaded state, double totalValue) {
     final p24 = _portfolio24h(state);
     final isPositive = p24.gainFiat >= 0;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,
@@ -1090,7 +1091,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               TextButton(
                 onPressed: () {
                   final cubit = context.read<CryptoCubit>();
-                  Get.bottomSheet(
+                  showAppGetBottomSheet(
                     BlocProvider.value(
                       value: cubit,
                       child: const WatchlistManagerSheet(),
@@ -1956,7 +1957,7 @@ class _CryptoScreenState extends State<CryptoScreen>
 
   // ──────────────── Trending Cryptos Bottom Sheet ────────────────
   void _showTrendingCryptosSheet(List<Crypto> trendingCryptos) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         height: Get.height * 0.7,
         decoration: BoxDecoration(
@@ -2022,7 +2023,7 @@ class _CryptoScreenState extends State<CryptoScreen>
     final gainers = _sortedGainers(state);
     final losers = _sortedLosers(state);
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       StatefulBuilder(
         builder: (context, setSheetState) {
           bool showGainers = true;

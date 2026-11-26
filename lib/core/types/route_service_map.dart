@@ -42,6 +42,39 @@ const Map<String, AppServiceName> kRouteToService = {
   AppRoutes.epinHome: AppServiceName.rechargeCard,
   AppRoutes.escrow: AppServiceName.escrow,
   AppRoutes.expenses: AppServiceName.expenses,
+  // BOTH financial-connections surfaces are gated by the same switch.
+  //
+  // Without these, a notification deep link would bypass the unavailable gate
+  // — the tile could be switched off from the dashboard while a push still
+  // opened the screen behind it.
+  //
+  // The messaging page was missing entirely, which mattered more than it
+  // looked: resolver_social.dart lands three different notification kinds on
+  // AppRoutes.financialConnections, so those pushes opened an ungated screen.
+  // The quick-services icon now opens it too, so leaving it out would have
+  // widened the hole rather than kept it still.
+  AppRoutes.financialConnections: AppServiceName.financialConnections,
+  AppRoutes.linkedBanks: AppServiceName.financialConnections,
+  // Every vendor route maps to the tile's gate, not just the hub: a deep link
+  // straight to the scanner must be refused by the same switch that hides the
+  // tile, or the gate is decorative.
+  // Every ticketing route maps to the tile's gate, for the reason stated just
+  // above: a deep link straight to an organiser dashboard or a door scanner
+  // must be refused by the same switch that hides the tile, or the gate is
+  // decorative. The param routes are listed by their PATTERN because that is
+  // what the map is keyed on.
+  AppRoutes.ticketing: AppServiceName.ticketing,
+  AppRoutes.ticketingMyEvents: AppServiceName.ticketing,
+  AppRoutes.ticketingMyTickets: AppServiceName.ticketing,
+  AppRoutes.ticketingCreate: AppServiceName.ticketing,
+  AppRoutes.ticketingDetail: AppServiceName.ticketing,
+  AppRoutes.ticketingOrganiser: AppServiceName.ticketing,
+  AppRoutes.ticketingCheckIn: AppServiceName.ticketing,
+  AppRoutes.ticketingAttendees: AppServiceName.ticketing,
+  AppRoutes.ticketingEdit: AppServiceName.ticketing,
+  AppRoutes.vendorCampaigns: AppServiceName.vendorCampaigns,
+  AppRoutes.vendorCampaignScan: AppServiceName.vendorCampaigns,
+  AppRoutes.vendorCampaignRedemptions: AppServiceName.vendorCampaigns,
   AppRoutes.giftCards: AppServiceName.giftCards,
   AppRoutes.groupAccount: AppServiceName.groupAccount,
   AppRoutes.idPayHome: AppServiceName.idPay,

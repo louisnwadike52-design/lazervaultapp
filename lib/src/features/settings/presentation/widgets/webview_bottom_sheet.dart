@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Opens [url] in a draggable bottom-sheet web view with a title bar, loading
 /// indicator, error fallback, and an "open in browser" escape hatch. Used by
@@ -17,7 +18,7 @@ Future<void> showWebViewBottomSheet(
   required String url,
   required String title,
 }) {
-  return showModalBottomSheet(
+  return showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

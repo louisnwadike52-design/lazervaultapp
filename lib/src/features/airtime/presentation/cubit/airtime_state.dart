@@ -120,6 +120,30 @@ class AirtimeTransactionReviewReady extends AirtimeState {
 }
 
 // Payment states
+/// PAY WITH CRYPTO: the purchase is authorised and recorded, and the
+/// conversion that funds it is running.
+///
+/// A STATE OF ITS OWN, not a flavour of Processing. Every caller that waits on
+/// a purchase settles on Success or Failed; this is neither, and leaving it as
+/// a Processing variant means those callers hang until their timeout and then
+/// report a failure for a purchase that is proceeding normally. It is also not
+/// Success — the customer has no airtime yet — and not Failed, because nothing
+/// has gone wrong.
+class AirtimeAwaitingCryptoFunding extends AirtimeState {
+  final AirtimeTransaction transaction;
+
+  /// The coin being sold, lowercase.
+  final String asset;
+
+  const AirtimeAwaitingCryptoFunding({
+    required this.transaction,
+    required this.asset,
+  });
+
+  @override
+  List<Object?> get props => [transaction, asset];
+}
+
 class AirtimePaymentProcessing extends AirtimeState {
   final AirtimeTransaction transaction;
   final double progress; // 0.0 to 1.0

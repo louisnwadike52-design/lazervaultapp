@@ -17,6 +17,7 @@ import '../../../../../core/widgets/bill_beneficiary_item.dart';
 import '../cubit/beneficiary_cubit.dart';
 import '../cubit/beneficiary_state.dart';
 import '../widgets/rename_meter_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class BeneficiariesScreen extends StatefulWidget {
   const BeneficiariesScreen({super.key});
@@ -649,7 +650,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
   void _showBeneficiaryDetailsSheet(BillBeneficiaryEntity beneficiary) {
     final dateFormat = DateFormat('MMM dd, yyyy');
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -925,7 +926,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
   /// Pay Now / Set Auto-Recharge / Edit Nickname / Delete. Replaces the
   /// previous behaviour where tap opened the details dialog directly.
   void _showOptions(BillBeneficiaryEntity b, AutoRechargeEntity? auto) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

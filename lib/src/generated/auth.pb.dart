@@ -1080,6 +1080,8 @@ class LoginResponse extends $pb.GeneratedMessage {
     $core.String? twoFactorMethod,
     $fixnum.Int64? stepUpExpiresIn,
     $core.String? errorCode,
+    $core.String? stepUpAltMethod,
+    $core.String? stepUpAltDestination,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -1097,6 +1099,9 @@ class LoginResponse extends $pb.GeneratedMessage {
     if (twoFactorMethod != null) result.twoFactorMethod = twoFactorMethod;
     if (stepUpExpiresIn != null) result.stepUpExpiresIn = stepUpExpiresIn;
     if (errorCode != null) result.errorCode = errorCode;
+    if (stepUpAltMethod != null) result.stepUpAltMethod = stepUpAltMethod;
+    if (stepUpAltDestination != null)
+      result.stepUpAltDestination = stepUpAltDestination;
     return result;
   }
 
@@ -1129,6 +1134,8 @@ class LoginResponse extends $pb.GeneratedMessage {
     ..aOS(13, _omitFieldNames ? '' : 'twoFactorMethod')
     ..aInt64(14, _omitFieldNames ? '' : 'stepUpExpiresIn')
     ..aOS(15, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(16, _omitFieldNames ? '' : 'stepUpAltMethod')
+    ..aOS(17, _omitFieldNames ? '' : 'stepUpAltDestination')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1300,6 +1307,34 @@ class LoginResponse extends $pb.GeneratedMessage {
   $core.bool hasErrorCode() => $_has(14);
   @$pb.TagNumber(15)
   void clearErrorCode() => $_clearField(15);
+
+  /// THE OTHER CHANNEL, WHEN THERE IS A USABLE ONE.
+  ///
+  /// Email is the default for step-up; a user who cannot reach their inbox
+  /// needs the phone instead. The app must be TOLD whether that is possible
+  /// rather than discovering it from a refusal — offering a switch that then
+  /// fails is worse than not offering it, and the client cannot know whether
+  /// the account has a phone or whether SMS can deliver right now.
+  ///
+  /// Empty when there is no alternate: no second contact on the account, or
+  /// the provider for it is down.
+  @$pb.TagNumber(16)
+  $core.String get stepUpAltMethod => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set stepUpAltMethod($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasStepUpAltMethod() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearStepUpAltMethod() => $_clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.String get stepUpAltDestination => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set stepUpAltDestination($core.String value) => $_setString(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasStepUpAltDestination() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearStepUpAltDestination() => $_clearField(17);
 }
 
 class LoginData extends $pb.GeneratedMessage {
@@ -2336,10 +2371,12 @@ class RequestPasscodeResetRequest extends $pb.GeneratedMessage {
   factory RequestPasscodeResetRequest({
     $core.String? phone,
     $core.String? countryCode,
+    $core.String? deliveryChannel,
   }) {
     final result = create();
     if (phone != null) result.phone = phone;
     if (countryCode != null) result.countryCode = countryCode;
+    if (deliveryChannel != null) result.deliveryChannel = deliveryChannel;
     return result;
   }
 
@@ -2358,6 +2395,7 @@ class RequestPasscodeResetRequest extends $pb.GeneratedMessage {
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'phone')
     ..aOS(2, _omitFieldNames ? '' : 'countryCode')
+    ..aOS(3, _omitFieldNames ? '' : 'deliveryChannel')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2385,6 +2423,8 @@ class RequestPasscodeResetRequest extends $pb.GeneratedMessage {
       $pb.GeneratedMessage.$_defaultFor<RequestPasscodeResetRequest>(create);
   static RequestPasscodeResetRequest? _defaultInstance;
 
+  /// The identifier the user typed: an E.164 phone OR an email address. Named
+  /// `phone` for wire compatibility with the builds that only ever sent one.
   @$pb.TagNumber(1)
   $core.String get phone => $_getSZ(0);
   @$pb.TagNumber(1)
@@ -2402,6 +2442,21 @@ class RequestPasscodeResetRequest extends $pb.GeneratedMessage {
   $core.bool hasCountryCode() => $_has(1);
   @$pb.TagNumber(2)
   void clearCountryCode() => $_clearField(2);
+
+  /// Where to DELIVER the code: "sms" | "email".
+  ///
+  /// Empty means INFER from `phone` — an email-shaped identifier delivers by
+  /// email. Older app builds send nothing, so the inference is what keeps them
+  /// working, and it is also what stops the server mailing a code to a phone
+  /// the user never typed.
+  @$pb.TagNumber(3)
+  $core.String get deliveryChannel => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set deliveryChannel($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasDeliveryChannel() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDeliveryChannel() => $_clearField(3);
 }
 
 class RequestPasscodeResetResponse extends $pb.GeneratedMessage {
@@ -2410,6 +2465,8 @@ class RequestPasscodeResetResponse extends $pb.GeneratedMessage {
     $core.String? msg,
     $fixnum.Int64? expiresIn,
     $core.int? resendAfterSeconds,
+    $core.String? deliveryChannel,
+    $core.String? deliveryDestinationMasked,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -2417,6 +2474,9 @@ class RequestPasscodeResetResponse extends $pb.GeneratedMessage {
     if (expiresIn != null) result.expiresIn = expiresIn;
     if (resendAfterSeconds != null)
       result.resendAfterSeconds = resendAfterSeconds;
+    if (deliveryChannel != null) result.deliveryChannel = deliveryChannel;
+    if (deliveryDestinationMasked != null)
+      result.deliveryDestinationMasked = deliveryDestinationMasked;
     return result;
   }
 
@@ -2438,6 +2498,8 @@ class RequestPasscodeResetResponse extends $pb.GeneratedMessage {
     ..aInt64(3, _omitFieldNames ? '' : 'expiresIn')
     ..a<$core.int>(
         4, _omitFieldNames ? '' : 'resendAfterSeconds', $pb.PbFieldType.O3)
+    ..aOS(5, _omitFieldNames ? '' : 'deliveryChannel')
+    ..aOS(6, _omitFieldNames ? '' : 'deliveryDestinationMasked')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2500,6 +2562,27 @@ class RequestPasscodeResetResponse extends $pb.GeneratedMessage {
   $core.bool hasResendAfterSeconds() => $_has(3);
   @$pb.TagNumber(4)
   void clearResendAfterSeconds() => $_clearField(4);
+
+  /// The channel the code was ACTUALLY sent on ("sms" | "email") and a masked
+  /// destination, so the verification screen can name where to look instead of
+  /// telling every user to check their phone.
+  @$pb.TagNumber(5)
+  $core.String get deliveryChannel => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set deliveryChannel($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasDeliveryChannel() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDeliveryChannel() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get deliveryDestinationMasked => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set deliveryDestinationMasked($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasDeliveryDestinationMasked() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDeliveryDestinationMasked() => $_clearField(6);
 }
 
 class ResetPasscodeWithOTPRequest extends $pb.GeneratedMessage {
@@ -4287,10 +4370,12 @@ class ResendPhoneVerificationResponse extends $pb.GeneratedMessage {
   factory ResendPhoneVerificationResponse({
     $core.String? message,
     $core.bool? success,
+    $fixnum.Int64? expiresIn,
   }) {
     final result = create();
     if (message != null) result.message = message;
     if (success != null) result.success = success;
+    if (expiresIn != null) result.expiresIn = expiresIn;
     return result;
   }
 
@@ -4309,6 +4394,7 @@ class ResendPhoneVerificationResponse extends $pb.GeneratedMessage {
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'message')
     ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aInt64(3, _omitFieldNames ? '' : 'expiresIn')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4354,6 +4440,28 @@ class ResendPhoneVerificationResponse extends $pb.GeneratedMessage {
   $core.bool hasSuccess() => $_has(1);
   @$pb.TagNumber(2)
   void clearSuccess() => $_clearField(2);
+
+  /// SECONDS THE NEW CODE IS GOOD FOR, from the server's own clock.
+  ///
+  /// The service has always computed this and the handler always discarded it
+  /// — there was a comment saying so and an `_ = verificationDetails` doing it.
+  /// So the app had no lifetime to show after a resend, and its countdown
+  /// either vanished or, worse, substituted a guess: a screen counting down
+  /// from ten minutes against a server TTL of two is a confident timer that is
+  /// wrong, and the customer trusts it right up to the moment the code dies
+  /// early.
+  ///
+  /// Zero still means "not stated" and the app renders no countdown rather
+  /// than one starting at nought — OtpExpiryCountdown fires onExpired at zero,
+  /// which would mark a freshly-sent code expired the instant it arrives.
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get expiresIn => $_getI64(2);
+  @$pb.TagNumber(3)
+  set expiresIn($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasExpiresIn() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearExpiresIn() => $_clearField(3);
 }
 
 class ForgotPasswordRequest extends $pb.GeneratedMessage {
@@ -6410,9 +6518,11 @@ class GetLoginHistoryResponse extends $pb.GeneratedMessage {
 class ResendLoginOtpRequest extends $pb.GeneratedMessage {
   factory ResendLoginOtpRequest({
     $core.String? stepUpToken,
+    $core.String? method,
   }) {
     final result = create();
     if (stepUpToken != null) result.stepUpToken = stepUpToken;
+    if (method != null) result.method = method;
     return result;
   }
 
@@ -6430,6 +6540,7 @@ class ResendLoginOtpRequest extends $pb.GeneratedMessage {
       package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'stepUpToken')
+    ..aOS(2, _omitFieldNames ? '' : 'method')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6463,6 +6574,19 @@ class ResendLoginOtpRequest extends $pb.GeneratedMessage {
   $core.bool hasStepUpToken() => $_has(0);
   @$pb.TagNumber(1)
   void clearStepUpToken() => $_clearField(1);
+
+  /// WHICH CHANNEL TO RESEND ON. "" (the default, and what older builds send)
+  /// keeps the channel the challenge was issued on, so this is additive.
+  /// A request for a channel the account cannot be reached on, or that cannot
+  /// deliver right now, is REFUSED rather than silently falling back.
+  @$pb.TagNumber(2)
+  $core.String get method => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set method($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMethod() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMethod() => $_clearField(2);
 }
 
 class SkipLoginOtpRequest extends $pb.GeneratedMessage {
@@ -11312,6 +11436,7 @@ class User extends $pb.GeneratedMessage {
     $core.String? addressCountry,
     $core.String? middleName,
     $core.bool? mustChangeCredentials,
+    $core.bool? smsAvailable,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -11352,6 +11477,7 @@ class User extends $pb.GeneratedMessage {
     if (middleName != null) result.middleName = middleName;
     if (mustChangeCredentials != null)
       result.mustChangeCredentials = mustChangeCredentials;
+    if (smsAvailable != null) result.smsAvailable = smsAvailable;
     return result;
   }
 
@@ -11403,6 +11529,7 @@ class User extends $pb.GeneratedMessage {
     ..aOS(33, _omitFieldNames ? '' : 'addressCountry')
     ..aOS(34, _omitFieldNames ? '' : 'middleName')
     ..aOB(35, _omitFieldNames ? '' : 'mustChangeCredentials')
+    ..aOB(36, _omitFieldNames ? '' : 'smsAvailable')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -11751,6 +11878,23 @@ class User extends $pb.GeneratedMessage {
   $core.bool hasMustChangeCredentials() => $_has(34);
   @$pb.TagNumber(35)
   void clearMustChangeCredentials() => $_clearField(35);
+
+  /// Whether THIS account can receive an SMS code right now.
+  ///
+  /// Mirrors auth-service's own field at the SAME NUMBER (36) — these two files
+  /// are separate copies of one wire contract and a number that drifts decodes
+  /// as a different field. The full reasoning lives there; in short, SMS
+  /// availability became per-account when the provider's OTP route stopped
+  /// delivering, and the app cannot resolve it itself without publishing the
+  /// whitelist to every handset.
+  @$pb.TagNumber(36)
+  $core.bool get smsAvailable => $_getBF(35);
+  @$pb.TagNumber(36)
+  set smsAvailable($core.bool value) => $_setBool(35, value);
+  @$pb.TagNumber(36)
+  $core.bool hasSmsAvailable() => $_has(35);
+  @$pb.TagNumber(36)
+  void clearSmsAvailable() => $_clearField(36);
 }
 
 /// Individual signup step progress
@@ -17579,6 +17723,254 @@ class AdminGenerateTokenByPhoneResponse extends $pb.GeneratedMessage {
   $core.bool hasLastName() => $_has(11);
   @$pb.TagNumber(12)
   void clearLastName() => $_clearField(12);
+}
+
+/// Bulk display lookup request. Ids that do not exist are simply absent from
+/// the response — a missing user is not an error, because a saved-recipient row
+/// can outlive the account it names and the list must still render.
+///
+/// FIELD NUMBERS AND NAMES MATCH auth-service's copy EXACTLY. The two are
+/// separate files compiled into separate binaries that talk to each other; a
+/// field number that differs decodes as silence, with nothing erroring.
+class GetUsersDisplayByIdsRequest extends $pb.GeneratedMessage {
+  factory GetUsersDisplayByIdsRequest({
+    $core.Iterable<$core.String>? userIds,
+  }) {
+    final result = create();
+    if (userIds != null) result.userIds.addAll(userIds);
+    return result;
+  }
+
+  GetUsersDisplayByIdsRequest._();
+
+  factory GetUsersDisplayByIdsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetUsersDisplayByIdsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetUsersDisplayByIdsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pPS(1, _omitFieldNames ? '' : 'userIds')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetUsersDisplayByIdsRequest clone() =>
+      GetUsersDisplayByIdsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetUsersDisplayByIdsRequest copyWith(
+          void Function(GetUsersDisplayByIdsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetUsersDisplayByIdsRequest))
+          as GetUsersDisplayByIdsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUsersDisplayByIdsRequest create() =>
+      GetUsersDisplayByIdsRequest._();
+  @$core.override
+  GetUsersDisplayByIdsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetUsersDisplayByIdsRequest> createRepeated() =>
+      $pb.PbList<GetUsersDisplayByIdsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetUsersDisplayByIdsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetUsersDisplayByIdsRequest>(create);
+  static GetUsersDisplayByIdsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<$core.String> get userIds => $_getList(0);
+}
+
+/// Strictly what is needed to draw a person. Deliberately carries NO email,
+/// phone, date of birth, BVN, NIN or account id: this response crosses a
+/// service boundary for a display concern, so anything more would be a
+/// standing invitation to use it as a general user feed.
+class UserDisplayInfo extends $pb.GeneratedMessage {
+  factory UserDisplayInfo({
+    $core.String? userId,
+    $core.String? username,
+    $core.String? firstName,
+    $core.String? lastName,
+    $core.String? profilePicture,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (username != null) result.username = username;
+    if (firstName != null) result.firstName = firstName;
+    if (lastName != null) result.lastName = lastName;
+    if (profilePicture != null) result.profilePicture = profilePicture;
+    return result;
+  }
+
+  UserDisplayInfo._();
+
+  factory UserDisplayInfo.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory UserDisplayInfo.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'UserDisplayInfo',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'username')
+    ..aOS(3, _omitFieldNames ? '' : 'firstName')
+    ..aOS(4, _omitFieldNames ? '' : 'lastName')
+    ..aOS(5, _omitFieldNames ? '' : 'profilePicture')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UserDisplayInfo clone() => UserDisplayInfo()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UserDisplayInfo copyWith(void Function(UserDisplayInfo) updates) =>
+      super.copyWith((message) => updates(message as UserDisplayInfo))
+          as UserDisplayInfo;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UserDisplayInfo create() => UserDisplayInfo._();
+  @$core.override
+  UserDisplayInfo createEmptyInstance() => create();
+  static $pb.PbList<UserDisplayInfo> createRepeated() =>
+      $pb.PbList<UserDisplayInfo>();
+  @$core.pragma('dart2js:noInline')
+  static UserDisplayInfo getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UserDisplayInfo>(create);
+  static UserDisplayInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get username => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set username($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasUsername() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUsername() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get firstName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set firstName($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFirstName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFirstName() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get lastName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set lastName($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLastName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLastName() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get profilePicture => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set profilePicture($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasProfilePicture() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearProfilePicture() => $_clearField(5);
+}
+
+class GetUsersDisplayByIdsResponse extends $pb.GeneratedMessage {
+  factory GetUsersDisplayByIdsResponse({
+    $core.bool? success,
+    $core.String? msg,
+    $core.Iterable<UserDisplayInfo>? users,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (msg != null) result.msg = msg;
+    if (users != null) result.users.addAll(users);
+    return result;
+  }
+
+  GetUsersDisplayByIdsResponse._();
+
+  factory GetUsersDisplayByIdsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetUsersDisplayByIdsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetUsersDisplayByIdsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'msg')
+    ..pc<UserDisplayInfo>(3, _omitFieldNames ? '' : 'users', $pb.PbFieldType.PM,
+        subBuilder: UserDisplayInfo.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetUsersDisplayByIdsResponse clone() =>
+      GetUsersDisplayByIdsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetUsersDisplayByIdsResponse copyWith(
+          void Function(GetUsersDisplayByIdsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetUsersDisplayByIdsResponse))
+          as GetUsersDisplayByIdsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUsersDisplayByIdsResponse create() =>
+      GetUsersDisplayByIdsResponse._();
+  @$core.override
+  GetUsersDisplayByIdsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetUsersDisplayByIdsResponse> createRepeated() =>
+      $pb.PbList<GetUsersDisplayByIdsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetUsersDisplayByIdsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetUsersDisplayByIdsResponse>(create);
+  static GetUsersDisplayByIdsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get msg => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set msg($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMsg() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMsg() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $pb.PbList<UserDisplayInfo> get users => $_getList(2);
 }
 
 const $core.bool _omitFieldNames =

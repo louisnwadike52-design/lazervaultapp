@@ -226,6 +226,28 @@ abstract class AppRoutes {
   static const String profileSettings = '/profile-settings';
   static const String languages = '/profile-settings/languages';
   static const String myAccount = '/profile-settings/my-account';
+
+  /// The support ticket list, and the destination a "support replied" push
+  /// points at.
+  ///
+  /// WHY IT NEEDED A NAME. Every caller reached this screen with
+  /// `Get.to(() => const SupportTicketsScreen())`, which is fine from a button
+  /// but unusable from a notification: NotificationTarget routes by NAME so a
+  /// renamed route breaks the build instead of silently dead-ending a link.
+  /// Without it, a support reply had nowhere to point and the push resolved to
+  /// the account screen — the user was told support had replied and then shown
+  /// their profile.
+  static const String supportTickets = '/support/tickets';
+
+  /// THE IN-APP SUPPORT DESK, for operators with support access.
+  ///
+  /// Distinct from [supportTickets], which is the CUSTOMER's own ticket list.
+  /// They must never share a route: an agent sent to supportTickets by a desk
+  /// push would be shown their own (probably empty) tickets while a customer
+  /// waited — and `_is(type, 'support')` matches "support_desk" too, which is
+  /// exactly how that would happen if the resolver did not branch first.
+  static const String supportDesk = '/support/desk';
+
   /// Admin-only read-only "view as user" directory. Gated before push and
   /// enforced server-side at both endpoints; a non-admin who reaches it sees
   /// an empty list and a 403.
@@ -532,6 +554,45 @@ abstract class AppRoutes {
   static const String autoSaveTransactions = '/auto-save/transactions';
   static const String autoSaveRulesList = '/auto-save/rules';
 
+  // Event Ticketing Routes.
+  //
+  // NO STATIC SEGMENT SITS UNDER A PARAM SEGMENT. "my-events" and "my-tickets"
+  // are deliberately not '/events/mine' — this file's own note at the param
+  // routes records that a param route placed above a static one EATS it, so
+  // '/events/:id' would swallow '/events/mine' with id == "mine".
+  static const String ticketing = '/events';
+  static const String ticketingMyEvents = '/events-mine';
+  static const String ticketingMyTickets = '/tickets-mine';
+  static const String ticketingCreate = '/events-create';
+  static const String ticketingDetail = '/events/:eventId';
+  static const String ticketingOrganiser = '/events-organiser/:eventId';
+  static const String ticketingCheckIn = '/events-checkin/:eventId';
+  static const String ticketingAttendees = '/events-attendees/:eventId';
+
+  /// ONE HOST'S WHOLE PROGRAMME.
+  ///
+  /// The host travels as a QUERY PARAMETER, not a path segment: host names are
+  /// free text with spaces, ampersands and slashes in them, and a path segment
+  /// would have to be encoded at every call site and decoded here — one missed
+  /// encode and the route simply does not match. A query parameter is decoded
+  /// by the router itself, and the link stays shareable.
+  static const String ticketingHost = '/events-host';
+
+  /// Builds a host-page link with the name encoded exactly once.
+  static String ticketingHostFor(String host) =>
+      '$ticketingHost?host=${Uri.encodeQueryComponent(host)}';
+
+  /// Takes the event as a GetX argument rather than an id in the path: the
+  /// organiser page already holds the loaded event, and re-fetching it to fill
+  /// a form the user is already looking at is a round-trip for nothing.
+  static const String ticketingEdit = '/events-edit';
+
+  // Vendor Campaign Routes — launch-day promotions at partner venues.
+  static const String vendorCampaigns = '/vendor-campaigns';
+  static const String vendorCampaignScan = '/vendor-campaigns/scan';
+  static const String vendorCampaignRedemptions =
+      '/vendor-campaigns/redemptions';
+
   // Crowdfund Routes
   static const String crowdfund = '/crowdfund';
   static const String crowdfundList = '/crowdfund/list';
@@ -547,6 +608,10 @@ abstract class AppRoutes {
   static const String crowdfundMyCampaigns = '/crowdfund/my-campaigns';
   static const String crowdfundMyDonations = '/crowdfund/my-donations';
   static const String crowdfundStatistics = '/crowdfund/statistics';
+  /// A creator challenging a block on their own campaign. Reached from the
+  /// moderation panel on their campaign, and from the push that tells them it
+  /// was not published.
+  static const String crowdfundAppeal = '/crowdfund/appeal';
 
   // Public Group Discovery Routes
   static const String publicGroups = '/groups/public';

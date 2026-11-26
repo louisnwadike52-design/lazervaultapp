@@ -28,11 +28,34 @@ typedef CrowdfundStatusVisual = ({
   /// One line explaining the state in the backer's terms. Empty for
   /// `active`, where the badge alone is the whole story.
   String blurb,
+
+  /// A glyph for the endings worth celebrating or flagging. Empty for the
+  /// states where an emoji would be noise.
+  String emoji,
+
+  /// Render this one LOUDLY — a filled badge rather than a tinted pill.
+  ///
+  /// Only `completed` sets it. A campaign that met its target is the one row
+  /// in a list that should not look like every other row, and it was drawn in
+  /// exactly the same green pill as an ACTIVE campaign: same colour, same
+  /// weight, differing only by a 12sp icon nobody reads. Reported as
+  /// campaigns "showing completed" when they are not — which is what two
+  /// states rendered identically actually looks like.
+  bool emphatic,
 });
 
+/// RESERVED FOR `completed`. Nothing else may use it.
+///
+/// It used to be the ACTIVE colour as well, which is how an open campaign and
+/// a finished one came to look the same on every surface that paints by colour
+/// alone — the landing strip's icon and progress bar among them.
 const Color _green = Color(0xFF10B981);
 const Color _amber = Color(0xFFF59E0B);
 const Color _red = Color(0xFFEF4444);
+
+/// The brand accent, and the default for `active`. A live campaign is the
+/// normal case and wears the product's own colour; green now means one thing.
+const Color _accent = Color(0xFF8B5CF6);
 
 /// Slate, deliberately not red. An expired campaign missed its target; it
 /// did not misbehave, and colouring it like a cancellation reads as a
@@ -74,6 +97,8 @@ CrowdfundStatusVisual crowdfundStatusVisualFor(
         label: 'Completed',
         icon: Icons.verified,
         blurb: 'Target reached, this campaign is closed.',
+        emoji: '🎉',
+        emphatic: true,
       );
     case CrowdfundStatus.expired:
       return (
@@ -82,6 +107,8 @@ CrowdfundStatusVisual crowdfundStatusVisualFor(
         icon: Icons.timer_off,
         blurb: 'The deadline passed before the target was reached. '
             'No further contributions are accepted.',
+        emoji: '',
+        emphatic: false,
       );
     case CrowdfundStatus.cancelling:
       return (
@@ -89,6 +116,8 @@ CrowdfundStatusVisual crowdfundStatusVisualFor(
         label: 'Refunding',
         icon: Icons.sync,
         blurb: 'Cancelled, contributions are being refunded.',
+        emoji: '↩️',
+        emphatic: false,
       );
     case CrowdfundStatus.cancelled:
       return (
@@ -96,6 +125,8 @@ CrowdfundStatusVisual crowdfundStatusVisualFor(
         label: 'Cancelled',
         icon: Icons.block,
         blurb: 'This campaign was cancelled and contributions were refunded.',
+        emoji: '',
+        emphatic: false,
       );
     case CrowdfundStatus.paused:
       return (
@@ -104,6 +135,8 @@ CrowdfundStatusVisual crowdfundStatusVisualFor(
         icon: Icons.pause_circle,
         blurb: 'The organiser paused this campaign. '
             'Contributions reopen if it resumes.',
+        emoji: '⏸️',
+        emphatic: false,
       );
     case CrowdfundStatus.active:
       // Still ACTIVE on the wire but past its own deadline: the worker has
@@ -116,13 +149,17 @@ CrowdfundStatusVisual crowdfundStatusVisualFor(
           label: 'Closing',
           icon: Icons.hourglass_bottom,
           blurb: 'The deadline has passed. This campaign is being finalised.',
+          emoji: '⏳',
+          emphatic: false,
         );
       }
       return (
-        color: activeColor ?? _green,
+        color: activeColor ?? _accent,
         label: 'Active',
         icon: Icons.bolt,
         blurb: '',
+        emoji: '',
+        emphatic: false,
       );
   }
 }
@@ -219,5 +256,85 @@ bool crowdfundDeadlineIsUrgent(Crowdfund c) =>
 /// Whether this campaign can take money right now. The single predicate
 /// behind every Contribute/Donate button, so a disabled button and a
 /// server-side refusal can never disagree.
+///
+/// ## THE MODERATION GATE IS HERE, AND NOWHERE ELSE
+///
+/// `moderation.isFundable` mirrors the backend's `Fundable()`: approved and
+/// restricted can take money, pending and escalated cannot, blocked cannot.
+///
+/// Adding it to this ONE predicate rather than to each surface is the whole
+/// point of the predicate existing. The operator's requirement was that
+/// "somebody does not create a campaign and then, before our AI system flags
+/// it, it starts receiving money" — and the backend already enforces that
+/// inside the row lock, so a campaign under review WILL be refused. What this
+/// line buys is that the app does not offer the button first: a donor who
+/// taps Donate, fills in an amount, enters their PIN and is then told no has
+/// been failed by the app, not protected by the server.
+///
+/// Five surfaces call this. If the check lived in each of them, the next one
+/// added would be the one that forgot.
 bool crowdfundAcceptsContributions(Crowdfund c) =>
-    c.status == CrowdfundStatus.active && !c.isPastDeadline;
+    c.status == CrowdfundStatus.active &&
+    !c.isPastDeadline &&
+    c.moderation.isFundable;
+
+/// THE DONOR'S SIDE OF THE SAME VOCABULARY.
+///
+/// A contribution has its own five states, and THREE surfaces each carried a
+/// private switch over them — the landing page's "My donations" strip, the
+/// My Donations screen, and the donation detail sheet. Identical colours,
+/// identical labels, three places to change and three places to forget. The
+/// campaign side was consolidated for exactly this reason; the donation side
+/// was left behind.
+///
+/// `completed` is the ending worth marking here too: it is the row that says
+/// the money actually reached the campaign.
+CrowdfundStatusVisual crowdfundDonationStatusVisual(DonationStatus s) {
+  switch (s) {
+    case DonationStatus.completed:
+      return (
+        color: _green,
+        label: 'Completed',
+        icon: Icons.check_circle,
+        blurb: 'Your contribution reached the campaign.',
+        emoji: '🎉',
+        emphatic: true,
+      );
+    case DonationStatus.pending:
+      return (
+        color: _amber,
+        label: 'Pending',
+        icon: Icons.schedule,
+        blurb: 'Waiting to be taken from your wallet.',
+        emoji: '⏳',
+        emphatic: false,
+      );
+    case DonationStatus.processing:
+      return (
+        color: _amber,
+        label: 'Processing',
+        icon: Icons.sync,
+        blurb: 'On its way to the campaign.',
+        emoji: '⏳',
+        emphatic: false,
+      );
+    case DonationStatus.failed:
+      return (
+        color: _red,
+        label: 'Failed',
+        icon: Icons.error_outline,
+        blurb: 'This contribution did not go through. Nothing was taken.',
+        emoji: '',
+        emphatic: false,
+      );
+    case DonationStatus.refunded:
+      return (
+        color: const Color(0xFF6B7280),
+        label: 'Refunded',
+        icon: Icons.undo,
+        blurb: 'The campaign was cancelled and this went back to your wallet.',
+        emoji: '↩️',
+        emphatic: false,
+      );
+  }
+}

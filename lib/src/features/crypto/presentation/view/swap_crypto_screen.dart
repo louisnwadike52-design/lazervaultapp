@@ -24,6 +24,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // inherit the session pinned by the landing's canonical button.
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_fiat_wallet_pill.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class SwapCryptoScreen extends StatefulWidget {
   final CryptoHolding? fromHolding;
@@ -1303,7 +1304,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   void _showCryptoSelector(bool isFrom) {
     _searchController.clear();
     var query = '';
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

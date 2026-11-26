@@ -21,6 +21,7 @@ import 'package:lazervault/src/features/family_account/presentation/views/family
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Family Account Detail Screen
 /// Shows:
@@ -191,7 +192,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     // membership row.
     final isCreatorMember =
         member.userId != null && member.userId == account.creatorId;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
@@ -555,7 +556,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     final activeMembers = account.members.where((m) => m.isActive).toList();
     final symbol = CurrencySymbols.currentSymbol;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -700,7 +701,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     double sumOf() => controllers.values
         .fold<double>(0, (s, c) => s + (double.tryParse(c.text.trim()) ?? 0));
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1016,7 +1017,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
 
   void _showMemberDetailSheet(FamilyAccount account, FamilyMember member) {
     final showSpend = _canSeeMemberSpending(account, member);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2054,7 +2055,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     // open, the buttons fail open (no-op visually, server rejects).
     final viewerIsAdmin = account.isCurrentUserAdmin(_currentUserId);
     final viewerIsCreator = account.isCurrentUserCreator(_currentUserId);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       // SCROLLABLE. This was a bare Column in a default-height sheet, so once the
@@ -2276,7 +2277,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           m.id,
     };
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2608,7 +2609,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   void _showDistributionModePicker(FamilyAccount account) {
     FundDistributionMode selectedMode = account.fundDistributionMode;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -4262,7 +4263,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     required String title,
     required List<Widget> children,
   }) {
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -4548,7 +4549,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         typeIcon = Icons.volunteer_activism;
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(

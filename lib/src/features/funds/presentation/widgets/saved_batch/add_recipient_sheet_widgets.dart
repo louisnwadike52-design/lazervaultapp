@@ -15,7 +15,7 @@ class AddRecipientSheet {
     required String currency,
     List<String> existingAccountNumbers = const [],
   }) {
-    return showModalBottomSheet<SavedBatchItemInputEntity>(
+    return showAppBottomSheet<SavedBatchItemInputEntity>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

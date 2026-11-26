@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.da
 import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
 import 'package:lazervault/src/features/autosave/utils/autosave_trigger_labels.dart';
 import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class AutoSaveRuleReviewScreen extends StatefulWidget {
   const AutoSaveRuleReviewScreen({super.key});
@@ -40,7 +41,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
         ruleData['amountValue'] == null) {
       _invalidArgs = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
+        if (mounted) offAllKeepingHome(AppRoutes.autoSaveDashboard);
       });
     }
     _setupAnimations();
@@ -164,7 +165,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
         actionLabel: 'Go to Auto-Save',
         // The label names a destination, so the button must go there
         // rather than pop to whatever happens to be underneath.
-        onAction: () => Get.offAllNamed(AppRoutes.autoSaveDashboard),
+        onAction: () => offAllKeepingHome(AppRoutes.autoSaveDashboard),
       );
     }
     return Scaffold(

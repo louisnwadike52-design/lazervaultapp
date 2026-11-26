@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../../core/services/locale_manager.dart';
 import '../../domain/entities/lock_fund_entity.dart';
@@ -142,8 +144,33 @@ class CreateLockCubit extends Cubit<CreateLockState> {
     // matches the requested type. This disambiguates the case where
     // ops publish more than one plan sharing a lock_type slug — the
     // name-based resolution below would otherwise pick the first.
+    //
+    // …AND WHEN THE SELECTED PLAN'S SLUG IS NOT IN THE ENUM AT ALL.
+    //
+    // THE BUG THIS FIXES, on a live plan. `LockType` knows three slugs —
+    // savings, investment, goal_based — and selectConfig falls back to
+    // `savings` for anything else, calling the enum "a COSMETIC shadow" that
+    // "must not be read as the plan's capabilities". But every capability
+    // getter on this cubit (min/max amount, duration, rates, penalty, early
+    // withdrawal) resolves through THIS function, with that fallback enum.
+    //
+    // Half-Year Lock ships as `half_year`, which is not in the enum. So
+    // selecting it set _lockType = savings, this guard compared 'half_year'
+    // against 'savings', failed, fell through to the name lookup, and handed
+    // back the FLEX SAVINGS plan — a different product with a different
+    // minimum (₦100 against ₦1,000), a different rate and no fixed term. The
+    // wizard then validated a Half-Year deposit against Flex Savings' rules,
+    // and Flex is `is_active = false`, so just as often it resolved to null
+    // and validated against nothing at all.
+    //
+    // When the selected plan's slug is one the enum has never heard of, the
+    // enum value is a meaningless fallback and the selected config is the only
+    // truth there is. Returning it is what makes the enum genuinely cosmetic,
+    // as its own comment says it should be.
     final sel = selectedConfig;
-    if (sel != null && sel.lockType == _lockTypeToConfigString(type)) {
+    if (sel != null &&
+        (sel.lockType == _lockTypeToConfigString(type) ||
+            LockTypeX.fromBackendKey(sel.lockType) == null)) {
       return sel;
     }
     final typeStr = _lockTypeToConfigString(type);
@@ -199,7 +226,33 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   int getMaxDuration(LockType type) =>
       getConfigForType(type)?.maxDurationDays ?? 0;
 
-  double getMinAmount(LockType type) => getConfigForType(type)?.minAmount ?? 0;
+  /// The plan's minimum, or null when the plan is not loaded.
+  ///
+  /// NULL, NOT ZERO. This returned `?? 0`, and the validator below compares
+  /// `amount < minAmount` — so a plan whose config had not loaded validated
+  /// every amount as acceptable and then produced a message reading "Minimum
+  /// amount is 0". The server now refuses a below-minimum deposit outright
+  /// (planAmountViolation), so the user got a rejection with no idea which
+  /// number they had missed.
+  ///
+  /// Null makes "we do not know" distinguishable from "there is no minimum",
+  /// and the validator skips rather than inventing a bound.
+  double? getMinAmount(LockType type) {
+    final min = getConfigForType(type)?.minAmount;
+    if (min == null || min <= 0) return null;
+    return min;
+  }
+
+  /// The plan's ceiling, or null when there isn't one.
+  ///
+  /// 0 means "no maximum" on this column, consistently with every other
+  /// optional bound on the plan, so it maps to null rather than to a limit of
+  /// nothing.
+  double? getMaxAmount(LockType type) {
+    final max = getConfigForType(type)?.maxAmount;
+    if (max == null || max <= 0) return null;
+    return max;
+  }
 
   bool getAllowsEarlyWithdrawal(LockType type) =>
       getConfigForType(type)?.allowsEarlyWithdrawal ?? false;
@@ -254,6 +307,51 @@ class CreateLockCubit extends Cubit<CreateLockState> {
 
   static List<String> _splitNotes(String raw) =>
       raw.split('\n').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+
+  /// Whether a plan created right now would be held for review before its
+  /// term starts.
+  ///
+  /// Read from the operator's own switch, never assumed — see
+  /// [FeatureFlags.piggyvaultManualActivation]. It defaults to TRUE, so an app
+  /// that has not yet synced settings warns rather than over-promises.
+  ///
+  /// WHAT THIS CANNOT SEE, stated plainly because the gap matters. The server
+  /// holds a plan when EITHER this operational switch is on OR the plan's own
+  /// `requires_approval` / `approval_threshold_minor` risk gate fires at this
+  /// amount. Those two config fields are not on `PiggyVaultConfigProto`, so
+  /// the app cannot evaluate the second. While this switch is on — which it is
+  /// for as long as deposits reach the asset company by hand — the first gate
+  /// dominates and the warning is correct for every plan. If an operator ever
+  /// turns it off while leaving a per-plan risk gate configured, large
+  /// deposits on that plan would be held with no advance warning here. The
+  /// created plan's own status is still the truth everywhere after the fact
+  /// (receipt, list, details), so nothing MISREPRESENTS a plan — the warning
+  /// is simply absent. Closing it properly means two new proto fields.
+  bool get planIsHeldForReview => FeatureFlags.piggyvaultPlansAreReviewed;
+
+  /// The bullets explaining the review gate, for the "Before you confirm"
+  /// panel.
+  ///
+  /// Derived, not admin-authored, and that is the point: this describes how
+  /// the platform behaves right now, so it must appear whether or not an
+  /// operator remembered to type it into the plan's notes field. The
+  /// admin-authored notes still render alongside.
+  ///
+  /// No turnaround promise. The review ends when funds reach the
+  /// asset-management company, which no part of this system can predict, and
+  /// a bullet saying "within 24 hours" would be a commitment nothing keeps.
+  List<String> get reviewGateNotes {
+    if (!planIsHeldForReview) return const [];
+    return const [
+      'Your plan is reviewed before it starts earning. You will be '
+          'notified as soon as it is approved.',
+      'Your deposit is set aside from your spendable balance straight '
+          'away. It stays in your account, and is released in full if the '
+          'plan is not approved.',
+      'The term and the interest shown start on approval, not today, so '
+          'the maturity date moves by however long the review takes.',
+    ];
+  }
 
   // Backend slug — re-exposed via the enum's `backendKey` getter.
   String _lockTypeToConfigString(LockType type) => type.backendKey;
@@ -407,10 +505,26 @@ class CreateLockCubit extends Cubit<CreateLockState> {
     }
     if (_lockType != null) {
       final minAmount = getMinAmount(_lockType!);
-      if (_amount! < minAmount) {
+      // Skipped, not defaulted, when the plan is unknown — the server is the
+      // authority either way, and guessing a bound here would either block a
+      // valid deposit or quote a figure that is not the plan's.
+      if (minAmount != null && _amount! < minAmount) {
         if (isClosed) return false;
         emit(CreateLockValidationError(
-            'Minimum amount is ${minAmount.toStringAsFixed(0)}'));
+            'The minimum for this plan is '
+            '${CurrencySymbols.getSymbol(_currency)}'
+            '${minAmount.toStringAsFixed(2)}'));
+        return false;
+      }
+      // The maximum was never checked here at all, so an over-limit deposit
+      // reached the server and came back as a bare failure.
+      final maxAmount = getMaxAmount(_lockType!);
+      if (maxAmount != null && _amount! > maxAmount) {
+        if (isClosed) return false;
+        emit(CreateLockValidationError(
+            'The maximum for this plan is '
+            '${CurrencySymbols.getSymbol(_currency)}'
+            '${maxAmount.toStringAsFixed(2)}'));
         return false;
       }
     }

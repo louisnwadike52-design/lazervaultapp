@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 
 import '../../domain/repositories/airtime_repository.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet for saving or editing an airtime beneficiary.
 ///
@@ -41,7 +42,7 @@ class SaveAirtimeBeneficiarySheet extends StatefulWidget {
     String? existingBeneficiaryId,
     String? existingNickname,
   }) {
-    return showModalBottomSheet<bool>(
+    return showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

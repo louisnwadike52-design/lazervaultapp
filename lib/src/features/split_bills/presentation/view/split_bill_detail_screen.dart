@@ -14,6 +14,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/shared_widgets/app_error_view.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class SplitBillDetailScreen extends StatelessWidget {
   const SplitBillDetailScreen({super.key});
@@ -776,7 +777,7 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
   /// bill creator).
   void _showWhoPaidSheet(BuildContext context, SplitBillEntity bill) {
     final currentUserId = _getCurrentUserId(context);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1463,7 +1464,7 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
 
     final selected = <String>{...remindable.map((p) => p.userId)};
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,

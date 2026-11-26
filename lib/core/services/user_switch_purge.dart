@@ -1,3 +1,5 @@
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:lazervault/core/cache/session_page_store.dart';
@@ -47,6 +49,16 @@ const List<String> kPerUserStorageKeys = [
   'user_last_name',
   'login_method',
   'has_passcode',
+  // The PASSWORD half of the credential shape, which was missing beside
+  // has_passcode above. phone_passcode_cubit never writes it — only the email
+  // path does — so after A (email+password) logged out and B signed in by
+  // phone, `has_password` stayed A's 'true' for an account that has none.
+  //
+  // LoginFlowResolver mostly masks it, because `preferred_login_method` is
+  // purged here and both of its checks require the two together. settings_screen
+  // does NOT: it reads this key on its own, so B was offered password controls
+  // belonging to someone else's account shape.
+  'has_password',
   'kyc_onboarding_pending',
   'has_skipped_kyc',
   'chat_current_session_id',
@@ -110,18 +122,47 @@ bool isUserSwitch({
   required String newUserId,
   required String newEmail,
 }) {
-  final byId = previousUserId != null &&
+  // PURGE UNLESS WE CAN POSITIVELY IDENTIFY THE SAME PERSON.
+  //
+  // This used to ask "is the previous user DIFFERENT?", which answers false
+  // when there is no previous user recorded — and that is the common case,
+  // because logging out CLEARS the stored id and email while leaving the SWR
+  // caches behind. So the sequence that actually happens on a shared or
+  // re-used phone:
+  //
+  //   1. user A logs out      → stored_user_id / stored_email deleted,
+  //                             A's cached balances + active account remain
+  //   2. user B signs up      → previousUserId == null, previousEmail == null
+  //   3. byId = false, byEmail = false → NOT a switch → no purge
+  //   4. B's dashboard renders A's balance and account number
+  //
+  // Observed in production 2026-11-10: a brand-new signup opened on ₦4,435.54
+  // and an account number belonging to the previous user of that handset, and
+  // only corrected itself on the next login. One customer seeing another's
+  // balance is the worst thing this file exists to prevent, and the rule as
+  // written could not catch it.
+  //
+  // Inverted to match the principle the comment below already states: a
+  // spurious purge costs a cache re-fetch, a missed one shows somebody else's
+  // money. "No record of a previous user" is NOT evidence of the same user, so
+  // it purges.
+  final sameById = previousUserId != null &&
       previousUserId.isNotEmpty &&
-      previousUserId != newUserId;
+      newUserId.isNotEmpty &&
+      previousUserId == newUserId;
   // NOTE: a non-empty previous email vs an EMPTY new one still counts as a
   // switch. Phone-only accounts legitimately have no email, and "the last user
   // had one, this one doesn't" is a different person — erring toward purging is
   // the safe direction here, since the cost of a spurious purge is re-fetching
   // caches while the cost of a missed one is one user seeing another's data.
-  final byEmail = previousEmail != null &&
+  final sameByEmail = previousEmail != null &&
       previousEmail.isNotEmpty &&
-      previousEmail.toLowerCase() != newEmail.toLowerCase();
-  return byId || byEmail;
+      newEmail.isNotEmpty &&
+      previousEmail.toLowerCase() == newEmail.toLowerCase();
+
+  // Either identifier matching is enough to call it the same person: a phone
+  // account carries no email, and an id is not always known at this point.
+  return !(sameById || sameByEmail);
 }
 
 /// Drop every per-user cache that survives a logout.
@@ -299,6 +340,29 @@ Future<void> purgeStaleUserCache(FlutterSecureStorage storage) async {
   // someone who has verified. Neither is recoverable without a full login.
   try {
     await KycSnapshot.clear();
+  } catch (_) {/* best-effort */}
+
+  // The SERVER'S PER-ACCOUNT SMS ANSWER belongs to the prior user.
+  //
+  // THE ONLY SHAREDPREFERENCES KEY PURGED HERE, and it needs saying why.
+  // kPerUserStorageKeys above is FlutterSecureStorage; prefs are otherwise
+  // device-wide settings (feature flags, admin snapshot) that SHOULD survive a
+  // switch. This one is the exception: it is an answer about one named account.
+  //
+  // Left behind, a whitelisted tester handing their phone to a colleague would
+  // grant that colleague SMS steps the server then refuses — and, worse in the
+  // other direction, a `false` cached from an unlisted predecessor would hide
+  // the phone-OTP step from a tester who IS listed, which is the exact failure
+  // the per-account flag was added to fix. Same reasoning as the KYC mirror
+  // above: state that judges one person must not judge the next.
+  //
+  // Clearing to ABSENT, not to false — absent means "not known" and falls back
+  // to the platform-wide switch, which is the correct state for a device with
+  // no authenticated account.
+  try {
+    FeatureFlags.forgetSmsAvailableForUser();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(FeatureFlags.smsAvailableForUserKey);
   } catch (_) {/* best-effort */}
 
   // 2. SWR API cache (per-user profile/accounts/tier/limits/balances).

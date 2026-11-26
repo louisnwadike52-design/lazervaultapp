@@ -108,7 +108,47 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
   /// case.
   bool emailVerificationRequired = false,
   bool isEmailVerified = true,
+
+  /// An ADMIN set this account's login passcode/password and the holder has
+  /// not replaced it yet (auth: `users.must_change_credentials`).
+  ///
+  /// An operator can set a credential so a customer can be onboarded in person
+  /// or recovered after losing access. That necessarily means someone who is
+  /// not the account holder knows a working credential — which the platform
+  /// refuses to allow permanently; the transaction-PIN admin action will only
+  /// ever CLEAR a PIN, never choose one. So the admin's value is admitted
+  /// exactly ONCE, and this is where that is enforced.
+  ///
+  /// Defaults FALSE so every existing caller and every older server response
+  /// behaves exactly as before.
+  bool mustChangeCredentials = false,
 }) {
+  // FIRST, ABOVE EVERY OTHER GATE — including the signup-resume branches.
+  //
+  // The obligation is to replace a credential somebody else chose, so nothing
+  // may come before it: not email, not phone, not the PIN, not KYC. Each of
+  // those would leave the admin's credential live for the length of a flow a
+  // customer can abandon halfway, and abandoning is the common case for the
+  // heavier ones.
+  //
+  // Routed to the passcode-setup screen because that screen's success path
+  // calls the passcode-set API, which is what clears the flag server-side —
+  // the client never clears it locally, so a client that lies about having
+  // done it simply gets asked again.
+  if (mustChangeCredentials) {
+    return (
+      name: AppRoutes.passcodeSetup,
+      args: <String, dynamic>{
+        'fromLoginFlow': true,
+        'hasTransactionPin': hasTransactionPin,
+        // Tells the screen this is a REQUIRED replacement, not the ordinary
+        // signup step — so it cannot offer a skip, and its copy can say why
+        // the customer is being asked.
+        'mustChangeCredentials': true,
+      },
+    );
+  }
+
   if (fromForgotPasscode) {
     return (
       name: AppRoutes.passcodeSetup,
@@ -126,20 +166,41 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
   ({String name, Map<String, dynamic>? args}) after({
     bool? emailDone,
     bool? phoneDone,
-  }) =>
-      resolvePostLoginRoute(
-        step: null,
-        status: null,
-        email: email,
-        phone: phone,
-        hasPasscode: hasPasscode,
-        hasTransactionPin: hasTransactionPin,
-        kyc: kyc,
-        phoneVerificationRequired: phoneVerificationRequired,
-        phoneVerified: phoneDone ?? phoneVerified,
-        emailVerificationRequired: emailVerificationRequired,
-        isEmailVerified: emailDone ?? isEmailVerified,
-      );
+  }) => resolvePostLoginRoute(
+    step: null,
+    status: null,
+    email: email,
+    phone: phone,
+    hasPasscode: hasPasscode,
+    hasTransactionPin: hasTransactionPin,
+    // EVERY INPUT TRAVELS. This list used to be a SUBSET, and the two it
+    // left out both have defaults that are wrong for a chained resolve:
+    //
+    //   phoneOtpDeliverable defaults TRUE. Dropping it meant that after an
+    //   email verification the phone gate was re-decided as if SMS could be
+    //   delivered — reintroducing, on this path only, the exact loop its
+    //   own doc comment describes: a verify-phone screen for a code that
+    //   cannot be sent, skipped (the skip deliberately does not set the
+    //   flag), and asked again on every login, forever.
+    //
+    //   mustChangeCredentials defaults FALSE. That gate is deliberately
+    //   above every other one and is admitted exactly ONCE — so dropping it
+    //   here let a holder whose passcode was set by an admin walk past the
+    //   replacement step by verifying their email first.
+    //
+    // The failure mode is silent in both cases, because a dropped named
+    // argument is not an error; it is a different answer. Anything added to
+    // resolvePostLoginRoute must be added here too — see the test that
+    // asserts a chained resolve equals a direct one.
+    fromForgotPasscode: fromForgotPasscode,
+    kyc: kyc,
+    phoneVerificationRequired: phoneVerificationRequired,
+    phoneVerified: phoneDone ?? phoneVerified,
+    phoneOtpDeliverable: phoneOtpDeliverable,
+    emailVerificationRequired: emailVerificationRequired,
+    isEmailVerified: emailDone ?? isEmailVerified,
+    mustChangeCredentials: mustChangeCredentials,
+  );
 
   // 2. Email.
   if (email.isNotEmpty &&
@@ -202,6 +263,25 @@ import 'package:lazervault/core/utils/kyc_completion.dart';
   }
 
   // 5. Transaction PIN.
+  //
+  // DELIBERATELY DOES NOT FORWARD ITS ANSWER.
+  //
+  // The onboarding screens now resolve the PIN step before navigating and pass
+  // the result in `pinCheckDone`/`hasPin`, so the PIN screen paints without
+  // its own black loading page (see pin_step_prefetch.dart). This resolver
+  // could appear to do the same for free — it already tested
+  // `hasTransactionPin` to get here.
+  //
+  // It must not. That value comes from LoginFactsStore, which is PERSISTED TO
+  // DISK and can be stale; the screen's own check is `forceRefresh` precisely
+  // because a wrong answer here is how somebody ends up stranded with no PIN.
+  // Reaching this line means the cached answer was "no PIN" — and if that is
+  // stale, forwarding it would put a keypad in front of a user who already has
+  // one, whose first attempt to create a PIN then fails with AlreadyExists.
+  //
+  // So resume keeps paying for the authoritative round trip. The prefetch is
+  // an optimisation available to callers holding a FRESH answer, never a way
+  // to launder a cached one.
   if (!hasTransactionPin) {
     return (
       name: AppRoutes.transactionPinSetup,

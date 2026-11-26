@@ -569,6 +569,28 @@ class AuthServiceClient extends $grpc.Client {
   }
 
   /// Search users for transfers / invites (unified: username, name, email, phone)
+  /// BULK DISPLAY LOOKUP — one `id IN (...)` query, matched by ID.
+  ///
+  /// Mirrored from auth-service's auth.proto (its own comment carries the full
+  /// reasoning). Added to THIS copy on 2026-11-18 because unified_search_proxy
+  /// was resolving saved recipients' @handles with up to twelve concurrent
+  /// NAME searches — twelve trigram scans on the hot path of every recipient
+  /// search, to fill in a cosmetic handle.
+  ///
+  /// Matching by name was also wrong, not merely slow: it silently stopped
+  /// working for anyone who opted out of search, because a hidden holder does
+  /// not come back from a name query. This RPC is deliberately unfiltered —
+  /// rendering the name of someone the payer has ALREADY saved is not choosing
+  /// a payee.
+  ///
+  /// No HTTP annotation: service-to-service only, never routed to the edge.
+  $grpc.ResponseFuture<$0.GetUsersDisplayByIdsResponse> getUsersDisplayByIds(
+    $0.GetUsersDisplayByIdsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getUsersDisplayByIds, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.UserSearchResponse> searchUsers(
     $0.UserSearchRequest request, {
     $grpc.CallOptions? options,
@@ -1116,6 +1138,11 @@ class AuthServiceClient extends $grpc.Client {
           '/pb.AuthService/LookupUserByPhone',
           ($0.LookupUserByPhoneRequest value) => value.writeToBuffer(),
           $0.UserLookupResponse.fromBuffer);
+  static final _$getUsersDisplayByIds = $grpc.ClientMethod<
+          $0.GetUsersDisplayByIdsRequest, $0.GetUsersDisplayByIdsResponse>(
+      '/pb.AuthService/GetUsersDisplayByIds',
+      ($0.GetUsersDisplayByIdsRequest value) => value.writeToBuffer(),
+      $0.GetUsersDisplayByIdsResponse.fromBuffer);
   static final _$searchUsers =
       $grpc.ClientMethod<$0.UserSearchRequest, $0.UserSearchResponse>(
           '/pb.AuthService/SearchUsers',
@@ -1808,6 +1835,15 @@ abstract class AuthServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.LookupUserByPhoneRequest.fromBuffer(value),
             ($0.UserLookupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUsersDisplayByIdsRequest,
+            $0.GetUsersDisplayByIdsResponse>(
+        'GetUsersDisplayByIds',
+        getUsersDisplayByIds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetUsersDisplayByIdsRequest.fromBuffer(value),
+        ($0.GetUsersDisplayByIdsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.UserSearchRequest, $0.UserSearchResponse>(
         'SearchUsers',
         searchUsers_Pre,
@@ -2588,6 +2624,15 @@ abstract class AuthServiceBase extends $grpc.Service {
 
   $async.Future<$0.UserLookupResponse> lookupUserByPhone(
       $grpc.ServiceCall call, $0.LookupUserByPhoneRequest request);
+
+  $async.Future<$0.GetUsersDisplayByIdsResponse> getUsersDisplayByIds_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetUsersDisplayByIdsRequest> $request) async {
+    return getUsersDisplayByIds($call, await $request);
+  }
+
+  $async.Future<$0.GetUsersDisplayByIdsResponse> getUsersDisplayByIds(
+      $grpc.ServiceCall call, $0.GetUsersDisplayByIdsRequest request);
 
   $async.Future<$0.UserSearchResponse> searchUsers_Pre($grpc.ServiceCall $call,
       $async.Future<$0.UserSearchRequest> $request) async {

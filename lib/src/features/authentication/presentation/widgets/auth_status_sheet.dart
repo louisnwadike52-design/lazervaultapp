@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Visual intent of an auth status sheet.
 enum AuthStatusType { success, error }
@@ -29,7 +30,7 @@ Future<void> showAuthStatusSheet(
   final IconData icon =
       isSuccess ? Icons.check_circle_rounded : Icons.error_rounded;
 
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     isDismissible: dismissible,
     enableDrag: dismissible,

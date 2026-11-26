@@ -17,6 +17,7 @@ import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../widgets/giftcard_background.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Receipt for a gift card SALE.
 ///
@@ -519,7 +520,7 @@ class _GiftCardSaleReceiptScreenState extends State<GiftCardSaleReceiptScreen> {
           ),
           SizedBox(height: 8.h),
           TextButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.mySales),
+            onPressed: () => offAllKeepingHome(AppRoutes.mySales),
             child: Text(
               'View all sales',
               style: GoogleFonts.inter(

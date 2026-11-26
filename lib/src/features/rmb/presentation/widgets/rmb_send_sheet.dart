@@ -23,6 +23,7 @@ import 'package:lazervault/src/features/rmb/rmb_error.dart';
 import '../../sender_detail_validation.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'rmb_send_sheet_widgets.dart';
 
 /// Opens the short RMB send flow for [rail] as a bottom sheet: one step for
@@ -33,7 +34,7 @@ Future<void> showRmbSendSheet(
   required RmbCubit cubit,
   Transfer? repeatFrom,
 }) {
-  return showModalBottomSheet(
+  return showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -2009,7 +2010,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   }
 
   Future<void> _openBankPicker() async {
-    final picked = await showModalBottomSheet<Bank>(
+    final picked = await showAppBottomSheet<Bank>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2120,7 +2121,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
     _complianceCtrls.addAll(
         [firstName, lastName, idNumber, city, stateC, street, postcode]);
 
-    final future = showModalBottomSheet<bool>(
+    final future = showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2232,7 +2233,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
           // plus the FCT removes the whole class of problem, and the names are
           // the server's so they match what it validates against.
           Future<void> pickState() async {
-            final chosen = await showModalBottomSheet<String>(
+            final chosen = await showAppBottomSheet<String>(
               context: ctx,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,

@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/crypto_pay/data/funding_call_options.dart';
 import 'package:lazervault/src/generated/utility-payments.pb.dart' as pb;
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import '../models/data_plan_model.dart';
@@ -14,6 +15,15 @@ abstract class DataBundlesRemoteDataSource {
     required String verificationToken,
     required String idempotencyKey,
     String countryCode = 'NG',
+    // PAY WITH CRYPTO. The server has read this since the data handler was
+    // written (bph_data.go asks cryptoFundingAsset for it and opens a data
+    // funding intent), and Flutter never sent it — so data was the one bill
+    // service the feature could not reach, through a backend that was ready.
+    //
+    // It rides as gRPC METADATA rather than a request field, like every other
+    // service: the proto stays untouched and the funding choice cannot be
+    // confused with the purchase itself.
+    String? fundingAsset,
   });
 
   /// Paginated purchase history filtered to the data family (domestic
@@ -74,6 +84,15 @@ class DataBundlesRemoteDataSourceImpl implements DataBundlesRemoteDataSource {
     required String verificationToken,
     required String idempotencyKey,
     String countryCode = 'NG',
+    // PAY WITH CRYPTO. The server has read this since the data handler was
+    // written (bph_data.go asks cryptoFundingAsset for it and opens a data
+    // funding intent), and Flutter never sent it — so data was the one bill
+    // service the feature could not reach, through a backend that was ready.
+    //
+    // It rides as gRPC METADATA rather than a request field, like every other
+    // service: the proto stays untouched and the funding choice cannot be
+    // confused with the purchase itself.
+    String? fundingAsset,
   }) async {
     final request = pb.BuyDataRequest()
       ..phoneNumber = phoneNumber
@@ -85,7 +104,8 @@ class DataBundlesRemoteDataSourceImpl implements DataBundlesRemoteDataSource {
       ..idempotencyKey = idempotencyKey
       ..countryCode = countryCode;
 
-    final options = await grpcClient.callOptions;
+    var options = await grpcClient.callOptions;
+    options = options.withCryptoFunding(fundingAsset);
     final response = await grpcClient.utilityPaymentsClient.buyData(
       request,
       options: options,

@@ -1,4 +1,10 @@
 import 'dart:async';
+import 'package:lazervault/src/generated/vendor_campaigns.pbgrpc.dart' as vendor_grpc;
+import 'package:lazervault/src/features/vendor_campaigns/data/vendor_campaign_repository.dart';
+import 'package:lazervault/src/features/vendor_campaigns/presentation/cubit/vendor_campaign_cubit.dart';
+import 'package:lazervault/src/generated/ticketing.pbgrpc.dart' as ticketing_grpc;
+import 'package:lazervault/src/features/ticketing/data/ticketing_repository.dart';
+import 'package:lazervault/src/features/ticketing/presentation/cubit/ticketing_cubit.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:grpc/grpc.dart';
@@ -1097,6 +1103,43 @@ Future<void> init() async {
     () => uplift_grpc.UpliftServiceClient(
       serviceLocator<ClientChannel>(instanceName: 'productsChannel'),
     ),
+  );
+  // Vendor Campaigns (launch-day promotions at partner venues) shares the
+  // products gateway too.
+  serviceLocator
+      .registerLazySingleton<vendor_grpc.VendorCampaignServiceClient>(
+    () => vendor_grpc.VendorCampaignServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'productsChannel'),
+    ),
+  );
+  serviceLocator.registerLazySingleton<VendorCampaignRepository>(
+    () => VendorCampaignRepository(
+      client: serviceLocator<vendor_grpc.VendorCampaignServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+  // FACTORY, not a singleton: the screen owns its cubit and closes it on pop,
+  // and a singleton would be handed back already closed on the second visit.
+  serviceLocator.registerFactory<VendorCampaignCubit>(
+    () => VendorCampaignCubit(serviceLocator<VendorCampaignRepository>()),
+  );
+  // Event ticketing shares the products gateway as well.
+  serviceLocator.registerLazySingleton<ticketing_grpc.TicketingServiceClient>(
+    () => ticketing_grpc.TicketingServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'productsChannel'),
+    ),
+  );
+  serviceLocator.registerLazySingleton<TicketingRepository>(
+    () => TicketingRepository(
+      client: serviceLocator<ticketing_grpc.TicketingServiceClient>(),
+      callOptions: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+  // FACTORY, for the same reason the vendor cubit above is one: the screen owns
+  // it and closes it on pop, so a singleton would be handed back already closed
+  // on the second visit.
+  serviceLocator.registerFactory<TicketingCubit>(
+    () => TicketingCubit(serviceLocator<TicketingRepository>()),
   );
   serviceLocator.registerLazySingleton<UpliftRepository>(
     () => UpliftRepository(

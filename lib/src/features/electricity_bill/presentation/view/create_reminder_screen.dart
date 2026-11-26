@@ -21,6 +21,7 @@ import 'package:lazervault/src/features/electricity_bill/presentation/cubit/remi
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/reminder_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../../utils/meter_validation.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'create_reminder_screen_widgets.dart';
 
 class CreateReminderScreen extends StatefulWidget {
@@ -849,7 +850,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   }
 
   void _showAddBeneficiaryBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

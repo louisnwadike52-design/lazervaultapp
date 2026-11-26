@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/airtime_to_cash_conversion.dart';
 import '../../../airtime/domain/entities/airtime_transaction.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class A2CResultScreen extends StatefulWidget {
   const A2CResultScreen({super.key});
@@ -633,7 +634,7 @@ class _A2CResultScreenState extends State<A2CResultScreen>
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
+              onPressed: () => offAllKeepingHome(AppRoutes.billsHub),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -661,7 +662,7 @@ class _A2CResultScreenState extends State<A2CResultScreen>
               if (!isSuccess)
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Get.offAllNamed(AppRoutes.airtimeToCash),
+                    onPressed: () => offAllKeepingHome(AppRoutes.airtimeToCash),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFF1F1F1F)),
                       padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -682,7 +683,7 @@ class _A2CResultScreenState extends State<A2CResultScreen>
               if (isSuccess)
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Get.offAllNamed(AppRoutes.airtimeToCash),
+                    onPressed: () => offAllKeepingHome(AppRoutes.airtimeToCash),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFF1F1F1F)),
                       padding: EdgeInsets.symmetric(vertical: 14.h),

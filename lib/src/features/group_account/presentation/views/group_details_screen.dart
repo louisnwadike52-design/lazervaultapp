@@ -34,6 +34,8 @@ import '../../../../../core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../utils/group_funds_palette.dart';
 import '../widgets/full_text_details_dialog.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'group_details_screen_widgets.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
@@ -346,7 +348,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 // unaccepted invite would be asking them to wait for a
                 // decision that is theirs to make.
                 onPressed: () => invited
-                    ? Get.offAllNamed(
+                    ? offAllKeepingHome(
                         AppRoutes.groupAccount,
                         arguments: {'initialTab': GroupFundsTab.invites},
                       )
@@ -794,7 +796,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
           GestureDetector(
             onTap: () {
               // Always navigate to the groups funds landing page
-              Get.offAllNamed(AppRoutes.groupAccount);
+              offAllKeepingHome(AppRoutes.groupAccount);
             },
             child: Container(
               padding: EdgeInsets.all(12.w),
@@ -1788,7 +1790,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   /// The count is refreshed when the sheet closes and after each decision, so
   /// the badge cannot keep advertising requests already dealt with.
   Future<void> _showJoinRequestsSheet(GroupAccount group) async {
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2006,7 +2008,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         : null;
     final currentUserRole = currentMember?.role ?? GroupMemberRole.viewer;
 
-    showModalBottomSheet<GroupMember?>(
+    showAppBottomSheet<GroupMember?>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2067,7 +2069,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     }
     final currencySymbol = _getCurrencySymbol(userCurrency);
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       // Exit ONLY through the sheet's own Cancel controls (X on step 1,
@@ -2107,7 +2109,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   void _showEditGroupBottomSheet(GroupAccount group) {
     final cubit = context.read<GroupAccountCubit>();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

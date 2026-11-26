@@ -3,13 +3,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../view/escrow_theme.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet offering the two honest entry points of a standard two-sided
 /// escrow. Returns 'sell_offer' | 'buy_request' | null (dismissed). The old
 /// FAB dropped BOTH sides into a buyer-pays create flow — a seller tapping
 /// "Create a Deal" on their own tab was asked to fund a purchase.
 Future<String?> showEscrowDirectionChooser(BuildContext context) {
-  return showModalBottomSheet<String>(
+  return showAppBottomSheet<String>(
     context: context,
     backgroundColor: EscrowTheme.card,
     shape: RoundedRectangleBorder(

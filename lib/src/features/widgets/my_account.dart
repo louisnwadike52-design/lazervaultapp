@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/settings/presentation/widgets/settings_t
 import 'package:lazervault/src/features/profile/presentation/widgets/profile_picture_actions.dart';
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'my_account_widgets.dart';
 
 class _MyAccountViewState extends State<_MyAccountView> {
@@ -477,7 +478,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
       );
       return;
     }
-    final choice = await showModalBottomSheet<String>(
+    final choice = await showAppBottomSheet<String>(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(

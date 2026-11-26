@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The full "how does this work" explainer for Lazerfunds.
 ///
@@ -13,7 +14,7 @@ import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widge
 /// the help icon, because the moment someone wants it is rarely the moment it
 /// appeared on its own.
 Future<void> showUpliftGuideSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

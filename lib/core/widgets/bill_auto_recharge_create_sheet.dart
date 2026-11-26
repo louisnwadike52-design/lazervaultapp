@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Callback invoked when the user taps "Schedule Auto-Recharge". The caller
 /// owns the cubit/repository layer and decides which fields actually reach
@@ -109,7 +110,7 @@ class BillAutoRechargeCreateSheet extends StatefulWidget {
     int? initialExecutionHour,
     int? initialExecutionMinute,
   }) {
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

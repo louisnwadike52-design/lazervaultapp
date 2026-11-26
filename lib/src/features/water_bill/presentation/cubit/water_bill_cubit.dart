@@ -1,4 +1,7 @@
+import 'package:lazervault/src/features/crypto_pay/domain/crypto_funding_failure.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/crypto_funding_info.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/fund_payment_with_crypto.dart';
 import '../../domain/repositories/water_bill_repository.dart';
 import 'water_bill_state.dart';
 
@@ -65,6 +68,10 @@ class WaterBillCubit extends Cubit<WaterBillState> {
     String? paymentGateway,
     String? transactionId,
     String? verificationToken,
+
+    /// Pay with crypto: the asset to sell to fund this payment,
+    /// lowercase. Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   }) async {
     if (isClosed) return;
     emit(PaymentInitiating());
@@ -78,12 +85,44 @@ class WaterBillCubit extends Cubit<WaterBillState> {
       paymentGateway: paymentGateway,
       transactionId: transactionId,
       verificationToken: verificationToken,
+      fundingAsset: fundingAsset,
     );
 
     if (isClosed) return;
-    result.fold(
-      (failure) => emit(WaterBillError(message: failure.message)),
-      (payment) {
+    await result.fold(
+      (failure) async => emit(WaterBillError(message: failure.message)),
+      (payment) async {
+        // ===== PAY WITH CRYPTO — STEP 2 OF THE ORDER =====
+        //
+        // The payment is recorded and NOTHING has been converted. Asking for
+        // the conversion is a separate call. It must also NOT fall through to
+        // verifyPayment below: there is no provider payment to verify yet,
+        // and polling one into existence is not something a parked intent can
+        // do.
+        final funding = CryptoFundingInfo.fromMetadata(payment.metadata);
+        if (funding != null) {
+          try {
+            await fundPaymentWithCrypto(
+              accountId: accountId,
+              paymentReference: payment.transactionReference ?? '',
+              // The SERVER's total — face plus platform fee.
+              requiredMinor: funding.requiredMinor,
+              asset: funding.asset,
+              service: 'water',
+            );
+          } catch (e) {
+            if (isClosed) return;
+            // Not "you have not been charged": the conversion may have
+            // started and we simply lost the reply.
+            emit(WaterBillError(message: _fundingMessage(e)));
+            return;
+          }
+          if (isClosed) return;
+          emit(WaterAwaitingCryptoFunding(
+              payment: payment, asset: funding.asset));
+          return;
+        }
+
         emit(PaymentInitiated(payment: payment));
         // Automatically start verifying the payment
         verifyPayment(paymentId: payment.id);
@@ -195,3 +234,14 @@ class WaterBillCubit extends Cubit<WaterBillState> {
     emit(WaterBillInitial());
   }
 }
+
+/// THE SERVER'S OWN SENTENCE, when the server actually decided.
+///
+/// A refusal — the feature gate, an unsupported coin, an amount below the
+/// conversion floor, a holding too small — means NOTHING was converted and
+/// nothing charged, and the server already says why in words written for a
+/// customer. Replacing that with "check your history" sent people to look for
+/// a record that was never written, about money that never moved. Only a LOST
+/// REPLY is genuinely ambiguous, and that is the one case the old sentence is
+/// right for. See CryptoFundingFailure.
+String _fundingMessage(Object error) => CryptoFundingFailure.from(error).message;

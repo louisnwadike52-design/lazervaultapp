@@ -7,6 +7,8 @@ import '../cubit/airtime_to_cash_cubit.dart';
 import '../cubit/airtime_to_cash_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/utils/route_args.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'vtuafrica_transfer_screen_widgets.dart';
 
 /// VTU Africa transfer confirmation screen.
@@ -43,13 +45,13 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
           // Conversion completed synchronously — land on the receipt.
           // (Previously unhandled: a completed VTU conversion left the user
           // stranded on the transfer screen.)
-          Get.offAllNamed('/airtime-to-cash/result', arguments: {
+          offAllKeepingHome('/airtime-to-cash/result', arguments: {
             'conversion': state.conversion,
             'isSuccess': true,
           });
         } else if (state is AirtimeToCashProcessingPending) {
           // Conversion submitted, cash credited once the provider confirms.
-          Get.offAllNamed('/airtime-to-cash/pending', arguments: {
+          offAllKeepingHome('/airtime-to-cash/pending', arguments: {
             'conversion': state.conversion,
             'message': state.message,
           });
@@ -508,7 +510,7 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
         .replaceAll('{A}', amountStr)
         .replaceAll('{P}', '<PIN>');
 
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

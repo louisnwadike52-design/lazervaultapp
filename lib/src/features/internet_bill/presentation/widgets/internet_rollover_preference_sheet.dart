@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Captures the recurring rollover cadence for an internet subscription.
 ///
@@ -29,7 +30,7 @@ class InternetRolloverPreferenceSheet extends StatefulWidget {
   const InternetRolloverPreferenceSheet({super.key});
 
   static Future<InternetRolloverPreference?> show(BuildContext context) {
-    return showModalBottomSheet<InternetRolloverPreference>(
+    return showAppBottomSheet<InternetRolloverPreference>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

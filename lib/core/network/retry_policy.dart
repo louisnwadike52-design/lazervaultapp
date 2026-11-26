@@ -39,6 +39,34 @@ class RetryPolicy {
     addJitter: true,
   );
 
+  /// A READ whose connection was torn down under it.
+  ///
+  /// THE CASE THIS EXISTS FOR. The app's gRPC channels sit behind Cloudflare,
+  /// which sends GOAWAY on connections it decides to close. The in-flight call
+  /// fails; ResilientClientChannel notices the shutdown and swaps in a fresh
+  /// inner channel — but only for the NEXT call. So the first request after an
+  /// idle period returns a transport error and the screen paints "Something
+  /// went wrong", while an immediate retry succeeds on the new connection.
+  /// Reported as PiggyVault failing on entry, with the server showing the same
+  /// RPC completing normally in 80ms.
+  ///
+  /// ONE retry, almost immediately. The connection is already replaced, so the
+  /// backoff that suits a struggling server is exactly wrong here: a second of
+  /// delay on a screen that is about to succeed reads as the app being slow.
+  /// And it stays at one, because if the second attempt also fails the problem
+  /// is not the connection and the user should be told.
+  ///
+  /// READS ONLY. A transport failure does not say whether the server processed
+  /// the request, so replaying a debit or a transfer on one would risk charging
+  /// twice. Writes keep their idempotency keys and their own policies.
+  static const RetryPolicy transientRead = RetryPolicy(
+    maxRetries: 1,
+    initialDelay: Duration(milliseconds: 150),
+    maxDelay: Duration(milliseconds: 300),
+    backoffMultiplier: 1.0,
+    addJitter: false,
+  );
+
   /// No retry policy
   static const RetryPolicy none = RetryPolicy(
     maxRetries: 0,

@@ -147,6 +147,18 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
 
   Color _getServiceColor(AppServiceName serviceName) {
     switch (serviceName) {
+      // Open banking shares the brand indigo used for account-level things;
+      // it is a connection to a bank, not a money movement with a category.
+      case AppServiceName.financialConnections:
+        return const Color(0xFF4834D4);
+      // Vendor earnings are money arriving, so they share the green the other
+      // inbound events use rather than a colour of their own.
+      case AppServiceName.vendorCampaigns:
+        return const Color(0xFF10B981);
+      // Matches TransactionServiceType.eventTicket, so a ticket notification
+      // and the receipt it opens are the same colour.
+      case AppServiceName.ticketing:
+        return const Color(0xFFD946EF);
       case AppServiceName.escrow:
         return const Color(0xFF6D28D9);
       case AppServiceName.sendFunds:

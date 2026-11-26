@@ -61,6 +61,7 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/move_money/domain/mandate_auth_attempt_store.dart';
 import 'package:lazervault/core/config/locale_gating.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'deposit_funds_screen_widgets.dart';
 
 class DepositFundsScreen extends StatefulWidget {
@@ -1326,7 +1327,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// flow on the screen context (which holds the cubits).
   void _openMethodSheet(_DepositMethod method) {
     final screenContext = context;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: screenContext,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2213,7 +2214,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           ),
         );
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2553,7 +2554,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       return;
     }
     final recurring = mandate != null && mandate.isActive;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: screenCtx,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2667,7 +2668,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     required String actionLabel,
     required VoidCallback onAction,
   }) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: screenCtx,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -3091,7 +3092,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     final confirmLabel =
         toDirectDebit ? 'Switch to Direct Debit' : 'Switch to one-time';
 
-    final result = await showModalBottomSheet<bool>(
+    final result = await showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -3434,7 +3435,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         (rawMandate.authAttemptedRecently ||
             MandateAuthAttemptStore.openedRecently(rawMandate.id));
     if (isConfirmingAuth) _pollConfirmingMandate(rawMandate.id);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: screenCtx,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(
@@ -3636,7 +3637,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
   /// "View all" — every linked bank as a row with deposit + manage + unlink.
   void _showAllAccountsSheet(BuildContext screenCtx) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: screenCtx,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -4383,7 +4384,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     _isProgressSheetShown = true;
     _startLinkWatchdog();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isDismissible: false,

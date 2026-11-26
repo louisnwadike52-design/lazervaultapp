@@ -34,6 +34,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class GroupAccountListScreen extends StatefulWidget {
   const GroupAccountListScreen({super.key});
@@ -897,7 +898,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     final stillMember = group.members
         .any((m) => m.userId == userId && m.status == GroupMemberStatus.active);
 
-    final choice = await showModalBottomSheet<String>(
+    final choice = await showAppBottomSheet<String>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -2854,7 +2855,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   void _showCreateGroupBottomSheet() {
     final cubit = context.read<GroupAccountCubit>();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

@@ -1,6 +1,7 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:uuid/uuid.dart';
+import 'package:lazervault/src/features/crypto/data/models/crypto_wallet_model.dart';
 
 import '../../domain/entities/crypto_entity.dart';
 import '../../domain/entities/global_market_data.dart';
@@ -416,6 +417,23 @@ class CryptoRepositoryImpl implements CryptoRepository {
     } catch (e) {
       return [];
     }
+  }
+
+  @override
+  Future<List<CryptoWalletModel>> getWallets() async {
+    final response = await grpcClient.getWallets();
+    return response.wallets
+        .map((w) => CryptoWalletModel(
+              id: w.id,
+              cryptoId: w.cryptoId,
+              cryptoSymbol: w.cryptoSymbol,
+              address: w.address,
+              balance: w.balance,
+              walletType: w.walletType,
+              chain: w.chain,
+              cryptoName: w.cryptoName,
+            ))
+        .toList();
   }
 
   @override

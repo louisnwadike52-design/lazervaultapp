@@ -64,6 +64,19 @@ class _KYCProviderWebViewScreenState extends State<KYCProviderWebViewScreen> {
     super.initState();
     final uri = Uri.tryParse(widget.sessionUrl);
     if (uri == null || !uri.hasScheme) {
+      // THE POP IS A FRAME TOO LATE.
+      //
+      // Returning here leaves `_controller` — a `late final` — unassigned,
+      // and build() runs in THIS frame with `_hasError` still false, so it
+      // reaches WebViewWidget(controller: _controller) and throws
+      // LateInitializationError. The customer got a crash screen instead of
+      // the snackbar this code intended.
+      //
+      // Setting the flag first makes build() take the error branch, so the
+      // screen renders something explicable while the post-frame pop runs.
+      _hasError = true;
+      _errorMessage = 'We couldn\'t open the verification page. Please start '
+          'the check again.';
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -157,7 +170,7 @@ class _KYCProviderWebViewScreenState extends State<KYCProviderWebViewScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Verification Timed Out',
-          style: TextStyle(color: Colors.white, fontSize: 18),
+          style: TextStyle(color: Color(0xFF111111), fontSize: 18, fontWeight: FontWeight.w700),
         ),
         content: const Text(
           'The verification session has expired. Please try again.',
@@ -185,7 +198,7 @@ class _KYCProviderWebViewScreenState extends State<KYCProviderWebViewScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Cancel Verification?',
-          style: TextStyle(color: Colors.white, fontSize: 18),
+          style: TextStyle(color: Color(0xFF111111), fontSize: 18, fontWeight: FontWeight.w700),
         ),
         content: const Text(
           'Leaving will cancel the verification process. '

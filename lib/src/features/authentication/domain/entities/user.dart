@@ -6,6 +6,11 @@ class User extends Equatable {
   final String id;
   final String firstName;
   final String lastName;
+
+  /// OPTIONAL, and usually empty. After verification this holds the
+  /// REGISTRY's middle name, adopted alongside first and last — so an
+  /// editor showing it is showing what the government record says.
+  final String middleName;
   final String email;
   final String? phoneNumber;
   final String? username; // Tag pay username
@@ -30,6 +35,21 @@ class User extends Equatable {
   final String? currentSignupStep;
   final bool hasPasscode;
   final bool hasTransactionPin;
+
+  /// An ADMIN set this account's login credential and the holder has not
+  /// replaced it yet (auth: `users.must_change_credentials`).
+  ///
+  /// An operator can set a passcode or password so a customer can be onboarded
+  /// in person or recovered after losing access — which necessarily means
+  /// someone who is not the account holder knows a working credential. The
+  /// platform does not allow that permanently, so the value is admitted ONCE
+  /// and the post-login router then sends the holder to choose their own.
+  ///
+  /// Carried on the USER rather than only in the login response, because most
+  /// of the ways a session begins are not a login: biometric unlock, a warm
+  /// start from a stored token, a refresh. A login-only flag would be bypassed
+  /// by all of them.
+  final bool mustChangeCredentials;
 
   /// Whether the user has a password set (mirrors password_hash != "" on the
   /// backend). Drives the "set password" gate before switching to the
@@ -57,6 +77,25 @@ class User extends Equatable {
   /// 3 BVN+NIN+liveness. Mirrors `users.kyc_tier`, the authoritative value
   /// (see `microservices/shared/kyctiers`). 0 means the field was absent.
   final int kycTier;
+
+  /// Has this holder's BVN/NIN been matched against the government record?
+  /// Mirrors `users.identity_verified`, and it is the flag auth-service's
+  /// `UpdateDateOfBirth` gates on: once it is true the stored date agreed with
+  /// NIBSS or NIMC and is no longer the holder's to edit.
+  ///
+  /// CARRIED SO THE APP CAN ASK BEFORE IT OFFERS. The date-of-birth editor
+  /// used to open the picker regardless and let the server refuse at the end
+  /// — and in the first two days of logs it was refused 36 times out of 36,
+  /// every one of them "locked because your identity has been verified". Each
+  /// of those customers picked a date, confirmed it spelled out, and was then
+  /// told they could not: a dead end dressed as an action, which is the loop
+  /// kyc_profile_fix.dart exists to remove.
+  ///
+  /// SAFE TO READ FROM A CACHED PROFILE, in this one direction. The flag only
+  /// ever goes false → true, so a stale session copy can be BEHIND the server
+  /// but never ahead of it. A false here therefore still has to be checked by
+  /// the server (and is); a true is trustworthy enough to route on.
+  final bool identityVerified;
 
   /// State of the holder's verification ATTEMPT — `not_started`,
   /// `pending_review`, `approved`, `rejected`. Mirrors `users.kyc_status`.
@@ -89,6 +128,7 @@ class User extends Equatable {
     required this.id,
     required this.firstName,
     required this.lastName,
+    this.middleName = '',
     required this.email,
     this.phoneNumber,
     this.username,
@@ -106,12 +146,16 @@ class User extends Equatable {
     this.currentSignupStep,
     this.hasPasscode = false,
     this.hasTransactionPin = false,
+    // Defaults FALSE so an older server response, which carries no such field,
+    // can never accidentally lock a customer into a credential change.
+    this.mustChangeCredentials = false,
     this.hasPassword = false,
     this.preferredLoginMethod,
     this.authType,
     this.twoFactorEnabled = false,
     this.twoFactorMethod,
     this.kycTier = 0,
+    this.identityVerified = false,
     this.kycStatus,
     this.dateOfBirth,
     this.address = PostalAddress.empty,
@@ -122,6 +166,7 @@ class User extends Equatable {
     id: '',
     firstName: '',
     lastName: '',
+    middleName: '',
     email: '',
     phoneNumber: null,
     username: null,
@@ -139,6 +184,7 @@ class User extends Equatable {
     currentSignupStep: null,
     hasPasscode: false,
     hasTransactionPin: false,
+    mustChangeCredentials: false,
     hasPassword: false,
     preferredLoginMethod: null,
     authType: null,
@@ -178,6 +224,7 @@ class User extends Equatable {
     String? id,
     String? firstName,
     String? lastName,
+    String? middleName,
     String? email,
     String? phoneNumber,
     String? username,
@@ -195,12 +242,14 @@ class User extends Equatable {
     String? currentSignupStep,
     bool? hasPasscode,
     bool? hasTransactionPin,
+    bool? mustChangeCredentials,
     bool? hasPassword,
     String? preferredLoginMethod,
     String? authType,
     bool? twoFactorEnabled,
     String? twoFactorMethod,
     int? kycTier,
+    bool? identityVerified,
     String? kycStatus,
     String? dateOfBirth,
     PostalAddress? address,
@@ -209,6 +258,7 @@ class User extends Equatable {
       id: id ?? this.id,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
+      middleName: middleName ?? this.middleName,
       email: email ?? this.email,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       username: username ?? this.username,
@@ -228,12 +278,15 @@ class User extends Equatable {
       currentSignupStep: currentSignupStep ?? this.currentSignupStep,
       hasPasscode: hasPasscode ?? this.hasPasscode,
       hasTransactionPin: hasTransactionPin ?? this.hasTransactionPin,
+      mustChangeCredentials:
+          mustChangeCredentials ?? this.mustChangeCredentials,
       hasPassword: hasPassword ?? this.hasPassword,
       preferredLoginMethod: preferredLoginMethod ?? this.preferredLoginMethod,
       authType: authType ?? this.authType,
       twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
       twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
       kycTier: kycTier ?? this.kycTier,
+      identityVerified: identityVerified ?? this.identityVerified,
       kycStatus: kycStatus ?? this.kycStatus,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       address: address ?? this.address,
@@ -242,36 +295,39 @@ class User extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        firstName,
-        lastName,
-        email,
-        phoneNumber,
-        username,
-        role,
-        roles,
-        verified,
-        isEmailVerified,
-        createdAt,
-        updatedAt,
-        language,
-        currency,
-        country,
-        profilePicture,
-        signupStatus,
-        currentSignupStep,
-        hasPasscode,
-        hasTransactionPin,
-        hasPassword,
-        preferredLoginMethod,
-        authType,
-        twoFactorEnabled,
-        twoFactorMethod,
-        kycTier,
-        kycStatus,
-        dateOfBirth,
-        address,
-      ];
+    id,
+    firstName,
+    middleName,
+    lastName,
+    email,
+    phoneNumber,
+    username,
+    role,
+    roles,
+    verified,
+    isEmailVerified,
+    createdAt,
+    updatedAt,
+    language,
+    currency,
+    country,
+    profilePicture,
+    signupStatus,
+    currentSignupStep,
+    hasPasscode,
+    hasTransactionPin,
+    mustChangeCredentials,
+    hasPassword,
+    preferredLoginMethod,
+    authType,
+    twoFactorEnabled,
+    twoFactorMethod,
+    kycTier,
+    identityVerified,
+    kycStatus,
+    dateOfBirth,
+    address,
+  ];
 }
 
 /// Marker used by [User.copyWith] to distinguish "explicit null"

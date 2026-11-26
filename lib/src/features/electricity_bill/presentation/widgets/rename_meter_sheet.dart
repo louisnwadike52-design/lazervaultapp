@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom-sheet that lets the user rename a saved meter beneficiary
 /// inline. Used from the payment-history actions sheet AND the saved-
@@ -25,7 +26,7 @@ class RenameMeterSheet {
     BuildContext context, {
     required BillBeneficiaryEntity beneficiary,
   }) {
-    return showModalBottomSheet<BillBeneficiaryEntity>(
+    return showAppBottomSheet<BillBeneficiaryEntity>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

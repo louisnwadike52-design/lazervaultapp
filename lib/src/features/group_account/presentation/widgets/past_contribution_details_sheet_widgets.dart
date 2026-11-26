@@ -25,7 +25,7 @@ class PastContributionDetailsSheet extends StatefulWidget {
     PastContributionEntry? seedEntry,
   }) {
     final cubit = context.read<GroupAccountCubit>();
-    return showModalBottomSheet(
+    return showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

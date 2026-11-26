@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// One selectable thing in a scope filter: a linked bank, or a LazerVault
 /// wallet. Both answer the same question ("which of my money is this about?"),
@@ -273,7 +274,7 @@ Future<Set<String>?> showScopeFilterSheet(
   required String allHint,
 }) {
   final working = Set<String>.from(selectedIds);
-  return showModalBottomSheet<Set<String>>(
+  return showAppBottomSheet<Set<String>>(
     context: context,
     backgroundColor: const Color(0xFF141414),
     isScrollControlled: true,

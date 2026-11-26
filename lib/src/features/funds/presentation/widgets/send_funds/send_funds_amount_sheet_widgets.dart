@@ -9,11 +9,18 @@ class SendFundsAmountResult {
   final DateTime? scheduledAt;
   final ServiceCategory? category;
   final RecurringTransferConfig? recurring;
+
+  /// PAY WITH CRYPTO: the asset to sell to fund this transfer, lowercase.
+  /// Null means the ordinary wallet-funded transfer, which is every transfer
+  /// that existed before this feature.
+  final String? fundingAsset;
+
   const SendFundsAmountResult({
     required this.amountMinor,
     this.note,
     this.scheduledAt,
     this.category,
     this.recurring,
+    this.fundingAsset,
   });
 }

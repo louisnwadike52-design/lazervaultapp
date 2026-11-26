@@ -6,6 +6,7 @@ import 'package:lazervault/core/utilities/bank_sort.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Colour set for [BankPickerSheet]. The picker is surface-agnostic: callers
 /// pass [BankPickerTheme.light] (the send-funds / add-recipient flows) or
@@ -96,7 +97,7 @@ class BankPickerSheet extends StatefulWidget {
     String? selectedBankCode,
     BankPickerTheme? theme,
   }) {
-    return showModalBottomSheet<Map<String, String>>(
+    return showAppBottomSheet<Map<String, String>>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

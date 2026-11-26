@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'beam_style.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// What happened when the user came back from the bank authorization.
 ///
@@ -38,7 +39,7 @@ Future<bool?> showMandateOutcomeSheet({
   required String bankName,
   VoidCallback? onResume,
 }) {
-  return showModalBottomSheet<bool>(
+  return showAppBottomSheet<bool>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

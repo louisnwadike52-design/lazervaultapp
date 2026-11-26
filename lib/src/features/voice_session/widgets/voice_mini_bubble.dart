@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_talk_affordance.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'voice_mini_bubble_widgets.dart';
 
 class _VoiceMiniBubbleState extends State<_VoiceMiniBubble>
@@ -45,7 +46,7 @@ class _VoiceMiniBubbleState extends State<_VoiceMiniBubble>
   /// Re-open the full voice sheet with the same options and remove the bubble.
   void _reopen() {
     VoiceMiniBubbleController.instance.hide();
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       VoiceCommandSheet(
         serviceName: widget.serviceName,
         conversationId: widget.conversationId,

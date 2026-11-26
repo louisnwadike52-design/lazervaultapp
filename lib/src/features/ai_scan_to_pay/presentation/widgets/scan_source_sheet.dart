@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/scan_entities.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Dark modal bottom sheet that lets the user pick the image source for an
 /// AI Scan-to-Pay session: take a photo (camera) or upload from device
@@ -12,7 +13,7 @@ class ScanSourceSheet extends StatelessWidget {
 
   /// Show the sheet and await the chosen source (null if dismissed).
   static Future<ScanSource?> show(BuildContext context) {
-    return showModalBottomSheet<ScanSource>(
+    return showAppBottomSheet<ScanSource>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

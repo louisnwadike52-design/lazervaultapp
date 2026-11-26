@@ -27,6 +27,15 @@ class _MultiSelectRecipientBottomSheetState
   // candidate banks (each with the holder name); one match auto-applies, many
   // offer a tappable list, none/failure reveals the manual bank picker.
   List<AccountSuggestion> _bankSuggestions = [];
+
+  /// True while the list is showing SAVED PAYEES for a PARTIAL number — the
+  /// payer is still typing and nothing has been resolved against a bank yet.
+  ///
+  /// Changes two things, exactly as in add_recipient: the header names what
+  /// the rows actually are, and "Enter bank manually" does not fire, because
+  /// the manual picker means "we could not resolve this number" and a payer
+  /// three digits in has not reached that question.
+  bool _savedOnlyPreview = false;
   bool _loadingBankSuggestions = false;
   Timer? _suggestDebounce;
   // SendFunds parity (add_recipient.dart `_bankFieldRevealed`): the bank
@@ -49,6 +58,14 @@ class _MultiSelectRecipientBottomSheetState
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    // WARM THE SAVED-PAYEE SNAPSHOT. See add_recipient.dart for the full
+    // reasoning: the as-you-type suggestions read it synchronously and it only
+    // holds what RecipientCubit last emitted, so a payer who came straight
+    // here was offered nothing. Fire-and-forget.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ensureSavedRecipientsWarm(context);
+    });
+
     _searchController.addListener(_onSearchChanged);
     _loadCurrentUserInfo();
     // Warm the dynamic (Flutterwave) bank list so the picker uses codes valid
@@ -757,11 +774,15 @@ class _MultiSelectRecipientBottomSheetState
               keyboardType: TextInputType.number,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
+                // 11 so a wallet phone with a leading zero (OPay, PalmPay,
+                // Moniepoint) fits; a 10-digit NUBAN still works. The rule
+                // and the cap come from one place so the field can never be
+                // capped below what counts as complete.
+                LengthLimitingTextInputFormatter(kDestinationAccountMaxLength),
               ],
               style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
               decoration: InputDecoration(
-                hintText: 'Enter 10-digit account number',
+                hintText: 'Account or phone (OPay, PalmPay…)',
                 hintStyle:
                     GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
                 prefixIcon:
@@ -770,15 +791,29 @@ class _MultiSelectRecipientBottomSheetState
                 contentPadding: EdgeInsets.symmetric(vertical: 14.h),
               ),
               onChanged: (value) {
-                if (value.length == 10 && _isBankSelected) {
+                if (isCompleteDestinationAccount(value) && _isBankSelected) {
                   _verifyBankAccount();
                   return;
                 }
+                // SAVED PAYEES ANSWER ON THE KEYSTROKE, with no network at
+                // all — the payer's own set is already in memory, while the
+                // bank name-enquiry behind it takes seconds. Computed before
+                // setState so the rows land in the same frame as the digit.
+                final saved = _savedMatchesFor(value);
+                // An empty snapshot heals itself on the keystroke that needs it
+                // — see the same call in add_recipient's handler.
+                if (saved.isEmpty) ensureSavedRecipientsWarm(context);
                 setState(() {
                   _verifiedBeneficiaryName = null;
                   _verifiedBankCode = null;
                   _verifiedBankName = null;
-                  _bankSuggestions = [];
+                  // Saved rows show at BOTH lengths: alone while the number is
+                  // partial, and kept under the bank lookup once it is
+                  // complete, so the row the payer was reaching for does not
+                  // vanish at the tenth digit.
+                  _bankSuggestions = saved;
+                  _savedOnlyPreview =
+                      !isCompleteDestinationAccount(value) && saved.isNotEmpty;
                   // Editing the number restarts auto-detection: hide the
                   // manual bank field again unless a bank is already applied.
                   if (!_isBankSelected) _bankFieldRevealed = false;
@@ -786,7 +821,7 @@ class _MultiSelectRecipientBottomSheetState
                 // SendFunds pattern: a full NUBAN with no bank picked triggers
                 // auto-detection across banks (debounced).
                 _suggestDebounce?.cancel();
-                if (value.length == 10 && !_isBankSelected) {
+                if (isCompleteDestinationAccount(value) && !_isBankSelected) {
                   setState(() => _loadingBankSuggestions = true);
                   _suggestDebounce =
                       Timer(const Duration(milliseconds: 350), () {
@@ -866,7 +901,15 @@ class _MultiSelectRecipientBottomSheetState
           if (_bankSuggestions.isNotEmpty) ...[
             Row(
               children: [
-                Text('Select the account',
+                Text(
+                    // Saved payees are the payer's own book matched on the
+                    // digits so far — nothing has been resolved against a
+                    // bank yet, and "Select the account" would claim it had.
+                    _savedOnlyPreview
+                        ? (_bankSuggestions.length == 1
+                            ? 'Saved recipient'
+                            : 'Saved recipients')
+                        : 'Select the account',
                     style: GoogleFonts.inter(
                         color: btTextSecondary,
                         fontSize: 12.5.sp,
@@ -882,7 +925,7 @@ class _MultiSelectRecipientBottomSheetState
                         EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                     child: Row(
                       children: [
-                        Text('Enter bank manually',
+                        Text(_savedOnlyPreview ? 'Hide' : 'Enter bank manually',
                             style: GoogleFonts.inter(
                                 color: btTextTertiary, fontSize: 11.5.sp)),
                         SizedBox(width: 4.w),
@@ -966,7 +1009,8 @@ class _MultiSelectRecipientBottomSheetState
           ],
 
           // Verify button
-          if (_isBankSelected && _bankAccountController.text.length == 10)
+          if (_isBankSelected &&
+              isCompleteDestinationAccount(_bankAccountController.text))
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -1062,7 +1106,7 @@ class _MultiSelectRecipientBottomSheetState
               icon: Icons.account_balance_outlined,
               title: 'Add Bank Account',
               subtitle:
-                  'Enter a 10-digit account number, we\'ll detect the bank\nand verify the account holder automatically',
+                  'Enter an account or wallet number, we\'ll detect the bank\nand verify the account holder automatically',
             ),
         ],
       ),
@@ -1154,14 +1198,14 @@ class _MultiSelectRecipientBottomSheetState
       context.read<AccountVerificationCubit>().reset();
     } catch (_) {}
     // Auto-verify if the account number is already entered.
-    if (_bankAccountController.text.length == 10) {
+    if (isCompleteDestinationAccount(_bankAccountController.text)) {
       _verifyBankAccount();
     }
   }
 
   void _verifyBankAccount() {
-    if (_selectedBankCode == null || _bankAccountController.text.length != 10)
-      return;
+    if (_selectedBankCode == null ||
+        !isCompleteDestinationAccount(_bankAccountController.text)) return;
     try {
       context.read<AccountVerificationCubit>().verifyAccount(
             bankCode: _selectedBankCode!,
@@ -1336,6 +1380,24 @@ class _MultiSelectRecipientBottomSheetState
     );
   }
 
+  /// The payer's own saved payees matching the digits typed so far.
+  ///
+  /// Network-free and undebounced — the point is that it answers before the
+  /// bank name-enquiry could. Filtered to numbers THIS field can hold (it caps
+  /// can hold), because a row that cannot be typed back into the box would be
+  /// an offer that dead-ends.
+  List<AccountSuggestion> _savedMatchesFor(String value) {
+    final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length < FeatureFlags.savedPayeeMinDigits) {
+      return const <AccountSuggestion>[];
+    }
+    return context
+        .read<AccountVerificationCubit>()
+        .savedRecipientMatches(digits, limit: FeatureFlags.savedPayeeMaxRows)
+        .where((s) => isCompleteDestinationAccount(s.accountNumber))
+        .toList(growable: false);
+  }
+
   /// Resolve candidate banks for a typed NUBAN (SendFunds parity). One match →
   /// auto-apply; several → the tappable list; none/failure → the manual bank
   /// picker stays available exactly as before.
@@ -1346,9 +1408,17 @@ class _MultiSelectRecipientBottomSheetState
           .read<AccountVerificationCubit>()
           .suggestBanks(accountNumber: accountNumber);
       if (!mounted || _bankAccountController.text != accountNumber) return;
+      // A RESOLUTION THAT FOUND NOTHING MUST NOT TAKE BACK THE SAVED ROWS.
+      // suggestBanks already merges saved payees matching this exact number,
+      // so when it returns anything they are in it; when it returns nothing
+      // they would simply be erased, and they can still be right.
+      final resolved = suggestions.isNotEmpty
+          ? suggestions
+          : _savedMatchesFor(accountNumber);
       setState(() {
         _loadingBankSuggestions = false;
-        _bankSuggestions = suggestions;
+        _bankSuggestions = resolved;
+        _savedOnlyPreview = suggestions.isEmpty && resolved.isNotEmpty;
       });
       //
       // A LAZERVAULT match is never auto-applied, even alone: it changes which
@@ -1378,6 +1448,16 @@ class _MultiSelectRecipientBottomSheetState
   /// The user cancelled the auto-detected candidates: clear them and switch
   /// to manual mode (bank selector + explicit Verify), SendFunds parity.
   void _dismissSuggestionsRevealBank() {
+    // Over a saved-payee preview this only hides: the manual picker means
+    // "this number could not be resolved", which is not where a payer three
+    // digits into an account number is. Another digit re-offers the matches.
+    if (_savedOnlyPreview) {
+      setState(() {
+        _bankSuggestions = [];
+        _savedOnlyPreview = false;
+      });
+      return;
+    }
     setState(() {
       _bankSuggestions = [];
       _loadingBankSuggestions = false;
@@ -1388,12 +1468,28 @@ class _MultiSelectRecipientBottomSheetState
   /// Apply a resolved candidate: bank + code + holder name land in the SAME
   /// verified-state fields the manual verify path fills, so the existing Add
   /// button and the sheet's Add-Recipients CTA work unchanged.
+  /// Put the chosen destination's FULL number in the field.
+  ///
+  /// Needed now that a row can be tapped from a PARTIAL number: the verify
+  /// path and the Add button both read this controller, so a three-digit entry
+  /// paired with a resolved bank would be a state the form cannot act on.
+  /// A no-op on the complete-number path, where the field already holds it.
+  void _syncAccountFieldTo(String number) {
+    final want = number.replaceAll(RegExp(r'[^0-9]'), '');
+    if (want.isEmpty || _bankAccountController.text == want) return;
+    _bankAccountController.text = want;
+    _bankAccountController.selection =
+        TextSelection.collapsed(offset: want.length);
+  }
+
   void _applyBankSuggestion(AccountSuggestion sug) {
+    _syncAccountFieldTo(sug.accountNumber);
     if (sug.isLazervault) {
       _applyLazervaultSuggestion(sug);
       return;
     }
     setState(() {
+      _savedOnlyPreview = false;
       _selectedBankName = sug.bankName;
       _selectedBankCode = sug.bankCode;
       _isBankSelected = true;

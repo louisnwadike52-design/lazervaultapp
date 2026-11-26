@@ -54,17 +54,32 @@ class LoginStepUpRequired extends AuthenticationState {
   /// on a device that really is new is not.
   final bool knownDevice;
 
+  /// The OTHER channel the server says is usable, masked for display. Empty
+  /// when there is none — see StepUpResend for why the client is told rather
+  /// than left to infer it.
+  final String altMethod;
+  final String altDestination;
+
   const LoginStepUpRequired({
     required this.stepUpToken,
     required this.method,
     required this.destination,
     this.expiresInSeconds = 0,
     this.knownDevice = false,
+    this.altMethod = '',
+    this.altDestination = '',
   });
 
   @override
-  List<Object?> get props =>
-      [stepUpToken, method, destination, expiresInSeconds, knownDevice];
+  List<Object?> get props => [
+        stepUpToken,
+        method,
+        destination,
+        expiresInSeconds,
+        knownDevice,
+        altMethod,
+        altDestination,
+      ];
 }
 
 // 2FA required at login: the user has 2FA enabled. The login screen navigates to

@@ -51,7 +51,10 @@ class FeatureGateGuard extends StatelessWidget {
     return ValueListenableBuilder<int>(
       valueListenable: FeatureFlags.revision,
       builder: (context, _, __) {
-        if (FeatureFlags.gateAllowed(gate)) return builder(context);
+        // routeGateAllowed, not gateAllowed: a quick service hidden from the
+        // grid must also be unreachable by deep link, AI chat or a
+        // notification tap — see FeatureFlags.routeGateAllowed.
+        if (FeatureFlags.routeGateAllowed(gate)) return builder(context);
         return _Unavailable(
             title: title, message: FeatureFlags.gateMessage(gate));
       },

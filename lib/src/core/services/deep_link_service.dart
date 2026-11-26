@@ -15,6 +15,20 @@ enum DeepLinkType {
   lazerSprayJoin,
   groupAccount,
 
+  /// A shared TICKETED EVENT: `https://lazervault.app/tickets/<id>` (or the
+  /// `lazervault://tickets/<id>` custom-scheme form).
+  ///
+  /// `/tickets/`, not `/events/`: the website owns `/events/[slug]` for its
+  /// own marketing events, so claiming that path would both 404 the no-app
+  /// case and intercept the website's links. See EventShareService.
+  ///
+  /// EventShareService builds it, and an organiser sharing the link IS the
+  /// distribution for a ticketed event — so the person tapping it is very
+  /// often not logged in, and frequently not a user yet. Routed through
+  /// PendingDeepLink for exactly that reason, like the escrow offer and the
+  /// crowdfund campaign.
+  ticketEvent,
+
   /// A link that identifies a COMPLETED payment, not something to open and pay
   /// — currently the donation receipt's `crowdfund/donation/<txn>`.
   paymentReceipt,
@@ -28,6 +42,19 @@ enum DeepLinkType {
   referralInvite,
   unknown,
 }
+
+/// Loose UUID v1–v8 shape.
+///
+/// Used to decide whether a path segment is an ID at all. Strict enough to
+/// catch a word where an id belongs — the difference between landing on an
+/// event and sending "mine" to a gRPC call that rejects it with an opaque
+/// error — and permissive about the version nibble, which the server's
+/// gen_random_uuid()/uuid.New() both satisfy.
+final RegExp _uuidShape = RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    caseSensitive: false);
+
+bool _looksLikeUuid(String v) => _uuidShape.hasMatch(v.trim());
 
 /// Parsed Deep Link
 class DeepLinkData {
@@ -70,6 +97,11 @@ class DeepLinkData {
   /// identifies. Null otherwise.
   final String? receiptReference;
 
+  /// For [DeepLinkType.ticketEvent], the event id from
+  /// `https://lazervault.app/tickets/<id>` (or the `lazervault://tickets/<id>`
+  /// custom-scheme form). Null otherwise.
+  final String? ticketEventId;
+
   const DeepLinkData({
     required this.type,
     required this.rawUri,
@@ -81,6 +113,7 @@ class DeepLinkData {
     this.lazerSprayCode,
     this.groupAccountId,
     this.receiptReference,
+    this.ticketEventId,
   });
 
   /// Get a query parameter value
@@ -301,6 +334,39 @@ class DeepLinkService {
         path: path,
         receiptReference: segments.last,
       );
+    }
+
+    // A SHARED TICKETED EVENT, at `/tickets/<id>`. Same two shapes as the
+    // campaign below: the custom scheme (lazervault://tickets/<id>) puts the
+    // id in the host's first segment, the universal link carries
+    // [tickets, <id>].
+    //
+    // NOT `/events/` — the website serves its OWN marketing events there, so
+    // that path would 404 every no-app tap AND have the app intercept the
+    // website's links. See EventShareService for the whole reasoning.
+    //
+    // GUARDED AGAINST A `tickets/<verb>/…` SHAPE for the reason the donation
+    // receipt above documents: `crowdfund/donation/<txn>` was once read as a
+    // campaign whose id was literally "donation". A single remaining segment
+    // is the only shape that is an id.
+    final isTicketEvent = (uri.host == 'tickets' && segments.length == 1) ||
+        (segments.length == 2 && segments[0] == 'tickets');
+    if (isTicketEvent) {
+      final id = uri.host == 'tickets' ? segments[0] : segments[1];
+      // An empty or non-uuid id would open the detail screen with nothing to
+      // load and leave a permanent spinner, so it falls through to `unknown`
+      // and the caller lands on the dashboard. Shape-checked rather than
+      // merely non-empty, because the id goes straight into a gRPC request
+      // that rejects a bad uuid with an opaque error.
+      if (_looksLikeUuid(id)) {
+        return DeepLinkData(
+          type: DeepLinkType.ticketEvent,
+          rawUri: uri.toString(),
+          queryParams: queryParams,
+          path: path,
+          ticketEventId: id,
+        );
+      }
     }
 
     final isCrowdfund = (uri.host == 'crowdfund' && segments.isNotEmpty) ||

@@ -105,6 +105,45 @@ KycState resolveKycState({String? status, int? tier}) {
   // rather than an unverified person.
   if (t <= 0 && s.isEmpty) return KycState.unknown;
 
+  // A KNOWN TIER BELOW THE BAR OUTRANKS AN "APPROVED" STATUS.
+  //
+  // THE HOLE THIS CLOSES, measured in the backend on 2026-11-10.
+  // auth-service's SyncVerifiedTier ends with
+  // `UpdateKYCStatus(userID, tier, KYCStatusApproved)` — the status is written
+  // as approved for WHATEVER tier was synced. A NIN verifies to Tier 1
+  // (kyctiers.DeriveTier: a NIN alone is not Tier 2), so a NIN-verified holder
+  // is left at `kyc_tier = 1, kyc_status = 'approved'`.
+  //
+  // The switch below then returned [KycState.verified] on the status alone, so
+  // that holder read as done: shouldPrompt false, blocksDashboard false, and
+  // the dashboard opened on Tier 1 — with NO account number, because only
+  // Tier 2 mints one and both Nomba and Flutterwave require a BVN to mint. A
+  // wallet that cannot receive a transfer, and nothing on screen saying why.
+  //
+  // The comment below this function argues the tier and the status may
+  // legitimately fall out of step and that requiring both would gate a
+  // verified holder on a race. That is true in ONE direction only — tier
+  // upgraded, status not yet written — and the `t >= kMinVerifiedKycTier`
+  // check above already answers it, before this line. The opposite skew is
+  // not a race at all: it is the steady state of every Tier-1 approval.
+  //
+  // Guarded on `t >= 1` so an UNPOPULATED tier (absent from the proto, which
+  // is the biometric-login case this file's mirror exists for) still falls
+  // through to the status and cannot lock out a verified holder. A real
+  // account always carries a tier of at least 1, so `t >= 1` means "we were
+  // told, and we were told it is not enough".
+  if (t >= 1 && t < kMinVerifiedKycTier) {
+    switch (s) {
+      case 'approved':
+      case 'verified':
+      case 'completed':
+        // Approved at a tier that is not verified ENOUGH. Not rejected, not
+        // in review — simply not there yet, which is what unverified means
+        // and what the prompt and the gate both need to hear.
+        return KycState.unverified;
+    }
+  }
+
   switch (s) {
     case 'approved':
     case 'verified':

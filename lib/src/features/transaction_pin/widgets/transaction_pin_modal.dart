@@ -7,6 +7,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/transaction_pin/utils/transaction_service_label.dart';
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/crypto_quote_preview.dart';
 part 'transaction_pin_modal_widgets.dart';
 
 class TransactionPinModalState extends State<TransactionPinModal>
@@ -125,7 +127,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
     _pulseController.stop();
     setState(() {
       _phase = PinModalPhase.failed;
-      _failureMessage = message;
+      _failureMessage = _inCustomerTerms(message);
       // Honest header: the red X next to a 'Processing...' title read as a
       // contradiction. The body below carries the detailed reason.
       //
@@ -203,7 +205,61 @@ class TransactionPinModalState extends State<TransactionPinModal>
   static String refusalSubtitleFor(String? message) =>
       _refusalSubtitle(message);
 
-  static String _refusalSubtitle(String? message) {
+  /// Rewrite a refusal into the terms the customer actually paid in.
+  ///
+  /// THE REPORTED BUG, IN ONE SENTENCE: a customer emptied their naira wallet
+  /// on purpose, chose to pay with USDT, and was told "Insufficient balance.
+  /// Add funds or choose another account and try again." Every word of that
+  /// is about the wallet they deliberately emptied, and none of it mentions
+  /// the coin they chose — so the feature looked like it had ignored the
+  /// choice entirely.
+  ///
+  /// Only the INSUFFICIENT-FUNDS family is rewritten, and only when a coin
+  /// was chosen. Every other refusal — a minimum, a limit, a frozen account —
+  /// is already in terms the customer can act on and is passed through
+  /// untouched. A blanket rewrite would be the opposite mistake: describing a
+  /// limit breach as a coin problem.
+  ///
+  /// The server's own wording is NOT appended. It names the wallet, which is
+  /// the half that was misleading; keeping it would reintroduce the confusion
+  /// under a better headline.
+  String _inCustomerTerms(String message) {
+    final q = widget.cryptoQuote;
+    if (q == null) return message;
+    final m = message.toLowerCase();
+    final isShortfall = m.contains('insufficient') ||
+        m.contains('not enough') ||
+        m.contains('cover');
+    if (!isShortfall) return message;
+
+    if (q.isSplit) {
+      // Both sides were needed, and the server does not say which fell short.
+      // Naming both is honest and tells the customer there are two ways out.
+      return 'Your ${q.label} and your wallet together did not cover this. '
+          'Top up either one and try again.';
+    }
+    return 'Your ${q.label} did not cover this. Add more ${q.label}, '
+        'top up your wallet, or choose another coin and try again.';
+  }
+
+  /// The refusal subtitle, in the terms the customer actually paid in.
+  ///
+  /// WHY THIS NEEDS THE QUOTE. A customer who chose to pay with USDT and is
+  /// told "Not enough balance" reads it as being about their NAIRA — which,
+  /// if they deliberately emptied that wallet to test paying with crypto, is
+  /// both true and completely beside the point. It says nothing about the
+  /// coin they selected, so it reads as the feature having ignored them.
+  ///
+  /// Naming the coin turns a confusing refusal into an actionable one: top up
+  /// the coin, or top up the wallet, and the customer can tell which.
+  ///
+  /// [quote] is null on every wallet payment and the wording is then exactly
+  /// what it was before crypto funding existed.
+  static String refusalSubtitleFor2(String? message, CryptoQuotePreview? quote) =>
+      _refusalSubtitle(message, quote);
+
+  static String _refusalSubtitle(String? message,
+      [CryptoQuotePreview? quote]) {
     final m = (message ?? '').toLowerCase();
     if (m.contains('minimum') ||
         m.contains('too small') ||
@@ -213,6 +269,14 @@ class TransactionPinModalState extends State<TransactionPinModal>
     if (m.contains('insufficient') ||
         m.contains('cover') ||
         m.contains('not enough')) {
+      if (quote != null) {
+        // A SPLIT PAYMENT CAN FAIL ON EITHER SIDE, and the server does not
+        // tell us which. Naming both is honest; naming one would be a guess
+        // that sends the customer to top up the wrong thing.
+        return quote.isSplit
+            ? 'Not enough ${quote.label} or wallet balance'
+            : 'Not enough ${quote.label}';
+      }
       return 'Not enough balance';
     }
     if (m.contains('maximum') || m.contains('exceeds') || m.contains('limit')) {
@@ -331,6 +395,109 @@ class TransactionPinModalState extends State<TransactionPinModal>
   /// spendability — limits reset, an admin can top someone up mid-session, and
   /// a stale client figure must never be the thing that blocks a legitimate
   /// payment. This informs; it does not adjudicate.
+  /// WHAT LEAVES THE CUSTOMER, when they chose to pay with a coin.
+  ///
+  /// Rendered under the naira total rather than instead of it, because both
+  /// facts matter and they are different facts: the naira figure is what the
+  /// payment COSTS, the coin figure is what it costs THEM. A sheet showing
+  /// only the first asks someone to authorise an irreversible sale without
+  /// naming what is being sold.
+  ///
+  /// Three lines at most, and each earns its place:
+  ///   1. the coin and roughly how much of it
+  ///   2. the naira that coin covers — only when the wallet also contributes,
+  ///      because otherwise it is the total already shown above
+  ///   3. the wallet top-up, which is the one most likely to surprise
+  ///
+  /// INDICATIVE, AND IT SAYS SO. The binding rate comes from the exchange at
+  /// conversion time and will differ in both directions. Stating that beside
+  /// the figures is the difference between a quote and a promise.
+  List<Widget> _cryptoRows() {
+    final q = widget.cryptoQuote;
+    if (q == null) return const [];
+
+    final rows = <Widget>[SizedBox(height: 8.h)];
+
+    rows.add(_cryptoLine(
+      label: 'Paying with',
+      // A quantity we could not derive is omitted rather than guessed: "0
+      // USDT" is a claim, and "we could not price this" is a different one.
+      value: q.sellQuantity == null
+          ? q.label
+          : '${q.sellQuantity} ${q.label}',
+      emphasis: true,
+    ));
+
+    if (q.isSplit) {
+      rows.add(_cryptoLine(
+        label: 'From ${q.label}',
+        value: _naira(q.fromCryptoMinor),
+      ));
+      rows.add(_cryptoLine(
+        // THE LINE THAT PREVENTS THE SURPRISE. In shortfall mode the coin
+        // covers what it can and the wallet finishes the job; a customer who
+        // believed they were paying purely in crypto needs to see that
+        // BEFORE the PIN, not from a balance that moved afterwards.
+        label: 'From your wallet',
+        value: _naira(q.fromWalletMinor),
+      ));
+    }
+
+    rows.add(SizedBox(height: 6.h));
+    rows.add(Text(
+      q.stale
+          ? 'Rate could not be refreshed — the final amount is set when the '
+              'conversion runs.'
+          : 'Approximate. The final amount is set when the conversion runs.',
+      textAlign: TextAlign.center,
+      style: GoogleFonts.inter(
+        fontSize: 10.sp,
+        color: Colors.grey.shade500,
+      ),
+    ));
+    return rows;
+  }
+
+  Widget _cryptoLine({
+    required String label,
+    required String value,
+    bool emphasis = false,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 2.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11.sp,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: emphasis ? 13.sp : 11.sp,
+                fontWeight: emphasis ? FontWeight.w700 : FontWeight.w600,
+                color:
+                    emphasis ? const Color(0xFF4E03D0) : Colors.grey.shade800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Kobo to a naira string. Local to this sheet so the crypto rows read the
+  /// same as the total above them, which is formatted the same way.
+  String _naira(int minor) =>
+      '$_displaySymbol${(minor / 100).toStringAsFixed(2)}';
+
   List<Widget> _allocationRows(double total) {
     final remaining = widget.memberAllocationRemaining;
     if (remaining == null) return const [];
@@ -564,6 +731,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
                         ),
                       ),
                     ],
+                    ..._cryptoRows(),
                     ..._allocationRows(total),
                   ],
                 );
@@ -1076,7 +1244,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
         // subtitle names the KIND of stop instead of contradicting it with
         // "something went wrong".
         if (_isRefusal(_failureMessage)) {
-          return _refusalSubtitle(_failureMessage);
+          return _refusalSubtitle(_failureMessage, widget.cryptoQuote);
         }
         return 'Something went wrong';
       default:
@@ -1225,7 +1393,7 @@ Future<String?> showTransactionPinModal(
 }) async {
   String? submittedPin;
 
-  await showModalBottomSheet(
+  await showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     isDismissible: false,

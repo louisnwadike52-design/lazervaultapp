@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/services/app_version_compare.dart';
 
 /// Severity of an available app update.
 enum AppUpdateType {
@@ -127,9 +128,16 @@ class AppUpdateService {
     if (!isIOS && !isAndroid) return AppUpdateInfo.none;
 
     int currentBuild = 0;
+    String currentVersion = '';
     try {
       final info = await PackageInfo.fromPlatform();
       currentBuild = int.tryParse(info.buildNumber.trim()) ?? 0;
+      // THE VERSION STRING, NOT JUST THE BUILD. A release can raise either —
+      // 1.0.1 -> 1.0.2, or the build alone — and on iOS the build is often
+      // unusable (app_latest_build_ios is 0 until something ships there, and
+      // the App Store's own lookup answers with a version string). Without
+      // this the version dimension could not be compared at all.
+      currentVersion = info.version.trim();
     } catch (_) {
       // PackageInfo can fail in odd embeddings; treat as unknown → no prompt.
       return AppUpdateInfo.none;
@@ -142,12 +150,31 @@ class AppUpdateService {
     String latestVersion = FeatureFlags.appLatestVersion(isIOS: isIOS);
 
     AppUpdateType type;
-    if (currentBuild > 0 && minBuild > 0 && currentBuild < minBuild) {
+    // A MANDATORY UPDATE MUST POINT AT A BUILD THAT EXISTS.
+    //
+    // The floor stays the OPERATOR'S decision and is still not asked of the
+    // store — neither store has a concept of "you must upgrade", and a
+    // security fix has to be forceable whatever the rollout state says. What
+    // is checked is cheaper and local: that the floor is not above the build
+    // we have published as available.
+    //
+    // Without it, one wrong number locks every user out of an app they cannot
+    // update: the ForcedUpdateScreen cannot be dismissed, and its Update
+    // button opens a store page that says "Open", not "Update". There is no
+    // way forward from that screen, on any device, until a server setting
+    // changes.
+    //
+    // The server refuses such a floor too (guardAppMinBuild in admin-gateway,
+    // which compares against the store-verified app_latest_build_*). This is
+    // the second line: a floor written before that guard existed, or by any
+    // path that bypasses it, still cannot brick an install.
+    //
+    // latestBuild <= 0 means we do not know what is available — and not
+    // knowing is never grounds to force.
+    final bool floorIsReachable = latestBuild > 0 && minBuild <= latestBuild;
+    if (currentBuild > 0 && minBuild > 0 && currentBuild < minBuild &&
+        floorIsReachable) {
       // Below minimum supported — block regardless of the optional toggle.
-      //
-      // DELIBERATELY NOT asked of the store. Neither store has a concept of
-      // "you must upgrade", and a security fix has to be forceable whatever
-      // the rollout state says. This stays the operator's decision.
       type = AppUpdateType.forced;
     } else if (!FeatureFlags.appUpdateEnabled) {
       type = AppUpdateType.none;
@@ -182,10 +209,28 @@ class AppUpdateService {
           latestVersion = store.availableVersion!;
         }
       } else if (store.indeterminate) {
-        type =
-            (currentBuild > 0 && latestBuild > 0 && currentBuild < latestBuild)
-                ? AppUpdateType.optional
-                : AppUpdateType.none;
+        // THE STORE COULD NOT ANSWER, SO FALL BACK TO THE ADMIN VALUES —
+        // ON EITHER DIMENSION, AND STRICTLY GREATER IN BOTH.
+        //
+        // The build decides whenever both sides have one: it is a single
+        // integer and unambiguous. It cannot always decide —
+        // app_latest_build_ios sits at 0 until something ships there — so a
+        // version-string comparison backs it up. That comparison is numeric
+        // per segment (see compareAppVersions), because "1.0.10" sorts BELOW
+        // "1.0.9" as a plain string and the tenth patch would never prompt.
+        //
+        // STRICTLY newer, never equal: telling someone to update to what they
+        // already run is the fastest way to make the prompt feel broken, and
+        // it is exactly what happens the moment an operator sets the latest
+        // version to the build they are themselves testing.
+        final buildSaysNewer =
+            currentBuild > 0 && latestBuild > 0 && currentBuild < latestBuild;
+        final buildCanDecide = currentBuild > 0 && latestBuild > 0;
+        final versionSaysNewer = !buildCanDecide &&
+            isNewerAppVersion(installed: currentVersion, latest: latestVersion);
+        type = (buildSaysNewer || versionSaysNewer)
+            ? AppUpdateType.optional
+            : AppUpdateType.none;
       } else {
         type = AppUpdateType.none;
       }

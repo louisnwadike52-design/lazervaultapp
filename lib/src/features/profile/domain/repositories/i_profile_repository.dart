@@ -16,6 +16,7 @@ abstract class IProfileRepository {
   Future<Either<Failure, User>> updateUserProfile({
     String? firstName,
     String? lastName,
+    String? middleName,
     String? username,
     String? phoneNumber,
     String? language,
@@ -26,6 +27,13 @@ abstract class IProfileRepository {
     // the caller is not touching it — the distinction matters because a name
     // change must not clear an address the user set weeks ago.
     PostalAddress? address,
+    /// ISO YYYY-MM-DD. Null or empty leaves the stored date alone, like
+    /// [address] being null — a name change must never blank it.
+    ///
+    /// The server accepts this only while the identity is UNVERIFIED: once a
+    /// date of birth has been matched against NIBSS or NIMC it is no longer the
+    /// holder's to edit, and the call comes back with a message saying so.
+    String? dateOfBirth,
   });
 
   // Update password

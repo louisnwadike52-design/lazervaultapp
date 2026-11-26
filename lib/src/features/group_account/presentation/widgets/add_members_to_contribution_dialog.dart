@@ -17,6 +17,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 import 'contact_picker_bottom_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'add_members_to_contribution_dialog_widgets.dart';
 
 class AddMembersToContributionDialog extends StatefulWidget {
@@ -408,7 +409,7 @@ class _AddMembersToContributionDialogState
   }
 
   void _openContactPicker() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1836,7 +1837,7 @@ class _AddMembersToContributionDialogState
 
   void _showMemberDetails(GroupMember member) {
     HapticFeedback.lightImpact();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'budget_override_dialog_widgets.dart';
 
 /// Dialog shown when a transaction is blocked due to budget exceeded (strict mode)
@@ -39,7 +40,7 @@ class BudgetOverrideDialog extends StatefulWidget {
     required String currency,
     required String budgetId,
   }) {
-    return showModalBottomSheet<BudgetOverrideAction>(
+    return showAppBottomSheet<BudgetOverrideAction>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

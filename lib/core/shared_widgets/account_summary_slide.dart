@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// A slide-out panel that displays account and locale selection
 ///
@@ -34,7 +35,7 @@ class AccountSummarySlide extends StatefulWidget {
     VoidCallback? onAccountChanged,
     VoidCallback? onLocaleChanged,
   }) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

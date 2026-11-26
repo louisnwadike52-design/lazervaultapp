@@ -33,6 +33,14 @@ class WaterPaymentEntity extends Equatable {
   final DateTime? completedAt;
   final String? transactionReference;
 
+  /// The payment's free-form metadata, verbatim from the backend.
+  ///
+  /// Carried ONLY so a crypto-funded payment can read back the total the
+  /// server quoted for its conversion — see CryptoFundingInfo. Null for an
+  /// ordinary wallet-funded payment, which is every payment that existed
+  /// before pay-with-crypto.
+  final String? metadata;
+
   const WaterPaymentEntity({
     required this.id,
     required this.providerCode,
@@ -48,6 +56,7 @@ class WaterPaymentEntity extends Equatable {
     required this.createdAt,
     this.completedAt,
     this.transactionReference,
+    this.metadata,
   });
 
   bool get isPending => status == WaterPaymentStatus.pending;

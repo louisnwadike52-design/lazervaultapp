@@ -19,6 +19,7 @@ import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class TagPaymentConfirmationScreen extends StatefulWidget {
   final UserTagEntity tag;
@@ -208,7 +209,7 @@ class _TagPaymentConfirmationScreenState
             setState(() {
               _isProcessing = false;
             });
-            Get.offAllNamed(
+            offAllKeepingHome(
               AppRoutes.tagPaymentReceipt,
               arguments: {
                 'transaction': state.transaction,
@@ -221,7 +222,7 @@ class _TagPaymentConfirmationScreenState
             });
             // Back to the list, rebuilt from the server — the tag this screen
             // was showing is now closed.
-            Get.offAllNamed(AppRoutes.tagPay);
+            offAllKeepingHome(AppRoutes.tagPay);
             Get.snackbar(
               'Tag Declined',
               state.message,

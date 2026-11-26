@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/microservice_chat/data/datasources/http_direct_chat_datasource.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// AI "Plan My Day" input modal.
 ///
@@ -37,7 +38,7 @@ class AiPlanInputModal extends StatefulWidget {
     required DateTime selectedDate,
     required VoidCallback onPlanCreated,
   }) {
-    return showModalBottomSheet(
+    return showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

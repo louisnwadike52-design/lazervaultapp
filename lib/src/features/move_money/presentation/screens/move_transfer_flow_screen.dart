@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/theme/app_surfaces.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_unlink_impact.dart';
+import 'package:lazervault/src/features/open_banking/presentation/widgets/bank_unlink_impact_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/utils/kyc_error_handler.dart';
+import 'package:lazervault/core/utils/tier_limit_refusal.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
@@ -47,6 +50,7 @@ import '../widgets/reauth_required_overlay.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'move_transfer_flow_screen_widgets.dart';
 
 /// Single-screen Move Money transfer flow (modelled after the Exchange Convert flow).
@@ -303,7 +307,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     final excludeId = isSource ? _destinationAccount?.id : _sourceAccount?.id;
     final selectedId = isSource ? _sourceAccount?.id : _destinationAccount?.id;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),
@@ -413,7 +417,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   /// (KYC_REQUIRED). Routes the user into the progressive KYC flow so they can
   /// verify their BVN, after which DirectPay / Direct Debit can move money.
   void _showKYCRequiredSheet(BuildContext context) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,
@@ -694,35 +698,28 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   Future<void> _confirmUnlinkBank(LinkedBankAccount account) async {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: const Text('Unlink bank',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-        content: Text(
-          'Remove ${account.bankName} (${account.displayAccountNumber})? '
-          'Any Direct Debit on it is cancelled. You can re-link anytime.',
-          style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child:
-                const Text('Keep', style: TextStyle(color: Color(0xFF9CA3AF))),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child:
-                const Text('Unlink', style: TextStyle(color: Colors.redAccent)),
-          ),
-        ],
-      ),
+
+    // The SAME impact sheet the linked-accounts screen uses.
+    //
+    // This dialog said "Any Direct Debit on it is cancelled" — true, and still
+    // only half of it. It never mentioned autosave rules funded by pulling
+    // from this bank, which stop working entirely, and it could not: it had no
+    // way to know. Two unlink buttons warning about different things is how
+    // one of them ends up wrong, so both now resolve the attachments through
+    // `resolveBankUnlinkImpact` and render the same sheet.
+    final impact = await resolveBankUnlinkImpact(
+      linkedAccountId: account.id,
+      isDefault: account.isDefault,
     );
-    if (confirmed != true || !mounted) return;
+    if (!mounted) return;
+
+    final confirmed = await showBankUnlinkImpactSheet(
+      context: context,
+      bankName: account.bankName,
+      maskedAccountNumber: account.displayAccountNumber,
+      impact: impact,
+    );
+    if (!confirmed || !mounted) return;
     await context.read<OpenBankingCubit>().unlinkAccount(
           accountId: account.id,
           userId: authState.profile.userId,
@@ -1256,7 +1253,9 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         child: MultiBlocListener(
           listeners: [
             BlocListener<MoveMoneyCubit, MoveMoneyState>(
-              listener: (context, state) {
+              // async because the tier-cap branch below awaits the sheet it
+              // pushes, so nothing else is scheduled over the top of it.
+              listener: (context, state) async {
                 if (state is MoveMoneyFeeCalculated) {
                   setState(() {
                     _feeError = false;
@@ -1373,7 +1372,18 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                   if (isKYCRequiredError(state.errorCode) ||
                       isKYCRequiredError(state.message)) {
                     _showKYCRequiredSheet(context);
-                  } else {
+                  } else if (await showTierLimitRefusalIfAny(
+                    context,
+                    state.message,
+                    operationName: 'move this money',
+                  )) {
+                    // A TIER CAP IS NOT A PAGE ERROR. KYC_REQUIRED (no identity
+                    // on file at all) was handled and a tier CAP — an identity
+                    // on file with a ceiling on it — was not, so it arrived as
+                    // friendly page copy with nothing to act on. Disjoint
+                    // cases, so the order above is safe: the exact code match
+                    // runs first and this only sees what it did not claim.
+                  } else if (context.mounted) {
                     // Page-contained + friendly: stays on the Beam flow's
                     // Scaffold (not over the dashboard once the flow pops) and
                     // never shows the raw server message.

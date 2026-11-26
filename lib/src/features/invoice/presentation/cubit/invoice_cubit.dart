@@ -1,4 +1,9 @@
 import 'dart:async';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/src/features/invoice/data/repositories/invoice_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/fund_payment_with_crypto.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/invoice_crypto_funding.dart';
 import 'package:bloc/bloc.dart';
 import 'package:grpc/grpc.dart';
 import 'package:uuid/uuid.dart';
@@ -10,6 +15,7 @@ import '../../domain/entities/invoice_fee_quote.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import 'invoice_state.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/pagination/next_page_prefetch.dart';
 
 class InvoiceCubit extends Cubit<InvoiceState> {
   final InvoiceRepository repository;
@@ -127,6 +133,19 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     }
   }
 
+  /// ONE PAGE AHEAD. Modelled on Escrow Pay; see NextPagePrefetch for why it
+  /// is keyed and why its failures are swallowed.
+  ///
+  /// Keyed on (status filter, page size, page): changing the filter must not
+  /// serve rows fetched under the previous one.
+  final NextPagePrefetch<PaginatedInvoiceResult> _ahead =
+      NextPagePrefetch<PaginatedInvoiceResult>();
+
+  /// A mutation invalidates what was fetched ahead — the prefetched page was
+  /// read before the invoice was paid or cancelled, and showing it afterwards
+  /// offers an action the customer has already taken.
+  void invalidatePrefetch() => _ahead.clear();
+
   /// Load invoices page-based (server-side pagination + filtering)
   Future<void> loadInvoicesPage({
     int page = 1,
@@ -149,11 +168,13 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         emit(InvoiceLoading());
       }
 
-      final result = await repository.getSentInvoicesPaginated(
-        page: page,
-        pageSize: pageSize,
-        status: statusFilter,
-      );
+      final want = pageKey([statusFilter, pageSize], page);
+      final result = _ahead.take(want) ??
+          await repository.getSentInvoicesPaginated(
+            page: page,
+            pageSize: pageSize,
+            status: statusFilter,
+          );
       if (isClosed) return;
 
       // Statistics are just the header summary — a transient stats failure must
@@ -185,6 +206,16 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         hasPrevious: result.hasPrevious,
         currentFilter: statusFilter,
       ));
+
+      // AFTER the emit, so it never delays the page the user asked for.
+      if (result.hasNext) {
+        final next = result.currentPage + 1;
+        _ahead.warm(
+          pageKey([statusFilter, pageSize], next),
+          () => repository.getSentInvoicesPaginated(
+              page: next, pageSize: pageSize, status: statusFilter),
+        );
+      }
     } catch (e) {
       if (isClosed) return;
       final errorMessage = e.toString().toLowerCase();
@@ -609,8 +640,21 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   }
 
   // Mark invoice as paid (with offline queue support)
+  /// [fundingAsset] non-empty means PAY WITH CRYPTO.
+  ///
+  /// THE ORDER IS THE SAFETY PROPERTY and it is fixed: the payment is
+  /// recorded first (the call below, carrying the funding metadata) and only
+  /// then is the conversion asked for, naming the reference the server
+  /// returned. A conversion with no payment waiting for it would sell the
+  /// customer's coin for an errand nothing tracks, and the sale is
+  /// irreversible. If the second step never runs, invoice-service's sweep
+  /// closes the intent and nothing was converted.
   Future<void> markAsPaid(String invoiceId, PaymentMethod paymentMethod,
-      [String? reference, String? pin, String? verificationToken]) async {
+      [String? reference,
+      String? pin,
+      String? verificationToken,
+      String? fundingAsset]) async {
+    invalidatePrefetch();
     try {
       if (isClosed) return;
       emit(InvoicePaymentProcessing(invoiceId: invoiceId));
@@ -621,8 +665,22 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         reference,
         pin: pin,
         verificationToken: verificationToken,
+        fundingAsset: fundingAsset,
       );
       if (isClosed) return;
+
+      // PAID WITH CRYPTO: RECORDED, NOT PAID.
+      //
+      // The authorisation exists and the conversion has been asked for, but
+      // the coin has not been sold and the invoice has not been settled. The
+      // ordinary success path claims the invoice is paid, which would be
+      // false here — and false in the one direction a customer acts on,
+      // because they would stop waiting and tell the issuer it is done.
+      final funding = _cryptoFundingOf(repository);
+      if (funding != null) {
+        await _startInvoiceConversion(invoiceId, funding);
+        return;
+      }
 
       // Invalidate cache after successful payment
       cacheManager?.invalidatePattern('invoices:');
@@ -649,6 +707,62 @@ class InvoiceCubit extends Cubit<InvoiceState> {
             message: userFacingErrorFrom(
                 e, 'Failed to mark invoice as paid. Please try again.')));
       }
+    }
+  }
+
+  /// The funding block from the payment that just ran, when it was
+  /// crypto-funded.
+  ///
+  /// Read off the concrete repository rather than widened into the shared
+  /// `Invoice` return type, which every other caller also receives: an
+  /// in-flight conversion is a property of one payment attempt, not of an
+  /// invoice. A repository that does not implement the crypto path simply
+  /// has no block, so the ordinary flow is untouched.
+  InvoiceCryptoFunding? _cryptoFundingOf(Object repo) {
+    if (repo is InvoiceRepositoryGrpcImpl) return repo.lastCryptoFunding;
+    return null;
+  }
+
+  /// ASK FOR THE CONVERSION, THEN SAY WHAT IS ACTUALLY TRUE.
+  ///
+  /// Runs only after the payment is recorded. Nothing here claims the invoice
+  /// is paid: the coin has to be sold first, and emitting success would stop
+  /// the customer waiting for something still in flight.
+  Future<void> _startInvoiceConversion(
+      String invoiceId, InvoiceCryptoFunding funding) async {
+    final accountId = serviceLocator<AccountManager>().activeAccountId ?? '';
+    try {
+      await fundPaymentWithCrypto(
+        accountId: accountId,
+        paymentReference: funding.reference,
+        requiredMinor: funding.requiredMinor,
+        asset: funding.asset,
+        // The domain this conversion belongs to. invoice-service matches on
+        // it and ignores every other domain's events; a typo here is a
+        // conversion that settles and is never claimed by anybody.
+        service: 'invoice',
+        currency: funding.currency,
+      );
+      if (isClosed) return;
+      emit(InvoiceCryptoFundingStarted(
+        invoiceId: invoiceId,
+        reference: funding.reference,
+        asset: funding.asset,
+        requiredMinor: funding.requiredMinor,
+        currency: funding.currency,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      // THE CONVERSION WAS NOT STARTED, so nothing was sold. Said plainly,
+      // because at this point the customer has NOT been charged and must not
+      // be left wondering where their coin went. invoice-service's sweep
+      // closes the unfunded intent on its own.
+      emit(InvoiceError(
+        message: userFacingErrorFrom(
+            e,
+            'We could not start the conversion, so nothing was sold and you '
+            'have not been charged. Please try again.'),
+      ));
     }
   }
 
@@ -688,6 +802,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
   // Cancel invoice
   Future<void> cancelInvoice(String invoiceId) async {
+    invalidatePrefetch();
     try {
       final updatedInvoice = await repository.cancelInvoice(invoiceId);
       if (isClosed) return;
@@ -708,6 +823,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
   // Delete invoice
   Future<void> deleteInvoice(String invoiceId) async {
+    invalidatePrefetch();
     try {
       await repository.deleteInvoice(invoiceId);
       if (isClosed) return;

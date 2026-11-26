@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet to choose the Send Money transfer style — styled identically to
 /// [showLoginMethodSheet]. Returns the chosen style
@@ -10,7 +11,7 @@ Future<String?> showSendMoneySheet(
   BuildContext context, {
   required String current,
 }) {
-  return showModalBottomSheet<String>(
+  return showAppBottomSheet<String>(
     context: context,
     backgroundColor: const Color(0xFF1F1F1F),
     isScrollControlled: true,
@@ -84,7 +85,7 @@ Future<String?> showDashboardLayoutSheet(
   BuildContext context, {
   required String current,
 }) {
-  return showModalBottomSheet<String>(
+  return showAppBottomSheet<String>(
     context: context,
     backgroundColor: const Color(0xFF1F1F1F),
     isScrollControlled: true,

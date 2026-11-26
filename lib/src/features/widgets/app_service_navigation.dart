@@ -91,6 +91,24 @@ void openAppService(BuildContext context, AppServiceName service) {
     case AppServiceName.exchange:
       Get.toNamed(AppRoutes.currencyExchange);
       break;
+    // BACK NAVIGATION IS THE ROUTER'S, NOT A CUSTOM POP. Pushed by NAME like
+    // every other tile, so the linked-banks screen sits on the normal stack
+    // and its own app-bar back returns to the dashboard — the same gesture
+    // the other eleven tiles teach. A Get.to(() => Screen()) here would work
+    // but would leave the route unnamed, which is what stopped a support
+    // reply being deep-linkable until today.
+    case AppServiceName.financialConnections:
+      // The MESSAGING page, not the linked-banks list — the same destination
+      // the dashboard tile and the send-funds sheet use. These three were the
+      // only ways into the feature and one of them went somewhere else.
+      Get.toNamed(AppRoutes.financialConnections);
+      break;
+    case AppServiceName.vendorCampaigns:
+      Get.toNamed(AppRoutes.vendorCampaigns);
+      break;
+    case AppServiceName.ticketing:
+      Get.toNamed(AppRoutes.ticketing);
+      break;
     case AppServiceName.giftCards:
       Get.toNamed(AppRoutes.giftCards);
       break;

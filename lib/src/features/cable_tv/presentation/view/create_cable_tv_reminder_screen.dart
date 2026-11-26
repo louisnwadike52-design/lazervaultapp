@@ -15,6 +15,7 @@ import '../cubit/cable_tv_reminder_cubit.dart';
 import '../cubit/cable_tv_reminder_state.dart';
 import '../cubit/cable_tv_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'create_cable_tv_reminder_screen_widgets.dart';
 
 class CreateCableTVReminderScreen extends StatefulWidget {
@@ -642,7 +643,7 @@ class _CreateCableTVReminderScreenState
       return;
     }
     final fmt = NumberFormat('#,##0', 'en_NG');
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

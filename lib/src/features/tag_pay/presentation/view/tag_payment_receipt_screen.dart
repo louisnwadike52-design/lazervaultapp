@@ -9,6 +9,7 @@ import '../../domain/entities/user_tag_entity.dart' show UserTagEntity;
 import '../../../../../core/types/app_routes.dart';
 import '../../services/tag_pay_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class TagPaymentReceiptScreen extends StatefulWidget {
   const TagPaymentReceiptScreen({super.key});
@@ -106,7 +107,7 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.tagPay),
+          onPressed: () => offAllKeepingHome(AppRoutes.tagPay),
           icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),

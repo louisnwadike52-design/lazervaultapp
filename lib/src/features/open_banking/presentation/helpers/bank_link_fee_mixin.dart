@@ -6,6 +6,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 import '../../domain/entities/deposit.dart';
 import 'bank_link_kyc_gate.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Format a minor-unit (kobo) amount as a naira string with thousands separators,
 /// e.g. 159125 -> "₦1,591.25".
@@ -249,7 +250,7 @@ Future<bool> showDepositFeeAgreementSheet(
   final railLabel =
       quote.rail == 'direct_debit' ? 'Direct Debit' : 'One-time payment';
 
-  final res = await showModalBottomSheet<bool>(
+  final res = await showAppBottomSheet<bool>(
     context: context,
     backgroundColor: cardBg,
     isScrollControlled: true,

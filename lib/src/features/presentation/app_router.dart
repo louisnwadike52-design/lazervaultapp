@@ -1,4 +1,18 @@
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_detail_screen.dart';
+import 'package:lazervault/src/features/vendor_campaigns/presentation/cubit/vendor_campaign_cubit.dart';
+import 'package:lazervault/src/features/ticketing/presentation/cubit/ticketing_cubit.dart';
+import 'package:lazervault/src/features/ticketing/presentation/screens/events_screen.dart';
+import 'package:lazervault/src/features/ticketing/presentation/screens/event_detail_screen.dart';
+import 'package:lazervault/src/features/ticketing/presentation/screens/my_tickets_screen.dart';
+import 'package:lazervault/src/features/ticketing/presentation/screens/my_events_screen.dart';
+import 'package:lazervault/src/features/ticketing/presentation/screens/create_event_screen.dart';
+import 'package:lazervault/src/features/ticketing/presentation/screens/organiser_event_screen.dart';
+import 'package:lazervault/src/features/ticketing/presentation/screens/check_in_screen.dart';
+import 'package:lazervault/src/features/ticketing/presentation/screens/event_attendees_screen.dart';
+import 'package:lazervault/src/features/ticketing/presentation/screens/edit_event_screen.dart';
+import 'package:lazervault/src/generated/ticketing.pb.dart' as tk;
+import 'package:lazervault/src/features/vendor_campaigns/presentation/views/vendor_campaigns_screen.dart';
+import 'package:lazervault/src/features/support/presentation/support_desk_screen.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_search_screen.dart';
@@ -391,6 +405,8 @@ import 'package:lazervault/src/features/crowdfund/presentation/views/my_donation
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard_cubit.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/notification_channels_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_report_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_appeal_screen.dart';
+import 'package:lazervault/src/features/crowdfund/data/datasources/crowdfund_grpc_data_source.dart';
 
 // Electricity Bill imports
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/electricity_bill_cubit.dart';
@@ -656,6 +672,7 @@ import '../fcy_account/presentation/fcy_kyc_wizard_screen.dart';
 import '../fcy_account/presentation/cubit/fcy_kyc_cubit.dart';
 import 'package:lazervault/core/shared_widgets/feature_gate_guard.dart';
 import 'package:lazervault/core/shared_widgets/locale_gate_guard.dart';
+import 'package:lazervault/src/features/support/presentation/support_tickets_screen.dart';
 
 class AppRouter {
   // Phone+passcode SIGNUP is a multi-screen journey whose working state
@@ -1246,6 +1263,30 @@ class AppRouter {
     GetPage(
       name: AppRoutes.languages,
       page: () => serviceLocator<LanguagesScreen>(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      // THE SUPPORT DESK. `arguments` is a TICKET ID when a desk push named
+      // one — read defensively, because an agent sent here by a notification
+      // must land on the queue rather than a crash if the payload is odd.
+      name: AppRoutes.supportDesk,
+      page: () => SupportDeskScreen(
+        openTicketId: Get.arguments is String ? Get.arguments as String : null,
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      // Reached from a notification as well as from Settings.
+      // `arguments` carries the ticket number when the push was about
+      // one specific ticket, so the screen opens it rather than the list.
+      name: AppRoutes.supportTickets,
+      // Get.arguments is the ticket number when the push named one.
+      // Read defensively: a malformed or absent argument must land on
+      // the list, never crash the screen a waiting customer was sent to.
+      page: () => SupportTicketsScreen(
+        openTicketNumber:
+            Get.arguments is String ? Get.arguments as String : null,
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -3668,6 +3709,180 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
 
+    // Vendor Campaigns — launch-day promotions at partner venues.
+    //
+    // Wrapped in FeatureGateGuard so the gate that hides the TILE also closes
+    // the deep link: a gate on the hub alone is decorative while a push
+    // notification can still open the flow behind it. The guard also builds
+    // the screen lazily, so a withheld feature never constructs its cubit or
+    // fires its first request.
+    // EVENT TICKETING.
+    //
+    // Every page is wrapped in FeatureGateGuard on the SAME quick-service gate
+    // that hides the tile, so turning the service off from the dashboard
+    // closes the deep links in one move — a gate on the hub alone is
+    // decorative while a push notification can still open the flow behind it.
+    // The guard also builds lazily, so a withheld feature never constructs its
+    // cubit or fires a request.
+    //
+    // ONE CUBIT PER PAGE, from the service locator's FACTORY: each screen owns
+    // and closes its own, which is why the registration is a factory and not a
+    // singleton.
+    GetPage(
+      name: AppRoutes.ticketing,
+      page: () => FeatureGateGuard(
+        gate: 'quick_service_ticketing',
+        title: 'Events',
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<TicketingCubit>(),
+          child: const EventsScreen(),
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ticketingHost,
+      page: () => FeatureGateGuard(
+        gate: 'quick_service_ticketing',
+        title: 'Host',
+        // The host arrives as a QUERY parameter — see AppRoutes.ticketingHost
+        // for why it is not a path segment. An empty one renders the ordinary
+        // discover list rather than a page titled with nothing.
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<TicketingCubit>(),
+          child: EventsScreen(organiser: Get.parameters['host'] ?? ''),
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ticketingMyTickets,
+      page: () => FeatureGateGuard(
+        gate: 'quick_service_ticketing',
+        title: 'My tickets',
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<TicketingCubit>(),
+          child: const MyTicketsScreen(),
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ticketingMyEvents,
+      page: () => FeatureGateGuard(
+        gate: 'quick_service_ticketing',
+        title: 'My events',
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<TicketingCubit>(),
+          child: const MyEventsScreen(),
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ticketingCreate,
+      page: () => FeatureGateGuard(
+        gate: 'quick_service_ticketing',
+        title: 'Create event',
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<TicketingCubit>(),
+          child: const CreateEventScreen(),
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ticketingDetail,
+      page: () => FeatureGateGuard(
+        gate: 'quick_service_ticketing',
+        title: 'Event',
+        // The id comes from the PATH PARAMETER, and a deep link with none is
+        // answered by the screen's own error state rather than by constructing
+        // a request for the empty string.
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<TicketingCubit>(),
+          child: EventDetailScreen(eventId: Get.parameters['eventId'] ?? ''),
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ticketingOrganiser,
+      page: () => FeatureGateGuard(
+        gate: 'quick_service_ticketing',
+        title: 'Event earnings',
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<TicketingCubit>(),
+          child: OrganiserEventScreen(eventId: Get.parameters['eventId'] ?? ''),
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ticketingEdit,
+      page: () => FeatureGateGuard(
+        gate: 'quick_service_ticketing',
+        title: 'Edit event',
+        builder: (_) {
+          // The event arrives as an argument. A direct deep link has none, and
+          // the screen needs the loaded event to know what is frozen — so this
+          // sends the organiser to their list rather than building a form over
+          // a null.
+          final arg = Get.arguments;
+          if (arg is! tk.TicketEvent) {
+            return const MyEventsScreen();
+          }
+          return BlocProvider(
+            create: (_) => serviceLocator<TicketingCubit>(),
+            child: EditEventScreen(event: arg),
+          );
+        },
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ticketingAttendees,
+      page: () => FeatureGateGuard(
+        gate: 'quick_service_ticketing',
+        title: 'Guest list',
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<TicketingCubit>(),
+          child:
+              EventAttendeesScreen(eventId: Get.parameters['eventId'] ?? ''),
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ticketingCheckIn,
+      page: () => FeatureGateGuard(
+        gate: 'quick_service_ticketing',
+        title: 'Check in',
+        // No BlocProvider: the scanner awaits the repository directly so the
+        // answer is on screen the instant it is known. A rebuild between a
+        // steward and "let this person in?" is the wrong place for one — the
+        // same reasoning the vendor scanner records.
+        builder: (_) => CheckInScreen(eventId: Get.parameters['eventId'] ?? ''),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    GetPage(
+      name: AppRoutes.vendorCampaigns,
+      page: () => FeatureGateGuard(
+        // The quick-service gate, not a feature_ prefix: this is the same
+        // switch that hides the tile, so turning the service off from the
+        // dashboard closes the deep link in the same move.
+        gate: 'quick_service_vendorCampaigns',
+        title: 'Vendor Campaigns',
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<VendorCampaignCubit>(),
+          child: const VendorCampaignsScreen(),
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
     // Crowdfund routes
     GetPage(
       name: AppRoutes.crowdfund,
@@ -3825,6 +4040,23 @@ class AppRouter {
             donations: args['donations'] as List<CrowdfundDonation>?,
             campaignUrl: args['campaignUrl'] as String?,
           ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+
+    GetPage(
+      name: AppRoutes.crowdfundAppeal,
+      page: () {
+        final args = (Get.arguments as Map<String, dynamic>?) ?? const {};
+        return CrowdfundAppealScreen(
+          campaign: args['crowdfund'] as Crowdfund,
+          // The data source directly rather than through the cubit: an appeal
+          // is a two-call flow of its own (read mine, submit one) that no
+          // other screen shares, and threading it through CrowdfundCubit
+          // would put two more states on a bloc every campaign screen
+          // listens to.
+          dataSource: serviceLocator<CrowdfundGrpcDataSource>(),
         );
       },
       transition: Transition.rightToLeft,

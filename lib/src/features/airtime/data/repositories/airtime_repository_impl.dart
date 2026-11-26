@@ -101,6 +101,7 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
     String? verificationToken,
     String? operatorId,
     String? reloadlyOperatorId,
+    String? fundingAsset,
   }) async {
     // Use remote data source for real purchases
     if (remoteDataSource != null &&
@@ -123,6 +124,7 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
         operatorId: operatorId,
         reloadlyOperatorId: reloadlyOperatorId,
         currency: currency,
+        fundingAsset: fundingAsset,
       );
 
       return transaction;

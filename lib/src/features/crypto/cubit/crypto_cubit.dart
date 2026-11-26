@@ -242,6 +242,7 @@ class CryptoCubit extends Cubit<CryptoState> {
     await Future.wait([
       _loadWatchlistsSection(),
       _loadHoldingsSection(),
+      _loadWalletsSection(),
       _loadTransactionsSection(),
       _loadPriceAlertsSection(),
       _loadAutoOrdersSection(),
@@ -271,6 +272,22 @@ class CryptoCubit extends Cubit<CryptoState> {
   /// every holding off the one bulk /markets/tickers snapshot it already warms
   /// for the asset list, so we no longer fetch units-only then fan out N
   /// per-asset GetCryptoFiatRate calls — one call returns units + fiat.
+  /// `state.wallets` was never written by any fetch, so every screen that
+  /// read it fell back to a list derived from holdings — correct balances,
+  /// but no deposit address and no chain, which is why a wallet's detail
+  /// page had nothing to show or copy. Best-effort like the other sections:
+  /// the holdings fallback stays in place when this fails.
+  Future<void> _loadWalletsSection() async {
+    try {
+      final w = await repository.getWallets();
+      if (isClosed) return;
+      final s = state;
+      if (s is CryptosLoaded) emit(s.copyWith(wallets: w));
+    } catch (_) {
+      // Fallback (holdings-derived list) remains; nothing to emit.
+    }
+  }
+
   Future<void> _loadHoldingsSection() async {
     try {
       final h = await repository.getHoldings(unitsOnly: false);
@@ -1112,6 +1129,8 @@ class CryptoCubit extends Cubit<CryptoState> {
       if (current is CryptosLoaded) {
         emit(current.copyWith(holdings: refreshed));
       }
+      // The wallets just created carry the deposit addresses; pick them up.
+      await _loadWalletsSection();
     } catch (_) {
       // non-fatal; pull-to-refresh will pick this up
     }

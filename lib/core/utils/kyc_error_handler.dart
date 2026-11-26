@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_upgrade_modal.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Checks if a gRPC error is KYC-tier-related and shows the upgrade modal.
 ///
@@ -47,7 +48,7 @@ bool handleKYCError(
   final requiredTier = currentTier < 3 ? currentTier + 1 : 3;
 
   // Show upgrade modal
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

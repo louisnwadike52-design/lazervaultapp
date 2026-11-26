@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:hybrid_hex_color_converter/hybrid_hex_color_converter.dart';
 import 'package:lazervault/src/features/widgets/new_card.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class NewCardScreen extends StatefulWidget {
   const NewCardScreen({super.key});
@@ -13,7 +14,7 @@ class NewCardScreen extends StatefulWidget {
 
 class _NewCardScreenState extends State<NewCardScreen> {
   void _showBottomSheet(BuildContext context) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(

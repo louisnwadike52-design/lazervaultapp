@@ -154,18 +154,51 @@ class _CrowdfundReportContentState extends State<_CrowdfundReportContent> {
     );
   }
 
-  void _showShareSheet(BuildContext context, CrowdfundReport report) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => ShareReportBottomSheet(
-        report: report,
-        campaignUrl: widget.campaignUrl,
-        // Needed by the PDF path so the document can state real figures
-        // rather than only the AI narrative.
-        crowdfund: widget.crowdfund,
-        statistics: widget.statistics,
-      ),
+  /// Opens the PLATFORM share sheet directly.
+  ///
+  /// This used to show a hand-built sheet listing WhatsApp, Facebook, Telegram
+  /// and Twitter, with "More Options" underneath to reach the real one. That
+  /// is a worse version of a thing every phone already does well: it can only
+  /// offer apps somebody thought to hard-code, it shows them whether or not
+  /// they are installed, and it put the native sheet — which lists exactly the
+  /// apps this person actually has, in their own most-used order — one extra
+  /// tap away behind a button named after an afterthought.
+  ///
+  /// The PDF payload is used because it is a strict SUPERSET: ShareParams
+  /// carries the document AND the summary text, so nothing is lost by dropping
+  /// the text-only route.
+  Future<void> _showShareSheet(
+      BuildContext context, CrowdfundReport report) async {
+    // Captured BEFORE any await: the iOS popover anchors to this rect, and
+    // share_plus throws without a non-zero origin.
+    final origin = CrowdfundReportService.shareOriginFromContext(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final cubit = context.read<CrowdfundCubit>();
+    final crowdfund = widget.crowdfund;
+
+    if (crowdfund != null) {
+      try {
+        await CrowdfundReportPdfService.shareReport(
+          crowdfund: crowdfund,
+          report: report,
+          statistics: widget.statistics,
+          campaignUrl: widget.campaignUrl,
+          sharePositionOrigin: origin,
+        );
+        return;
+      } catch (_) {
+        // Rendering can fail (fonts, storage, a malformed figure). Falling
+        // back to the text share still shares SOMETHING, which is better than
+        // a dead button on the one screen whose purpose is to be shared.
+        messenger.showSnackBar(const SnackBar(
+          content: Text('Sharing the summary — the PDF could not be built.'),
+        ));
+      }
+    }
+    await cubit.shareReportGeneral(
+      report,
+      widget.campaignUrl,
+      sharePositionOrigin: origin,
     );
   }
 

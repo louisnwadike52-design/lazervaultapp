@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import '../../cubit/create_policy_cubit.dart';
 import 'validation_status_icon.dart';
 import '../../../../../core/utils/form_field_validators.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Screen 2: Policy Holder Information
 ///
@@ -416,7 +417,7 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
   }
 
   void _showCountryCodePicker() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

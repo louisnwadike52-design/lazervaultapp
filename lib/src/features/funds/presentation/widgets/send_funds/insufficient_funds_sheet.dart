@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
@@ -50,17 +51,48 @@ String insufficientFundsMessage({
       'Please top up your account or use a different account.';
 }
 
-/// Shows the refusal, with the one action that resolves it.
+/// Shows the refusal, with the actions that resolve it.
 ///
 /// "Nothing has been sent" is load-bearing: this fires before any money step,
 /// and a refusal is the one case where the app can truthfully promise that.
+///
+/// ## Why crypto is offered HERE
+///
+/// Being told you are short is the moment paying from crypto is most useful,
+/// and it was the one moment the app did not mention it. The selector lives
+/// further up the same screen, so a customer who dismissed this sheet had to
+/// know it was there, find it, and come back — which means in practice the
+/// people who most needed the feature were the least likely to use it.
+///
+/// [onPayWithCrypto] is passed by a flow that HAS a pay-source to set. It is
+/// offered as a secondary link rather than the primary button because
+/// topping up is the plain answer and selling an asset is a decision; and it
+/// is absent entirely when the caller does not supply it or the gate is off,
+/// rather than shown disabled.
 Future<void> showInsufficientFunds(
   BuildContext context, {
   required String currencySymbol,
   required double amountMajor,
   required double feeMajor,
   required double availableMajor,
+  VoidCallback? onPayWithCrypto,
+  String? email,
+  String? userId,
 }) async {
+  // Same gate as the selector, read the same way — so the two can never
+  // disagree about whether this customer has the feature. An offer here that
+  // led to a control that is not rendered would be worse than no offer.
+  final cryptoOffer = onPayWithCrypto != null &&
+          FeatureFlags.payWithCryptoAvailable(email: email, userId: userId)
+      ? <RefusalLink>[
+          RefusalLink(
+            label: 'Pay with crypto instead',
+            icon: Icons.currency_bitcoin,
+            onTap: onPayWithCrypto,
+          ),
+        ]
+      : const <RefusalLink>[];
+
   await showServerRefusal(
     context,
     title: 'Insufficient funds',
@@ -73,5 +105,6 @@ Future<void> showInsufficientFunds(
     hint: 'Nothing has been sent.',
     actionLabel: 'Add money',
     onAction: () => Get.toNamed(AppRoutes.depositFunds),
+    links: cryptoOffer,
   );
 }

@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import '../../../../core/network/grpc_client.dart';
 import '../../../../core/network/retry_helper.dart';
 import '../../../../generated/invoice.pb.dart' as pb;
+import 'package:lazervault/src/features/crypto_pay/data/funding_call_options.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/invoice_crypto_funding.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -300,6 +302,17 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     );
   }
 
+  /// The funding block from the LAST payInvoice call, when it was
+  /// crypto-funded.
+  ///
+  /// Held here rather than widening the shared `Invoice` return type, which
+  /// every other caller of this repository also receives: an in-flight
+  /// conversion is not a property of an invoice, it is a property of one
+  /// payment attempt. Cleared on every call, so a wallet payment can never
+  /// read a previous attempt's reference.
+  InvoiceCryptoFunding? get lastCryptoFunding => _lastCryptoFunding;
+  InvoiceCryptoFunding? _lastCryptoFunding;
+
   @override
   Future<List<Invoice>> getInvoicesTaggedToUser(String userId) async {
     return retryWithBackoff(
@@ -320,7 +333,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   @override
   Future<Invoice> markInvoiceAsPaid(
       String invoiceId, PaymentMethod paymentMethod, String? paymentReference,
-      {String? pin, String? verificationToken}) async {
+      {String? pin, String? verificationToken, String? fundingAsset}) async {
     return retryWithBackoff(
       operation: () async {
         final request = pb.PayInvoiceRequest()
@@ -337,11 +350,28 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
           request.idempotencyKey = paymentReference;
         }
 
-        final options = await grpcClient.callOptions;
+        // PAY WITH CRYPTO rides as gRPC METADATA, the same channel transfers
+        // and bills use: no gateway that does not know about this feature has
+        // to change, and PayInvoiceRequest keeps the shape every existing
+        // caller sends. Blank asset = the ordinary wallet payment, byte for
+        // byte unchanged.
+        final options =
+            (await grpcClient.callOptions).withCryptoFunding(fundingAsset);
         final response = await grpcClient.invoiceClient.payInvoice(
           request,
           options: options,
         );
+
+        // WITH CRYPTO THE INVOICE IS NOT PAID YET. The server recorded the
+        // authorisation and handed back the reference the conversion must
+        // name; asking for that conversion is the caller's next step.
+        final funding =
+            InvoiceCryptoFunding.fromMetadata(response.invoice.metadata);
+        if (funding != null) {
+          _lastCryptoFunding = funding;
+        } else {
+          _lastCryptoFunding = null;
+        }
 
         return _fromProto(response.invoice);
       },

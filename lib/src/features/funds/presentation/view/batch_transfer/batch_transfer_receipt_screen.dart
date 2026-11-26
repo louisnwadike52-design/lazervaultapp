@@ -16,6 +16,8 @@ import 'package:lazervault/src/features/funds/domain/repositories/i_saved_batch_
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/funds/domain/batch_item_unified.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class BatchTransferReceiptScreen extends StatefulWidget {
   const BatchTransferReceiptScreen({super.key});
@@ -221,7 +223,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
   }
 
   void _startAnotherTransfer() {
-    Get.offAllNamed(AppRoutes.batchTransfer);
+    offAllKeepingHome(AppRoutes.batchTransfer);
   }
 
   /// One recipient of this batch as the shared receipt model.
@@ -314,7 +316,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
 
     if (transfers.isEmpty) return;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1591,7 +1593,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     final transfers = receiptData['transfers'] as List<dynamic>? ?? [];
     if (transfers.isEmpty) return;
     final multiplierCtrl = TextEditingController(text: '1.0');
-    final ok = await showModalBottomSheet<bool>(
+    final ok = await showAppBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

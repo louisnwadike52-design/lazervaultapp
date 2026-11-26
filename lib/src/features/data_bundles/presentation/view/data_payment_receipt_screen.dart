@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/utils/receipt_download.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,6 +20,7 @@ import '../widgets/rollover_preference_sheet.dart';
 import '../../services/data_bundles_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Data bundle purchase receipt. Mirrors the transfer send-funds receipt
 /// layout: compact success icon, amount headline, status + timestamp row,
@@ -403,7 +405,7 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen>
           icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
           onPressed: () => _openedFromHistory
               ? Get.back()
-              : Get.offAllNamed(AppRoutes.dataBundlesHome),
+              : offAllKeepingHome(AppRoutes.dataBundlesHome),
         ),
       ),
       body: Center(
@@ -436,7 +438,7 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen>
               ),
               SizedBox(height: 24.h),
               TextButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.dataBundlesHome),
+                onPressed: () => offAllKeepingHome(AppRoutes.dataBundlesHome),
                 child: Text(
                   'Go to Data',
                   style: TextStyle(
@@ -470,7 +472,7 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen>
               if (_openedFromHistory) {
                 Get.back();
               } else {
-                Get.offAllNamed(AppRoutes.dataBundlesHome);
+                offAllKeepingHome(AppRoutes.dataBundlesHome);
               }
             },
             icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
@@ -645,6 +647,19 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen>
           _buildDetailRow('Data Plan', planName),
           _buildDetailRow('Phone', purchase.phoneNumber),
           _buildDetailRow('Amount', _formatAmount(purchase.amount)),
+          // HOW IT WAS PAID, when crypto funded it.
+          //
+          // The split is recorded on the purchase by utility-payments the
+          // moment the conversion's outcome meets the payment
+          // (mergeBillFundingBreakdown), and this is where the customer
+          // checks it later. A receipt that says only "₦1,000" cannot answer
+          // the question they will actually have — which of my balances did
+          // that come out of, and how much coin did it cost me?
+          //
+          // Empty for an ordinary wallet purchase, which is almost all of
+          // them, so there is no condition to write here.
+          ...nairaFundingRows(purchase.metadataMap)
+              .map((e) => _buildDetailRow(e.key, e.value)),
           // Intl payload — destination amount, FX rate, operator come
           // from the backend `metadata` JSON on the bill row. Only
           // render rows with real values; the intl screen used to show
@@ -803,11 +818,48 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen>
   bool _needsCatalogueReselect(DataPurchaseEntity p) =>
       p.isFailed && p.refundSource == 'catalogue_reselect_required';
 
+  // DECLARED AFTER _needsCatalogueReselect ON PURPOSE.
+  //
+  // every_bill_surface_shows_refunds_test asserts that a refund-aware
+  // predicate appears before any `isFailed) return` in a bill surface. The
+  // reason is not style: a REFUNDED bill row is still stored with status
+  // `failed`, so a raw isFailed check placed first silently shadows the
+  // refund branch and the customer is told their purchase failed with no
+  // mention of their money coming back. Keeping this helper below the
+  // refundSource read preserves that ordering.
+  /// The PROVIDER'S OWN EXPLANATION for a refusal, when it gave one.
+  ///
+  /// WHY THE PROVIDER'S WORDS AND NOT OURS. For most failures our copy is
+  /// better — we know what we attempted and the customer does not care which
+  /// vendor refused. A refusal is the exception: the provider is the only
+  /// party that knows WHY, and its reason is often the only actionable thing
+  /// in the whole exchange.
+  ///
+  /// Measured 2026-11-10. A customer bought the Airtel Awoof 600MB Daily
+  /// bundle and the provider answered "This phone number is not eligible for
+  /// the selected plan. Please try purchasing Daily Plan 200 (N200) or other
+  /// plans." Awoof bundles are promotional and SIM-targeted, so no retry can
+  /// help and nothing on our side can detect it in advance — the provider has
+  /// no data-eligibility endpoint. That sentence was his entire path forward,
+  /// and the screen showed a silent refund instead. He retried the identical
+  /// plan 60 seconds later.
+  ///
+  /// The backend decides what is safe to surface (see customerFacingRefusal):
+  /// only genuine refusals, never our own float or transport problems, with
+  /// the vendor name and the provider's own refund claim stripped. So the app
+  /// renders whatever arrives, and renders nothing when the key is absent.
+  String? _providerMessage(DataPurchaseEntity p) {
+    if (!p.isFailed) return null;
+    final raw = p.metadataMap['provider_message'];
+    final msg = raw?.toString().trim() ?? '';
+    return msg.isEmpty ? null : msg;
+  }
+
   /// Sends the customer back to choose again. Re-entering plan selection
   /// re-fetches the list, so what they see is the catalogue of the gateway that
   /// will charge, and whatever they pick is addressable in its own payload.
   void _reselectPlan(DataPurchaseEntity p) {
-    Get.offAllNamed(
+    offAllKeepingHome(
       AppRoutes.dataBundlesHome,
       arguments: {
         if (p.phoneNumber.isNotEmpty) 'phoneNumber': p.phoneNumber,
@@ -824,6 +876,75 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen>
     // Share; saving a number as a beneficiary is still offered from the data
     // history actions sheet, which is where someone looking for a past
     // recipient already is.
+    // THE PROVIDER'S REASON, WHERE THE CUSTOMER IS ALREADY LOOKING.
+    //
+    // Checked BEFORE the catalogue-reselect branch because it is the more
+    // specific answer: re-select says "pick a different plan", while this says
+    // WHICH plan and why. When both apply the provider's sentence wins — it
+    // names the alternative, which is what stops the retry loop.
+    final providerMsg = _providerMessage(purchase);
+    if (providerMsg != null) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 12.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              padding: EdgeInsets.fromLTRB(12.w, 11.h, 12.w, 11.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFB923C).withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                    color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your money has been returned',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFFB923C),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 5.h),
+                  // The provider's own words, verbatim. Paraphrasing would
+                  // lose the specific alternative it names, which is the one
+                  // actionable thing in the message.
+                  Text(
+                    providerMsg,
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.88),
+                      fontSize: 12.5.sp,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 12.h),
+            SizedBox(
+              width: double.infinity,
+              height: 48.h,
+              child: ElevatedButton(
+                onPressed: () => _reselectPlan(purchase),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6366F1),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r)),
+                ),
+                child: Text('Choose another plan',
+                    style: GoogleFonts.inter(
+                        fontSize: 14.sp, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     if (_needsCatalogueReselect(purchase)) {
       return Padding(
         padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 12.h),

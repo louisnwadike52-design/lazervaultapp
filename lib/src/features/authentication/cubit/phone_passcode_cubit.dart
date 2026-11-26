@@ -6,6 +6,8 @@ import 'package:lazervault/core/services/device_login_history.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/core/services/user_switch_purge.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import '../domain/entities/profile_entity.dart';
 import '../domain/repositories/i_auth_repository.dart';
 import 'phone_passcode_state.dart';
@@ -90,6 +92,8 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
   // is then verified (so the verify code is sent at the right moment).
   String _firstName = '';
   String _lastName = '';
+  /// Optional; empty for most people. Never gates the submit.
+  String _middleName = '';
   String? _dateOfBirth;
   String? _username;
   String? _referralCode;
@@ -132,6 +136,18 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
   }
 
   Future<void> _clearPersistedDraft() async {
+    // A NIN typed on the details step belongs to THIS signup attempt.
+    //
+    // It is stashed at step 3 but not spendable until there is an account —
+    // two steps later — so unlike every other field here it can outlive the
+    // attempt that produced it. Dropping the draft is exactly the moment that
+    // attempt ends (session expired, restart, a fatal validation failure), and
+    // without this the number would sit on the device and be checked against
+    // the NEXT person to sign up on it: a confusing refusal for them and a
+    // billed registry lookup for us.
+    try {
+      await serviceLocator<SecureStorageService>().clearPendingSignupNin();
+    } catch (_) {/* best-effort — a mismatch later clears it anyway */}
     for (final key in const [
       _draftPhoneKey,
       _draftCountryKey,
@@ -375,11 +391,13 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
     required String firstName,
     required String lastName,
     required String dateOfBirth,
+    String? middleName,
     String? username,
     String? referralCode,
   }) {
     _firstName = firstName.trim();
     _lastName = lastName.trim();
+    _middleName = (middleName ?? '').trim();
     _dateOfBirth = dateOfBirth.trim().isEmpty ? null : dateOfBirth.trim();
     _username = (username != null && username.trim().isNotEmpty)
         ? username.trim()
@@ -455,6 +473,7 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
       passcode: _passcode,
       firstName: _firstName,
       lastName: _lastName,
+      middleName: _middleName.isEmpty ? null : _middleName,
       email: _signupEmail,
       countryCode: _countryCode,
       locale: locale,
@@ -592,6 +611,8 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
           // from whether THIS install has signed this identity in before, so a
           // returning user is not told their own phone is a new device.
           emit(PhoneLoginStepUpRequired(
+            altMethod: failure.altMethod,
+            altDestination: failure.altDestination,
             stepUpToken: failure.stepUpToken,
             method: failure.stepUpMethod,
             destination: failure.destination,

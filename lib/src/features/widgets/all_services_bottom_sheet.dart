@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/widgets/app_service_builder.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet displaying all available services in a scrollable grid
 class AllServicesBottomSheet extends StatefulWidget {
@@ -393,7 +394,7 @@ void showAllServicesBottomSheet(
   BuildContext context,
   List<AppService> services,
 ) {
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

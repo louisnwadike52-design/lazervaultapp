@@ -20,6 +20,7 @@ import '../../utils/id_pay_unified_mapper.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/transaction_detail_screen.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class IDPayDetailsScreen extends StatefulWidget {
   const IDPayDetailsScreen({super.key});
@@ -168,7 +169,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
             snackPosition: SnackPosition.BOTTOM,
             margin: EdgeInsets.all(16.w),
           );
-          Get.offAllNamed(AppRoutes.idPayHome);
+          offAllKeepingHome(AppRoutes.idPayHome);
         } else if (state is IDPayDetailsLoaded) {
           setState(() {
             _idPay = state.idPay;

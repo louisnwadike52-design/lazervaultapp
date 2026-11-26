@@ -69,6 +69,19 @@ extension AppServiceNameTransactionMapping on AppServiceName {
   /// Returns unknown if there's no direct mapping, but never null
   TransactionServiceType get toTransactionServiceType {
     switch (this) {
+      // Open banking is not a transaction type a receipt is drawn for;
+      // it mirrors the default so nothing downstream has to special-case it.
+      case AppServiceName.financialConnections:
+        return TransactionServiceType.transfer;
+      // A vendor redemption is not a transaction on the VENDOR'S ledger at the
+      // moment it happens — nothing moves until the campaign closes and the
+      // payout runs, and THAT lands as an ordinary credit. The campaign screens
+      // are the history surface for scans, so this has no receipt type of its
+      // own, exactly like escrow below.
+      case AppServiceName.vendorCampaigns:
+        return TransactionServiceType.unknown;
+      case AppServiceName.ticketing:
+        return TransactionServiceType.eventTicket;
       case AppServiceName.sendFunds:
         return TransactionServiceType.transfer;
       case AppServiceName.batchTransfer:

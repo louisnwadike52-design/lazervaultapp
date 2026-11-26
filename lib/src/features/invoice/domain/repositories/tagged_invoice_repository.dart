@@ -49,6 +49,11 @@ abstract class TaggedInvoiceRepository {
     required String verificationToken,
     required String transactionId,
     required String idempotencyKey,
+
+    /// Non-empty means PAY WITH CRYPTO. The invoice is then NOT paid when
+    /// this returns: the authorisation is recorded and the conversion is the
+    /// caller's next step, naming the reference that comes back.
+    String? fundingAsset,
   });
 
   /// Get overdue tagged invoices (incoming only)

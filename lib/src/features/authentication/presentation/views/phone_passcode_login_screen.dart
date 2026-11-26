@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/post_reset_handoff.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/account_locked_modal.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
@@ -10,6 +11,7 @@ import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/server_status_service.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/existing_user_passcode_cta.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/post_login_navigator.dart';
 import 'package:lazervault/core/widgets/passcode_dots.dart';
 import 'package:lazervault/core/widgets/passcode_keypad.dart';
@@ -24,6 +26,9 @@ import 'package:lazervault/src/features/authentication/presentation/widgets/phon
 import 'package:lazervault/src/features/authentication/presentation/widgets/device_phone_hint.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/smart_identifier_input.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
+import 'package:lazervault/core/utils/auth_error_copy.dart';
+import 'package:lazervault/core/utils/verification_gate_routing.dart';
 
 /// "Switch User" for the phone+passcode flow: log in as a DIFFERENT phone user
 /// than the one cached on the passcode lock screen. Collects a phone number,
@@ -48,6 +53,38 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
     // Reflect an armed self-lock / emergency lock proactively (countdown modal).
     WidgetsBinding.instance
         .addPostFrameCallback((_) => maybeShowSelfLockOnLaunch(context));
+    _consumePostResetPrefill();
+  }
+
+  /// Pre-fill from a reset the user just completed, when there is one.
+  ///
+  /// This screen is where a reset lands on a device with no cached profile —
+  /// PasscodeSignIn bounces here precisely because it has no identity to
+  /// render. Before this, that bounce produced an empty form seconds after the
+  /// user had proved control of their number.
+  ///
+  /// A PREFILL ONLY. The passcode is still required and still validated
+  /// server-side; nothing here says the account exists or that this person
+  /// owns it. Consuming also clears it, so it cannot reappear later.
+  void _consumePostResetPrefill() {
+    final pending = PostResetHandoff.consume();
+    if (pending == null) return;
+    if (pending.isPhone) {
+      final split = splitE164Phone(pending.identifier);
+      setState(() {
+        _identifier = pending.identifier;
+        _identifierType = LoginIdentifierType.phone;
+        if (split != null) {
+          _countryCode = split.countryCode;
+          _prefillNational = split.national;
+        }
+      });
+      return;
+    }
+    setState(() {
+      _identifier = pending.identifier;
+      _identifierType = pending.type;
+    });
   }
 
   final GlobalKey<ShakeWidgetState> _shakeKey = GlobalKey<ShakeWidgetState>();
@@ -168,7 +205,7 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
   void _openCountryPicker() {
     final available =
         CountryConfigs.activeCountries.where((c) => c.isAvailableForSignup);
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -240,6 +277,8 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
                 stepUpToken: state.stepUpToken,
                 method: state.method,
                 destination: state.destination,
+                altMethod: state.altMethod,
+                altDestination: state.altDestination,
                 expiresInSeconds: state.expiresInSeconds,
                 knownDevice: state.knownDevice,
               ));
@@ -341,8 +380,39 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
                           color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               );
+            } else if (isVerificationGate(state.message)) {
+              // NOT A FAILURE — THE PASSCODE WAS RIGHT.
+              //
+              // This fell through to the generic branch below, which printed
+              // the backend's own string: "Login failed / email_not_verified:
+              // please verify your email to continue". Reported 2026-11-24 by
+              // a customer who then re-entered her passcode and got the same
+              // banner every time, with no way to take the step it named.
+              //
+              // Route to the screen that finishes it and come back here, so
+              // the next passcode entry succeeds. _lastHandledError is
+              // cleared on return: the second refusal is byte-identical to
+              // the first, and without re-arming, a de-dupe would swallow it
+              // and the screen would do nothing at all.
+              final copy = authErrorCopy(state.message);
+              if (!copy.suppressBanner) {
+                showAppSnackbar(copy.title, copy.message,
+                    type: AppSnackbarType.error);
+              }
+              routeToVerificationGate(
+                state.message,
+                returnTo: AppRoutes.phonePasscodeLogin,
+                onReturn: () {
+                  if (mounted) setState(() => _entered = '');
+                },
+              );
             } else {
-              showAppSnackbar('Login failed', state.message,
+              // The server's own sentence — "Incorrect passcode. 2 attempts
+              // remaining…" tells the user more than anything we could
+              // substitute for it. Everything NOT recognised still goes
+              // through authErrorCopy, so a code can never reach a person.
+              final copy = authErrorCopy(state.message);
+              showAppSnackbar(copy.title, copy.message,
                   type: AppSnackbarType.error);
             }
           }
@@ -410,6 +480,21 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
   /// The footer floats over the bottom purple wave, so the text must be WHITE
   /// (black/purple was invisible against the purple background).
   Widget _buildSignUpFooter() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // THE WAY BACK INTO THE ACCOUNT THIS DEVICE ALREADY HOLDS. This screen
+        // is "sign in as someone else", and people arrive on it by accident —
+        // from a deep link, or after signing out — with no visible route back
+        // to their own four-digit unlock. Renders nothing when no returning
+        // passcode user is cached.
+        ExistingUserPasscodeCta(enabled: !_submitting),
+        _buildSignUpRow(),
+      ],
+    );
+  }
+
+  Widget _buildSignUpRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

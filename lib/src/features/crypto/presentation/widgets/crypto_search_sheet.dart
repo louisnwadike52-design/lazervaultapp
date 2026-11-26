@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/crypto_entity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 const _card = Color(0xFF1F1F1F);
 const _bg = Color(0xFF0A0A0A);
@@ -21,7 +22,7 @@ Future<void> showCryptoSearchSheet(
   required List<Crypto> assets,
   required void Function(Crypto) onSelect,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

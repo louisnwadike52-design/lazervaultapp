@@ -559,27 +559,10 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
         decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       );
 
-  ({Color color, String label}) _donationStatusPalette(DonationStatus s) =>
-      switch (s) {
-        DonationStatus.completed => (
-            color: const Color(0xFF10B981),
-            label: 'Completed'
-          ),
-        DonationStatus.pending => (
-            color: const Color(0xFFF59E0B),
-            label: 'Pending'
-          ),
-        DonationStatus.processing => (
-            color: const Color(0xFFF59E0B),
-            label: 'Processing'
-          ),
-        DonationStatus.failed => (
-            color: const Color(0xFFEF4444),
-            label: 'Failed'
-          ),
-        DonationStatus.refunded => (
-            color: const Color(0xFF6B7280),
-            label: 'Refunded'
-          ),
-      };
+  /// Delegates to the shared vocabulary. This was one of three identical
+  /// switches over the same five states.
+  ({Color color, String label}) _donationStatusPalette(DonationStatus s) {
+    final v = crowdfundDonationStatusVisual(s);
+    return (color: v.color, label: v.label);
+  }
 }

@@ -111,7 +111,7 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 2.w),
                 child: Text(
-                  widget.appService.serviceName.displayName,
+                  widget.appService.serviceName.label,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -205,6 +205,19 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
   Widget _buildServiceIcon() {
     IconData iconData;
     switch (widget.appService.serviceName) {
+      // Matches the icon the linked-banks screen itself uses, so the tile and
+      // its destination read as the same feature.
+      case AppServiceName.financialConnections:
+        iconData = Icons.account_balance_rounded;
+        break;
+      // A shopfront: the tile belongs to the business being paid, not to the
+      // customer being served.
+      case AppServiceName.vendorCampaigns:
+        iconData = Icons.storefront_rounded;
+        break;
+      case AppServiceName.ticketing:
+        iconData = Icons.confirmation_num_rounded;
+        break;
       case AppServiceName.sendFunds:
         iconData = Icons.send;
         break;

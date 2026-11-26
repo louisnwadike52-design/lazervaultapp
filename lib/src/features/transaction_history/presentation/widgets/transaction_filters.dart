@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'transaction_filters_widgets.dart';
 
 /// Horizontal filter bar with individual per-category chips.
@@ -74,7 +75,7 @@ class TransactionFilterBar extends StatelessWidget {
   }
 
   void _openDateSheet(BuildContext context) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -99,7 +100,7 @@ class TransactionFilterBar extends StatelessWidget {
   }
 
   void _openStatusSheet(BuildContext context) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -121,7 +122,7 @@ class TransactionFilterBar extends StatelessWidget {
   }
 
   void _openCategorySheet(BuildContext context) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -143,7 +144,7 @@ class TransactionFilterBar extends StatelessWidget {
   }
 
   void _openTypeSheet(BuildContext context) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

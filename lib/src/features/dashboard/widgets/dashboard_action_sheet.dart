@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'package:get/get.dart';
+import 'package:lazervault/src/features/support/presentation/support_desk_entry_tile.dart';
+import 'package:lazervault/src/features/support/presentation/support_desk_screen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet shown when the user swipes down on the dashboard.
 ///
@@ -32,7 +36,7 @@ Future<void> showDashboardActionSheet(
   _DashboardActionSheetGate.isOpen = true;
 
   try {
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: navState.context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -108,6 +112,17 @@ class _DashboardActionSheetState extends State<_DashboardActionSheet> {
     Navigator.of(context).maybePop();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onOpenAiChat();
+    });
+  }
+
+  void _runSupportDesk() {
+    if (_busy) return;
+    Navigator.of(context).maybePop();
+    // Pushed after the sheet's close animation, like every other action here:
+    // overlapping a Navigator push with a closing bottom sheet is what this
+    // whole postFrameCallback pattern exists to avoid.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.to(() => const SupportDeskScreen());
     });
   }
 
@@ -232,6 +247,32 @@ class _DashboardActionSheetState extends State<_DashboardActionSheet> {
             description: 'Open the AI assistant.',
             onTap: _runAiChat,
             enabled: !_busy,
+          ),
+          // THE SUPPORT DESK — DIRECTLY BESIDE THE CHATBOT.
+          //
+          // Renders nothing for everyone who is not a support responder (the
+          // tile resolves access from the server itself). Placed here rather
+          // than at the end of the list because an agent reaching for this
+          // sheet is as likely to want the queue as the assistant, and the
+          // two are the same kind of thing: a conversation with somebody.
+          SupportDeskEntryTile(
+            builder: (_, access) => Column(
+              children: [
+                SizedBox(height: 10.h),
+                _ActionTile(
+                  icon: Icons.headset_mic_outlined,
+                  iconColor: const Color(0xFF38BDF8),
+                  iconBackground:
+                      const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                  label: 'Support desk',
+                  description: access.pushEnabled
+                      ? 'Work the ticket queue · notifications on'
+                      : 'Work the ticket queue.',
+                  onTap: _runSupportDesk,
+                  enabled: !_busy,
+                ),
+              ],
+            ),
           ),
           SizedBox(height: 10.h),
           _ActionTile(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/destination_account_number.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,6 +13,7 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'scan_bank_details_modal_widgets.dart';
 
 // Shared surface tokens — kept in lockstep with SendFundsAmountSheet so the
@@ -38,7 +40,7 @@ class SmartScanResultSheet extends StatefulWidget {
     required SmartScanResult scanResult,
     String country = 'NG',
   }) {
-    return showModalBottomSheet<ScanAction>(
+    return showAppBottomSheet<ScanAction>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1409,7 +1411,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   /// Mirrors the manual bank-entry validator (add_recipient.dart) so the scan
   /// path accepts exactly what typing the account by hand would.
   bool _accountLengthOk(String v) =>
-      v.length == 10 || (v.length == 11 && v.startsWith('0'));
+      isCompleteDestinationAccount(v);
 
   /// Strip everything but digits — used to clean OCR/phone values.
   String _digitsOnly(String v) => v.replaceAll(RegExp(r'[^0-9]'), '');
@@ -1838,7 +1840,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
     // first frame rather than showing all 633 rows under a filled-in query.
     applyFilter();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_withdrawal_record.dart';
+import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_moderation.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
@@ -963,4 +964,89 @@ class CrowdfundGrpcDataSource {
         return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED;
     }
   }
+}
+
+// ── Campaign moderation appeals ──────────────────────────────────────────
+//
+// Appended as an extension rather than edited into the class body above: the
+// file is already long, and an extension in the same library shares its
+// private scope so `_client`, `_callOptionsHelper` and `friendlyGrpcError`
+// all resolve exactly as they do inside the class.
+extension CrowdfundAppealCalls on CrowdfundGrpcDataSource {
+  /// Lodge an appeal against a block on the caller's own campaign.
+  ///
+  /// NO user_id IS SENT. The gateway takes the caller's id from the JWT it
+  /// already validates and financial-products-service re-checks ownership —
+  /// a user_id on the wire would be a second, weaker source of truth about
+  /// who is asking.
+  Future<CrowdfundAppeal> submitAppeal({
+    required String crowdfundId,
+    required String message,
+  }) async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.submitCrowdfundAppeal(
+        pb.SubmitCrowdfundAppealRequest(
+          crowdfundId: crowdfundId,
+          message: message,
+        ),
+        options: callOptions,
+      );
+      return crowdfundAppealFromProto(response.appeal);
+    } on GrpcError catch (e) {
+      // THE CODES MATTER HERE AND MUST NOT BE FLATTENED.
+      //
+      // ALREADY_EXISTS means an appeal is already open, so the button should
+      // go away rather than inviting a retry. FAILED_PRECONDITION means
+      // appeals are closed, or the campaign is not blocked. RESOURCE_EXHAUSTED
+      // means they have appealed the maximum number of times. Each one is an
+      // answer the creator can act on, and the service writes the wording for
+      // them — so it is forwarded rather than replaced with "something went
+      // wrong".
+      throw Exception(friendlyGrpcError(e, 'Could not submit your appeal'));
+    }
+  }
+
+  /// The caller's own appeals. Scoped to one campaign when [crowdfundId] is
+  /// given; the server forces the user filter either way.
+  Future<List<CrowdfundAppeal>> listMyAppeals({
+    String? crowdfundId,
+    String? status,
+    int limit = 20,
+  }) async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.listCrowdfundAppeals(
+        pb.ListCrowdfundAppealsRequest(
+          crowdfundId: crowdfundId ?? '',
+          status: status ?? '',
+          limit: limit,
+        ),
+        options: callOptions,
+      );
+      return response.appeals.map(crowdfundAppealFromProto).toList();
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Could not load your appeals'));
+    }
+  }
+}
+
+/// Maps the wire message onto the domain entity.
+///
+/// Timestamps are nullable on the wire and are left null rather than defaulted
+/// to the epoch: "reviewed on 1 January 1970" is worse than "not reviewed
+/// yet", and the screen renders the absence correctly.
+CrowdfundAppeal crowdfundAppealFromProto(pb.CrowdfundAppealMessage p) {
+  return CrowdfundAppeal(
+    id: p.id,
+    crowdfundId: p.crowdfundId,
+    message: p.message,
+    status: crowdfundAppealStatusFrom(p.status),
+    decision: p.decision,
+    reviewedAt: p.hasReviewedAt() ? p.reviewedAt.toDateTime() : null,
+    appealedStatus: p.appealedStatus,
+    createdAt: p.hasCreatedAt() ? p.createdAt.toDateTime() : null,
+    crowdfundTitle: p.crowdfundTitle,
+    crowdfundCode: p.crowdfundCode,
+  );
 }

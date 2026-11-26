@@ -9,6 +9,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Brand mark for receipt headers — logo + "Lazervault" wordmark, matching the
 /// send-funds receipt's top-right identity (CLAUDE.md §0: never PascalCase).
@@ -153,7 +154,7 @@ Future<ReceiptFileFormat?> pickReceiptFormat(BuildContext context,
     );
   }
 
-  return showModalBottomSheet<ReceiptFileFormat>(
+  return showAppBottomSheet<ReceiptFileFormat>(
     context: context,
     backgroundColor: const Color(0xFF1F1F1F),
     shape: const RoundedRectangleBorder(

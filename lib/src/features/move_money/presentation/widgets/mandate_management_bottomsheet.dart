@@ -12,6 +12,7 @@ import '../../domain/mandate_auth_attempt_store.dart';
 import 'mandate_setup_bottomsheet.dart';
 import 'mandate_status_badge.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet for managing an existing mandate (pause, resume, cancel)
 /// or setting up a new one if none exists.
@@ -26,7 +27,7 @@ Future<void> showMandateManagementBottomSheet({
   // runs this). Null default → existing callers are unchanged.
   VoidCallback? onUnlink,
 }) async {
-  await showModalBottomSheet(
+  await showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: const Color(0xFF1F1F1F),

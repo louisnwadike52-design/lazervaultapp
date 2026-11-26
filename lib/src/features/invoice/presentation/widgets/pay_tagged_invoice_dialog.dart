@@ -1,3 +1,6 @@
+import 'package:lazervault/src/features/crypto_pay/presentation/confirm_crypto_payment.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/pay_with_crypto_selector.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/pay_source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,6 +50,10 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
   /// The confirmed conversion when the payer's account currency differs from the
   /// invoice currency. Null for a same-currency payment.
   InvoiceFxQuote? _fxQuote;
+
+  /// Wallet or a coin. Wallet is preselected: choosing crypto is a
+  /// deliberate act, never the default.
+  PaySource _paySource = PaySource.wallet;
 
   bool get _isSplit => (widget.invoice.invoice?.taggedUsers?.length ?? 0) > 1;
 
@@ -109,6 +116,29 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
                   (state.transaction['status']?.toString() ?? '') == 'paid',
               'fromPaymentFlow': true,
             },
+          );
+        } else if (state is TaggedInvoiceCryptoFundingStarted) {
+          // AUTHORISED, CONVERTING, NOT PAID.
+          //
+          // Without this branch the state was emitted and nothing rendered
+          // it: the dialog sat on its spinner for ever while the conversion
+          // ran, and the customer had no way to learn their payment was in
+          // flight — the exact shape of "emitted and nobody listens".
+          //
+          // NOT routed to the receipt. There is nothing to receipt yet: the
+          // coin has not been sold and the issuer will see nothing until it
+          // has. A receipt here would be read as "done".
+          setState(() => _isProcessing = false);
+          refreshPendingActions();
+          Get.back(); // close the dialog
+          Get.snackbar(
+            'Converting your ${state.asset.toUpperCase()}',
+            "We're selling your ${state.asset.toUpperCase()} to pay this "
+                "invoice. It will be marked paid as soon as the funds land — "
+                "you'll get a notification, and nothing has left your wallet "
+                "yet.",
+            duration: const Duration(seconds: 6),
+            snackPosition: SnackPosition.BOTTOM,
           );
         } else if (state is TaggedInvoiceError) {
           setState(() => _isProcessing = false);
@@ -507,54 +537,80 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
           ),
         ),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: OutlinedButton(
-              onPressed: _isProcessing ? null : () => Get.back(),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xFF374151)),
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-              ),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+          // WALLET OR COIN, above the buttons so the choice is made before
+          // the commit rather than discovered after it. Locked while a
+          // payment is in flight: the choice has already been sent and must
+          // not change underneath it.
+          Padding(
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: PayWithCryptoSelector(
+              onDarkSurface: true,
+              value: _paySource,
+              amountMinor: (_totalAmount * 100).round(),
+              email: context
+                  .read<AuthenticationCubit>()
+                  .currentProfile
+                  ?.user
+                  .email,
+              userId:
+                  context.read<AuthenticationCubit>().currentProfile?.user.id,
+              enabled: !_isProcessing,
+              onChanged: (src) => setState(() => _paySource = src),
             ),
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            flex: 2,
-            child: ElevatedButton(
-              onPressed: _selectedAccountId != null && !_isProcessing
-                  ? _processPayment
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                disabledBackgroundColor: const Color(0xFF374151),
-              ),
-              child: _isProcessing
-                  ? LazerVaultLoader.small()
-                  : Text(
-                      'Pay Now',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _isProcessing ? null : () => Get.back(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Color(0xFF374151)),
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
-            ),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: _selectedAccountId != null && !_isProcessing
+                      ? _processPayment
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    disabledBackgroundColor: const Color(0xFF374151),
+                  ),
+                  child: _isProcessing
+                      ? LazerVaultLoader.small()
+                      : Text(
+                          'Pay Now',
+                          style: GoogleFonts.inter(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -609,6 +665,23 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
     final transactionId = 'INV-PAY-$idPrefix';
     final idempotencyKey = const Uuid().v4();
 
+    // CONFIRM THE COIN BEFORE THE PIN, the same order every other surface
+    // uses. The customer sees what will be sold and what it is worth while
+    // they can still change their mind; after the PIN the authorisation
+    // exists and the conversion follows.
+    if (_paySource.isCrypto) {
+      final chosen = await confirmCryptoPayment(
+        context,
+        source: _paySource,
+        totalMinor: (_totalAmount * 100).round(),
+      );
+      if (chosen == null || !mounted) {
+        setState(() => _isProcessing = false);
+        return;
+      }
+      if (chosen != _paySource) setState(() => _paySource = chosen);
+    }
+
     // Capture the cubit BEFORE the PIN sheet. Reading it from context after
     // the await would throw if this dialog was dismissed while the sheet was
     // open — and by that point the PIN has already been consumed, so the
@@ -625,8 +698,14 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
       amount: pinAmount,
       currency: pinCurrency,
       title: 'Confirm Payment',
-      message:
-          'Confirm invoice payment of $pinCurrency ${pinAmount.toStringAsFixed(2)}',
+      // NAMES THE SOURCE. The PIN sheet is the moment of commitment, and
+      // "which balance is this coming out of" is the one thing a customer
+      // cannot otherwise check at that point. Selling a coin is irreversible,
+      // so it must never be something they discover afterwards.
+      message: _paySource.isCrypto
+          ? 'Confirm invoice payment of $pinCurrency '
+              '${pinAmount.toStringAsFixed(2)} using your ${_paySource.label}'
+          : 'Confirm invoice payment of $pinCurrency ${pinAmount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -658,6 +737,8 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
       verificationToken: verificationToken!,
       transactionId: transactionId,
       idempotencyKey: idempotencyKey,
+      // Null for a wallet payment, so that path is unchanged.
+      fundingAsset: _paySource.asset,
     );
   }
 }

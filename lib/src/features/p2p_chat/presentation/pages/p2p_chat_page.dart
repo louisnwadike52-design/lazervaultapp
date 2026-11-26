@@ -35,6 +35,7 @@ import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_text_b
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_transfer_bubble.dart';
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'p2p_chat_page_widgets.dart';
 
 class P2PChatPage extends StatefulWidget {
@@ -587,7 +588,7 @@ class _P2PChatPageState extends State<P2PChatPage>
   /// the top, name, Lazervault-user badge, and quick actions (message / send).
   void _openProfileModal() {
     final (first, last) = _peerNameParts();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1266,7 +1267,7 @@ class _P2PChatPageState extends State<P2PChatPage>
   void _showMessageActions(P2PMessageEntity message, bool isMe) {
     final cubit = context.read<P2PChatCubit>();
     const quick = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => SafeArea(
@@ -1346,7 +1347,7 @@ class _P2PChatPageState extends State<P2PChatPage>
   void _showEditReactionSheet(P2PMessageEntity message, String currentEmoji) {
     final cubit = context.read<P2PChatCubit>();
     const quick = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => SafeArea(
@@ -1431,7 +1432,7 @@ class _P2PChatPageState extends State<P2PChatPage>
   /// not-mine pill is always the peer — no lookup needed.
   void _showReactorSheet(String emoji) {
     final name = _otherUserName.trim().isNotEmpty ? _otherUserName : 'They';
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => SafeArea(
@@ -1491,7 +1492,7 @@ class _P2PChatPageState extends State<P2PChatPage>
   /// as the quick row, then closes.
   void _showFullEmojiPicker(P2PMessageEntity message) {
     final cubit = context.read<P2PChatCubit>();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1A1A1C),
@@ -1553,7 +1554,7 @@ class _P2PChatPageState extends State<P2PChatPage>
     String? error;
     var closed = false;
 
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1A1A1C),

@@ -17,6 +17,7 @@ import '../cubit/intl_airtime_cubit.dart';
 import '../cubit/intl_airtime_state.dart';
 import '../widgets/airtime_shimmer.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'intl_review_screen_widgets.dart';
 
 class IntlReviewScreen extends StatefulWidget {
@@ -112,7 +113,7 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
         .where((a) => a.currency.toUpperCase() == _senderCurrency.toUpperCase())
         .toList();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => _AccountSheet(

@@ -11,6 +11,7 @@ import '../../../../generated/crypto.pb.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../widgets/crypto_search_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 const _bg = Color(0xFF0A0A0A);
 const _card = Color(0xFF1F1F1F);
@@ -120,7 +121,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
     }
   }
 
-  void _showCreate() => showModalBottomSheet(
+  void _showCreate() => showAppBottomSheet(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,

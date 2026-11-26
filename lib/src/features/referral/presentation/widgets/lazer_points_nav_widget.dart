@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/referral/domain/repositories/i_referral_repository.dart';
 import 'package:lazervault/src/features/referral/presentation/widgets/convert_points_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// LazerPoints, surfaced where people will actually see them.
 ///
@@ -72,7 +73,7 @@ class _LazerPointsNavWidgetState extends State<LazerPointsNavWidget> {
       Get.toNamed(AppRoutes.lazerPoints);
       return;
     }
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

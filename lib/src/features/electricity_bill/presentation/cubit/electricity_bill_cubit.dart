@@ -1,6 +1,8 @@
+import 'package:lazervault/src/features/crypto_pay/domain/crypto_funding_failure.dart';
 import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/fund_payment_with_crypto.dart';
 import '../../../../../core/cache/cache_config.dart';
 import '../../../../../core/cache/swr_cache_manager.dart';
 import '../../domain/entities/bill_payment_entity.dart';
@@ -184,6 +186,10 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     required String phoneNumber,
     String? paymentGateway,
     String? beneficiaryId,
+
+    /// Pay with crypto: the asset to sell to fund this payment,
+    /// lowercase. Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   }) async {
     if (isClosed) return;
     emit(PaymentInitiating());
@@ -198,6 +204,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
       phoneNumber: phoneNumber,
       paymentGateway: paymentGateway,
       beneficiaryId: beneficiaryId,
+      fundingAsset: fundingAsset,
     );
 
     if (isClosed) return;
@@ -224,6 +231,10 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     required String verificationToken,
     String? paymentGateway,
     String? beneficiaryId,
+
+    /// Pay with crypto: the asset to sell to fund this payment, lowercase.
+    /// Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   }) async {
     if (isClosed) return;
     emit(PaymentInitiating());
@@ -240,6 +251,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
       beneficiaryId: beneficiaryId,
       transactionId: transactionId,
       verificationToken: verificationToken,
+      fundingAsset: fundingAsset,
     );
 
     if (isClosed) return;
@@ -253,6 +265,40 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     );
 
     if (payment == null) return;
+
+    // ===== PAY WITH CRYPTO — STEP 2 OF THE ORDER =====
+    //
+    // The payment is recorded and NOTHING has been converted. The branches
+    // below verify and then declare success; for a parked payment there is no
+    // provider payment to verify yet, so this returns before reaching them.
+    //
+    // Keyed on what the CALLER asked for, not on the returned status: a
+    // parked payment reads back as `pending`, which an ordinary payment can
+    // also be, and the two must not be confused.
+    final asset = fundingAsset?.trim().toLowerCase() ?? '';
+    if (asset.isNotEmpty) {
+      try {
+        await fundPaymentWithCrypto(
+          accountId: accountId,
+          paymentReference: payment.referenceNumber,
+          // THE SERVER'S TOTAL — it echoes face + platform fee in
+          // total_amount precisely so the conversion covers the whole debit.
+          // Converting `amount` alone lands short by the fee.
+          requiredMinor: (payment.totalAmount * 100).round(),
+          asset: asset,
+          service: 'electricity',
+        );
+      } catch (e) {
+        if (isClosed) return;
+        // Not "you have not been charged": the conversion may have started
+        // and we simply lost the reply.
+        emit(ElectricityBillError(message: _fundingMessage(e)));
+        return;
+      }
+      if (isClosed) return;
+      emit(ElectricityAwaitingCryptoFunding(payment: payment, asset: asset));
+      return;
+    }
 
     if (payment.isCompleted) {
       // Sync mode: payment completed — fetch full receipt (includes token).
@@ -425,3 +471,14 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
         code == 'UNKNOWN';
   }
 }
+
+/// THE SERVER'S OWN SENTENCE, when the server actually decided.
+///
+/// A refusal — the feature gate, an unsupported coin, an amount below the
+/// conversion floor, a holding too small — means NOTHING was converted and
+/// nothing charged, and the server already says why in words written for a
+/// customer. Replacing that with "check your history" sent people to look for
+/// a record that was never written, about money that never moved. Only a LOST
+/// REPLY is genuinely ambiguous, and that is the one case the old sentence is
+/// right for. See CryptoFundingFailure.
+String _fundingMessage(Object error) => CryptoFundingFailure.from(error).message;

@@ -2,6 +2,7 @@ import 'package:lazervault/src/generated/utility-payments.pb.dart' as pb;
 import '../../../../core/network/grpc_client.dart';
 import '../models/water_provider_model.dart';
 import '../models/water_payment_model.dart';
+import 'package:lazervault/src/features/crypto_pay/data/funding_call_options.dart';
 import '../models/customer_validation_result_model.dart';
 
 abstract class WaterBillRemoteDataSource {
@@ -25,6 +26,10 @@ abstract class WaterBillRemoteDataSource {
     String? paymentGateway,
     String? transactionId,
     String? verificationToken,
+
+    /// Pay with crypto: the asset to sell to fund this payment, lowercase.
+    /// Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   });
 
   Future<WaterPaymentModel> verifyPayment({required String paymentId});
@@ -106,6 +111,10 @@ class WaterBillRemoteDataSourceImpl implements WaterBillRemoteDataSource {
     String? paymentGateway,
     String? transactionId,
     String? verificationToken,
+
+    /// Pay with crypto: the asset to sell to fund this payment, lowercase.
+    /// Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   }) async {
     final request = pb.PayWaterBillRequest()
       ..providerId = providerCode
@@ -118,7 +127,10 @@ class WaterBillRemoteDataSourceImpl implements WaterBillRemoteDataSource {
       request.verificationToken = verificationToken;
     }
 
-    final options = await grpcClient.callOptions;
+    // PAY WITH CRYPTO — one shared rule; see funding_call_options.
+
+    final options =
+        (await grpcClient.callOptions).withCryptoFunding(fundingAsset);
     final response = await grpcClient.utilityPaymentsClient.payWaterBill(
       request,
       options: options,

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/plan_my_day/habits/domain/habit.dart';
 import 'package:lazervault/src/features/plan_my_day/habits/presentation/habit_cubit.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class HabitsScreen extends StatelessWidget {
   const HabitsScreen({super.key});
@@ -163,7 +164,7 @@ class HabitsScreen extends StatelessWidget {
 
   void _habitMenu(BuildContext context, Habit h) {
     final cubit = context.read<HabitCubit>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: _card,
       builder: (ctx) => Column(
@@ -194,7 +195,7 @@ class HabitsScreen extends StatelessWidget {
     final cubit = context.read<HabitCubit>();
     final titleC = TextEditingController(text: habit?.title ?? '');
     final descC = TextEditingController(text: habit?.description ?? '');
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/transaction_history/presentation/screens
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Per-cycle detail sheet — opened by tapping a row on
 /// [ContributionCyclesHistoryScreen]. Loads the cycle details bundle
@@ -44,7 +45,7 @@ class CycleDetailsBottomSheet extends StatefulWidget {
     ContributionCycle? summary,
   }) {
     final cubit = context.read<GroupAccountCubit>();
-    return showModalBottomSheet(
+    return showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -621,7 +622,7 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
     final viewerId = context.read<AuthenticationCubit>().userId;
     final completed = payment.status == PaymentStatus.completed;
 
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

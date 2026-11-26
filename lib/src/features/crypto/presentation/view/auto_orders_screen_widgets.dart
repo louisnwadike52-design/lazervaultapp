@@ -73,7 +73,7 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
     }
   }
 
-  void _showCreate() => showModalBottomSheet(
+  void _showCreate() => showAppBottomSheet(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,

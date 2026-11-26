@@ -74,6 +74,10 @@ class InternetBillRepositoryImpl implements InternetBillRepository {
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+
+    /// Pay with crypto: the asset to sell to fund this payment,
+    /// lowercase. Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   }) async {
     try {
       final result = await remoteDataSource.payBill(
@@ -85,6 +89,7 @@ class InternetBillRepositoryImpl implements InternetBillRepository {
         transactionId: transactionId,
         verificationToken: verificationToken,
         idempotencyKey: idempotencyKey,
+        fundingAsset: fundingAsset,
       );
       return Right(result);
     } on GrpcError catch (e) {

@@ -8,6 +8,7 @@ import 'package:lazervault/core/utils/transfer_bank_display.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/transaction_history/utils/repeat_transfer.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_receipt_router.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The transaction detail bottom sheet.
 ///
@@ -32,7 +33,7 @@ class TransactionDetailsSheet {
     final amtStr =
         '${isIncoming ? '+' : ''}$symbol${tx.amount.toStringAsFixed(2)}';
 
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(

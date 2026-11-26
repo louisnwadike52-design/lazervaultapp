@@ -6,9 +6,8 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
 import 'package:lazervault/core/data/app_data.dart';
-import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/kyc/domain/onboarding_identity_route.dart';
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
 import 'package:lazervault/core/utilities/auth_background.dart';
 import 'package:lazervault/core/utilities/passcode_policy.dart';
@@ -33,7 +32,9 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
   String _confirmedPin = '';
   bool _isConfirmMode = false;
   bool _isCreating = false;
-  bool _isLoading = true;
+  /// Starts true only when this screen has to ask the server itself. A caller
+  /// that already knows lets the keypad paint on the first frame.
+  late bool _isLoading;
   String? _errorMessage;
 
   /// When true, this screen was PUSHED mid-flow (e.g. from a payment that
@@ -42,6 +43,30 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
   /// login-resume, reached via offAllNamed), it routes FORWARD to KYC/dashboard.
   bool get _returnToCaller =>
       (Get.arguments as Map<String, dynamic>?)?['returnOnComplete'] == true;
+
+  /// A caller that already resolved "does this user have a PIN" and is handing
+  /// us the answer, so this screen does not have to ask again on mount.
+  ///
+  /// THE SECOND LOADING SCREEN THIS REMOVES. `_checkUserHasPin` is a
+  /// forceRefresh round trip to the server, and until it answered this screen
+  /// rendered a full-black page with a centred loader. Arriving here straight
+  /// from the email-OTP step, the user watched their code verify (spinner one),
+  /// the screen go black with a logo (spinner two), and only then reach the PIN
+  /// keypad — two waits for one decision, with the second one looking like the
+  /// app had restarted.
+  ///
+  /// The check itself is not wasteful — it is deliberately authoritative, see
+  /// `_checkUserHasPin`. What was wrong is WHERE it was paid for. The
+  /// onboarding screens now run it behind their own Verify/Continue spinner,
+  /// which the user is already watching, and pass the answer forward.
+  ///
+  /// ABSENT ARGUMENTS MEAN "ASK". Every other entry point — the resume router,
+  /// a push notification, a payment that needs a PIN mid-flow — is unchanged
+  /// and still does its own check, and so does a caller whose prefetch failed.
+  /// This is an optimisation with a fallback, never a new source of truth.
+  Map<String, dynamic>? get _args => Get.arguments as Map<String, dynamic>?;
+  bool get _pinStatusPrefetched => _args?['pinCheckDone'] == true;
+  bool get _prefetchedHasPin => _args?['hasPin'] == true;
 
   // KYC-onboarding flags. The signup cubit writes with the DEFAULT config while
   // main.dart reads with encryptedSharedPreferences:true — different Android
@@ -90,8 +115,41 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     // Get the cubit from the service locator
     _transactionPinCubit = serviceLocator<TransactionPinCubit>();
 
-    // Check if user already has a PIN
+    if (_pinStatusPrefetched) {
+      // The caller resolved it behind its own spinner — see
+      // [_pinStatusPrefetched].
+      _isLoading = false;
+      if (_prefetchedHasPin) {
+        // A PIN already exists, so this screen has nothing to do. Move on
+        // after the first frame rather than from inside initState, which
+        // cannot navigate. `_isLoading` stays false so the one frame that
+        // does paint is the keypad and not a black loader — the keypad is
+        // what the next screen slides in over, which reads as a transition
+        // rather than as a second launch.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _proceedToNextStep();
+        });
+      }
+      return;
+    }
+
+    // Nobody told us: ask, and show the loader while we do.
+    _isLoading = true;
     _checkUserHasPin();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Decode the backdrop into the image cache before it is painted.
+    //
+    // It is a bundled asset, but a cold decode still lands a frame or two
+    // after the first paint — which is the white flash between the loader and
+    // this screen in the onboarding recording. Precaching is best-effort: a
+    // failure here must never block the PIN step, so the error is swallowed
+    // and the DecorationImage below simply decodes as it used to.
+    precacheImage(AssetImage(AuthBackground.current), context)
+        .catchError((_) {});
   }
 
   Future<void> _checkUserHasPin() async {
@@ -436,22 +494,32 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
       // Flutterwave virtual account server-side (Mono verify → kyc.tier.upgrade
       // → accounts provisioner), so no separate BVN entry is needed.
       //
-      // When the admin enables the standalone BVN screen
-      // (bvn_signup_screen_enabled), signup instead shows that screen — unless
-      // this signup already captured a BVN, in which case skip straight ahead.
-      if (FeatureFlags.isBvnSignupScreenEnabled()) {
-        String? storedBvn;
-        try {
-          storedBvn = await serviceLocator<SecureStorageService>().getBvn();
-        } catch (_) {/* storage unavailable — fall through to the BVN screen */}
-        if (!mounted) return;
-        Get.offAllNamed(storedBvn == null || storedBvn.trim().isEmpty
-            ? AppRoutes.bvnSignup
-            : AppRoutes.dashboard);
-      } else {
-        // Default: skippable Mono Prove onboarding step.
-        Get.offAllNamed(AppRoutes.kycBVNVerification);
-      }
+      // ONE GOVERNMENT NUMBER, NEVER TWO, AND NEVER THE WEBVIEW AS WELL.
+      //
+      // Onboarding asks for exactly one 11-digit number, chosen by the admin
+      // switch bvn_signup_screen_enabled, on the same screen either way
+      // (BVNSignupScreen reads IdentityKind.active):
+      //
+      //   ON  -> BVN. Verifying it reaches Tier 2 and mints the account
+      //          number, so onboarding is FINISHED: go straight to the
+      //          dashboard. The Mono widget is not shown at all here — it
+      //          becomes a limit upgrade the customer starts from Settings
+      //          when they want Tier 3, prompted from the transfer screens
+      //          that actually hit a cap.
+      //   OFF -> NIN. A NIN alone is a Tier 1 identity and mints nothing, so
+      //          the Mono gate still follows: the NIN's job is to put the
+      //          customer's registered name on file FIRST, so the widget
+      //          opens with a name the registry agrees with instead of
+      //          refusing them.
+      //
+      // Either screen is skipped when its number is already on file, so a
+      // resumed or repeated onboarding never asks twice.
+      // Shared with the boot router (resolveOnboardingIdentityRoute) so a
+      // customer killed mid-onboarding resumes exactly where this would have
+      // sent them, rather than at a different screen.
+      final next = await resolveOnboardingIdentityRoute();
+      if (!mounted) return;
+      Get.offAllNamed(next);
     } else {
       Get.offAllNamed(AppRoutes.dashboard);
     }

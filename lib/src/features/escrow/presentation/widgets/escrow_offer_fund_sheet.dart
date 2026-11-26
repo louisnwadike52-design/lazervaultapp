@@ -22,6 +22,7 @@ import '../../domain/entities/escrow_deal_entity.dart';
 import '../../domain/entities/escrow_offer_entity.dart';
 import '../cubit/escrow_cubit.dart';
 import '../view/escrow_theme.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet that funds an agreed offer: styled "Fund from" tile
 /// (auto-selected to the dashboard-ACTIVE account), fee breakdown, PIN, fund.
@@ -44,7 +45,7 @@ Future<EscrowDealEntity?> showEscrowOfferFundSheet(
   BuildContext context, {
   required EscrowOfferEntity offer,
 }) {
-  return showModalBottomSheet<EscrowDealEntity>(
+  return showAppBottomSheet<EscrowDealEntity>(
     context: context,
     isScrollControlled: true,
     backgroundColor: EscrowTheme.card,

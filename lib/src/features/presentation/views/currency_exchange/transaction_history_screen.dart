@@ -7,6 +7,7 @@ import '../../../currency_exchange/domain/entities/transaction_entity.dart';
 import '../../../currency_exchange/domain/entities/recipient_entity.dart';
 import '../../../currency_exchange/domain/entities/currency_entity.dart';
 import '../../../currency_exchange/data/currency_data.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -884,7 +885,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
   }
 
   void _showTransactionDetails(CurrencyTransaction transaction) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
@@ -1098,7 +1099,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     }.where((c) => c.trim().isNotEmpty).toList()
       ..sort();
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         height: 400.h,
         padding: EdgeInsets.all(20.w),

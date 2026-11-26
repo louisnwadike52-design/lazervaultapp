@@ -17,6 +17,7 @@ import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/widgets/history/history_scope_pills.dart';
 import '../widgets/airtime_history_actions_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'airtime_history_screen_widgets.dart';
 
 class AirtimeHistoryScreen extends StatefulWidget {
@@ -601,7 +602,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
   }
 
   void _showFilterBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -615,7 +616,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
   }
 
   void _showQuickActions(AirtimeTransaction transaction) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(

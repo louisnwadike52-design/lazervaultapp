@@ -3,13 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/core/shared_widgets/load_more_footer.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_card.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_receipt_router.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_filters.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_states.dart';
-import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/statements/presentation/widgets/statement_export_host.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
@@ -65,11 +65,15 @@ class _ServiceTransactionHistoryScreenState
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent * 0.8) {
       final cubit = context.read<TransactionHistoryCubit>();
-      if (cubit.state is TransactionHistoryLoaded) {
-        final state = cubit.state as TransactionHistoryLoaded;
-        if (state.hasMore) {
-          cubit.loadMoreTransactions();
-        }
+      final state = cubit.state;
+      // Loaded is the ONLY state this can fire in, and keeping it that way is
+      // the whole reason appending no longer emits a loading state: it used to
+      // swap the list for a skeleton, which took the state out of Loaded and
+      // left nothing able to request page three.
+      if (state is TransactionHistoryLoaded &&
+          state.hasMore &&
+          !state.isLoadingMore) {
+        cubit.loadMoreTransactions();
       }
     }
   }
@@ -127,7 +131,8 @@ class _ServiceTransactionHistoryScreenState
                   if (state is TransactionHistoryLoading) {
                     return const TransactionInitialLoading();
                   } else if (state is TransactionHistoryLoaded) {
-                    return _buildList(state.transactions, state.hasMore);
+                    return _buildList(state.transactions, state.hasMore,
+                        state.isLoadingMore);
                   } else if (state is TransactionHistoryEmpty) {
                     return TransactionEmptyState(
                       message: state.message,
@@ -209,7 +214,8 @@ class _ServiceTransactionHistoryScreenState
     );
   }
 
-  Widget _buildList(List<UnifiedTransaction> transactions, bool hasMore) {
+  Widget _buildList(
+      List<UnifiedTransaction> transactions, bool hasMore, bool loadingMore) {
     if (transactions.isEmpty) {
       return TransactionEmptyState(
         message: 'No ${widget.serviceType.displayName} transactions',
@@ -230,11 +236,11 @@ class _ServiceTransactionHistoryScreenState
         itemCount: grouped.length + (hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= grouped.length) {
-            return Padding(
-              padding: EdgeInsets.all(20.w),
-              child: Center(
-                child: LazerVaultLoader.small(),
-              ),
+            final cubit = context.read<TransactionHistoryCubit>();
+            return LoadMoreFooter(
+              loading: loadingMore,
+              error: cubit.lastLoadMoreError,
+              onLoadMore: cubit.loadMoreTransactions,
             );
           }
 

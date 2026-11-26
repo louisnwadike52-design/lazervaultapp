@@ -21,6 +21,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'asset_network_badge.dart';
 import 'crypto_shimmer_loading.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 // AssetWalletSheet — bottom-sheet view of a single asset's wallet.
 // Renders:
@@ -66,7 +67,7 @@ Future<void> showAssetWalletSheet(
     return;
   }
   if (!context.mounted) return;
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: const Color(0xFF1F1F1F),

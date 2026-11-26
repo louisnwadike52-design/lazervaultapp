@@ -7,6 +7,7 @@ import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class PublicGroupDetailBottomSheet extends StatefulWidget {
   final String groupId;
@@ -19,7 +20,7 @@ class PublicGroupDetailBottomSheet extends StatefulWidget {
   /// Show the bottom sheet for a public group detail.
   static void show(BuildContext context, String groupId) {
     final cubit = context.read<GroupAccountCubit>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

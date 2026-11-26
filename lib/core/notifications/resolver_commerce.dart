@@ -33,6 +33,45 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
     return _landing(AppRoutes.invoiceList);
   }
 
+  // ---- Event ticketing -----------------------------------------------------
+  //
+  // THE TAP DESTINATION DIFFERS BY WHO IS BEING TOLD, which is why this is not
+  // one branch to one landing page:
+  //
+  //   * a BUYER told they were given a ticket, or that one was refunded, wants
+  //     My tickets — the ticket itself, the QR they will present;
+  //   * an ORGANISER told they sold one, or that their earnings were sent,
+  //     wants THAT EVENT'S earnings page, which is where both numbers live.
+  //
+  // Sending either to the public Events list would be a dead end dressed as a
+  // destination: neither person is looking to discover an event.
+  if (_is(type, 'ticket') || _is(type, 'ticketing')) {
+    final eventId = _first(data, const [
+      'event_id',
+      'eventId',
+      'ticket_event_id',
+    ]);
+    // Organiser-facing types.
+    if (type.contains('sold') || type.contains('payout')) {
+      if (eventId != null) {
+        return _record(
+          AppRoutes.ticketingOrganiser.replaceFirst(':eventId', eventId),
+        );
+      }
+      return _landing(AppRoutes.ticketingMyEvents);
+    }
+    // A cancelled event is the one case a BUYER may want the event page: the
+    // notification says the money is already back, so the open question is
+    // what happened to the show.
+    if (type.contains('cancel') && eventId != null) {
+      return _record(
+        AppRoutes.ticketingDetail.replaceFirst(':eventId', eventId),
+      );
+    }
+    // Everything else is buyer-facing — received, given away, refunded.
+    return _landing(AppRoutes.ticketingMyTickets);
+  }
+
   // ---- Gift cards ----------------------------------------------------------
   // giftCardFromReference takes a String reference (or a Map carrying one) and
   // fetches the card itself — exact whenever a reference travelled.
@@ -205,6 +244,13 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
       return _landing(AppRoutes.groupAccount);
     }
     if (kind.startsWith('crowdfund')) {
+      // The campaign when the event names one — same reason as the
+      // crowdfunding branch below. `entity_id` is safe to read here because
+      // `entity_type` directly above it says what it is.
+      if (id != null) {
+        return _record(AppRoutes.crowdfundDetails,
+            arguments: {'crowdfundId': id});
+      }
       return _landing(AppRoutes.crowdfundList);
     }
     if (kind.startsWith('insurance')) {
@@ -273,7 +319,33 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   if (_is(type, 'goal') || _is(type, 'financial_goal')) {
     return _landing(AppRoutes.financialGoals);
   }
-  if (_is(type, 'crowdfund') || _is(type, 'donation')) {
+  // ---- Crowdfunding -------------------------------------------------------
+  // THE CAMPAIGN, NOT THE LIST. Every crowdfund notification is about one
+  // campaign — a donation landed, the goal was reached, the deadline arrived,
+  // a review decision — and the campaign list is a directory the user then
+  // has to search for the thing they were just told about. The detail screen
+  // loads from the id alone (loadCrowdfundDetails), so the id is enough.
+  //
+  // `reference_type` is also accepted as the MATCH, not just as a source of
+  // the id: the moderation notices publish `type: account` with
+  // `reference_type: crowdfund` so a marketing opt-out cannot suppress them,
+  // and that type otherwise dropped them on the account screen.
+  //
+  // `reference_id` is read ONLY behind a matching `reference_type`, the same
+  // rule the PiggyVault branch above documents: that field is shared by every
+  // producer on the generic channel, so reading it unconditionally would
+  // eventually hand some other service's id to the campaign screen.
+  final crowdfundRef =
+      (data['reference_type'] ?? '').trim().toLowerCase() == 'crowdfund';
+  if (_is(type, 'crowdfund') || _is(type, 'donation') || crowdfundRef) {
+    var id = _first(data, const ['crowdfund_id', 'crowdfundId']);
+    if (id == null && crowdfundRef) {
+      id = _first(data, const ['reference_id']);
+    }
+    if (id != null) {
+      return _record(AppRoutes.crowdfundDetails,
+          arguments: {'crowdfundId': id});
+    }
     return _landing(AppRoutes.crowdfundList);
   }
 

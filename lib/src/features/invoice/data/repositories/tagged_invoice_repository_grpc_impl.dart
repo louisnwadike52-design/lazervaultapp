@@ -1,3 +1,5 @@
+import 'package:lazervault/src/features/crypto_pay/data/funding_call_options.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/invoice_crypto_funding.dart';
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import 'package:lazervault/src/core/network/retry_helper.dart';
 import 'package:lazervault/src/generated/invoice.pb.dart' as pb;
@@ -222,6 +224,7 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
     required String transactionId,
     required String idempotencyKey,
     String currency = 'USD',
+    String? fundingAsset,
   }) async {
     // maxRetries: 0 — this is the MONEY call. Auto-retrying on a timeout can
     // race a still-completing first attempt (the backend's Redis lock can be
@@ -237,7 +240,10 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
           ..transactionId = transactionId
           ..idempotencyKey = idempotencyKey;
 
-        final options = await grpcClient.callOptions;
+        // PAY WITH CRYPTO rides as gRPC metadata — the same channel transfers
+        // and bills use. Blank asset = the ordinary wallet payment, unchanged.
+        final options =
+            (await grpcClient.callOptions).withCryptoFunding(fundingAsset);
         final response = await grpcClient.invoiceClient.payInvoice(
           request,
           options: options,
@@ -255,7 +261,16 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
             ? partyName(inv.receiver)
             : inv.recipientName;
 
+        // WITH CRYPTO THE INVOICE IS NOT PAID YET. The server recorded the
+        // authorisation and put the reference and total on the response
+        // invoice's metadata; the caller asks for the conversion next.
+        // Carried as its OWN key rather than overloading 'status', so a
+        // caller that does not know about this feature cannot mistake an
+        // in-flight conversion for a completed payment.
+        final cryptoFunding = InvoiceCryptoFunding.fromMetadata(inv.metadata);
+
         return {
+          if (cryptoFunding != null) 'crypto_funding': cryptoFunding,
           'transaction_id': response.paymentReference.isNotEmpty
               ? response.paymentReference
               : inv.paymentReference,

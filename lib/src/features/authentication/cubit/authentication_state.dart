@@ -9,6 +9,7 @@ class SignUpInProgress extends AuthenticationState {
     this.password = '',
     this.confirmPassword = '',
     this.firstName = '',
+    this.middleName = '',
     this.lastName = '',
     this.username = '',
     this.referralCode = '',
@@ -44,6 +45,8 @@ class SignUpInProgress extends AuthenticationState {
   final String password;
   final String confirmPassword;
   final String firstName;
+  /// OPTIONAL. Empty for most people; never gates the submit.
+  final String middleName;
   final String lastName;
   final String username;
   final String referralCode;
@@ -84,6 +87,7 @@ class SignUpInProgress extends AuthenticationState {
     String? password,
     String? confirmPassword,
     String? firstName,
+    String? middleName,
     String? lastName,
     String? username,
     String? referralCode,
@@ -115,6 +119,7 @@ class SignUpInProgress extends AuthenticationState {
       password: password ?? this.password,
       confirmPassword: confirmPassword ?? this.confirmPassword,
       firstName: firstName ?? this.firstName,
+      middleName: middleName ?? this.middleName,
       lastName: lastName ?? this.lastName,
       username: username ?? this.username,
       referralCode: referralCode ?? this.referralCode,
@@ -150,6 +155,7 @@ class SignUpInProgress extends AuthenticationState {
         password,
         confirmPassword,
         firstName,
+        middleName,
         lastName,
         username,
         referralCode,

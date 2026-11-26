@@ -27,6 +27,7 @@ import '../../domain/trade_precision.dart';
 import 'package:lazervault/src/features/crypto/domain/trade_amounts.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
 import 'package:lazervault/src/features/crypto/domain/trade_pricing.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Streamlined SELL bottom sheet.
 ///
@@ -49,7 +50,7 @@ Future<void> showSellCryptoSheet(
   }
   if (!context.mounted) return;
   final CryptoCubit c = cubit ?? context.read<CryptoCubit>();
-  return showModalBottomSheet(
+  return showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

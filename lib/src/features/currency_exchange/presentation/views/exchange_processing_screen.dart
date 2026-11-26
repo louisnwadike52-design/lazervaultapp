@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../cubit/exchange_cubit.dart';
 import '../cubit/exchange_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Exchange processing screen — modelled on airtime_payment_processing_screen.
 /// PIN bottomsheet only validates the PIN; the moment it returns, the host
@@ -445,7 +446,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
         SizedBox(
           width: double.infinity,
           child: TextButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.exchangeHome),
+            onPressed: () => offAllKeepingHome(AppRoutes.exchangeHome),
             child: Text(
               'Back to Exchange',
               style: GoogleFonts.inter(

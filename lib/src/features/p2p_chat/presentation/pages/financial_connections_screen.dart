@@ -25,6 +25,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_snapshot_cache.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'financial_connections_screen_widgets.dart';
 
 class FinancialConnectionsScreen extends StatefulWidget {
@@ -1359,7 +1360,7 @@ class _FinancialConnectionsScreenState
   /// Long-press menu — the full action set (mirrors the swipe actions).
   void _showConversationActions(P2PConversationEntity c) {
     final name = c.otherUserName ?? 'Unknown User';
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1A1A1C),
       shape: RoundedRectangleBorder(

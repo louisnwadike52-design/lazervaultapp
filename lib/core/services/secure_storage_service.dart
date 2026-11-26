@@ -18,6 +18,16 @@ class SecureStorageService {
   static const String _keyBvn = 'kyc_bvn';
   static const String _keyNin = 'kyc_nin';
 
+  /// A NIN typed on the signup names page but NOT yet verified against NIMC.
+  ///
+  /// Deliberately a DIFFERENT key from [_keyNin]: that one's contract is
+  /// "stored only after a successful KYC verification" and it pre-fills the
+  /// insurance purchase form, so putting an unchecked number there would feed
+  /// an unverified value into a form the customer reasonably trusts. This key
+  /// holds a claim, not a fact, and is deleted the moment the claim is
+  /// resolved either way.
+  static const String _keyPendingSignupNin = 'signup_pending_nin';
+
   /// Last-picked chat session id for the multi-tab general chat (drawer).
   /// Restored at app launch so users land back on the last conversation.
   /// Wiped by `clearAll` on logout.
@@ -470,12 +480,34 @@ class SecureStorageService {
 
   Future<String?> getNin() async => _storage.read(key: _keyNin);
 
+  /// Stash the NIN typed during signup so it survives the app being killed
+  /// between the names page and the first authenticated moment. The account
+  /// does not exist yet when it is typed, so it cannot be verified there.
+  Future<void> savePendingSignupNin(String nin) async {
+    final trimmed = nin.trim();
+    if (trimmed.isEmpty) {
+      await _storage.delete(key: _keyPendingSignupNin);
+      return;
+    }
+    await _storage.write(key: _keyPendingSignupNin, value: trimmed);
+  }
+
+  Future<String?> getPendingSignupNin() async =>
+      _storage.read(key: _keyPendingSignupNin);
+
+  /// Drop the claim — on success (it is a fact now, stored server-side), on a
+  /// terminal refusal, or on logout.
+  Future<void> clearPendingSignupNin() async {
+    await _storage.delete(key: _keyPendingSignupNin);
+  }
+
   /// Wipe identity numbers. Called from `clearAll` (logout) and exposed
   /// independently so a future "revoke KYC" action can clear the cache
   /// without touching tokens.
   Future<void> deleteIdentityNumbers() async {
     await _storage.delete(key: _keyBvn);
     await _storage.delete(key: _keyNin);
+    await _storage.delete(key: _keyPendingSignupNin);
   }
 
   // ─── Multi-tab chat session id ────────────────────────────────────────

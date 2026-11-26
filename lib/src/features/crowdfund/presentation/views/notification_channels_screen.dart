@@ -10,6 +10,7 @@ import '../../domain/entities/notification_channel_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'notification_channels_screen_widgets.dart';
 
 class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {

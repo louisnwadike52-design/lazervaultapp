@@ -25,6 +25,7 @@ import '../widgets/lock_funds_empty_state.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/lock_funds/presentation/widgets/piggyvault_disclosure_footer.dart';
 part 'lock_funds_list_screen_widgets.dart';
 
 /// Lighter purple used across the PiggyVault landing for icons + accent text.
@@ -359,11 +360,45 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                   ),
                 ),
               ),
+              // WHO POWERS THIS PRODUCT, on the page that advertises it.
+              // Outside the Expanded so it is pinned at the bottom and shows
+              // on every state — empty, loading and loaded alike. A
+              // disclosure that only appears once you already hold a lock is
+              // shown to the wrong person.
+              //
+              // THE BUTTON SHARES THIS ROW RATHER THAN FLOATING OVER IT.
+              //
+              // "Create Lock" was a floatingActionButton, which the Scaffold
+              // pins to the bottom-right ON TOP of whatever is there — and
+              // what was there is the provider disclosure. Reported with a
+              // screenshot: "Piggyvault is powered by S…" and "View
+              // Piggyvault disclo…", both running under the button.
+              //
+              // Reserving a guessed width for the button would have been
+              // wrong at the next text scale or the next screen size. Laying
+              // them out side by side instead means the two can never
+              // collide, whatever either one measures: the disclosure takes
+              // the room that is left, and left-aligns because it no longer
+              // has the full width to centre in.
+              Padding(
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: PiggyVaultDisclosureFooter(
+                        alignStart: true,
+                        padding: EdgeInsets.fromLTRB(0, 6.h, 8.w, 0),
+                      ),
+                    ),
+                    _buildFAB(),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ),
-      floatingActionButton: _buildFAB(),
     );
   }
 

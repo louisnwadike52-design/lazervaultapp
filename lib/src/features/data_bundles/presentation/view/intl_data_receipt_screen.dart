@@ -9,6 +9,7 @@ import '../../../widgets/bill_receipt_qr_block.dart';
 import '../../domain/entities/data_purchase_entity.dart';
 import '../../data/datasources/intl_data_remote_datasource.dart';
 import '../../services/intl_data_pdf_service.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// International Data receipt. Mirrors the intl_airtime receipt screen
 /// shape: status icon, dual-amount card (you paid vs recipient got +
@@ -130,7 +131,7 @@ class IntlDataReceiptScreen extends StatelessWidget {
         if (fromHistory) {
           Get.back();
         } else {
-          Get.offAllNamed(AppRoutes.dataBundlesHome);
+          offAllKeepingHome(AppRoutes.dataBundlesHome);
         }
       },
       child: Scaffold(
@@ -470,7 +471,7 @@ class IntlDataReceiptScreen extends StatelessWidget {
             width: double.infinity,
             height: 54.h,
             child: ElevatedButton(
-              onPressed: () => Get.offAllNamed(AppRoutes.dataBundlesHome),
+              onPressed: () => offAllKeepingHome(AppRoutes.dataBundlesHome),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4E03D0),
                 shape: RoundedRectangleBorder(
@@ -499,7 +500,7 @@ class IntlDataReceiptScreen extends StatelessWidget {
               height: 54.h,
               child: OutlinedButton(
                 onPressed: () =>
-                    Get.offAllNamed(AppRoutes.intlDataCountrySelection),
+                    offAllKeepingHome(AppRoutes.intlDataCountrySelection),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFF2D2D2D)),
                   shape: RoundedRectangleBorder(

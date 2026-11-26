@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/social_avatar_prompt.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Screen for managing linked social accounts
 class LinkedAccountsScreen extends StatefulWidget {
@@ -403,7 +404,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
     final cubit = context.read<SocialLinkingCubit>();
     final linkedProviders = cubit.linkedAccounts.map((a) => a.provider).toSet();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: const RoundedRectangleBorder(

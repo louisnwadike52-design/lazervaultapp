@@ -32,6 +32,7 @@ import 'chat_reply_widgets.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/voice_record_configs.dart';
 import 'package:lazervault/core/branding/assistant_identity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Shows a scoped chat bottom sheet for a specific service.
 ///
@@ -56,7 +57,7 @@ Future<void> showServiceChatBottomSheet(
   // NOT from serviceLocator which creates a new unauthenticated factory instance.
   final authCubit = context.read<AuthenticationCubit>();
 
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

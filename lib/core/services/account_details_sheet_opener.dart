@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/account_actions/presentation/widgets/acc
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Opens the SAME account-details bottom sheet the dashboard card's "Details"
 /// chip opens — used by the provider-change dialogs so "View updated account
@@ -74,7 +75,7 @@ Future<void> openAccountDetailsSheet(BuildContext context,
     'holderName': acct.virtualAccountHolderName ?? '',
   };
 
-  await Get.bottomSheet(
+  await showAppGetBottomSheet(
     BlocProvider.value(
       value: serviceLocator<AccountActionsCubit>(),
       child: AccountActionsBottomSheet(accountArgs: args),

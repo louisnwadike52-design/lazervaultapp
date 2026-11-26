@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -9,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'exchange_receipt_screen.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Deeplink target for the chat/voice "View receipt" action
 /// (`/exchange/receipt/:id`). Unlike the in-app flow, a deeplink carries no
@@ -126,7 +126,7 @@ class _ExchangeReceiptByRefScreenState
                           SizedBox(width: 16.w),
                           TextButton(
                             onPressed: () =>
-                                Get.offAllNamed(AppRoutes.exchangeHome),
+                                offAllKeepingHome(AppRoutes.exchangeHome),
                             child: Text(
                               'Back to exchange',
                               style: TextStyle(color: _textSecondary),

@@ -12,6 +12,7 @@ import 'cubit/fcy_kyc_state.dart';
 import 'cubit/fcy_kyc_steps.dart';
 import 'widgets/fcy_document_tile.dart';
 import 'widgets/fcy_kyc_field_input.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The FCY KYC wizard.
 ///
@@ -519,7 +520,7 @@ class _FcyKycWizardScreenState extends State<FcyKycWizardScreen> {
   /// be sent yet — and a user told "failed" would go back and edit fields that were
   /// already right. They are told it is saved and will be sent automatically.
   void _showOutcome(FcyKycSubmitted state) {
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       isDismissible: false,
       enableDrag: false,

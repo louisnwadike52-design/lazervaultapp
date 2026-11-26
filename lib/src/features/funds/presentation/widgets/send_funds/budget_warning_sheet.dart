@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/widgets/budget_warning_widget.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Non-blocking budget warning shown BEFORE a transfer when the matching
 /// budget is FLEXIBLE (or near its limit). Strict budgets use
@@ -27,7 +28,7 @@ Future<bool?> showBudgetWarningSheet(
   String money(double v) =>
       CurrencySymbols.formatAmountWithCurrency(v, currency);
 
-  return showModalBottomSheet<bool>(
+  return showAppBottomSheet<bool>(
     context: context,
     backgroundColor: const Color(0xFF1F1F1F),
     isScrollControlled: true,

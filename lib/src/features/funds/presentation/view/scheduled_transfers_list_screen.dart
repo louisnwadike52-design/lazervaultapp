@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/generated/payments.pb.dart' as payments_pb;
 import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments_grpc;
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Upcoming (status == "scheduled") transfers — the rows core-payments holds
 /// with a future `scheduled_at`, fired by the asynq/Redis ProcessAt tier.
@@ -174,7 +175,7 @@ class _ScheduledTransfersListScreenState
             ? t.destinationAccount
             : 'Recipient');
 
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1A1A1A),
@@ -353,7 +354,7 @@ class _ScheduledTransfersListScreenState
       return;
     }
 
-    final confirmed = await showModalBottomSheet<bool>(
+    final confirmed = await showAppBottomSheet<bool>(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(
@@ -496,7 +497,7 @@ class _ScheduledTransfersListScreenState
   }
 
   Future<void> _confirmCancel(payments_pb.TransferDetail t) async {
-    final ok = await showModalBottomSheet<bool>(
+    final ok = await showAppBottomSheet<bool>(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(

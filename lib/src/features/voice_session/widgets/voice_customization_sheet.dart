@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Sentinel voice id sent as `voice_preference` when the user explicitly picks
 /// THEIR OWN cloned voice ("Your Voice"). The gateway's `_resolve_tts_provider`
@@ -60,7 +61,7 @@ class VoiceCustomizationSheet extends StatelessWidget {
     String? yourVoiceUsername,
     String? yourVoiceAvatarUrl,
   }) {
-    return showModalBottomSheet<VoiceOption>(
+    return showAppBottomSheet<VoiceOption>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

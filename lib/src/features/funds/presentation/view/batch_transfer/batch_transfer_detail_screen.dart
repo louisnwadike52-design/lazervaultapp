@@ -17,6 +17,7 @@ import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/funds/domain/batch_item_unified.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
 import 'package:lazervault/src/features/funds/domain/batch_source_account_display.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class BatchTransferDetailScreen extends StatefulWidget {
   const BatchTransferDetailScreen({super.key});
@@ -740,7 +741,7 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     final isExternal = item.isExternal;
     final name = _resolveRecipientName(item);
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

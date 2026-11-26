@@ -7,6 +7,7 @@ import '../../../domain/entities/insurance_product_entity.dart';
 import '../../cubit/create_policy_cubit.dart';
 import '../../cubit/create_policy_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Screen 1: Browse insurance categories and products from MyCover.ai
 class InsuranceCategoryProductsScreen extends StatefulWidget {
@@ -627,7 +628,7 @@ class _InsuranceCategoryProductsScreenState
   // ============================================================
 
   void _showCategoryInfoSheet(BuildContext context, InsuranceCategoryInfo cat) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -727,7 +728,7 @@ class _InsuranceCategoryProductsScreenState
   }
 
   void _showProductInfoSheet(BuildContext context, InsuranceProduct product) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

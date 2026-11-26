@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'document_upload_screen_widgets.dart';
 
 /// Document upload screen for Tier 3 KYC verification.
@@ -148,7 +149,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
     required String label,
     required void Function(XFile file) onPicked,
   }) async {
-    final source = await showModalBottomSheet<ImageSource>(
+    final source = await showAppBottomSheet<ImageSource>(
       context: context,
       backgroundColor: _cardBackground,
       shape: const RoundedRectangleBorder(

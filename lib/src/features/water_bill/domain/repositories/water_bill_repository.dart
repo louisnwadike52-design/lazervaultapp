@@ -28,6 +28,10 @@ abstract class WaterBillRepository {
     String? paymentGateway,
     String? transactionId,
     String? verificationToken,
+
+    /// Pay with crypto: the asset to sell to fund this payment,
+    /// lowercase. Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   });
 
   Future<Either<Failure, WaterPaymentEntity>> verifyPayment({

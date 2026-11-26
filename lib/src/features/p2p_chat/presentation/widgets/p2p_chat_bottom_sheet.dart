@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_text_b
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_transfer_bubble.dart';
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Shows the P2P chat bottom sheet for a specific user.
 void showP2PChatBottomSheet(
@@ -38,7 +39,7 @@ void showP2PChatBottomSheet(
   // Guard: don't open chat if not authenticated
   if (currentUserId.isEmpty) return;
 
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

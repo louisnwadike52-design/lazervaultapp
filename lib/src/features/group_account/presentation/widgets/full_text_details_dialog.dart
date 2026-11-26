@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../utils/group_funds_palette.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Shows a name and description in full.
 ///
@@ -31,7 +32,7 @@ Future<void> showFullTextDetailsDialog(
   // confirm. A sheet rises from the thumb, can be dismissed by dragging in the
   // same direction the finger already moved, and gives long text the full
   // width of the screen instead of a dialog's inset box.
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     backgroundColor: Colors.transparent,
     // Long descriptions need to grow past the default half-height, and the

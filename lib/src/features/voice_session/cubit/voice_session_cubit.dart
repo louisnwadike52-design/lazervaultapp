@@ -2052,10 +2052,55 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       }
     } catch (e) {
       if (isClosed) return;
+
+      // CLOSING THE SHEET MID-HANDSHAKE IS NOT AN ERROR.
+      //
+      // Opening the voice agent and immediately dismissing it tears down the
+      // transport while `room.connect` is still negotiating, and the SDK
+      // surfaces that as `HandshakeException: Connection terminated during
+      // handshake`. The success path already checks `_teardownRequested`
+      // before going live; this path did not, so the customer got a red
+      // "Failed to connect to LiveKit room" banner for doing nothing but
+      // changing their mind.
+      //
+      // The check is on OUR OWN teardown flag rather than on the exception
+      // text: an abort we caused is a disconnect, and the identical exception
+      // arriving when we did NOT ask to stop is a genuine failure the customer
+      // does need to see.
+      if (_teardownRequested) {
+        print('VoiceSessionCubit: connect aborted by teardown — not an error');
+        await _disposeRoomResources();
+        if (!isClosed) emit(VoiceSessionDisconnected());
+        return;
+      }
+
       print('VoiceSessionCubit: LiveKit connect error: $e');
-      emit(VoiceSessionError('Failed to connect to LiveKit room: $e'));
+      emit(VoiceSessionError(_connectFailureMessage(e)));
       await _disposeRoomResources();
     }
+  }
+
+  /// What to tell the customer when the room genuinely will not come up.
+  ///
+  /// NOT the raw exception. "HandshakeException: Connection terminated during
+  /// handshake" names a TLS state machine; it tells somebody holding a phone
+  /// nothing they can act on, and it reads as the app being broken rather than
+  /// the network being poor. The underlying text still goes to the log above,
+  /// which is where it is useful.
+  String _connectFailureMessage(Object e) {
+    final s = e.toString().toLowerCase();
+    final transient = s.contains('handshake') ||
+        s.contains('timed out') ||
+        s.contains('timeout') ||
+        s.contains('failed host lookup') ||
+        s.contains('connection terminated') ||
+        s.contains('connection closed') ||
+        s.contains('connection reset') ||
+        s.contains('network is unreachable') ||
+        s.contains('software caused connection abort');
+    return transient
+        ? "Couldn't reach the voice assistant. Check your connection and try again."
+        : "The voice assistant isn't available right now. Please try again.";
   }
 
   // ── On-device speech capture (on_device mode) ──

@@ -13,6 +13,7 @@ import '../cubit/data_beneficiary_state.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'create_data_auto_recharge_screen_widgets.dart';
 
 /// Create a new data Rollover schedule. Mirrors
@@ -95,7 +96,7 @@ class _CreateDataAutoRechargeScreenState
       ('Glo', 'glo-data'),
       ('9mobile', 'etisalat-data'),
     ];
-    return showModalBottomSheet<String>(
+    return showAppBottomSheet<String>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -144,7 +145,7 @@ class _CreateDataAutoRechargeScreenState
     final cubit = context.read<DataBundlesCubit>();
     cubit.getDataPlans(network: networkCode);
     if (!mounted) return;
-    final picked = await showModalBottomSheet<DataPlanEntity>(
+    final picked = await showAppBottomSheet<DataPlanEntity>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

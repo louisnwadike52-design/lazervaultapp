@@ -15,6 +15,7 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'financial_goals_screen_widgets.dart';
 
 /// Financial Goals Screen
@@ -417,7 +418,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
     // ZERO CreateFinancialGoal.
     final cubit = context.read<BudgetCubit>();
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(24.w),
         decoration: const BoxDecoration(
@@ -595,7 +596,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
     // the create sheet: the withdraw button did nothing at all.
     final cubit = context.read<BudgetCubit>();
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(24.w),
         decoration: const BoxDecoration(

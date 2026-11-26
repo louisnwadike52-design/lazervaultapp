@@ -10,6 +10,7 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import '../data/support_api.dart';
 import '../data/support_models.dart';
 import 'support_chat_screen.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'support_tickets_screen_widgets.dart';
 
 /// The support hub — the first screen for every "contact support" entry point
@@ -17,7 +18,29 @@ part 'support_tickets_screen_widgets.dart';
 /// open and closed tabs, and creates new tickets (live chat or a reported
 /// problem) from the floating action button. Tapping a ticket opens its thread.
 class SupportTicketsScreen extends StatefulWidget {
-  const SupportTicketsScreen({super.key});
+  /// When set, the create-ticket composer opens straight away, pre-filled.
+  ///
+  /// For refusals that can only be resolved by a person — an identity number
+  /// already linked to another account, a date of birth that cannot be edited
+  /// in the app — the screen used to open on an empty ticket list with a FAB,
+  /// so the customer had to find the button, then compose an explanation of a
+  /// failure we had already classified. See [openKycProfileFix].
+  /// A ticket number to open on arrival, from a "support replied" push.
+  ///
+  /// The list still loads behind it, so a stale or already-deleted number
+  /// degrades to the list rather than a blank screen — the reply is in there
+  /// either way.
+  final String? openTicketNumber;
+
+  final String? composeSubject;
+  final String? composeMessage;
+
+  const SupportTicketsScreen({
+    super.key,
+    this.openTicketNumber,
+    this.composeSubject,
+    this.composeMessage,
+  });
 
   @override
   State<SupportTicketsScreen> createState() => _SupportTicketsScreenState();
@@ -48,6 +71,15 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
     _tabs = TabController(length: 2, vsync: this);
     _load();
     _loadSlaNotice();
+    // Opened FOR a specific problem: go straight to the composer rather than
+    // making the customer find the FAB. After the first frame so the sheet has
+    // a mounted Navigator, and only once.
+    if ((widget.composeSubject ?? '').trim().isNotEmpty ||
+        (widget.composeMessage ?? '').trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _onCreateNewTicket();
+      });
+    }
     // Keep unread badges + statuses fresh while the hub is on screen (staff
     // replies land as unread counts). Silent — never disturbs the list state
     // on a transient failure.
@@ -79,6 +111,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
         _loading = false;
         _error = null;
       });
+      _openDeepLinkedTicket();
     } catch (e) {
       if (!mounted || silent) return;
       setState(() {
@@ -93,6 +126,39 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
 
   /// Opens a thread and refreshes the list on return (read/unread + status
   /// may have changed — e.g. replying to a closed ticket reopens it).
+  /// Whether the push-linked ticket has already been opened, so the 15-second
+  /// refresh does not reopen it every tick — and so returning from the thread
+  /// does not bounce the customer straight back into it.
+  bool _deepLinkOpened = false;
+
+  /// Open the ticket a "support replied" push pointed at.
+  ///
+  /// RUNS AFTER THE LIST LOADS, not in initState: the number has to be matched
+  /// against real tickets, and the thread screen wants the ticket object. A
+  /// number that matches nothing simply leaves the customer on the list, which
+  /// is the honest outcome — the reply is visible there.
+  void _openDeepLinkedTicket() {
+    if (_deepLinkOpened) return;
+    final want = (widget.openTicketNumber ?? '').trim().toUpperCase();
+    if (want.isEmpty) return;
+    _deepLinkOpened = true;
+
+    SupportTicket? match;
+    for (final t in _tickets) {
+      if (t.ticketNumber.trim().toUpperCase() == want) {
+        match = t;
+        break;
+      }
+    }
+    if (match == null) return;
+
+    // After the frame, so the Navigator this pushes onto is mounted — the same
+    // reason the composer auto-open above is deferred.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _openThread(match);
+    });
+  }
+
   Future<void> _openThread(SupportTicket? ticket) async {
     await Get.to(() => SupportChatScreen(ticket: ticket));
     _load(silent: true);
@@ -111,11 +177,15 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
       await _showLimitDialog(open.length);
       return;
     }
-    final result = await showModalBottomSheet<_NewTicketResult>(
+    final result = await showAppBottomSheet<_NewTicketResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _NewTicketSheet(openTickets: open),
+      builder: (_) => _NewTicketSheet(
+        openTickets: open,
+        initialSubject: widget.composeSubject,
+        initialMessage: widget.composeMessage,
+      ),
     );
     if (result == null || !mounted) return;
     await _createTicket(result.subject, result.message);

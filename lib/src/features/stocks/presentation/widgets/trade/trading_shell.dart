@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Shared chrome for stock trade flows (carousel step bar, sticky footer).
 class TradingCarouselStepBar extends StatelessWidget {
@@ -146,7 +147,7 @@ Future<T?> showTradingQuickSheet<T>({
   required BuildContext context,
   required Widget child,
 }) {
-  return showModalBottomSheet<T>(
+  return showAppBottomSheet<T>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

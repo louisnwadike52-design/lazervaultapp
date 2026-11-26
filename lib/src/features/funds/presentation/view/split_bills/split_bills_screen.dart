@@ -12,6 +12,8 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/system_bottom_inset.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'split_bills_screen_widgets.dart';
 
 /// Split Bills Screen for dividing payments among multiple participants
@@ -584,7 +586,9 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
       ),
       bottomNavigationBar: _selectedParticipants.isNotEmpty && _totalAmount > 0
           ? Container(
-              padding: EdgeInsets.all(16.w),
+              // + the system navigation bar (edge-to-edge from Android 15).
+              padding: EdgeInsets.fromLTRB(
+                  16.w, 16.w, 16.w, 16.w + systemBottomInset(context)),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -784,7 +788,7 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
   }
 
   void _showAddParticipantBottomSheet(BuildContext context) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.white,
       isScrollControlled: true,

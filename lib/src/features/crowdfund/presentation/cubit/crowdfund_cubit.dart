@@ -94,6 +94,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     String? statusFilter,
     String? categoryFilter,
     bool myCrowdfundsOnly = false,
+    // THE SORT THE USER PICKED, which this method used to drop on the floor.
+    //
+    // listCrowdfundsPage and the gRPC data source both accepted it already —
+    // the chain was complete except for this one hop, so every sort chip
+    // re-fetched the same newest-first page. (The gateway's own proto was
+    // also missing the field, so even a forwarded value was discarded on the
+    // wire; both halves are fixed.)
+    String? sortBy,
   }) async {
     try {
       if (isClosed) return;
@@ -102,8 +110,12 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       // discover their captured token is stale and drop their emit.
       final gen = ++_listGeneration;
 
+      // SORT IS PART OF THE CACHE KEY. Without it, switching sort serves the
+      // PREVIOUS sort's cached page — the list does not change, which is
+      // indistinguishable from the sort not working and is exactly the
+      // symptom this fix exists to remove.
       final cacheKey =
-          'crowdfunds:${statusFilter ?? ''}:${categoryFilter ?? ''}:$myCrowdfundsOnly:$page';
+          'crowdfunds:${statusFilter ?? ''}:${categoryFilter ?? ''}:${sortBy ?? ''}:$myCrowdfundsOnly:$page';
 
       if (_cacheManager != null) {
         // Don't pre-emit CrowdfundLoading. The SWR stream will yield
@@ -128,6 +140,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
             statusFilter: statusFilter,
             categoryFilter: categoryFilter,
             myCrowdfundsOnly: myCrowdfundsOnly,
+            sortBy: sortBy,
           ),
           config: CacheConfig.crowdfunds,
           serializer: (result) => jsonEncode({
@@ -176,6 +189,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
           statusFilter: statusFilter,
           categoryFilter: categoryFilter,
           myCrowdfundsOnly: myCrowdfundsOnly,
+          sortBy: sortBy,
         );
 
         if (isClosed || gen != _listGeneration) return;

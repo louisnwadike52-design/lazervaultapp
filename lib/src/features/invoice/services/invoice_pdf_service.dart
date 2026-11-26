@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 import '../domain/entities/invoice_entity.dart';
+import 'package:lazervault/src/features/support/data/support_contact_info.dart';
 
 class InvoicePdfService {
   /// A [pw.Document] themed with the embedded Inter face when it loaded, so
@@ -113,6 +114,11 @@ class InvoicePdfService {
   }
 
   static Future<File> generateInvoicePdf(Invoice invoice) async {
+    // Warm the published support address before any page is built: a
+    // document cannot re-render when a late answer arrives, so an
+    // un-warmed cache would silently drop the address from the footer.
+    // Cheap when warm, and never throws. See SupportContactInfo.
+    await SupportContactInfo.refresh();
     final pdf = await _documentWithFonts();
 
     // Pre-fetch the uploaded sender/receiver images BEFORE building (the pw
@@ -662,7 +668,10 @@ class InvoicePdfService {
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
-                    'This document is a receipt for your invoice payment. For any queries, please contact our support team through the Lazervault app or email support@lazervault.com.',
+                    // Reads the operator's published address — never a
+                    // literal. See SupportContactInfo.
+                    'This document is a receipt for your invoice payment. '
+                        '${SupportContactInfo.sentence('For any queries')}',
                     style: const pw.TextStyle(
                       fontSize: 8,
                       color: PdfColors.grey500,

@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/investments/presentation/navigation/inve
 import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
 
 import '../../domain/entities/stock_entity.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class StockTradeReceiptScreen extends StatefulWidget {
   const StockTradeReceiptScreen({super.key});
@@ -148,7 +149,7 @@ Powered by Lazervault''';
   }
 
   void _goToPortfolio() {
-    Get.offAllNamed(
+    offAllKeepingHome(
       AppRoutes.stockPortfolio,
       arguments: InvestRouteArgs.hub(_investCollectionId),
     );

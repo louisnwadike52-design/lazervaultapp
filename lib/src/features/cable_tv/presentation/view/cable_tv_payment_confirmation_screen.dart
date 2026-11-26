@@ -25,6 +25,7 @@ import '../../domain/entities/tv_package_entity.dart';
 import '../widgets/cable_tv_rollover_preference_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/utils/route_args.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 part 'cable_tv_payment_confirmation_screen_widgets.dart';
 
@@ -670,7 +671,7 @@ class _CableTVPaymentConfirmationScreenState
         all.where((a) => a.currency.toUpperCase() == 'NGN').toList();
     if (ngnAccounts.isEmpty) return;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

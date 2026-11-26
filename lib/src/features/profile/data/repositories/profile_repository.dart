@@ -126,6 +126,12 @@ class ProfileRepositoryImpl implements IProfileRepository {
   Future<Either<Failure, User>> updateUserProfile({
     String? firstName,
     String? lastName,
+    /// OPTIONAL. NULL means "leave it alone"; a non-null value (including the
+    /// empty string, which clears it) sets the companion flag so the server
+    /// applies it. Without that distinction every save from every screen would
+    /// erase a middle name, because proto3 sends "" for a field it does not
+    /// know about.
+    String? middleName,
     String? username,
     String? phoneNumber,
     String? language,
@@ -133,12 +139,18 @@ class ProfileRepositoryImpl implements IProfileRepository {
     String? country,
     String? profilePicture,
     PostalAddress? address,
+    /// ISO YYYY-MM-DD. Null or empty leaves the stored date alone — the server
+    /// treats empty as "not touched" for the same reason updateAddress exists,
+    /// so a name save can never blank someone's date of birth.
+    String? dateOfBirth,
   }) async {
     try {
       final callOptions = await _callOptionsHelper.withAuth();
       final request = user_pb.UpdateUserProfileRequest(
         firstName: firstName ?? '',
         lastName: lastName ?? '',
+        middleName: middleName ?? '',
+        updateMiddleName: middleName != null,
         username: username ?? '',
         phoneNumber: phoneNumber ?? '',
         language: language ?? '',
@@ -156,6 +168,7 @@ class ProfileRepositoryImpl implements IProfileRepository {
         addressState: address?.state ?? '',
         addressPostalCode: address?.postalCode ?? '',
         addressCountry: address?.country ?? '',
+        dateOfBirth: dateOfBirth ?? '',
       );
       final response = await _userServiceClient.updateUserProfile(
         request,

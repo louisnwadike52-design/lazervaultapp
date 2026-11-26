@@ -27,6 +27,7 @@ import 'escrow_role_labels.dart';
 import '../widgets/escrow_terms.dart';
 import 'escrow_theme.dart';
 import 'escrow_party_chat_action.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'escrow_deal_detail_screen_widgets.dart';
 
 class EscrowDealDetailScreen extends StatefulWidget {
@@ -263,7 +264,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       required int existingVideoCount}) async {
     final noteCtrl = TextEditingController();
     List<EscrowMediaUploadResult> media = const [];
-    return showModalBottomSheet<_DeliveryResult>(
+    return showAppBottomSheet<_DeliveryResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: EscrowTheme.card,
@@ -476,7 +477,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     required bool required,
   }) async {
     final ctrl = TextEditingController();
-    return showModalBottomSheet<String>(
+    return showAppBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -521,7 +522,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     final reasonCtrl = TextEditingController();
     final evidenceCtrl = TextEditingController();
     List<EscrowMediaUploadResult> media = const [];
-    return showModalBottomSheet<
+    return showAppBottomSheet<
         ({
           String reason,
           String evidence,
@@ -588,7 +589,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
           required int existingVideoCount}) async {
     final reasonCtrl = TextEditingController();
     List<EscrowMediaUploadResult> media = const [];
-    return showModalBottomSheet<
+    return showAppBottomSheet<
         ({String reason, List<EscrowMediaUploadResult> media})>(
       context: context,
       backgroundColor: Colors.transparent,

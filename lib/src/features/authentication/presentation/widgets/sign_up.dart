@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
+import 'bvn_name_hint.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,6 +28,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/legal_consent_text.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/signup_switch_account_cta.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'sign_up_widgets.dart';
 
 class SignUp extends StatefulWidget {
@@ -49,6 +51,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   // (Android only; iOS has no equivalent API).
   final TextEditingController _phoneController = TextEditingController();
   final FocusNode _phoneFocusNode = FocusNode();
+
   CountryLocale _phoneCountry = const CountryLocale(
     countryCode: 'NG',
     countryName: 'Nigeria',
@@ -299,6 +302,35 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
       }
       return 'Phone number for ${_phoneCountry.countryName} should be $nsnExpected digits (or ${max + 1} with a leading 0).';
     }
+
+    // LENGTH IS NOT ENOUGH, AND NIGERIA IS THE CASE THAT PROVES IT.
+    //
+    // A UK mobile NSN is ten digits. So is a Nigerian one. A customer on the
+    // Nigerian locale who types a UK number passes every check above — the
+    // length is right — and the app then builds +234 7911123456: a number
+    // that belongs to nobody. It reaches the backend, the account is created
+    // against it, and the person is stuck at an SMS step for a handset that
+    // does not exist. That is how a real account ended up with a UK number on
+    // an NG profile.
+    //
+    // CountryCode.validateNationalNumber already knows the answer — it checks
+    // the MOBILE PREFIX as well as the length (NG mobile NSNs start 70/71/80/
+    // 81/90/91, so a UK number beginning 79 is refused) — and phone_entry and
+    // forgot_passcode_phone have both used it all along. This screen had its
+    // own length-only table and was the one path that did not, which is why
+    // the gap existed here and nowhere else.
+    //
+    // Applied AFTER the length checks so the messages above, which explain the
+    // trunk-0 forms, still do the explaining for a wrong-length number; this
+    // only catches what length alone cannot see.
+    final cc = CountryCode.fromCode(_phoneCountry.countryCode);
+    if (cc != null) {
+      // Strip the optional trunk 0 the block above just accepted, so the
+      // shared validator sees a bare NSN — otherwise every valid
+      // "0803…" would be rejected for being one digit too long.
+      final nsn = isTrunkAndNsn ? raw.substring(1) : raw;
+      return cc.validateNationalNumber(nsn);
+    }
     return null;
   }
 
@@ -307,7 +339,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   /// BEFORE handing off to the cubit so an invalid phone (too short, too
   /// long, leading-zero quirks) is caught right here with an inline error
   /// rather than failing later at the backend.
-  void _onContinuePressed() {
+  Future<void> _onContinuePressed() async {
     final cubit = context.read<AuthenticationCubit>();
     final state = cubit.state;
     if (state is SignUpInProgress && state.currentPage == 1) {
@@ -322,7 +354,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   }
 
   void _openPhoneCountryPicker() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,
@@ -574,6 +606,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               :initialEmail,
               :firstName,
               :lastName,
+              :middleName,
               :selectedDate,
               :phoneNumber,
               :countryCode,
@@ -585,6 +618,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   initialEmail: p.email,
                   firstName: p.firstName,
                   lastName: p.lastName,
+                  middleName: p.middleName,
                   selectedDate: p.selectedDate,
                   phoneNumber: p.phoneNumber,
                   countryCode: p.countryCode,
@@ -596,6 +630,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   initialEmail: null,
                   firstName: null,
                   lastName: null,
+                  middleName: null,
                   selectedDate: null,
                   phoneNumber: null,
                   countryCode: 'NG',
@@ -669,6 +704,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                             _buildPersonalInfoPage(context,
                                 initialFirstName: firstName,
                                 initialLastName: lastName,
+                                initialMiddleName: middleName,
                                 selectedDate: selectedDate,
                                 initialPhoneNumber: phoneNumber,
                                 isLoading: displayLoading),
@@ -1288,6 +1324,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   Widget _buildPersonalInfoPage(BuildContext context,
       {String? initialFirstName,
       String? initialLastName,
+      String? initialMiddleName,
       DateTime? selectedDate,
       String? initialPhoneNumber,
       required bool isLoading}) {
@@ -1316,6 +1353,19 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             ),
             SizedBox(height: 10.0.h),
             BuildFormField(
+              name: "middlename",
+              // Marked optional, because every other field on this form is
+              // not. An unmarked blank box reads as something you forgot.
+              placeholder: "Middle Name (optional)",
+              prefixIcon:
+                  const Icon(Icons.person_outline, color: Colors.black45),
+              initialValue: initialMiddleName,
+              onChanged: (value) => context
+                  .read<AuthenticationCubit>()
+                  .signUpMiddleNameChanged(value),
+            ),
+            SizedBox(height: 10.0.h),
+            BuildFormField(
               name: "lastname",
               placeholder: "Last Name",
               prefixIcon:
@@ -1325,6 +1375,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   .read<AuthenticationCubit>()
                   .signUpLastNameChanged(value),
             ),
+            // Said at the point of typing — the name entered here is what the
+            // verification partner checks against the BVN/NIN record.
+            const BvnNameHint(),
             SizedBox(height: 10.0.h),
             // Username / Lazertag field
             BuildFormField(

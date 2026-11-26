@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For SystemChrome
 import 'package:lazervault/core/utilities/rotating_auth_background.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/passcode_sign_in.dart';
 
 class PasscodeSignInScreen extends StatefulWidget {
@@ -36,13 +37,24 @@ class _PasscodeSignInScreenState extends State<PasscodeSignInScreen> {
           // Full-bleed background that cross-fades to a new bundled photo
           // every 10 seconds (compressed webp variants).
           //
-          // Ten rather than seven: each swap costs a GPU texture upload on the
-          // raster thread, and this screen's whole job is to stay responsive
-          // while someone taps a passcode. A longer interval cuts that work by
-          // a third and leaves a wider quiet gap around each fade, at no cost
-          // to the effect.
-          const Positioned.fill(
-            child: RotatingAuthBackground(interval: Duration(seconds: 10)),
+          // THE PACE IS A SETTING, NOT A LITERAL.
+          //
+          // This was `const Duration(seconds: 10)`, chosen because each swap
+          // costs a GPU texture upload on the raster thread and this screen's
+          // whole job is to stay responsive while someone taps a passcode —
+          // a longer interval cuts that work and widens the quiet gap around
+          // each fade. That reasoning still holds and is the argument against
+          // going much below the current default; it is not an argument for
+          // the number living in the binary, where changing it costs a release
+          // and a store review.
+          //
+          // Default 7s, admin-tunable via auth_background_rotate_seconds, and
+          // bounded 2–120s on READ so a bad value cannot wedge the sign-in
+          // screen (see FeatureFlags.authBackgroundRotateInterval).
+          Positioned.fill(
+            child: RotatingAuthBackground(
+              interval: FeatureFlags.authBackgroundRotateInterval,
+            ),
           ),
           // NOTE: the dark scrim for readability is rendered INSIDE PasscodeSignIn
           // (single light overlay) — no screen-level overlay here, otherwise the

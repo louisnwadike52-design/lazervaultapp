@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../view/escrow_theme.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/escrow/domain/repositories/escrow_repository.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The rules of an escrow deal, in the words a user would use, stated once.
 ///
@@ -254,7 +255,7 @@ Future<void> showEscrowIntroNotice(
   if (!context.mounted) return;
   var dontShowAgain = false;
   final scroll = ScrollController();
-  await showModalBottomSheet<void>(
+  await showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -470,7 +471,7 @@ Future<void> showEscrowTermsSheet(BuildContext context) async {
         (await serviceLocator<EscrowRepository>().getPolicy()).termsMarkdown;
   } catch (_) {}
   if (!context.mounted) return;
-  await showModalBottomSheet<void>(
+  await showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

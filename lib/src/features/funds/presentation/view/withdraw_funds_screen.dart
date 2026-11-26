@@ -36,6 +36,7 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
 import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking_grpc;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Withdraw funds to one of the user's linked bank accounts.
 ///
@@ -1671,7 +1672,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
 
   /// Bank picker bottomsheet: linked banks (tap to select) + "Link a new bank".
   void _openAccountSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

@@ -16,6 +16,7 @@ import '../../domain/entities/education_purchase_entity.dart';
 import '../../domain/repositories/education_repository.dart';
 import '../../services/education_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class EducationPinResultScreen extends StatefulWidget {
   const EducationPinResultScreen({super.key});
@@ -298,7 +299,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
       // no meaningful "previous" step to restore.
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Get.offAllNamed(AppRoutes.billsHub);
+        if (!didPop) offAllKeepingHome(AppRoutes.billsHub);
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
@@ -306,7 +307,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
+            onPressed: () => offAllKeepingHome(AppRoutes.billsHub),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
           title: Text(

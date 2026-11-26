@@ -1,4 +1,5 @@
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/src/features/crypto_pay/data/funding_call_options.dart';
 import '../../../../core/network/grpc_client.dart';
 import '../../../../generated/utility-payments.pb.dart' as pb;
 import '../models/airtime_transaction_model.dart';
@@ -19,6 +20,10 @@ abstract class AirtimeRemoteDataSource {
     String? operatorId,
     String? reloadlyOperatorId,
     required String currency,
+
+    /// Pay with crypto: the asset to sell to fund this purchase, lowercase
+    /// ("usdt"). Null means the ordinary wallet-funded purchase.
+    String? fundingAsset,
   });
   Future<AirtimeTransactionModel> transferAirtime({
     required String senderPhone,
@@ -80,6 +85,10 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
     String? operatorId,
     String? reloadlyOperatorId,
     required String currency,
+
+    /// Pay with crypto: the asset to sell to fund this purchase, lowercase
+    /// ("usdt"). Null means the ordinary wallet-funded purchase.
+    String? fundingAsset,
   }) async {
     try {
       final request = pb.BuyAirtimeRequest()
@@ -98,7 +107,12 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
       if (operatorId != null && operatorId.isNotEmpty) {
         request.operatorId = operatorId;
       }
-      final options = await grpcClient.callOptions;
+      var options = await grpcClient.callOptions;
+      // PAY WITH CRYPTO. Metadata rather than a proto field — the same
+      // channel transfers use — so no gateway or client that does not know
+      // about this feature has to change. One shared rule; see
+      // funding_call_options.
+      options = options.withCryptoFunding(fundingAsset);
       final response = await grpcClient.utilityPaymentsClient
           .buyAirtime(request, options: options);
 

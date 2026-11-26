@@ -12,6 +12,7 @@ import '../../../data/array_item_encoder.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
 import 'monetary_form_field.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'array_form_field_widgets.dart';
 
 /// Renders MyCover.ai `array`-type form fields (e.g. `item_details`
@@ -449,7 +450,7 @@ class _ArrayFormFieldState extends State<ArrayFormField> {
   /// the top-level _showUploadSourceSheet so the UX is the same on
   /// nested item rows.
   Future<void> _showItemImageSourceSheet(int idx, String fieldName) async {
-    final choice = await showModalBottomSheet<_ItemImageSource>(
+    final choice = await showAppBottomSheet<_ItemImageSource>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

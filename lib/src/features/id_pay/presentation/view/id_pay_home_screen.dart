@@ -21,6 +21,7 @@ import '../widgets/id_pay_details_bottom_sheet.dart';
 import '../widgets/id_pay_status_badge.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class IDPayHomeScreen extends StatefulWidget {
   const IDPayHomeScreen({super.key});
@@ -352,7 +353,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
   }
 
   void _showDetailsBottomSheet(IDPayEntity idPay) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

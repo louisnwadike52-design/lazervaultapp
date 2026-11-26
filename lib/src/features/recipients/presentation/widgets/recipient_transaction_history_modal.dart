@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dar
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'recipient_transaction_history_modal_widgets.dart';
 
 class _TransactionItem extends StatelessWidget {
@@ -167,7 +168,7 @@ class _TransactionItem extends StatelessWidget {
     final dateStr = DateFormat('EEEE, dd MMM yyyy \'at\' HH:mm')
         .format(transaction.createdAt);
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(

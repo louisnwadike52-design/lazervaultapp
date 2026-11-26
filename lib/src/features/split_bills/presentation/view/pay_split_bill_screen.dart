@@ -19,6 +19,7 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import '../cubit/split_bill_cubit.dart';
 import '../cubit/split_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'pay_split_bill_screen_widgets.dart';
 
 class _PaySplitBillViewState extends State<_PaySplitBillView>
@@ -321,7 +322,7 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
     if (!mounted) return;
     _paidAwaitingNav = null;
     final payerUserId = context.read<AuthenticationCubit>().userId ?? '';
-    Get.offAllNamed(
+    offAllKeepingHome(
       AppRoutes.splitBillReceipt,
       arguments: {
         // Authoritative source: the refreshed bill + this payer's id. The

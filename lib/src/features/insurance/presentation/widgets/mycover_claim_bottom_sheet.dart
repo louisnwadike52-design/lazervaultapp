@@ -22,6 +22,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../../../funds/presentation/widgets/webview_file_selector.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'mycover_claim_bottom_sheet_widgets.dart';
 
 class MyCoverClaimBottomSheet extends StatefulWidget {
@@ -72,7 +74,7 @@ class MyCoverClaimBottomSheet extends StatefulWidget {
     String? providerName,
     MyCoverHostedFlowKind kind = MyCoverHostedFlowKind.claim,
   }) {
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -333,6 +335,14 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
       return;
     }
     _resolvedUrl = candidate;
+    // A CLAIM NEEDS DOCUMENTS, AND THE UPLOAD BUTTON WAS DEAD ON ANDROID.
+    //
+    // Android's WebView opens no file picker by itself: with no
+    // onShowFileChooser handler a file input simply does not respond. The
+    // same gap stopped customers uploading their NIN slip in the identity
+    // flow — see WebViewFileSelector. A claim form is the other place in this
+    // app where somebody has to attach a document to get paid.
+    WebViewFileSelector.attach(_controller.platform);
     _controller.loadRequest(uri);
   }
 

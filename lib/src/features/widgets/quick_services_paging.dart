@@ -39,9 +39,26 @@ int quickServicePerPage(int itemsPerPage) => itemsPerPage - 1;
 ///
 /// Returns the COUNT of services on each page, which is all the caller needs
 /// to slice its own list and all a test needs to check the shape.
-List<int> quickServicePageSizes(int count, int itemsPerPage) {
+/// [reservesCell] is whether the navigation control actually OCCUPIES a grid
+/// cell. It is not the same question as [showsMoreTile].
+///
+/// THE BUG THIS PARAMETER FIXES. The control has two placements: a tile inside
+/// the grid, or a pill on the indicator row (the default). Page sizes were
+/// computed from [showsMoreTile] alone, which only asks "is there another
+/// page" — so with the control on the indicator row every page still gave up
+/// its last cell for a tile that was not drawn there. On a 4x3 grid with 23
+/// services that rendered 11 tiles and one permanently blank square, with
+/// "More 11" sitting in the bar underneath it.
+///
+/// Passing the placement in keeps ONE paging rule for both arrangements rather
+/// than a second code path that can drift from this one.
+List<int> quickServicePageSizes(
+  int count,
+  int itemsPerPage, {
+  required bool reservesCell,
+}) {
   if (count <= 0) return const [];
-  final perPage = showsMoreTile(count, itemsPerPage)
+  final perPage = (reservesCell && showsMoreTile(count, itemsPerPage))
       ? quickServicePerPage(itemsPerPage)
       : itemsPerPage;
   final sizes = <int>[];

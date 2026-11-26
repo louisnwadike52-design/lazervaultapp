@@ -88,7 +88,7 @@ class TransactionHistoryScreenIntegration {
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
         leading: Icon(Icons.history),
-        title: Text('${serviceName.displayName} History'),
+        title: Text('${serviceName.label} History'),
         trailing: Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap ?? () => _navigateToServiceHistory(serviceName),
       ),

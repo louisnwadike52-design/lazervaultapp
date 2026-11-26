@@ -6,6 +6,7 @@ import '../../data/datasources/data_beneficiary_remote_datasource.dart';
 import '../cubit/data_beneficiary_cubit.dart';
 import '../cubit/data_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class SaveDataBeneficiarySheet extends StatefulWidget {
   final String phoneNumber;
@@ -39,7 +40,7 @@ class SaveDataBeneficiarySheet extends StatefulWidget {
     String? existingBeneficiaryId,
     String? existingNickname,
   }) {
-    return showModalBottomSheet<bool>(
+    return showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

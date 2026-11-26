@@ -24,6 +24,7 @@ import '../../../widgets/service_voice_button.dart';
 import 'widgets/country_selection_bottomsheet.dart';
 import 'widgets/gift_card_error_widget.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class GiftCardsScreen extends StatefulWidget {
   const GiftCardsScreen({super.key});
@@ -682,7 +683,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       );
       return;
     }
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,
@@ -767,7 +768,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
 
   void _showSellRegionSelection() {
     final regions = _sellRegions;
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -909,7 +910,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           .map((c) => {'slug': c, 'name': _getCategoryName(c)}),
     ];
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

@@ -10,6 +10,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lazervault/src/features/uplift/data/uplift_media_upload_service.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Fund-level equity terms live in the fund's opaque `metadata` JSON so no
 /// proto change was needed on the fund. Shape:
@@ -965,7 +966,7 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
       );
       return;
     }
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: kUpCard,
       builder: (ctx) => SafeArea(
@@ -1995,7 +1996,7 @@ class _UpliftVideoPickerRowState extends State<UpliftVideoPickerRow> {
   }
 
   void _chooseSource() {
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: kUpCard,
       builder: (ctx) => SafeArea(

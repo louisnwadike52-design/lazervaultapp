@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import '../../data/datasources/chat_progress_channel.dart';
+import 'chat_stage_line.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_setup_card.dart';
 
 import 'package:flutter/material.dart';
@@ -98,6 +101,12 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late AnimationController _typingDotsController;
+
+  /// THE BACKEND'S OWN ACCOUNT OF WHAT IT IS DOING. Same channel the general
+  /// chat uses — a per-service conversation runs the same agents and deserves
+  /// the same honesty about which step is slow. See ChatProgressChannel.
+  ChatProgressChannel? _progress;
+  String? _progressSessionId;
   String? _userAvatarUrl;
   bool _isPinMode = false;
 
@@ -158,6 +167,8 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
     _scrollController.removeListener(maybeLoadOlderChat);
     _scrollController.dispose();
     _typingDotsController.dispose();
+    final progress = _progress;
+    if (progress != null) unawaited(progress.dispose());
     _recordingTimer?.cancel();
     if (_isRecording) {
       _audioRecorder.stop();
@@ -425,6 +436,9 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
           // verdict is scoped to it. _loadFeedback no-ops after the first
           // call for a given session.
           _loadFeedback(context.read<MicroserviceChatCubit>().sessionId);
+          // Keyed on the SESSION: a socket subscribed to a previous
+          // conversation would narrate the wrong turn.
+          _syncProgressChannel(context.read<MicroserviceChatCubit>().sessionId);
 
           if (state is MicroserviceChatMessageSuccess) {
             _scrollToBottom();
@@ -754,6 +768,37 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
     );
   }
 
+  /// Opens (or re-opens) the progress channel for [sessionId].
+  ///
+  /// Fire-and-forget: a channel that cannot connect leaves the timed dots
+  /// exactly as they were. Nothing in the chat waits on this.
+  void _syncProgressChannel(String? sessionId) {
+    final id = (sessionId ?? '').trim();
+    if (id.isEmpty || id == _progressSessionId) return;
+    _progressSessionId = id;
+
+    final previous = _progress;
+    _progress = null;
+    if (previous != null) unawaited(previous.dispose());
+
+    unawaited(() async {
+      final storage = serviceLocator<SecureStorageService>();
+      final userId = (await storage.getUserId() ?? '').trim();
+      if (userId.isEmpty || !mounted || _progressSessionId != id) return;
+      final channel = ChatProgressChannel(
+        sessionId: id,
+        userId: userId,
+        accessToken: storage.getAccessToken,
+      );
+      if (!mounted || _progressSessionId != id) {
+        await channel.dispose();
+        return;
+      }
+      setState(() => _progress = channel);
+      await channel.connect();
+    }());
+  }
+
   Widget _buildTypingIndicator() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -800,6 +845,10 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
               }),
             ),
           ),
+          // WHAT IS ACTUALLY HAPPENING, when the backend has said. Renders
+          // nothing until the first stage arrives, so the dots alone are what
+          // a customer sees on a gateway with stage events switched off.
+          Flexible(child: ChatStageLine(channel: _progress)),
         ],
       ),
     );

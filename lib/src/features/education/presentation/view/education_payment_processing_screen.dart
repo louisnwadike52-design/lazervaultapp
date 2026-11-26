@@ -8,6 +8,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/education_provider_entity.dart';
 import '../cubit/education_cubit.dart';
 import '../cubit/education_state.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class EducationPaymentProcessingScreen extends StatefulWidget {
   const EducationPaymentProcessingScreen({super.key});
@@ -307,7 +308,7 @@ class _EducationPaymentProcessingScreenState
             SizedBox(width: 12.w),
             Expanded(
               child: ElevatedButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.educationHome),
+                onPressed: () => offAllKeepingHome(AppRoutes.educationHome),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E03D0),
                   foregroundColor: Colors.white,

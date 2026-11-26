@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// QuoteTimerCard renders a 15-second countdown for the active Quidax swap
 /// quotation. When the timer hits `refreshGraceSeconds` (default 2s) before
@@ -329,7 +330,7 @@ Future<void> showQuoteTimerSheet(
   // stacked above this one). Used to suppress the auto-pop below so we never
   // close the PIN sheet mid-processing.
   var confirmInFlight = false;
-  await showModalBottomSheet<void>(
+  await showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

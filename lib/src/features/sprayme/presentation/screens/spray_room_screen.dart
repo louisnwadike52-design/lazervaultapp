@@ -48,6 +48,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/nova_typing_indicator.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_hearts_layer.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/tag_people_action.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 part 'spray_room_screen_part1.dart';
 part 'spray_room_screen_part2.dart';
@@ -792,7 +793,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
   void _showCommentsSheet(SprayRoomState state) {
     HapticFeedback.lightImpact();
     final cubit = context.read<SprayRoomCubit>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1957,7 +1958,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
   void _showLayoutSheet() {
     final platformDefault =
         sprayLayoutModeFromSetting(FeatureFlags.spraymeLayoutMode);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(
@@ -2093,7 +2094,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     // BlocProviders); capture the live cubit here so the host controls (which
     // read SprayLiveCubit) resolve instead of throwing ProviderNotFound.
     final liveCubit = context.read<SprayLiveCubit>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       isScrollControlled: true,
@@ -2636,7 +2637,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     final host = _isHost(state);
     final myId = _resolveMyId(state);
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       isScrollControlled: true,
@@ -3161,7 +3162,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     final roomCubit = context.read<SprayRoomCubit>();
     final liveCubit = context.read<SprayLiveCubit>();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,
@@ -3381,7 +3382,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
   /// is off".
   void _showGoLiveSheet() {
     final liveCubit = context.read<SprayLiveCubit>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -3747,7 +3748,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     HapticFeedback.lightImpact();
     // Merge backend gifts with rich default catalog
     final mergedGifts = GiftCatalogDefaults.mergeWithBackend(state.gifts);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -3829,7 +3830,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
       return;
     }
     HapticFeedback.lightImpact();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -3898,7 +3899,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     final balanceMajor = account.balanceMajor;
 
     final mergedGifts = GiftCatalogDefaults.mergeWithBackend(state.gifts);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -3928,7 +3929,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
   void _showStatsSheet(SprayRoomState state) {
     // Refresh the leaderboard so the ranking is current when the sheet opens.
     context.read<SprayRoomCubit>().loadLeaderboard();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(
@@ -3943,7 +3944,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
   void _showViewersSheet(SprayRoomState state) {
     context.read<SprayRoomCubit>().loadParticipants();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(
@@ -3958,7 +3959,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
   }
 
   void _showAIChatSheet(SprayRoomState state) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       isScrollControlled: true,

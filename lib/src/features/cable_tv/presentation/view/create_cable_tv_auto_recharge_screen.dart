@@ -15,6 +15,7 @@ import '../cubit/cable_tv_beneficiary_state.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Create / edit a cable TV auto-renew schedule. Package and amount are
 /// loaded from the backend provider catalog — no free-text entry allowed.
@@ -601,7 +602,7 @@ class _CreateCableTVAutoRechargeScreenState
       return;
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,

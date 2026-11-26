@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet for selecting insurance payment method with search functionality
 class InsuranceProviderBottomSheet extends StatefulWidget {
@@ -18,7 +19,7 @@ class InsuranceProviderBottomSheet extends StatefulWidget {
 
   /// Show the bottom sheet
   static Future<PaymentMethod?> show(BuildContext context) {
-    return showModalBottomSheet<PaymentMethod>(
+    return showAppBottomSheet<PaymentMethod>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

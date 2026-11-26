@@ -1,3 +1,5 @@
+import 'package:lazervault/src/features/crypto_pay/domain/invoice_crypto_funding.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/fund_payment_with_crypto.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/invoice/data/repositories/tagged_invoice_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/invoice/domain/entities/tagged_invoice_entity.dart';
@@ -5,6 +7,7 @@ import 'package:lazervault/src/features/invoice/domain/repositories/tagged_invoi
 import 'package:lazervault/src/generated/common.pbenum.dart';
 import 'tagged_invoice_state.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/pagination/next_page_prefetch.dart';
 
 class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
   final TaggedInvoiceRepository repository;
@@ -188,6 +191,15 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
     required String verificationToken,
     required String transactionId,
     required String idempotencyKey,
+
+    /// Non-empty means PAY WITH CRYPTO.
+    ///
+    /// THE ORDER IS THE SAFETY PROPERTY: the payment is recorded first (the
+    /// call below, carrying the funding metadata) and only then is the
+    /// conversion asked for, naming the reference the server returned. A
+    /// conversion with no payment waiting for it would sell the customer's
+    /// coin for an errand nothing tracks, and the sale is irreversible.
+    String? fundingAsset,
   }) async {
     try {
       if (isClosed) return;
@@ -203,8 +215,19 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         verificationToken: verificationToken,
         transactionId: transactionId,
         idempotencyKey: idempotencyKey,
+        fundingAsset: fundingAsset,
       );
       if (isClosed) return;
+
+      // PAID WITH CRYPTO: RECORDED, NOT PAID. Nothing here may claim success
+      // — the coin has not been sold and the issuer will see nothing yet.
+      // Emitting the ordinary success would stop the customer waiting for
+      // something still in flight, and have them tell the issuer it is done.
+      final funding = transaction['crypto_funding'];
+      if (funding is InvoiceCryptoFunding) {
+        await _startTaggedInvoiceConversion(invoiceId, accountId, funding);
+        return;
+      }
 
       emit(TaggedInvoicePaymentSuccess(
         transaction: transaction,
@@ -221,6 +244,50 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
       emit(TaggedInvoiceError(
         message: userFacingErrorFrom(e, 'Payment failed. Please try again.'),
         errorCode: 'PAYMENT_FAILED',
+      ));
+    }
+  }
+
+  /// ASK FOR THE CONVERSION, THEN SAY WHAT IS ACTUALLY TRUE.
+  ///
+  /// Runs only after the payment is recorded. If it never runs — the process
+  /// dies, the network drops — invoice-service's sweep closes the unfunded
+  /// intent and nothing was converted.
+  Future<void> _startTaggedInvoiceConversion(
+    String invoiceId,
+    String accountId,
+    InvoiceCryptoFunding funding,
+  ) async {
+    invalidatePrefetch();
+    try {
+      await fundPaymentWithCrypto(
+        accountId: accountId,
+        paymentReference: funding.reference,
+        requiredMinor: funding.requiredMinor,
+        asset: funding.asset,
+        // The domain this conversion belongs to. invoice-service matches on
+        // it; a typo is a conversion that settles and nobody claims.
+        service: 'invoice',
+        currency: funding.currency,
+      );
+      if (isClosed) return;
+      emit(TaggedInvoiceCryptoFundingStarted(
+        invoiceId: invoiceId,
+        reference: funding.reference,
+        asset: funding.asset,
+        requiredMinor: funding.requiredMinor,
+        currency: funding.currency,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      // NOTHING WAS SOLD. Said plainly: the customer has not been charged and
+      // must not be left wondering where their coin went.
+      emit(TaggedInvoiceError(
+        message: userFacingErrorFrom(
+            e,
+            'We could not start the conversion, so nothing was sold and you '
+            'have not been charged. Please try again.'),
+        errorCode: 'CRYPTO_FUNDING_NOT_STARTED',
       ));
     }
   }
@@ -396,6 +463,21 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
     }
   }
 
+  /// ONE PAGE AHEAD on the Received tab. See NextPagePrefetch.
+  ///
+  /// Only this list: the outgoing side has no paginated repository method, so
+  /// there is no next page to fetch and pretending otherwise would mean
+  /// building one here out of the unpaginated call.
+  ///
+  /// Keyed on (status, currency, page size, page) — every axis that changes
+  /// WHICH rows come back. A filter left out of the key is a filter whose
+  /// change serves the previous filter's rows.
+  final NextPagePrefetch<dynamic> _incomingAhead = NextPagePrefetch<dynamic>();
+
+  /// Paying or cancelling an invoice invalidates what was fetched ahead: the
+  /// prefetched page was read before the action and would offer it again.
+  void invalidatePrefetch() => _incomingAhead.clear();
+
   /// Load incoming invoices with full pagination metadata from server
   Future<void> loadIncomingInvoicesPage({
     int page = 1,
@@ -416,12 +498,14 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
       // Use paginated method if repository supports it
       if (repository is TaggedInvoiceRepositoryGrpcImpl) {
         final grpcRepo = repository as TaggedInvoiceRepositoryGrpcImpl;
-        final result = await grpcRepo.getIncomingTaggedInvoicesPaginated(
-          page: page,
-          pageSize: pageSize,
-          statusFilter: statusFilter,
-          currency: currency,
-        );
+        final want = pageKey([statusFilter?.name, currency, pageSize], page);
+        final result = _incomingAhead.take(want) ??
+            await grpcRepo.getIncomingTaggedInvoicesPaginated(
+              page: page,
+              pageSize: pageSize,
+              statusFilter: statusFilter,
+              currency: currency,
+            );
         if (isClosed) return;
 
         // Statistics are just the header summary — a transient stats
@@ -458,6 +542,20 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
           totalCount: result.totalCount,
           pageSize: result.pageSize,
         ));
+
+        // AFTER the emit, so it never delays the page the user asked for.
+        if (result.hasNext) {
+          final next = result.currentPage + 1;
+          _incomingAhead.warm(
+            pageKey([statusFilter?.name, currency, pageSize], next),
+            () => grpcRepo.getIncomingTaggedInvoicesPaginated(
+              page: next,
+              pageSize: pageSize,
+              statusFilter: statusFilter,
+              currency: currency,
+            ),
+          );
+        }
       } else {
         // Fallback to standard method
         await loadIncomingInvoices(

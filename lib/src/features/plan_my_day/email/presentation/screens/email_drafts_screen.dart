@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/plan_my_day/email/domain/entities/email_
 import 'package:lazervault/src/features/plan_my_day/email/presentation/cubit/email_cubit.dart';
 import 'package:lazervault/src/features/plan_my_day/email/presentation/cubit/email_state.dart';
 import 'package:lazervault/src/features/plan_my_day/email/presentation/widgets/email_palette.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Approval queue: pending AI drafts awaiting the user's approval. Each shows
 /// the draft body with Approve (send) / Discard / Edit-then-send.
@@ -219,7 +220,7 @@ class _EmailDraftsScreenState extends State<EmailDraftsScreen> {
   void _editThenSend(EmailDraft draft) async {
     final controller = TextEditingController(text: draft.body);
     final cubit = context.read<EmailCubit>();
-    final edited = await showModalBottomSheet<String>(
+    final edited = await showAppBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

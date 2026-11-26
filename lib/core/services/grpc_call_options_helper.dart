@@ -37,6 +37,21 @@ class GrpcCallOptionsHelper {
   /// - Authorization: Bearer token
   /// - X-Locale: locale (e.g., "en-US", "en-NG")
   /// - X-Account-Id: active account UUID (if account manager available)
+  /// What the LAST token read saw, for callers that cannot await one.
+  ///
+  /// WHY THIS IS PUBLISHED. "The session is restored" and "a call would carry
+  /// a token" are different facts, and the gap between them is a real window
+  /// on a cold start: the auth cubit reports a session as soon as it resolves,
+  /// while the access token is written to secure storage separately. A
+  /// notification replayed in that window pushes a screen that fetches
+  /// immediately and gets UNAUTHENTICATED.
+  ///
+  /// The deep-link gate reads this to hold the replay for a few frames. NULL
+  /// means nothing has looked yet, which callers must treat as "go ahead" —
+  /// the waiting below is the real protection, and refusing on no information
+  /// would block the very first call of every session.
+  static bool? lastKnownTokenUsable;
+
   Future<CallOptions> withAuth([CallOptions? options]) async {
     var accessToken = await storage.read(key: _accessTokenKey);
 
@@ -106,6 +121,9 @@ class GrpcCallOptionsHelper {
         }
       }
     }
+
+    // Publish what this read concluded, for the synchronous callers above.
+    lastKnownTokenUsable = isUsableJwt(accessToken) && !isJwtExpired(accessToken);
 
     print('=== GrpcCallOptionsHelper.withAuth ===');
     print(

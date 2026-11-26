@@ -36,6 +36,52 @@ class SmartIdentifierInput extends StatefulWidget {
   /// External validation error (shown under the field).
   final String? errorText;
 
+  /// Whether a USERNAME is an acceptable answer here.
+  ///
+  /// Login says yes. Passcode RESET says no: a code cannot be delivered to a
+  /// handle, so a username-shaped entry is treated as an email being typed
+  /// (the signup behaviour) rather than detected as a third kind the flow
+  /// cannot honour.
+  final bool allowUsername;
+
+  /// Show a NUMBER KEYPAD whenever the field is in phone mode.
+  ///
+  /// OPT-IN, and it has to be. This widget's whole point elsewhere is a single
+  /// box that takes a phone, an email or a handle — and on an empty field
+  /// [_type] falls back to [emptyStateType], which is `phone`. Binding the
+  /// keyboard to that unconditionally would open the LOGIN screen on a numeric
+  /// keypad with no letters on it, so somebody signing in with an email could
+  /// not type the first character.
+  ///
+  /// Pass true only where the surface has already committed to a channel and
+  /// offers another way to change it — the passcode-reset screen has
+  /// "Use my phone / Use my email" chips above the field, and those rebuild it
+  /// (a bumped key), which is what makes the keyboard actually swap rather
+  /// than keep the connection it was focused with.
+  final bool phoneKeypadOnly;
+
+  /// Show the value but refuse edits.
+  ///
+  /// For RECOVERY, where the account is already known from this device and
+  /// retyping it is only an opportunity to typo into somebody else's. The
+  /// surface must still offer a way out — see the note on
+  /// forgot_passcode_phone_screen's "Not you?": a field locked with NO escape
+  /// strands anyone whose device carries a different person's identity, or
+  /// none at all, and recovery is the last path they have.
+  ///
+  /// Read-only rather than disabled: a disabled field greys its own text, so
+  /// the number the user is being asked to confirm becomes the hardest thing
+  /// on screen to read.
+  final bool readOnly;
+
+  /// How to present the field while it is EMPTY — the parent's channel
+  /// selector. Detection takes over the moment anything is typed, so the two
+  /// never disagree about a value the user can see.
+  final LoginIdentifierType? emptyStateType;
+
+  /// Overrides the placeholder. Defaults to the detected-types list.
+  final String? hintText;
+
   const SmartIdentifierInput({
     super.key,
     required this.countryCode,
@@ -44,6 +90,11 @@ class SmartIdentifierInput extends StatefulWidget {
     this.onCountryTap,
     this.onSubmitted,
     this.errorText,
+    this.allowUsername = true,
+    this.phoneKeypadOnly = false,
+    this.readOnly = false,
+    this.emptyStateType,
+    this.hintText,
   });
 
   @override
@@ -74,6 +125,12 @@ class _SmartIdentifierInputState extends State<SmartIdentifierInput> {
       _country = CountryConfigs.getByCode(widget.countryCode) ?? _country;
       _emit();
     }
+    // The parent flipped the empty-state presentation (its channel selector).
+    // Re-emit so its notion of the detected type matches what is on screen
+    // even before a single character is typed.
+    if (oldWidget.emptyStateType != widget.emptyStateType && _raw.isEmpty) {
+      _emit();
+    }
     // A device-SIM hint fill replaces the national number + re-emits.
     final hint = widget.initialPhoneNational ?? '';
     if (oldWidget.initialPhoneNational != widget.initialPhoneNational &&
@@ -99,11 +156,30 @@ class _SmartIdentifierInputState extends State<SmartIdentifierInput> {
   String get _raw => _controller.text.trim();
 
   /// The live-detected type of what's currently typed.
-  LoginIdentifierType get _type => detectLoginIdentifierType(_raw);
+  LoginIdentifierType get _type {
+    final raw = _raw;
+    if (raw.isEmpty && widget.emptyStateType != null) {
+      return widget.emptyStateType!;
+    }
+    final detected = detectLoginIdentifierType(raw);
+    if (!widget.allowUsername &&
+        detected == LoginIdentifierType.username) {
+      // Letters with no '@' YET. On a username-less field that is an email
+      // mid-typing, so the leading glyph and the badge both say Email and
+      // nothing flickers through a third state on the way there.
+      return LoginIdentifierType.email;
+    }
+    return detected;
+  }
 
   /// Phone is the only type that keeps the country pill, the length cap and the
   /// SIM shortcut; email + username share the "non-phone" text presentation.
   bool get _isPhone => _type == LoginIdentifierType.phone;
+
+  /// Whether THIS field should present a number keypad right now: the caller
+  /// asked for it AND the field is currently in phone mode. Flipping the
+  /// channel chip flips this back, so the email branch keeps its letters.
+  bool get _numericKeypad => widget.phoneKeypadOnly && _isPhone;
 
   /// Max digits allowed for the current country, honouring an optional leading
   /// trunk '0' and a pasted dialing code so both "8012345678" and
@@ -222,9 +298,20 @@ class _SmartIdentifierInputState extends State<SmartIdentifierInput> {
               key: const ValueKey('smart-identifier-field'),
               child: TextField(
                 controller: _controller,
-                // A combined identifier field needs both letters and digits.
-                keyboardType: TextInputType.emailAddress,
-                autofillHints: const [AutofillHints.username],
+                readOnly: widget.readOnly,
+                // A combined identifier field needs both letters and digits —
+                // UNLESS the caller has committed this one to a phone, in
+                // which case a QWERTY keyboard just makes the user hunt for
+                // the digits. TextInputType.phone is the dialpad, and the same
+                // type every other phone field in the app uses.
+                keyboardType: _numericKeypad
+                    ? TextInputType.phone
+                    : TextInputType.emailAddress,
+                // Autofill follows the keyboard: offering "username" over a
+                // dialpad suggests the wrong thing from the wrong store.
+                autofillHints: _numericKeypad
+                    ? const [AutofillHints.telephoneNumberNational]
+                    : const [AutofillHints.username],
                 textInputAction: TextInputAction.done,
                 inputFormatters: [
                   // Keep it to a single line; no spaces in a phone or email.
@@ -241,7 +328,10 @@ class _SmartIdentifierInputState extends State<SmartIdentifierInput> {
                 style:
                     TextStyle(fontSize: 15.sp, color: const Color(0xFF111827)),
                 decoration: InputDecoration(
-                  hintText: 'Phone, email or username',
+                  hintText: widget.hintText ??
+                      (widget.allowUsername
+                          ? 'Phone, email or username'
+                          : 'Phone number or email'),
                   hintStyle:
                       TextStyle(fontSize: 15.sp, color: Colors.grey.shade600),
                   border: InputBorder.none,

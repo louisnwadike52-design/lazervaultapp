@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../data/services/crowdfund_report_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../widgets/crowdfund_moderation_panel.dart';
 import '../../../../../core/utils/emulator_url.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
@@ -29,6 +30,8 @@ import 'donation_payment_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'crowdfund_details_screen_widgets.dart';
 
 class CrowdfundDetailsScreen extends StatefulWidget {
@@ -143,7 +146,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
     if (navigator.canPop()) {
       navigator.pop();
     } else {
-      Get.offAllNamed(AppRoutes.crowdfund);
+      offAllKeepingHome(AppRoutes.crowdfund);
     }
   }
 
@@ -604,6 +607,26 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // MODERATION, ABOVE THE TITLE.
+                //
+                // Above rather than below, because for a blocked campaign it
+                // is the most important thing on the page — the creator is
+                // looking at a campaign that is absent from every public list
+                // and needs to know why before they read anything else.
+                //
+                // It renders NOTHING for an approved campaign, so for the
+                // overwhelming majority this page is unchanged.
+                CrowdfundModerationPanel(
+                  campaign: crowdfund,
+                  onAppeal: () => Get.toNamed(
+                    AppRoutes.crowdfundAppeal,
+                    arguments: {'crowdfund': crowdfund},
+                  ),
+                  onViewAppeal: () => Get.toNamed(
+                    AppRoutes.crowdfundAppeal,
+                    arguments: {'crowdfund': crowdfund},
+                  ),
+                ),
                 // Title
                 Text(
                   crowdfund.title,
@@ -836,7 +859,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
 
   void _showWithdrawSheet(Crowdfund crowdfund) {
     final cubit = context.read<CrowdfundCubit>();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -899,7 +922,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
   /// lightweight bottom sheet rather than the full PIN/reason flow.
   void _confirmPause(Crowdfund crowdfund) {
     final cubit = context.read<CrowdfundCubit>();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -912,7 +935,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
 
   void _confirmResume(Crowdfund crowdfund) {
     final cubit = context.read<CrowdfundCubit>();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -925,7 +948,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
 
   void _showCancelSheet(Crowdfund crowdfund) {
     final cubit = context.read<CrowdfundCubit>();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -938,7 +961,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
 
   void _confirmDelete(Crowdfund crowdfund) {
     final cubit = context.read<CrowdfundCubit>();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

@@ -1,3 +1,4 @@
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter/widgets.dart' show VoidCallback;
 
 enum AppServiceName {
@@ -43,6 +44,18 @@ enum AppServiceName {
   // APPENDED, not inserted. The fallback rank below is `100 + index`, so
   // inserting a value mid-enum silently reshuffles every service after it.
   data,
+  // Open-banking links: the accounts a customer has connected from other
+  // banks. Appended for the same reason as `data` above.
+  financialConnections,
+  // Vendor Campaigns: launch-day promotions at partner venues. The tile is
+  // visible ONLY to users enrolled as a vendor, which the quick_service_*
+  // flags cannot express on their own — see VendorAccess. Appended for the
+  // same reason as the two above.
+  vendorCampaigns,
+  // Event ticketing: a user publishes an event and sells tickets, buyers'
+  // money sits in the TICKET_POOL wallet, and the organiser withdraws once
+  // sales close. Appended for the same reason as everything above it.
+  ticketing,
 }
 
 extension AppServiceRevenuePriority on AppServiceName {
@@ -83,6 +96,31 @@ extension AppServiceRevenuePriority on AppServiceName {
         AppServiceName.qrPay => 8,
         AppServiceName.contactlessPay => 9,
         AppServiceName.batchTransfer => 10,
+        // EVENTS OPENS THE SECOND CAROUSEL.
+        //
+        // Page one is exactly ten explicit ranks plus the pinned sendFunds
+        // and the navigation tile, so rank 11 is the FIRST cell a user sees
+        // after one swipe — deliberately, rather than by where the enum
+        // happens to put it. It was 66, which left it in the `100 + index`
+        // neighbourhood of the third page and effectively undiscoverable for
+        // a product we are launching.
+        //
+        // Not on page one: that page is the Nigerian shortlist of errands
+        // people run several times a week, and an event is not one of them.
+        AppServiceName.ticketing => 11,
+        // FINANCIAL CONNECTIONS IS NOT A QUICK-SERVICE TILE.
+        //
+        // It is reached from an icon on the edge of the services card
+        // (_buildFinancialConnectionsCta), because it opens an existing PAGE
+        // rather than starting an errand — and giving it a grid slot pushed a
+        // real errand off page one.
+        //
+        // The rank stays defined because revenuePriority is exhaustive over
+        // the enum and the value is still used for deep-link routing
+        // (route_service_map). Parked in the second-carousel range so that if
+        // it is ever listed as a service again it does not lead the grid by
+        // accident.
+        AppServiceName.financialConnections => 30,
 
         // ── SECOND CAROUSEL ───────────────────────────────────────────────
         // Still revenue-bearing and still ranked deliberately, just not
@@ -116,16 +154,56 @@ extension AppServiceRevenuePriority on AppServiceName {
         // to be on.
         AppServiceName.escrow => 64,
 
+        // LAST PAGE, DELIBERATELY. Vendor Campaigns is visible to a handful of
+        // enrolled businesses and to nobody else, so it must never compete for
+        // a cell on page one. Ranked explicitly rather than left to the
+        // `100 + index` fallback, which this file warns against — a fallback
+        // rank is a placement nobody decided.
+        AppServiceName.vendorCampaigns => 90,
+
+        // Ranked explicitly, like everything else here, because the `100 +
+        // index` fallback is a placement nobody decided. Ticketing IS
+        // revenue-bearing (the platform takes a commission on every sale), so
+        // it sits with the earning services rather than on the last page —
+        // but behind the weekly errands, since publishing an event is not a
+        // several-times-a-week act.
+
         // Non-revenue / P2P / internal + business tiles keep their enum order.
         _ => 100 + index,
       };
 }
 
+extension AppServiceNameLabel on AppServiceName {
+  /// The label a customer actually reads, operator-renameable.
+  ///
+  /// [displayName] is the SHIPPED word and stays the fallback. This getter is
+  /// what every surface should render, so a rename reaches the tile, the
+  /// history title and anything else at once — a label overridden in one
+  /// place and not another is how a service ends up with two names.
+  ///
+  /// Synchronous and never awaits: see FeatureFlags.quickServiceLabel.
+  String get label => FeatureFlags.quickServiceLabel(name, displayName);
+}
+
 extension AppServiceNameExtension on AppServiceName {
   String get displayName {
     switch (this) {
+      // The tile label wraps to two lines, as 'AI Scan to Pay' already does.
+      case AppServiceName.financialConnections:
+        return 'Financial Connections';
+      // Two words, like the label above, because the tile wraps to two lines.
+      case AppServiceName.vendorCampaigns:
+        return 'Vendor Campaigns';
+      // "Events", not "Ticketing": the tile is how a user finds something to
+      // go to, and only secondarily how an organiser sells. One word also
+      // fits the cell without wrapping.
+      case AppServiceName.ticketing:
+        return 'Events';
+      // "Transfer" is what customers here call it; "Send Funds" was our
+      // phrasing, not theirs. Operator-renameable through `label` above, so
+      // the next wording change does not need a store review.
       case AppServiceName.sendFunds:
-        return 'Send Funds';
+        return 'Transfer';
       case AppServiceName.batchTransfer:
         return 'Batch Transfer';
       case AppServiceName.tagPay:
@@ -221,6 +299,18 @@ extension AppServiceNameExtension on AppServiceName {
   /// This is used when calling accounts-service GetTransactionHistory with service_name filter
   String get backendServiceName {
     switch (this) {
+      // Open banking is served by banking-service, which owns the Mono link
+      // and the linked-account records behind it.
+      case AppServiceName.financialConnections:
+        return 'banking-service';
+      // Vendor Campaigns live in financial-products-service alongside
+      // crowdfund and uplift, reached through products-gateway.
+      case AppServiceName.vendorCampaigns:
+        return 'financial-products-service';
+      // Ticketing lives beside crowdfund, uplift and vendor campaigns, reached
+      // through products-gateway.
+      case AppServiceName.ticketing:
+        return 'financial-products-service';
       case AppServiceName.sendFunds:
         return 'core-payments-service';
       case AppServiceName.batchTransfer:
@@ -352,6 +442,8 @@ enum AppServiceImg {
   betting,
   bulkSms,
   data,
+  vendorCampaigns,
+  ticketing,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -361,6 +453,14 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/money-send.png';
       case AppServiceImg.batchTransfer:
         return 'assets/images/batch-transfer.png';
+      case AppServiceImg.vendorCampaigns:
+        // No dedicated asset — the tile renders a Material icon via
+        // app_service_builder's icon switch (Icons.storefront_rounded).
+        return 'assets/images/group-account.png';
+      case AppServiceImg.ticketing:
+        // No dedicated asset — the tile renders a Material icon via
+        // app_service_builder's icon switch (Icons.confirmation_num_rounded).
+        return 'assets/images/group-account.png';
       case AppServiceImg.splitBills:
         // No dedicated asset — the tile renders a Material icon via
         // app_service_builder's icon switch (Icons.call_split_rounded).
@@ -472,7 +572,7 @@ class AppService {
   final AppServiceName serviceName;
   final AppServiceImg serviceImg;
 
-  String get name => serviceName.displayName;
+  String get name => serviceName.label;
   String get imgUri => serviceImg.uri;
 
   const AppService({required this.serviceName, required this.serviceImg});

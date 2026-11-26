@@ -51,8 +51,27 @@ NotificationTarget? _resolveMoney(String type, Map<String, String> data) {
   }
 
   // ---- Account-level money in/out -----------------------------------------
+  //
+  // DEPOSIT FALLS BACK TO THE GENERAL LEDGER, NOT THE DEPOSIT TAB.
+  //
+  // With a reference this still opens the receipt, which is what a customer
+  // tapping "you received ₦10,000" actually wants. Without one it used to
+  // land on the per-service Deposit history, and that screen fires its fetch
+  // the instant it mounts. Reached from a push on a cold start there is no
+  // active account yet — the dashboard carousel is what selects one and a
+  // deep link never passes it — so the fetch refused and the customer got
+  // "Something went wrong" with a Retry that could not help.
+  //
+  // The account resolution is fixed at the repository
+  // (TransactionHistoryRepositoryGrpc._resolveAccountId), so the Deposit tab
+  // no longer breaks either. This is the second half: the general ledger
+  // paints from cache before it asks the network, so it shows the deposit
+  // even while the fetch is still in flight. A notification should land
+  // somewhere that renders, not somewhere that has to succeed first.
   if (_is(type, 'deposit')) {
-    return _receipt(TransactionServiceType.deposit, data);
+    final id = _transactionId(data);
+    if (id != null) return _receipt(TransactionServiceType.deposit, data);
+    return _landing(AppRoutes.dashboardTransactionHistory);
   }
   if (_is(type, 'withdrawal') || _is(type, 'withdraw')) {
     return _receipt(TransactionServiceType.withdrawal, data);

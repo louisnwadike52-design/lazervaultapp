@@ -136,6 +136,32 @@ class TaggedInvoicePaymentProcessing extends TaggedInvoiceState {
   List<Object?> get props => [invoiceId, message];
 }
 
+/// The payment is AUTHORISED and the conversion is running.
+///
+/// A STATE OF ITS OWN, not a flavour of success: the invoice is not paid, the
+/// coin has not been sold, and the issuer will see nothing until it has.
+/// Reusing the success state would tell the customer the job is done in the
+/// one direction they act on.
+class TaggedInvoiceCryptoFundingStarted extends TaggedInvoiceState {
+  final String invoiceId;
+  final String reference;
+  final String asset;
+  final int requiredMinor;
+  final String currency;
+
+  const TaggedInvoiceCryptoFundingStarted({
+    required this.invoiceId,
+    required this.reference,
+    required this.asset,
+    required this.requiredMinor,
+    required this.currency,
+  });
+
+  @override
+  List<Object?> get props =>
+      [invoiceId, reference, asset, requiredMinor, currency];
+}
+
 class TaggedInvoicePaymentSuccess extends TaggedInvoiceState {
   final Map<String, dynamic> transaction;
   final String message;

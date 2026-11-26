@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/move_transfer.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet explaining EXACTLY where a LazerBeam transfer is in its
 /// journey: which leg is running, whether money has left the source account,
@@ -15,7 +16,7 @@ Future<void> showMoveStatusInfoSheet(
   BuildContext context,
   MoveTransfer transfer,
 ) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     backgroundColor: const Color(0xFF1F1F1F),
     isScrollControlled: true,

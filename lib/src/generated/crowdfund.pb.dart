@@ -201,6 +201,13 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     $core.int? refundsFailed,
     $fixnum.Int64? totalRefunded,
     $fixnum.Int64? totalRaised,
+    $core.String? moderationStatus,
+    $core.String? moderationCategory,
+    $core.String? moderationReason,
+    $core.String? moderationNote,
+    $1.Timestamp? moderatedAt,
+    $core.int? appealCount,
+    $core.bool? canAppeal,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -235,6 +242,14 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     if (refundsFailed != null) result.refundsFailed = refundsFailed;
     if (totalRefunded != null) result.totalRefunded = totalRefunded;
     if (totalRaised != null) result.totalRaised = totalRaised;
+    if (moderationStatus != null) result.moderationStatus = moderationStatus;
+    if (moderationCategory != null)
+      result.moderationCategory = moderationCategory;
+    if (moderationReason != null) result.moderationReason = moderationReason;
+    if (moderationNote != null) result.moderationNote = moderationNote;
+    if (moderatedAt != null) result.moderatedAt = moderatedAt;
+    if (appealCount != null) result.appealCount = appealCount;
+    if (canAppeal != null) result.canAppeal = canAppeal;
     return result;
   }
 
@@ -310,6 +325,14 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(
         30, _omitFieldNames ? '' : 'totalRaised', $pb.PbFieldType.OU6,
         defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(31, _omitFieldNames ? '' : 'moderationStatus')
+    ..aOS(32, _omitFieldNames ? '' : 'moderationCategory')
+    ..aOS(33, _omitFieldNames ? '' : 'moderationReason')
+    ..aOS(34, _omitFieldNames ? '' : 'moderationNote')
+    ..aOM<$1.Timestamp>(35, _omitFieldNames ? '' : 'moderatedAt',
+        subBuilder: $1.Timestamp.create)
+    ..a<$core.int>(36, _omitFieldNames ? '' : 'appealCount', $pb.PbFieldType.O3)
+    ..aOB(37, _omitFieldNames ? '' : 'canAppeal')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -611,6 +634,623 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
   $core.bool hasTotalRaised() => $_has(29);
   @$pb.TagNumber(30)
   void clearTotalRaised() => $_clearField(30);
+
+  /// ── Moderation ──────────────────────────────────────────────────────────
+  ///
+  /// Populated according to WHO IS ASKING (financial-products-service's
+  /// crowdfundModelToProto):
+  ///
+  ///   moderation_status    everyone. A RESTRICTED campaign is meant to carry
+  ///                        a badge a donor reads before giving, so the state
+  ///                        has to be renderable by the public.
+  ///   moderation_category  the creator and operators.
+  ///   moderation_reason    the creator and operators. Written FOR the
+  ///                        creator, in the operator's voice — this is the
+  ///                        text the blocked-campaign screen shows.
+  ///   moderation_note      OPERATORS ONLY. The classifier's rationale and
+  ///                        admin remarks; arrives empty in the app and must
+  ///                        never be rendered.
+  ///   can_appeal           the creator only, and only while there is
+  ///                        something to appeal and no appeal already open.
+  @$pb.TagNumber(31)
+  $core.String get moderationStatus => $_getSZ(30);
+  @$pb.TagNumber(31)
+  set moderationStatus($core.String value) => $_setString(30, value);
+  @$pb.TagNumber(31)
+  $core.bool hasModerationStatus() => $_has(30);
+  @$pb.TagNumber(31)
+  void clearModerationStatus() => $_clearField(31);
+
+  @$pb.TagNumber(32)
+  $core.String get moderationCategory => $_getSZ(31);
+  @$pb.TagNumber(32)
+  set moderationCategory($core.String value) => $_setString(31, value);
+  @$pb.TagNumber(32)
+  $core.bool hasModerationCategory() => $_has(31);
+  @$pb.TagNumber(32)
+  void clearModerationCategory() => $_clearField(32);
+
+  @$pb.TagNumber(33)
+  $core.String get moderationReason => $_getSZ(32);
+  @$pb.TagNumber(33)
+  set moderationReason($core.String value) => $_setString(32, value);
+  @$pb.TagNumber(33)
+  $core.bool hasModerationReason() => $_has(32);
+  @$pb.TagNumber(33)
+  void clearModerationReason() => $_clearField(33);
+
+  @$pb.TagNumber(34)
+  $core.String get moderationNote => $_getSZ(33);
+  @$pb.TagNumber(34)
+  set moderationNote($core.String value) => $_setString(33, value);
+  @$pb.TagNumber(34)
+  $core.bool hasModerationNote() => $_has(33);
+  @$pb.TagNumber(34)
+  void clearModerationNote() => $_clearField(34);
+
+  @$pb.TagNumber(35)
+  $1.Timestamp get moderatedAt => $_getN(34);
+  @$pb.TagNumber(35)
+  set moderatedAt($1.Timestamp value) => $_setField(35, value);
+  @$pb.TagNumber(35)
+  $core.bool hasModeratedAt() => $_has(34);
+  @$pb.TagNumber(35)
+  void clearModeratedAt() => $_clearField(35);
+  @$pb.TagNumber(35)
+  $1.Timestamp ensureModeratedAt() => $_ensure(34);
+
+  @$pb.TagNumber(36)
+  $core.int get appealCount => $_getIZ(35);
+  @$pb.TagNumber(36)
+  set appealCount($core.int value) => $_setSignedInt32(35, value);
+  @$pb.TagNumber(36)
+  $core.bool hasAppealCount() => $_has(35);
+  @$pb.TagNumber(36)
+  void clearAppealCount() => $_clearField(36);
+
+  @$pb.TagNumber(37)
+  $core.bool get canAppeal => $_getBF(36);
+  @$pb.TagNumber(37)
+  set canAppeal($core.bool value) => $_setBool(36, value);
+  @$pb.TagNumber(37)
+  $core.bool hasCanAppeal() => $_has(36);
+  @$pb.TagNumber(37)
+  void clearCanAppeal() => $_clearField(37);
+}
+
+class CrowdfundAppealMessage extends $pb.GeneratedMessage {
+  factory CrowdfundAppealMessage({
+    $core.String? id,
+    $core.String? crowdfundId,
+    $core.String? userId,
+    $core.String? message,
+    $core.String? status,
+    $core.String? decision,
+    $core.String? reviewedBy,
+    $1.Timestamp? reviewedAt,
+    $core.String? appealedStatus,
+    $core.String? appealedCategory,
+    $1.Timestamp? createdAt,
+    $core.String? crowdfundTitle,
+    $core.String? crowdfundCode,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (crowdfundId != null) result.crowdfundId = crowdfundId;
+    if (userId != null) result.userId = userId;
+    if (message != null) result.message = message;
+    if (status != null) result.status = status;
+    if (decision != null) result.decision = decision;
+    if (reviewedBy != null) result.reviewedBy = reviewedBy;
+    if (reviewedAt != null) result.reviewedAt = reviewedAt;
+    if (appealedStatus != null) result.appealedStatus = appealedStatus;
+    if (appealedCategory != null) result.appealedCategory = appealedCategory;
+    if (createdAt != null) result.createdAt = createdAt;
+    if (crowdfundTitle != null) result.crowdfundTitle = crowdfundTitle;
+    if (crowdfundCode != null) result.crowdfundCode = crowdfundCode;
+    return result;
+  }
+
+  CrowdfundAppealMessage._();
+
+  factory CrowdfundAppealMessage.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CrowdfundAppealMessage.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CrowdfundAppealMessage',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'crowdfundId')
+    ..aOS(3, _omitFieldNames ? '' : 'userId')
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..aOS(5, _omitFieldNames ? '' : 'status')
+    ..aOS(6, _omitFieldNames ? '' : 'decision')
+    ..aOS(7, _omitFieldNames ? '' : 'reviewedBy')
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'reviewedAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOS(9, _omitFieldNames ? '' : 'appealedStatus')
+    ..aOS(10, _omitFieldNames ? '' : 'appealedCategory')
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'createdAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOS(12, _omitFieldNames ? '' : 'crowdfundTitle')
+    ..aOS(13, _omitFieldNames ? '' : 'crowdfundCode')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CrowdfundAppealMessage clone() =>
+      CrowdfundAppealMessage()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CrowdfundAppealMessage copyWith(
+          void Function(CrowdfundAppealMessage) updates) =>
+      super.copyWith((message) => updates(message as CrowdfundAppealMessage))
+          as CrowdfundAppealMessage;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundAppealMessage create() => CrowdfundAppealMessage._();
+  @$core.override
+  CrowdfundAppealMessage createEmptyInstance() => create();
+  static $pb.PbList<CrowdfundAppealMessage> createRepeated() =>
+      $pb.PbList<CrowdfundAppealMessage>();
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundAppealMessage getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CrowdfundAppealMessage>(create);
+  static CrowdfundAppealMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get crowdfundId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set crowdfundId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCrowdfundId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCrowdfundId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get userId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set userId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUserId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get status => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set status($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasStatus() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearStatus() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get decision => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set decision($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasDecision() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDecision() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get reviewedBy => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set reviewedBy($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasReviewedBy() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearReviewedBy() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $1.Timestamp get reviewedAt => $_getN(7);
+  @$pb.TagNumber(8)
+  set reviewedAt($1.Timestamp value) => $_setField(8, value);
+  @$pb.TagNumber(8)
+  $core.bool hasReviewedAt() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearReviewedAt() => $_clearField(8);
+  @$pb.TagNumber(8)
+  $1.Timestamp ensureReviewedAt() => $_ensure(7);
+
+  @$pb.TagNumber(9)
+  $core.String get appealedStatus => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set appealedStatus($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasAppealedStatus() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearAppealedStatus() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get appealedCategory => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set appealedCategory($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasAppealedCategory() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearAppealedCategory() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $1.Timestamp get createdAt => $_getN(10);
+  @$pb.TagNumber(11)
+  set createdAt($1.Timestamp value) => $_setField(11, value);
+  @$pb.TagNumber(11)
+  $core.bool hasCreatedAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCreatedAt() => $_clearField(11);
+  @$pb.TagNumber(11)
+  $1.Timestamp ensureCreatedAt() => $_ensure(10);
+
+  @$pb.TagNumber(12)
+  $core.String get crowdfundTitle => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set crowdfundTitle($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasCrowdfundTitle() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearCrowdfundTitle() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get crowdfundCode => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set crowdfundCode($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasCrowdfundCode() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearCrowdfundCode() => $_clearField(13);
+}
+
+class SubmitCrowdfundAppealRequest extends $pb.GeneratedMessage {
+  factory SubmitCrowdfundAppealRequest({
+    $core.String? crowdfundId,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (crowdfundId != null) result.crowdfundId = crowdfundId;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  SubmitCrowdfundAppealRequest._();
+
+  factory SubmitCrowdfundAppealRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SubmitCrowdfundAppealRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SubmitCrowdfundAppealRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SubmitCrowdfundAppealRequest clone() =>
+      SubmitCrowdfundAppealRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SubmitCrowdfundAppealRequest copyWith(
+          void Function(SubmitCrowdfundAppealRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as SubmitCrowdfundAppealRequest))
+          as SubmitCrowdfundAppealRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SubmitCrowdfundAppealRequest create() =>
+      SubmitCrowdfundAppealRequest._();
+  @$core.override
+  SubmitCrowdfundAppealRequest createEmptyInstance() => create();
+  static $pb.PbList<SubmitCrowdfundAppealRequest> createRepeated() =>
+      $pb.PbList<SubmitCrowdfundAppealRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SubmitCrowdfundAppealRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SubmitCrowdfundAppealRequest>(create);
+  static SubmitCrowdfundAppealRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
+class SubmitCrowdfundAppealResponse extends $pb.GeneratedMessage {
+  factory SubmitCrowdfundAppealResponse({
+    $core.bool? success,
+    $core.String? message,
+    CrowdfundAppealMessage? appeal,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    if (appeal != null) result.appeal = appeal;
+    return result;
+  }
+
+  SubmitCrowdfundAppealResponse._();
+
+  factory SubmitCrowdfundAppealResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SubmitCrowdfundAppealResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SubmitCrowdfundAppealResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOM<CrowdfundAppealMessage>(3, _omitFieldNames ? '' : 'appeal',
+        subBuilder: CrowdfundAppealMessage.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SubmitCrowdfundAppealResponse clone() =>
+      SubmitCrowdfundAppealResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SubmitCrowdfundAppealResponse copyWith(
+          void Function(SubmitCrowdfundAppealResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as SubmitCrowdfundAppealResponse))
+          as SubmitCrowdfundAppealResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SubmitCrowdfundAppealResponse create() =>
+      SubmitCrowdfundAppealResponse._();
+  @$core.override
+  SubmitCrowdfundAppealResponse createEmptyInstance() => create();
+  static $pb.PbList<SubmitCrowdfundAppealResponse> createRepeated() =>
+      $pb.PbList<SubmitCrowdfundAppealResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SubmitCrowdfundAppealResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SubmitCrowdfundAppealResponse>(create);
+  static SubmitCrowdfundAppealResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  CrowdfundAppealMessage get appeal => $_getN(2);
+  @$pb.TagNumber(3)
+  set appeal(CrowdfundAppealMessage value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAppeal() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAppeal() => $_clearField(3);
+  @$pb.TagNumber(3)
+  CrowdfundAppealMessage ensureAppeal() => $_ensure(2);
+}
+
+class ListCrowdfundAppealsRequest extends $pb.GeneratedMessage {
+  factory ListCrowdfundAppealsRequest({
+    $core.String? status,
+    $core.String? crowdfundId,
+    $core.int? limit,
+  }) {
+    final result = create();
+    if (status != null) result.status = status;
+    if (crowdfundId != null) result.crowdfundId = crowdfundId;
+    if (limit != null) result.limit = limit;
+    return result;
+  }
+
+  ListCrowdfundAppealsRequest._();
+
+  factory ListCrowdfundAppealsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListCrowdfundAppealsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListCrowdfundAppealsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..aOS(2, _omitFieldNames ? '' : 'crowdfundId')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListCrowdfundAppealsRequest clone() =>
+      ListCrowdfundAppealsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListCrowdfundAppealsRequest copyWith(
+          void Function(ListCrowdfundAppealsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as ListCrowdfundAppealsRequest))
+          as ListCrowdfundAppealsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundAppealsRequest create() =>
+      ListCrowdfundAppealsRequest._();
+  @$core.override
+  ListCrowdfundAppealsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListCrowdfundAppealsRequest> createRepeated() =>
+      $pb.PbList<ListCrowdfundAppealsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundAppealsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListCrowdfundAppealsRequest>(create);
+  static ListCrowdfundAppealsRequest? _defaultInstance;
+
+  /// A creator's own appeals. There is no user_id here on purpose: the
+  /// gateway always scopes a non-operator caller to their own id, so a field
+  /// for it on the app-facing request could only ever be ignored — and a
+  /// field that looks like it does something is worse than no field.
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get crowdfundId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set crowdfundId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCrowdfundId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCrowdfundId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get limit => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set limit($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLimit() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLimit() => $_clearField(3);
+}
+
+class ListCrowdfundAppealsResponse extends $pb.GeneratedMessage {
+  factory ListCrowdfundAppealsResponse({
+    $core.bool? success,
+    $core.Iterable<CrowdfundAppealMessage>? appeals,
+    $core.int? total,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (appeals != null) result.appeals.addAll(appeals);
+    if (total != null) result.total = total;
+    return result;
+  }
+
+  ListCrowdfundAppealsResponse._();
+
+  factory ListCrowdfundAppealsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListCrowdfundAppealsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListCrowdfundAppealsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..pc<CrowdfundAppealMessage>(
+        2, _omitFieldNames ? '' : 'appeals', $pb.PbFieldType.PM,
+        subBuilder: CrowdfundAppealMessage.create)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListCrowdfundAppealsResponse clone() =>
+      ListCrowdfundAppealsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListCrowdfundAppealsResponse copyWith(
+          void Function(ListCrowdfundAppealsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as ListCrowdfundAppealsResponse))
+          as ListCrowdfundAppealsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundAppealsResponse create() =>
+      ListCrowdfundAppealsResponse._();
+  @$core.override
+  ListCrowdfundAppealsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListCrowdfundAppealsResponse> createRepeated() =>
+      $pb.PbList<ListCrowdfundAppealsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundAppealsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListCrowdfundAppealsResponse>(create);
+  static ListCrowdfundAppealsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $pb.PbList<CrowdfundAppealMessage> get appeals => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $core.int get total => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set total($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasTotal() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotal() => $_clearField(3);
 }
 
 class CrowdfundDonorMessage extends $pb.GeneratedMessage {

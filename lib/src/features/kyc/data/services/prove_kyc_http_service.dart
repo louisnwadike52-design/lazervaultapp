@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:lazervault/src/features/kyc/domain/kyc_session_cooldown.dart';
+
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:lazervault/core/services/access_token_shape.dart';
 
@@ -236,8 +238,34 @@ class ProveKycHttpService {
             'error_code': _pick(data, 'error_code', 'errorCode'),
             'error_message': _pick(data, 'error_message', 'errorMessage'),
           });
+      // A COOLDOWN IS NOT A FAILURE.
+      //
+      // The customer corrected a detail and asked to try again; a session
+      // carrying the OLD detail is still inside its billed reuse window, so a
+      // fresh one cannot be minted yet. Raised as its own type, carrying the
+      // seconds the SERVER says are left, so the screen can show a countdown
+      // and re-offer the attempt — instead of _friendly() rendering it as one
+      // more "we couldn't verify your identity" to somebody who has just done
+      // exactly what we asked.
+      //
+      // The field arrives through the grpc-gateway's JSON serialisation of
+      // InitiateProveKYCResponse, so both spellings are accepted: proto3 JSON
+      // emits camelCase, and the gateway can be configured for the original
+      // snake_case names.
+      if (_pick(data, 'error_code', 'errorCode') == 'SESSION_COOLDOWN') {
+        final rawRetry =
+            data['retry_after_seconds'] ?? data['retryAfterSeconds'];
+        final seconds = rawRetry is num
+            ? rawRetry.toInt()
+            : int.tryParse('${rawRetry ?? ''}') ?? 0;
+        throw KycSessionCooldownException(
+          retryAfter: Duration(seconds: seconds),
+          message: _pick(data, 'error_message', 'errorMessage') ?? '',
+        );
+      }
       throw ProveKycException(
-        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode),
+        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode,
+            _pick(data, 'error_code', 'errorCode')),
         code: _pick(data, 'error_code', 'errorCode'),
       );
     }
@@ -281,7 +309,8 @@ class ProveKycHttpService {
             'error_message': _pick(data, 'error_message', 'errorMessage'),
           });
       throw ProveKycException(
-        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode),
+        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode,
+            _pick(data, 'error_code', 'errorCode')),
         code: _pick(data, 'error_code', 'errorCode'),
       );
     }
@@ -322,7 +351,8 @@ class ProveKycHttpService {
     final data = _decode(res);
     if (res.statusCode != 200 || data['success'] != true) {
       throw ProveKycException(
-        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode),
+        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode,
+            _pick(data, 'error_code', 'errorCode')),
         code: _pick(data, 'error_code', 'errorCode'),
       );
     }
@@ -347,7 +377,8 @@ class ProveKycHttpService {
     final data = _decode(res);
     if (res.statusCode != 200 || data['success'] != true) {
       throw ProveKycException(
-        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode),
+        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode,
+            _pick(data, 'error_code', 'errorCode')),
         code: _pick(data, 'error_code', 'errorCode'),
       );
     }
@@ -385,7 +416,8 @@ class ProveKycHttpService {
     final data = _decode(res);
     if (res.statusCode != 200 || data['success'] != true) {
       throw ProveKycException(
-        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode),
+        _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode,
+            _pick(data, 'error_code', 'errorCode')),
         code: _pick(data, 'error_code', 'errorCode'),
       );
     }
@@ -456,7 +488,43 @@ class ProveKycHttpService {
     }
   }
 
-  String _friendly(String? backendMessage, int status) {
+  /// Codes whose "message" is a Go error, not a sentence for a customer.
+  ///
+  /// `PROVE_INITIATE_FAILED` and `PROVE_COMPLETE_FAILED` are built with
+  /// `err.Error()` verbatim, so the body can be `unsupported identity type
+  /// "x"` or a raw Mono 400. Printing that beside a Try Again button tells the
+  /// customer nothing and tells an attacker something.
+  ///
+  /// `NOT_CONFIGURED` means KYC is switched OFF server-side — the one case
+  /// where Try Again can never work, so it must not read like a transient
+  /// hiccup the customer should keep poking at.
+  static const Map<String, String> _codeCopy = {
+    'PROVE_INITIATE_FAILED':
+        'We couldn\'t start the check just now. Please try again in a moment.',
+    'PROVE_COMPLETE_FAILED':
+        'We couldn\'t finish the check just now. Please try again in a moment.',
+    'PROVE_STATUS_FAILED':
+        'We couldn\'t read your verification status just now. Please try '
+            'again in a moment.',
+    'NOT_CONFIGURED':
+        'Identity verification is unavailable at the moment. Please check '
+            'back shortly — there is nothing you need to do.',
+    'NO_HELD_REVIEW':
+        'There is nothing waiting for a decision on your account. Start the '
+            'check again if you still need to verify.',
+    'ADOPT_FAILED':
+        'We couldn\'t apply that name just now. Please try again in a moment.',
+    'CORRECTION_FAILED':
+        'We couldn\'t send that correction just now. Please try again in a '
+            'moment.',
+  };
+
+  String _friendly(String? backendMessage, int status, [String? code]) {
+    // THE CODE WINS OVER THE MESSAGE for the handful of codes whose message
+    // is an internal error string. Everywhere else the server's sentence is
+    // the better one — it knows what happened — so it is still preferred.
+    final mapped = _codeCopy[(code ?? '').trim().toUpperCase()];
+    if (mapped != null) return mapped;
     if (backendMessage != null && backendMessage.trim().isNotEmpty) {
       return backendMessage;
     }

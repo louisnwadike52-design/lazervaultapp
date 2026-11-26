@@ -8,6 +8,8 @@ import 'package:lazervault/src/features/transaction_pin/domain/pin_lockout.dart'
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/widgets/transaction_pin_modal.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/crypto_quote_preview.dart';
 
 /// Mixin to easily add transaction PIN validation to any payment flow.
 ///
@@ -43,6 +45,23 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
   /// failed transaction never leaves stranded sheets behind it. The success
   /// path is left to the caller, which navigates to the receipt via
   /// Get.offAllNamed (clearing the stack anyway).
+  /// Public door onto [_dismissPaymentSheets], for a host whose transfer
+  /// outcome arrives through a BLOC LISTENER rather than through
+  /// [onPinValidated] throwing.
+  ///
+  /// Send funds is that shape: the cubit swallows the error and emits
+  /// TransferFailure, so the mixin's own catch never runs and the screen has to
+  /// unwind the sheets itself. It was doing that with a bare
+  /// `Future.delayed(2s, () => Navigator.pop())`, which pops whatever is
+  /// TOPMOST — and by the time it fired, the topmost route was the refusal
+  /// sheet the screen had just pushed. The refusal vanished after two seconds
+  /// and the PIN sheet was still there. Popping by ROUTE PREDICATE, as this
+  /// does, cannot make that mistake.
+  ///
+  /// Call it BEFORE pushing anything of your own.
+  void dismissPaymentSheets(BuildContext context) =>
+      _dismissPaymentSheets(context);
+
   void _dismissPaymentSheets(BuildContext context) {
     if (!mounted) return;
     try {
@@ -122,6 +141,11 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     // It belongs on THIS sheet because being refused AFTER entering a PIN
     // reads as a fault; being told beforehand reads as a rule.
     double? memberAllocationRemaining,
+    // The crypto split, when the customer chose to pay with a coin. See the
+    // field on TransactionPinModal: the PIN sheet is the last screen before
+    // an irreversible sale, and quoting only naira there says nothing about
+    // what leaves their holding.
+    CryptoQuotePreview? cryptoQuote,
   }) async {
     // Reset the voice-flow outcome hints for this attempt.
     lastPinFailureReason = null;
@@ -171,7 +195,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
       bool pinResetRequested = false;
 
       // Show PIN modal once — stays open for all phases including retries
-      showModalBottomSheet(
+      showAppBottomSheet(
         context: context,
         isScrollControlled: true,
         isDismissible: false,
@@ -196,6 +220,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           successSubtitle: successSubtitle,
           transactionType: transactionType,
           memberAllocationRemaining: memberAllocationRemaining,
+          cryptoQuote: cryptoQuote,
           onPinSubmitted: (pin) {
             if (!completerRef.value.isCompleted) {
               completerRef.value.complete(pin);
@@ -277,6 +302,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
               failureMessageBuilder: failureMessageBuilder,
               preserveHostSheet: preserveHostSheet,
               memberAllocationRemaining: memberAllocationRemaining,
+              cryptoQuote: cryptoQuote,
             );
           }
 

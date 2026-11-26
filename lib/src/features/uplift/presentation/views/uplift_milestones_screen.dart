@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/uplift/data/uplift_repository.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_receipt_screen.dart';
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Milestone tracking for one funded application. Applicant (business) submits
 /// evidence per milestone; the funder approves (PIN → escrow→business release)
@@ -81,7 +82,7 @@ class _UpliftMilestonesScreenState extends State<UpliftMilestonesScreen>
     // sends the milestone WITHOUT its proof, and the funder then rejects it for
     // having no evidence — a failure the business cannot diagnose.
     var uploading = false;
-    final confirmed = await showModalBottomSheet<bool>(
+    final confirmed = await showAppBottomSheet<bool>(
       context: context,
       backgroundColor: kUpBg,
       isScrollControlled: true,

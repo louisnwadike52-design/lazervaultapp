@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/authentication/presentation/widgets/phon
 import 'package:lazervault/src/features/authentication/presentation/widgets/device_phone_hint.dart';
 import 'package:lazervault/src/features/widgets/locked_country_phone_input.dart';
 import 'package:lazervault/src/features/authentication/domain/signup_steps.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// First step of the phone+passcode signup: enter a phone number (country
 /// picker + national number) and, WHEN AN SMS PROVIDER IS ACTIVE, request an
@@ -83,7 +84,7 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
   /// countries; selecting one re-keys the phone field.
   void _openCountryPicker(List<CountryConfig> countries) {
     final available = countries.where((c) => c.isAvailableForSignup).toList();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

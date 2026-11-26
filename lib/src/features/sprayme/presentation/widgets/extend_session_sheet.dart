@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/sprayme/domain/entities/session_clock.da
 import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Buying a live session more time.
 ///
@@ -36,7 +37,7 @@ Future<bool?> showExtendSessionSheet(
   required SessionClockPolicy policy,
   required Duration? remaining,
 }) {
-  return showModalBottomSheet<bool>(
+  return showAppBottomSheet<bool>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

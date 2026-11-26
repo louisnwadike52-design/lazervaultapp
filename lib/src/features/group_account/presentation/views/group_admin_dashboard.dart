@@ -19,6 +19,7 @@ import 'edit_group_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/utils/logger.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class GroupAdminDashboard extends StatefulWidget {
   final GroupAccount group;
@@ -1042,7 +1043,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
   }
 
   void _showExportOptions() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -1151,7 +1152,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
       // Continue with empty payments if load fails
     }
     if (!mounted) return;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1196,7 +1197,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
   }
 
   void _showAddMemberSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

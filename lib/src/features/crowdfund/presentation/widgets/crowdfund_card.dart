@@ -6,6 +6,8 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../utils/crowdfund_status_display.dart';
 import 'progress_indicator_widget.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/widgets/crowdfund_status_badge.dart';
+import 'crowdfund_moderation_badge.dart';
 
 class CrowdfundCard extends StatelessWidget {
   final Crowdfund crowdfund;
@@ -258,34 +260,30 @@ class CrowdfundCard extends StatelessWidget {
   String get _clockLabel => crowdfundDeadlineLabel(crowdfund);
   bool get _clockUrgent => crowdfundDeadlineIsUrgent(crowdfund);
 
+  /// Delegates to the shared badge, so the card, the list, the landing
+  /// strip and the owner's list draw one thing. This copy painted ACTIVE in
+  /// the same green as COMPLETED, differing only by a 12sp icon.
+  /// STATUS AND MODERATION TOGETHER, because they answer different questions
+  /// and a creator looking at their own card needs both: "is it still open"
+  /// and "is it published".
+  ///
+  /// The moderation badge draws nothing for an approved campaign, so a normal
+  /// card is byte-identical to what it was. A blocked or under-review card
+  /// only ever appears in the CREATOR'S own lists — the backend withholds
+  /// those states from every public query — so this cannot leak a verdict to
+  /// a stranger.
   Widget _buildStatusBadge() {
-    // Shared with the detail screen and the home-screen row. The six-arm
-    // switch this replaced was correct but duplicated, and only this copy
-    // was ever updated when `expired` and `cancelling` were added.
-    final v = crowdfundStatusVisual(crowdfund);
-    final backgroundColor = v.color.withValues(alpha: 0.2);
-    final textColor = v.color;
-    final statusText = v.label;
-    final icon = v.icon;
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(6.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: textColor, size: 12.sp),
-          SizedBox(width: 3.w),
-          Text(statusText,
-              style: TextStyle(
-                  color: textColor,
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600)),
-        ],
-      ),
+    final moderation = crowdfund.moderation;
+    if (!moderation.needsTreatment) {
+      return CrowdfundStatusBadge.of(crowdfund);
+    }
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: [
+        CrowdfundStatusBadge.of(crowdfund, compact: true),
+        CrowdfundModerationBadge(moderation: moderation, compact: true),
+      ],
     );
   }
 }

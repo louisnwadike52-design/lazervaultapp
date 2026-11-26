@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/cache/session_user_id.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
@@ -10,6 +12,7 @@ import 'package:lazervault/src/features/recipients/domain/usecases/update_alias_
 import 'package:lazervault/src/features/recipients/domain/usecases/delete_recipient_usecase.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_page_store.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
+import 'package:lazervault/core/services/saved_recipients_snapshot.dart';
 
 class PaginatedRecipientsResult {
   final List<RecipientModel> recipients;
@@ -67,6 +70,21 @@ class RecipientCubit extends Cubit<RecipientState> {
         _deleteRecipientUseCase = deleteRecipientUseCase,
         _cacheManager = cacheManager,
         super(RecipientInitial());
+
+  /// Publish every loaded set so the account-number suggestion list can read
+  /// the payer's saved payees SYNCHRONOUSLY — see SavedRecipientsSnapshot.
+  ///
+  /// Hooked on onChange rather than at each emit site: this cubit emits a
+  /// loaded state from six places (initial, cached, revalidated, add, rename,
+  /// delete) and patching them individually is how one gets missed.
+  @override
+  void onChange(Change<RecipientState> change) {
+    super.onChange(change);
+    final next = change.nextState;
+    if (next is RecipientLoaded) {
+      SavedRecipientsSnapshot.publish(next.recipients);
+    }
+  }
 
   @override
   Future<void> close() {
@@ -188,6 +206,12 @@ class RecipientCubit extends Cubit<RecipientState> {
     final currentState = state;
     if (currentState is! RecipientLoaded) return;
 
+    // TAKE A TICKET, as `getRecipients` does. This appends onto a list it
+    // captured BEFORE awaiting, so a filter change, a favourites toggle or a
+    // region switch landing mid-flight would be overwritten by the stale list
+    // plus a page belonging to the view the reader has just left.
+    final seq = _loadSeq;
+
     // Show loading more state
     emit(RecipientLoadingMore(
       currentRecipients: currentState.recipients,
@@ -204,7 +228,7 @@ class RecipientCubit extends Cubit<RecipientState> {
         favoritesOnly: _lastFavoritesOnly,
         page: nextPage,
       );
-      if (isClosed) return;
+      if (isClosed || seq != _loadSeq) return;
 
       _currentPage = result.currentPage;
       // If fewer items than page size or empty, no more pages
@@ -212,10 +236,16 @@ class RecipientCubit extends Cubit<RecipientState> {
       _totalItems = result.totalItems;
       _totalPages = result.totalPages;
 
-      // Append new recipients to existing list
+      // APPEND, WITHOUT RE-ADDING ROWS ALREADY HELD. Pages are offsets into a
+      // table that takes new rows at the top, so saving a recipient between
+      // page one and page two shifts everything down and page two re-sends
+      // the row that was last on page one. Appending blind shows it twice and
+      // makes the duplicate tappable as if it were a second recipient.
+      final seen = currentState.recipients.map((r) => r.id).toSet();
       final updatedRecipients = [
         ...currentState.recipients,
-        ...result.recipients
+        for (final r in result.recipients)
+          if (r.id.isEmpty || seen.add(r.id)) r,
       ];
       emit(RecipientLoaded(
         updatedRecipients,
@@ -225,9 +255,54 @@ class RecipientCubit extends Cubit<RecipientState> {
         totalPages: result.totalPages,
       ));
     } catch (e) {
-      if (isClosed) return;
-      // Revert to previous state on error
+      if (isClosed || seq != _loadSeq) return;
+      // Revert to the list we had: an append that failed must not take the
+      // pages already read down with it.
       emit(currentState);
+    }
+  }
+
+  /// FILL THE SAVED-PAYEE SNAPSHOT, WHICH IS A DIFFERENT JOB FROM THE LIST.
+  ///
+  /// The list on screen is paged twenty at a time because that is what a
+  /// reader scrolls. The snapshot behind the as-you-type account matcher is
+  /// not read by a reader — it is scanned for a number — and it was being fed
+  /// from that same first page, because [SavedRecipientsSnapshot] is published
+  /// out of `onChange`. So a payer with more than twenty saved payees could
+  /// type the exact account number of the twenty-first and be offered nothing,
+  /// which reads precisely like the feature being broken rather than like a
+  /// page boundary.
+  ///
+  /// This fetches the payee book in one go and publishes it straight to the
+  /// snapshot WITHOUT emitting. That separation is deliberate: emitting would
+  /// drop a few hundred rows into the list widget and reset `_hasMore`,
+  /// `_currentPage` and the reader's scroll position as a side effect of
+  /// warming a cache.
+  ///
+  /// Returns whether a fetch was actually dispatched, so the caller can tell
+  /// "the payer has no saved payees" from "I could not look".
+  Future<bool> warmSavedRecipientsSnapshot({
+    required String accessToken,
+    String? countryCode,
+    String? currency,
+  }) async {
+    if (isClosed) return false;
+    try {
+      final result = await _getRecipientsUseCase.callPaginated(
+        accessToken: accessToken,
+        countryCode: countryCode,
+        currency: currency,
+        page: 1,
+        pageSize: FeatureFlags.savedPayeeSnapshotRows,
+      );
+      return result.fold((failure) => false, (paged) {
+        SavedRecipientsSnapshot.publish(paged.recipients);
+        return true;
+      });
+    } catch (_) {
+      // A snapshot that could not be warmed costs a suggestion, never a
+      // payment — the bank name-enquiry behind it is untouched.
+      return false;
     }
   }
 

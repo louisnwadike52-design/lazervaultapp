@@ -195,6 +195,51 @@ class AccountSummaryEntity extends Equatable {
     this.clearingEstimate,
   }) : isUp = trendPercentage > 0; // Calculate isUp here
 
+  /// A copy with the DEPOSIT NUMBER removed, balances untouched.
+  ///
+  /// Used when painting a cache that may predate an account replacement. An
+  /// admin can now close a customer's deposit account and reissue it, so a
+  /// number cached on this device is not necessarily the number any more —
+  /// and unlike a stale balance, a stale number is actively harmful: it gets
+  /// copied into someone's bank app and the transfer lands nowhere.
+  ///
+  /// Blanking BOTH the full number and the last-4 matters. The card renders
+  /// from last-4 and the deposit flow from the full value, and the cubit's
+  /// "is this account still awaiting a number" test reads either — so
+  /// clearing one and not the other leaves a half-state that neither shows
+  /// the number nor triggers the refresh that would replace it.
+  ///
+  /// Not expressible through copyWith: a null there means "leave unchanged".
+  AccountSummaryEntity withheldAccountNumber() => AccountSummaryEntity(
+        id: id,
+        accountType: accountType,
+        currency: currency,
+        balance: balance,
+        availableBalance: availableBalance,
+        reservedBalance: reservedBalance,
+        restrictedBalance: restrictedBalance,
+        accountNumberLast4: '',
+        accountNumber: null,
+        bankName: bankName,
+        accountName: accountName,
+        virtualAccountHolderName: virtualAccountHolderName,
+        trendPercentage: trendPercentage,
+        isPrimary: isPrimary,
+        accountLabel: accountLabel,
+        status: status,
+        isFamilyAccount: isFamilyAccount,
+        familyTotalBalance: familyTotalBalance,
+        memberAllocatedBalance: memberAllocatedBalance,
+        memberRemainingBalance: memberRemainingBalance,
+        memberCount: memberCount,
+        allowMemberContributions: allowMemberContributions,
+        familyAccountId: familyAccountId,
+        virtualAccountId: virtualAccountId,
+        familyStatus: familyStatus,
+        fundDistributionMode: fundDistributionMode,
+        clearingEstimate: clearingEstimate,
+      );
+
   /// Serialize for the local dashboard cache (shown instantly on login before
   /// the live revalidation lands — see AccountCardsSummaryCubit). Only plain
   /// fields; `isUp`/`displayName` are derived and reconstructed.

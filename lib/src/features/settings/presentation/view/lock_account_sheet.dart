@@ -9,6 +9,7 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utils/dismiss_keyboard.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Settings → Security → Lock account. A user deliberately locks themselves out
 /// of login AND transactions for a chosen timeframe. No early unlock — it just
@@ -23,7 +24,7 @@ class LockAccountSheet extends StatefulWidget {
   const LockAccountSheet({super.key, this.emergency = false});
 
   static Future<void> show(BuildContext context, {bool emergency = false}) =>
-      showModalBottomSheet<void>(
+      showAppBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         backgroundColor: const Color(0xFF1F1F1F),

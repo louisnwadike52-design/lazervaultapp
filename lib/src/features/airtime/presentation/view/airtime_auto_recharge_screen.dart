@@ -9,6 +9,7 @@ import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../widgets/airtime_shimmer.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Screen to manage auto-recharge schedules
 class AirtimeAutoRechargeScreen extends StatefulWidget {
@@ -393,7 +394,7 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
       {'value': 'monthly', 'label': 'Monthly'},
     ];
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

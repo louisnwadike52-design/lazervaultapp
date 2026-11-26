@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_export_helper.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class ExportBottomSheet extends StatefulWidget {
   final Future<void> Function(
@@ -20,7 +21,7 @@ class ExportBottomSheet extends StatefulWidget {
             DateTime startDate, DateTime endDate, ExportFormat format)
         onExport,
   }) {
-    return showModalBottomSheet(
+    return showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

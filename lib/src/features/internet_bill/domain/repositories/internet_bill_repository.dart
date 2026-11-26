@@ -26,5 +26,9 @@ abstract class InternetBillRepository {
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+
+    /// Pay with crypto: the asset to sell to fund this payment,
+    /// lowercase. Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   });
 }

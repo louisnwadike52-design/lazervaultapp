@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:lazervault/core/services/app_update_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// One-time bottom-sheet modal for an OPTIONAL update. Shown once per new
 /// latest build. "Update now" opens the store; "Not now" dismisses (industry-
@@ -10,7 +11,7 @@ Future<void> showUpdateModal(
   required AppUpdateInfo info,
   required Future<void> Function() onUpdate,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/qr_payment/domain/qr_payload_parser.dart';
 import 'package:lazervault/src/features/qr_payment/domain/repositories/qr_payment_repository.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'qr_scanner_screen_widgets.dart';
 
 /// QR Code Scanner Screen for scanning recipient QR codes
@@ -102,7 +103,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
   void _cancelTimeout() => _timeoutTimer?.cancel();
 
   Future<void> _onScanTimeout() async {
-    final retry = await showModalBottomSheet<bool>(
+    final retry = await showAppBottomSheet<bool>(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       isDismissible: false,
@@ -220,7 +221,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
   Future<void> _enterCodeManually() async {
     if (_isProcessing) return;
     final ctrl = TextEditingController();
-    final code = await showModalBottomSheet<String>(
+    final code = await showAppBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/funds/presentation/widgets/payment_recei
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart'
     show TagPayPdfService;
 import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 part 'autosave_rule_receipt_screen_widgets.dart';
 
@@ -56,7 +57,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen> {
     if (_rule == null) {
       _invalidArgs = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
+        if (mounted) offAllKeepingHome(AppRoutes.autoSaveDashboard);
       });
     }
   }
@@ -140,20 +141,20 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen> {
 
   // ── Navigation ──────────────────────────────────────────────────────────
 
-  void _toDashboard() => Get.offAllNamed(AppRoutes.autoSaveDashboard);
+  void _toDashboard() => offAllKeepingHome(AppRoutes.autoSaveDashboard);
 
   /// Both ops run in THIS frame and the list enters WITHOUT animation: an
   /// animated push let the dashboard mount, fetch and PAINT for the slide's
   /// duration, which read as a flash between receipt and list.
   void _toRules() {
-    Get.offAllNamed(AppRoutes.autoSaveDashboard);
+    offAllKeepingHome(AppRoutes.autoSaveDashboard);
     Get.toNamed(AppRoutes.autoSaveRulesList, preventDuplicates: false);
   }
 
   void _createAnother() {
     // Rebuild as dashboard → create so the wizard's Back has a real target;
     // offAllNamed alone left an empty stack and Back exited the feature.
-    Get.offAllNamed(AppRoutes.autoSaveDashboard);
+    offAllKeepingHome(AppRoutes.autoSaveDashboard);
     Get.toNamed(AppRoutes.createAutoSaveRule);
   }
 
@@ -170,7 +171,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen> {
         actionLabel: 'Go to Auto-Save',
         // The label names a destination, so the button must go there
         // rather than pop to whatever happens to be underneath.
-        onAction: () => Get.offAllNamed(AppRoutes.autoSaveDashboard),
+        onAction: () => offAllKeepingHome(AppRoutes.autoSaveDashboard),
       );
     }
     final rule = _rule!;

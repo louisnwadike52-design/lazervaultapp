@@ -11,6 +11,7 @@ import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../widgets/airtime_shimmer.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Screen to manage saved airtime beneficiaries.
 ///
@@ -399,7 +400,7 @@ class _AirtimeBeneficiariesScreenState
 
   void _showOptions(AirtimeBeneficiary beneficiary) {
     final hasAutoRecharge = _autoRechargeFor(beneficiary) != null;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

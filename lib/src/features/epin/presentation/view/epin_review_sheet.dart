@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import '../cubit/epin_state.dart';
 import 'epin_theme.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Review + confirm step for a recharge-card purchase, presented as a bottom
 /// sheet. It shows the dashboard's ACTIVE account as a read-only, locked tile
@@ -24,7 +25,7 @@ Future<String?> showEpinReviewSheet(
   required AccountSummaryEntity? account,
   String businessName = '',
 }) {
-  return showModalBottomSheet<String>(
+  return showAppBottomSheet<String>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

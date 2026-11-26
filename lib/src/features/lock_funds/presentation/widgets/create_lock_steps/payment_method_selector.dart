@@ -13,6 +13,7 @@ import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart
 import '../../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import '../../cubit/create_lock_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'payment_method_selector_widgets.dart';
 
 /// Payment slide — bottom half of wizard step 2 (Details & Payment).
@@ -457,7 +458,22 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
       cubit.lockType,
       autoRenew: cubit.autoRenew,
     );
-    if (notes.isEmpty) return const SizedBox.shrink();
+    // THE REVIEW GATE IS NOT OPTIONAL COPY.
+    //
+    // The bullets above come from the plan's admin-authored notes, and the
+    // panel hides entirely when an operator has left them blank. That rule is
+    // right for notes somebody chose to write and wrong for a fact about where
+    // the user's money goes: while plans are held for review, the deposit
+    // leaves their spendable balance and earns nothing until a person
+    // approves it. They are told that on the last screen before they pay,
+    // whether or not the plan's notes field was filled in.
+    //
+    // Review bullets come FIRST — the gate changes what the figures on this
+    // screen mean, so it has to be read before them, not after a list of
+    // plan terms.
+    final gate = cubit.reviewGateNotes;
+    final all = [...gate, ...notes];
+    if (all.isEmpty) return const SizedBox.shrink();
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
@@ -485,7 +501,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             ],
           ),
           SizedBox(height: 10.h),
-          for (final n in notes) _buildBullet(n),
+          for (final n in all) _buildBullet(n),
         ],
       ),
     );
@@ -725,7 +741,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     String currency,
     CreateLockCubit cubit,
   ) async {
-    final picked = await showModalBottomSheet<AccountSummaryEntity>(
+    final picked = await showAppBottomSheet<AccountSummaryEntity>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

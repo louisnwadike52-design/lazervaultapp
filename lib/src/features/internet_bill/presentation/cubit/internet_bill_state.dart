@@ -71,6 +71,22 @@ class InternetBillPaymentProcessing extends InternetBillState {
   List<Object?> get props => [progress, currentStep];
 }
 
+/// PAY WITH CRYPTO: the payment is authorised and recorded, and the conversion
+/// that funds it is running. Neither success nor failure — see the note on
+/// CableTVAwaitingCryptoFunding.
+class InternetBillAwaitingCryptoFunding extends InternetBillState {
+  final InternetPaymentEntity payment;
+
+  /// The coin being sold, lowercase.
+  final String asset;
+
+  InternetBillAwaitingCryptoFunding(
+      {required this.payment, required this.asset});
+
+  @override
+  List<Object?> get props => [payment, asset];
+}
+
 class InternetBillPaymentSuccess extends InternetBillState {
   final InternetPaymentEntity payment;
 

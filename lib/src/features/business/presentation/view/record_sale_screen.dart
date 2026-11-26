@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/inventory/domain/repositories/inventory_
 import 'package:lazervault/src/features/customers/domain/entities/customer_entity.dart';
 import 'package:lazervault/src/features/customers/domain/repositories/customer_repository.dart';
 import '../../data/services/sales_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Record a sale — the revenue engine's entry point. A PAID sale credits the
 /// business account; an unpaid sale is booked as a customer receivable.
@@ -432,7 +433,7 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
   }
 
   void _openItemPicker() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: _card,
       isScrollControlled: true,
@@ -622,7 +623,7 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
   }
 
   void _openCustomerPicker() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: _card,
       isScrollControlled: true,

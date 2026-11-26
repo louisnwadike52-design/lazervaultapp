@@ -9,6 +9,7 @@ import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'recurring_bills_screen_widgets.dart';
 
 /// Recurring Bills Screen
@@ -268,7 +269,7 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
         pb.ExpenseCategory.EXPENSE_CATEGORY_SUBSCRIPTIONS;
     String selectedRecurrence = 'monthly';
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(24.w),
         decoration: const BoxDecoration(

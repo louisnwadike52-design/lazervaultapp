@@ -10,6 +10,7 @@ import '../models/reminder_model.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/entities/auto_recharge_entity.dart';
 import '../../domain/entities/reminder_entity.dart';
+import 'package:lazervault/src/features/crypto_pay/data/funding_call_options.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 
 abstract class ElectricityBillRemoteDataSource {
@@ -41,6 +42,10 @@ abstract class ElectricityBillRemoteDataSource {
     String? beneficiaryId,
     String? transactionId,
     String? verificationToken,
+
+    /// Pay with crypto: the asset to sell to fund this payment, lowercase.
+    /// Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   });
 
   Future<BillPaymentModel> verifyPayment({required String paymentId});
@@ -225,6 +230,10 @@ class ElectricityBillRemoteDataSourceImpl
     String? beneficiaryId,
     String? transactionId,
     String? verificationToken,
+
+    /// Pay with crypto: the asset to sell to fund this payment, lowercase.
+    /// Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   }) async {
     final request = pb.InitiatePaymentRequest()
       ..providerCode = providerCode
@@ -248,7 +257,10 @@ class ElectricityBillRemoteDataSourceImpl
       request.verificationToken = verificationToken;
     }
 
-    final options = await grpcClient.callOptions;
+    // PAY WITH CRYPTO — one shared rule; see funding_call_options.
+
+    final options =
+        (await grpcClient.callOptions).withCryptoFunding(fundingAsset);
     final response = await grpcClient.electricityBillClient.initiatePayment(
       request,
       options: options,

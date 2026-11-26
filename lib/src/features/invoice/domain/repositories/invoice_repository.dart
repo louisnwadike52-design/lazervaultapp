@@ -30,7 +30,7 @@ abstract class InvoiceRepository {
   Future<void> sendInvoiceToEmail(String invoiceId, String email);
   Future<Invoice> markInvoiceAsPaid(
       String invoiceId, PaymentMethod paymentMethod, String? paymentReference,
-      {String? pin, String? verificationToken});
+      {String? pin, String? verificationToken, String? fundingAsset});
   Future<Invoice> cancelInvoice(String invoiceId);
   Future<String> generateQRCode(String invoiceId);
   Future<List<Invoice>> searchInvoices(String query);

@@ -25,6 +25,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:get_it/get_it.dart';
 import '../notifiers/invoice_refresh_notifier.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class InvoiceHomeScreen extends StatefulWidget {
   const InvoiceHomeScreen({super.key});
@@ -168,7 +169,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
     if (!mounted) return;
 
     // Self-sizing sheet (DraggableScrollableSheet: 90% → full screen).
-    await Get.bottomSheet(
+    await showAppGetBottomSheet(
       const VoiceCommandSheet(serviceName: 'invoices'),
       isScrollControlled: true,
       enableDrag: false,
@@ -1530,7 +1531,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
 
   void _showTaggedUsersSheet(Invoice invoice) {
     final users = invoice.taggedUsers!;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

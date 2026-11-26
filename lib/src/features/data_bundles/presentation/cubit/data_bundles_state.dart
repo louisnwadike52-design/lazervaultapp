@@ -93,3 +93,28 @@ class DataPurchaseHistoryError extends DataBundlesState {
   @override
   List<Object?> get props => [message];
 }
+
+/// THE PURCHASE IS RECORDED AND THE COIN IS BEING SOLD.
+///
+/// Not success and not failure. The data has NOT been delivered — the
+/// conversion has to land first, and that is asynchronous — so emitting
+/// success here would tell the customer they have data they do not yet have.
+/// The receipt tracks it from here and the worker finishes it.
+///
+/// Mirrors AirtimeAwaitingCryptoFunding, because the two flows are the same
+/// shape and a second vocabulary for one concept is how two screens come to
+/// disagree about what "awaiting" means.
+class DataBundlesAwaitingCryptoFunding extends DataBundlesState {
+  DataBundlesAwaitingCryptoFunding({
+    required this.purchase,
+    required this.asset,
+  });
+
+  final DataPurchaseEntity purchase;
+
+  /// The coin being sold, lowercase.
+  final String asset;
+
+  @override
+  List<Object?> get props => [purchase, asset];
+}

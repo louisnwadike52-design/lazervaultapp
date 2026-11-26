@@ -54,8 +54,37 @@ class AirtimeTransactionModel extends AirtimeTransaction {
         // mentions the money that is already back in their wallet.
         if (payment.hasRefundSource() && payment.refundSource.isNotEmpty)
           'refund_source': payment.refundSource,
+        // PAY WITH CRYPTO. A parked purchase carries the TOTAL the conversion
+        // must cover — face plus platform fee — because only the server knows
+        // the fee. Without lifting it here the caller falls back to the face
+        // amount, converts short by exactly the fee, and the purchase then
+        // fails on insufficient funds and is reported as a rate move.
+        ..._fundingMetadata(payment.metadata),
       },
     );
+  }
+
+  /// Lifts the pay-with-crypto fields out of a payment's free-form metadata.
+  ///
+  /// Tolerant by design: the field is a plain string that is usually some
+  /// other service's JSON, so anything unparseable yields nothing rather than
+  /// throwing on a receipt.
+  static Map<String, dynamic> _fundingMetadata(String raw) {
+    if (raw.isEmpty) return const {};
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return const {};
+      if (decoded['funding_source'] != 'crypto') return const {};
+      return {
+        if (decoded['required_minor'] != null)
+          'required_minor': decoded['required_minor'],
+        if (decoded['funding_asset'] != null)
+          'funding_asset': decoded['funding_asset'],
+        if (decoded['service'] != null) 'service': decoded['service'],
+      };
+    } catch (_) {
+      return const {};
+    }
   }
 
   /// Airtime transfer reuses the `BuyAirtime` RPC (see

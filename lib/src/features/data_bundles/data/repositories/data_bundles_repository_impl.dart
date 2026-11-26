@@ -40,6 +40,7 @@ class DataBundlesRepositoryImpl implements DataBundlesRepository {
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+    String? fundingAsset,
   }) async {
     try {
       final result = await remoteDataSource.buyData(
@@ -50,6 +51,7 @@ class DataBundlesRepositoryImpl implements DataBundlesRepository {
         transactionId: transactionId,
         verificationToken: verificationToken,
         idempotencyKey: idempotencyKey,
+        fundingAsset: fundingAsset,
       );
       return Right(result);
     } on GrpcError catch (e) {

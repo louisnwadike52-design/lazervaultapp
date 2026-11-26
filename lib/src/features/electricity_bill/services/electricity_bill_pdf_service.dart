@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -395,6 +396,12 @@ class ElectricityBillPdfService {
                   'Units',
                   '${payment.units!.toStringAsFixed(2)} kWh',
                 ),
+              // HOW IT WAS PAID — the same rows the screen shows, so the
+              // forwarded document and the screen cannot disagree. ASCII
+              // money: this PDF's font falls back to Helvetica, which throws
+              // on the naira sign.
+              ...nairaFundingRowsAscii(payment.metadata)
+                  .map((e) => _buildDetailRow(e.key, e.value)),
               _buildDetailRow(
                 'Reference',
                 payment.referenceNumber,

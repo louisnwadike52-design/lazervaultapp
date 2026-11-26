@@ -15,6 +15,7 @@ import 'member_card.dart';
 import 'payment_group_widgets.dart';
 import 'status_pill.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'past_contribution_details_sheet_widgets.dart';
 
 /// Opens a breakdown sheet listing every attempt the user made,
@@ -23,7 +24,7 @@ part 'past_contribution_details_sheet_widgets.dart';
 /// pops back here so the breakdown stays inside the modal stack the
 /// user already opened.
 void _showCallerBreakdownSheet(BuildContext context, UserPaymentGroup group) {
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     backgroundColor: const Color(0xFF1A1A1A),
     isScrollControlled: true,

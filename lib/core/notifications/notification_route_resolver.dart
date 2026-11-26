@@ -153,9 +153,32 @@ String? _first(Map<String, String> data, List<String> keys) {
 /// [TargetPrecision.serviceLanding] for money events whose receipt screen needs
 /// a hydrated `Transaction` the payload cannot build.
 NotificationTarget _history(TransactionServiceType service) =>
+    // THE CENTRAL LEDGER, NOT THE SERVICE PAGE — and that is a deliberate
+    // downgrade in precision for a large gain in reliability.
+    //
+    // ServiceTransactionHistoryScreen must FETCH before it can render
+    // anything. Reached from a push on a cold start there is no active account
+    // yet — the dashboard carousel is what selects one and a deep link never
+    // passes it — so the fetch refuses and the customer gets "Something went
+    // wrong. We couldn't load transactions just now" with a Retry that cannot
+    // help. Reported on build 543 for a deposit push: type=payment,
+    // entity_type=deposit, no transaction id, which lands exactly here.
+    //
+    // The deposit branch in resolver_money.dart was fixed for this months
+    // earlier and this helper — the path every OTHER money service falls
+    // through — was not, so the same dead page was one notification shape
+    // away the whole time.
+    //
+    // The dashboard history paints from cache before it asks the network, so
+    // it shows the record even while the fetch is in flight. A notification
+    // should land somewhere that RENDERS, not somewhere that has to succeed
+    // first. The service filter is the cost; a page that loads is the point.
+    //
+    // `service` is kept in the signature rather than dropped: callers read
+    // better naming what they meant, and if the service screen ever learns to
+    // resolve its own account this becomes a one-line change back.
     NotificationTarget(
-      route: AppRoutes.serviceTransactionHistory,
-      arguments: service,
+      route: AppRoutes.dashboardTransactionHistory,
       precision: TargetPrecision.serviceLanding,
     );
 

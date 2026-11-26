@@ -9,6 +9,9 @@ class SignupDraft {
   final String? phone;
   final String? firstName;
   final String? lastName;
+  /// OPTIONAL. Persisted so a resumed signup does not silently lose it —
+  /// the customer typed it once and would not know to type it again.
+  final String? middleName;
   final String? username;
   final String? referralCode;
   final DateTime? dateOfBirth;
@@ -27,6 +30,7 @@ class SignupDraft {
     this.phone,
     this.firstName,
     this.lastName,
+    this.middleName,
     this.username,
     this.referralCode,
     this.dateOfBirth,
@@ -89,6 +93,7 @@ class SignupDraft {
     String? email,
     String? phone,
     String? firstName,
+    String? middleName,
     String? lastName,
     String? username,
     String? referralCode,
@@ -104,6 +109,7 @@ class SignupDraft {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       firstName: firstName ?? this.firstName,
+      middleName: middleName ?? this.middleName,
       lastName: lastName ?? this.lastName,
       username: username ?? this.username,
       referralCode: referralCode ?? this.referralCode,
@@ -159,6 +165,7 @@ class SignupDraft {
       'email': email,
       'phone': phone,
       'firstName': firstName,
+      'middleName': middleName,
       'lastName': lastName,
       'username': username,
       'referralCode': referralCode,
@@ -178,6 +185,7 @@ class SignupDraft {
       email: json['email'] as String?,
       phone: json['phone'] as String?,
       firstName: json['firstName'] as String?,
+      middleName: json['middleName'] as String?,
       lastName: json['lastName'] as String?,
       username: json['username'] as String?,
       referralCode: json['referralCode'] as String?,

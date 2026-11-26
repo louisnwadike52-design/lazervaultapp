@@ -872,9 +872,31 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
       appBar: AppBar(
         title: const Text('Voice Verification'),
         centerTitle: true,
+        // NO BACK ARROW WHILE THE MATCH RUNS.
+        //
+        // The PopScope below already refuses the pop, so the arrow the AppBar
+        // implied for itself was drawn, tapped, and did nothing — the same
+        // dead control on the OS back button and in the app bar. Withholding
+        // it says what is true: this step finishes on its own.
+        automaticallyImplyLeading: false,
       ),
       body: PopScope(
         canPop: false,
+        // A REFUSAL THE USER CAN HEAR.
+        //
+        // Silence is what reads as a broken app: the back button is pressed,
+        // nothing moves, and nothing says why. The match takes a few seconds
+        // and cannot be abandoned halfway, so the pop is still refused — but
+        // the refusal now answers.
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Checking your voice — this finishes on its own.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        },
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

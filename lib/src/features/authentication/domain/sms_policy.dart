@@ -24,11 +24,56 @@ import 'package:lazervault/core/config/feature_flags.dart';
 /// work is a dead end; skipping one that could have worked costs nothing,
 /// because the account is simply created with phone_verified=false and the
 /// number can be verified later.
+/// THE WHITELIST STAYS SERVER-SIDE; THE *ANSWER* COMES DOWN PER ACCOUNT.
+///
+/// While the SMS provider is under investigation the master switch is off for
+/// the whole platform and a short operator list (`sms_otp_whitelist`) keeps SMS
+/// for named testers. That list is resolved in auth-service against the
+/// account's own email and phone, and it is NOT readable here — it is personal
+/// contact details, and the settings snapshot this class reads arrives over an
+/// unauthenticated poll that every installation downloads.
+///
+/// WHY THAT WAS NOT ENOUGH. Shipping only the server-side list left the
+/// whitelist correct and unreachable. The app is what decides whether a
+/// phone-OTP step EXISTS: `signup_steps.activeSignupSteps` REMOVES it and
+/// `main.dart` routes a resumption past it, both from [available]. With the
+/// master switch off that removed the step for everyone — including the two
+/// testers the list was created for — so no client ever reached a screen that
+/// would send, and the server was never asked. The fallback reasoning was also
+/// wrong: a login step-up would have exercised SMS, but the adaptive engine
+/// does not step up a TRUSTED device, which is what a tester's own phone is.
+///
+/// So auth-service now states the per-account answer on every auth response
+/// (`auth.proto User.sms_available` → [FeatureFlags.smsAvailableForUser]),
+/// which leaks nothing and cannot be computed client-side.
+///
+/// PRECEDENCE MIRRORS THE SERVER, deliberately: the platform-wide switch is
+/// consulted FIRST and the per-account answer only overrides it upward. The
+/// asymmetry is the point — a stale `false` cannot hide a channel that works
+/// (global-on wins), and a stale `true` costs at most one refused send with a
+/// readable reason instead of stranding someone in front of a code nobody
+/// sent. Being wrong permissively is recoverable; being wrong restrictively is
+/// the lockout this module exists to prevent.
+///
+/// Still not covered, and deliberately: a BRAND-NEW signup, where no account
+/// exists for the server to answer about. Verifying delivery through any
+/// authenticated flow answers the same question.
 class SmsPolicy {
   const SmsPolicy._();
 
-  /// Whether a one-time SMS code can actually be delivered.
-  static bool get available => FeatureFlags.smsOtpEnabled;
+  /// Whether a one-time SMS code can actually be delivered to THIS user.
+  ///
+  /// The platform-wide switch first; the server's per-account answer only ever
+  /// widens it. See the class note for why that direction is the safe one.
+  static bool get available =>
+      FeatureFlags.smsOtpEnabled || (FeatureFlags.smsAvailableForUser ?? false);
+
+  /// The platform-wide switch alone, ignoring any per-account override.
+  ///
+  /// For copy that describes the PLATFORM rather than the viewer — an operator
+  /// notice, say. No gate should use this: a gate that asks the global question
+  /// is the bug the per-account answer was added to fix.
+  static bool get availablePlatformWide => FeatureFlags.smsOtpEnabled;
 
   /// Whether the signup journey should include the phone-OTP step.
   ///

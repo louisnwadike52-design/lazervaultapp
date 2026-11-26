@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Explains, BEFORE any rate is quoted, that this invoice is billed in a
 /// currency the payer does not operate in — and what will actually happen.
@@ -37,7 +38,7 @@ class InvoiceCrossCurrencyNotice extends StatelessWidget {
     required double invoiceAmount,
     double? holdingInInvoiceCurrency,
   }) async {
-    final proceed = await showModalBottomSheet<bool>(
+    final proceed = await showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

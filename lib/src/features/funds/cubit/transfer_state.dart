@@ -49,14 +49,30 @@ final class TransferFailure extends TransferState {
   /// showFamilySpendRefusalDialog.
   final bool isSpendRefusal;
 
+  /// The tier whose cap the SERVER said it applied, when it said.
+  ///
+  /// accounts-service appends `kyc_tier: N` to its daily and monthly refusals.
+  /// It has to be captured HERE, at the point of failure, because [message] is
+  /// already customer-facing copy by the time a screen reads it and the marker
+  /// is gone.
+  ///
+  /// It matters because it is not always the tier the app thinks the customer
+  /// is on: auth-service can have them approved at Tier 3 while the ledger row
+  /// still carries Tier-1 limits, and only this number tells the difference
+  /// between "verify your identity" (true) and "your limits have not caught up
+  /// with your verification" (also true, and a different thing to do).
+  final int? enforcedKycTier;
+
   const TransferFailure(
       {required this.message,
       this.isRetryable = false,
       this.isKYCError = false,
-      this.isSpendRefusal = false});
+      this.isSpendRefusal = false,
+      this.enforcedKycTier});
 
   @override
-  List<Object?> get props => [message, isRetryable, isKYCError, isSpendRefusal];
+  List<Object?> get props =>
+      [message, isRetryable, isKYCError, isSpendRefusal, enforcedKycTier];
 }
 
 /// Emitted when a transfer fails specifically due to an incorrect PIN.

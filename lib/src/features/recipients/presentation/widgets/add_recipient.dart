@@ -1,4 +1,5 @@
 import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/saved_recipients_warmup.dart';
 import 'package:lazervault/core/utils/masked_account_number.dart';
 import 'dart:async';
 import 'dart:io';
@@ -28,6 +29,8 @@ import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/account_verification_result.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/utils/destination_account_number.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/account_suggestion.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/account_confirmation_bottom_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_search_bottom_sheet.dart';
@@ -46,6 +49,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_code_usecase.dart';
 import 'package:lazervault/core/utilities/invite_link.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'add_recipient_widgets.dart';
 
 /// Brand purple used across the add-recipient surface (matches SelectRecipients).
@@ -161,6 +165,16 @@ class _AddRecipientState extends State<AddRecipient>
   final LayerLink _accountFieldLink = LayerLink();
   final OverlayPortalController _suggestOverlay = OverlayPortalController();
 
+  /// True while the overlay is showing SAVED PAYEES FOR A PARTIAL NUMBER —
+  /// i.e. the payer is still typing and nothing has been resolved yet.
+  ///
+  /// It changes two behaviours. The header says "Saved recipients" rather than
+  /// "Suggested destinations", because these came from the payer's own book
+  /// and not from a name-enquiry; and dismissing the overlay does NOT reveal
+  /// the manual Bank field, because a half-typed number is not a failed
+  /// resolution and offering the fallback answers a question nobody asked.
+  bool _savedOnlyPreview = false;
+
   /// Show/hide the suggestion tooltip to match current state: visible only on
   /// the Bank tab, while resolving or when there are matches, and before a bank
   /// is verified. Off-tab it actively HIDES (rather than no-oping) so it can
@@ -205,6 +219,20 @@ class _AddRecipientState extends State<AddRecipient>
   void initState() {
     super.initState();
     if (widget.method != null) _selectedMethod = widget.method!;
+    // WARM THE SAVED-PAYEE SNAPSHOT.
+    //
+    // The as-you-type account-number suggestions read it SYNCHRONOUSLY, and it
+    // only holds what RecipientCubit last emitted — so a payer who came
+    // straight here without passing a recipient list was offered nothing,
+    // which reads as the feature not existing. Fire-and-forget: nothing waits
+    // on it and the bank lookup is unaffected.
+    //
+    // In a post-frame callback because initState runs before this subtree's
+    // providers are reachable with context.read.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ensureSavedRecipientsWarm(context);
+    });
+
     WidgetsBinding.instance.addObserver(this);
     _initializeCountryAndLoadBanks();
   }
@@ -817,9 +845,10 @@ class _AddRecipientState extends State<AddRecipient>
                       ),
                     ),
                   ),
-                  // Standalone "Scan Account" button beside the field.
+                  // Standalone "Scan Account" button beside the field. The
+                  // gap is tight on purpose — see _buildScanAccountButton.
                   if (widget.onScanAccount != null) ...[
-                    SizedBox(width: 12.w),
+                    SizedBox(width: 8.w),
                     _buildScanAccountButton(),
                   ],
                 ],
@@ -1202,7 +1231,7 @@ class _AddRecipientState extends State<AddRecipient>
     String? alias;
     final sheetKey = GlobalKey<UsernameRecipientConfirmationSheetState>();
 
-    await Get.bottomSheet(
+    await showAppGetBottomSheet(
       PopScope(
         canPop: true,
         child: UsernameRecipientConfirmationSheet(
@@ -1569,7 +1598,7 @@ class _AddRecipientState extends State<AddRecipient>
     // app-resume handler only auto-rechecks when it's actually relevant.
     bool awaitingSettingsReturn = false;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2306,7 +2335,7 @@ class _AddRecipientState extends State<AddRecipient>
   /// Show dialog when contact is found to be a Lazervault user
   void _showLazerVaultUserFoundDialog(
       DeviceContact contact, LazerVaultUserMatchModel matchedUser) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2661,7 +2690,7 @@ class _AddRecipientState extends State<AddRecipient>
   /// (share referral code + logo) or continue with a bank transfer.
   void _showOffPlatformContactOptions(DeviceContact contact) {
     const brand = Color.fromARGB(255, 78, 3, 208);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.white,
       isScrollControlled: true,
@@ -2787,7 +2816,7 @@ class _AddRecipientState extends State<AddRecipient>
     final accountController = TextEditingController();
     bool isVerifying = false;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2932,11 +2961,13 @@ class _AddRecipientState extends State<AddRecipient>
                       TextField(
                         controller: accountController,
                         keyboardType: TextInputType.number,
-                        maxLength: 10,
+                        // Same rule as the main field: a contact's account
+                        // can be an 11-digit wallet number too.
+                        maxLength: kDestinationAccountMaxLength,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.grey[50],
-                          hintText: 'Enter 10-digit account number',
+                          hintText: 'Account or phone (OPay, PalmPay…)',
                           hintStyle: TextStyle(color: Colors.grey[500]),
                           prefixIcon: Icon(Icons.account_balance_wallet_rounded,
                               color: _kBrandPurple),
@@ -2966,7 +2997,7 @@ class _AddRecipientState extends State<AddRecipient>
                       ),
                       SizedBox(height: 8.h),
                       Text(
-                        'Enter the 10-digit account number for ${contact.name}',
+                        'Enter the account or wallet number for ${contact.name}',
                         style: TextStyle(
                           color: Colors.grey[500],
                           fontSize: 12.sp,
@@ -2980,7 +3011,8 @@ class _AddRecipientState extends State<AddRecipient>
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: isVerifying ||
-                                  accountController.text.length != 10
+                                  !isCompleteDestinationAccount(
+                                      accountController.text)
                               ? null
                               : () {
                                   // Verify account
@@ -3045,7 +3077,7 @@ class _AddRecipientState extends State<AddRecipient>
     bool isFavorite = false;
     String? alias;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -3401,6 +3433,15 @@ class _AddRecipientState extends State<AddRecipient>
   /// Standalone "Scan Account" button rendered beside the account-number field
   /// (see the field builder). Brand-tinted so it reads as a tappable action;
   /// height is matched to the field via the enclosing IntrinsicHeight/stretch.
+  ///
+  /// DELIBERATELY NARROW. It was 62.w plus a 12.w gap, which took around a
+  /// fifth of the row away from the field it sits beside — and that field
+  /// holds a ten- or eleven-digit account number under a floating label, on
+  /// the screen where somebody is checking a number digit by digit before
+  /// sending money to it. Reading back what you typed matters more here than
+  /// anywhere else in the app, so the field gets the room and the button keeps
+  /// only what it needs: 46.w is still comfortably past the 44pt minimum
+  /// touch target once the field's height is matched.
   Widget _buildScanAccountButton() {
     return Material(
       color: _kBrandPurple.withValues(alpha: 0.08),
@@ -3409,8 +3450,8 @@ class _AddRecipientState extends State<AddRecipient>
         borderRadius: BorderRadius.circular(12.r),
         onTap: widget.onScanAccount,
         child: Container(
-          width: 62.w,
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
+          width: 46.w,
+          padding: EdgeInsets.symmetric(horizontal: 4.w),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12.r),
@@ -3421,13 +3462,16 @@ class _AddRecipientState extends State<AddRecipient>
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.document_scanner_outlined,
-                  color: _kBrandPurple, size: 20.w),
-              SizedBox(height: 2.h),
+                  color: _kBrandPurple, size: 18.w),
+              SizedBox(height: 1.h),
+              // Kept rather than reduced to an icon: "scan" is the one word
+              // that distinguishes this from the QR scanner in the strip
+              // above, and an unlabelled document icon does not.
               Text(
                 'Scan',
                 style: TextStyle(
                   color: _kBrandPurple,
-                  fontSize: 10.sp,
+                  fontSize: 9.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -3442,25 +3486,70 @@ class _AddRecipientState extends State<AddRecipient>
   /// phone with a leading zero (OPay/PalmPay/Moniepoint) — the backend
   /// normalises the latter to its 10-digit NUBAN for resolution + suggestions.
   static bool _isAccountNumberComplete(String v) =>
-      v.length == 10 || (v.length == 11 && v.startsWith('0'));
+      isCompleteDestinationAccount(v);
+
+  /// The payer's own saved payees matching what has been typed so far.
+  ///
+  /// NETWORK-FREE AND UNDEBOUNCED, which is the whole point: the saved set is
+  /// already in memory, so it answers on the keystroke, while the bank
+  /// name-enquiry behind it fans out per candidate bank and takes seconds. The
+  /// commonest destination for a typed account number is someone the payer has
+  /// paid before, and making them wait on a provider lookup to be shown a
+  /// payee they themselves saved is latency for nothing.
+  ///
+  /// Filtered to numbers THIS FIELD CAN HOLD. A saved row the field cannot
+  /// express (the input caps at 11 digits) would be offered, tapped, and then
+  /// sit in the box as something `_isAccountNumberComplete` rejects — an
+  /// offer that dead-ends is worse than one that was never made.
+  List<AccountSuggestion> _savedMatchesFor(String value) {
+    final digits = _digitsOf(value);
+    if (digits.length < FeatureFlags.savedPayeeMinDigits) {
+      return const <AccountSuggestion>[];
+    }
+    final matches = context.read<AccountVerificationCubit>().savedRecipientMatches(
+          digits,
+          limit: FeatureFlags.savedPayeeMaxRows,
+        );
+    return matches
+        .where((s) => _isAccountNumberComplete(_digitsOf(s.accountNumber)))
+        .toList(growable: false);
+  }
+
+  static String _digitsOf(String v) => v.replaceAll(RegExp(r'[^0-9]'), '');
 
   void _onAccountNumberChanged(String value) {
     _suggestDebounce?.cancel();
     final complete = _isAccountNumberComplete(value);
+    // Computed before setState so the saved rows land in the SAME frame as the
+    // keystroke — a payee that appears a frame later reads as a flicker.
+    final saved = _savedMatchesFor(value);
+    // AN EMPTY SNAPSHOT HEALS ITSELF ON THE KEYSTROKE THAT NEEDS IT.
+    //
+    // initState fires a warm-up, but it runs one frame after mount and can
+    // find the session or the recipient cubit not yet reachable — and until
+    // this, a single early miss left the matcher dead for the whole session
+    // with no way back short of restarting the app. Typing is exactly the
+    // moment the snapshot is wanted, so ask again here. Idempotent and
+    // essentially free when warm: a list-length check and a bool.
+    if (saved.isEmpty) ensureSavedRecipientsWarm(context);
     setState(() {
       if (_verificationResult != null) _verificationResult = null;
       // Editing the number invalidates the Lazervault match it belonged to.
       _pendingInternalMatch = null;
+      // Saved payees show at BOTH lengths. While the number is partial they
+      // are the whole list; once it is complete they stay on screen under the
+      // bank lookup instead of being replaced by a spinner, so the row the
+      // payer was already reaching for does not vanish at the tenth digit.
+      _bankSuggestions = saved;
+      _savedOnlyPreview = !complete && saved.isNotEmpty;
+      _loadingSuggestions = complete;
       if (!complete) {
-        _bankSuggestions = [];
-        _loadingSuggestions = false;
         // Editing the account → back to account-first (hide the bank fallback)
         // unless the user already manually picked a bank.
         if (_selectedBankCode == null) _bankFieldRevealed = false;
       }
     });
     if (complete) {
-      setState(() => _loadingSuggestions = true);
       _suggestDebounce = Timer(
         const Duration(milliseconds: 400),
         () => _fetchBankSuggestions(value),
@@ -3478,8 +3567,15 @@ class _AddRecipientState extends State<AddRecipient>
 
   /// Dismiss the suggestion tooltip AND reveal the Bank field — the "X / tap
   /// away" action, so the user can fall back to picking the bank manually.
+  ///
+  /// EXCEPT over a saved-payee preview. The bank fallback means "we tried to
+  /// resolve this number and could not"; a payer three digits into an account
+  /// number has not reached that question, and surfacing the Bank field there
+  /// pushes the form open under them mid-type. Typing another digit re-offers
+  /// the matches, so nothing is lost by simply hiding.
   void _dismissSuggestionsRevealBank() {
     _suggestOverlay.hide();
+    if (_savedOnlyPreview) return;
     _revealBankField();
   }
 
@@ -3496,9 +3592,24 @@ class _AddRecipientState extends State<AddRecipient>
           .suggestBanks(accountNumber: accountNumber, country: _currentCountry);
       // Discard if the account number changed while we were waiting.
       if (!mounted || _accountController.text != accountNumber) return;
+      // A RESOLUTION THAT FOUND NOTHING MUST NOT TAKE BACK THE SAVED ROWS.
+      //
+      // suggestBanks already merges saved payees whose number is EXACTLY the
+      // one typed, so whenever it returns anything the saved rows are in it.
+      // When it returns NOTHING they would simply be erased — and they can
+      // still be right: a complete 10-digit entry legitimately prefixes an
+      // 11-digit wallet number the payer saved, so a row that was on screen a
+      // moment ago would vanish for no reason the payer can see, at exactly
+      // the moment they were reaching for it.
+      final resolved =
+          suggestions.isNotEmpty ? suggestions : _savedMatchesFor(accountNumber);
       setState(() {
-        _bankSuggestions = suggestions;
+        _bankSuggestions = resolved;
         _loadingSuggestions = false;
+        // Resolved rows are destinations. A row that survived an empty
+        // resolution is still only a match against the payer's own book, and
+        // the heading should keep saying so.
+        _savedOnlyPreview = suggestions.isEmpty && resolved.isNotEmpty;
       });
       // Auto-resolution couldn't pick a bank → reveal the manual bank field as
       // the fallback (keeping the tooltip only when there ARE matches to tap).
@@ -3542,16 +3653,35 @@ class _AddRecipientState extends State<AddRecipient>
   /// User tapped a suggested bank. Prefill the bank + code and reuse the already
   /// resolved holder name (no second verify round-trip), then open the same
   /// confirmation sheet the manual verify path uses.
+  /// Put the chosen destination's FULL number in the field.
+  ///
+  /// Required now that a suggestion can be tapped from a PARTIAL number: the
+  /// confirmation sheet and `_handleVerifyAccount` both read this controller,
+  /// so selecting "0801…" after typing three digits would otherwise leave a
+  /// three-digit number paired with a resolved bank — and cancelling the sheet
+  /// would strand the form in a state it cannot act on.
+  ///
+  /// A no-op on the complete-number path, where the field already holds it.
+  void _syncAccountFieldTo(String number) {
+    final want = _digitsOf(number);
+    if (want.isEmpty || _accountController.text == want) return;
+    _accountController.text = want;
+    _accountController.selection =
+        TextSelection.collapsed(offset: want.length);
+  }
+
   void _selectSuggestion(AccountSuggestion s) {
     if (s.isLazervault) {
       _selectLazervaultSuggestion(s);
       return;
     }
+    _syncAccountFieldTo(s.accountNumber);
     setState(() {
       _bankController.text = s.bankName;
       _selectedBankCode = s.bankCode;
       _bankSuggestions = [];
       _loadingSuggestions = false;
+      _savedOnlyPreview = false;
       _verificationResult = AccountVerificationResult(
         accountNumber: s.accountNumber,
         accountName: s.accountName,
@@ -3572,6 +3702,7 @@ class _AddRecipientState extends State<AddRecipient>
   /// moves — and only [_proceedToPayment] differs, where the recipient is
   /// built as internal. No bank code is set, because there is no bank to pay.
   void _selectLazervaultSuggestion(AccountSuggestion s) {
+    _syncAccountFieldTo(s.accountNumber);
     setState(() {
       _loadingSuggestions = false;
       _pendingInternalMatch = s;
@@ -3689,30 +3820,19 @@ class _AddRecipientState extends State<AddRecipient>
           ),
         ],
       ),
-      child: _loadingSuggestions
+      // THE LOADING ROW NO LONGER REPLACES THE LIST.
+      //
+      // It used to: the spinner was an either/or with the matches, so at the
+      // tenth digit the saved payee the payer was already reaching for was
+      // swapped out for "Finding the bank…" and came back seconds later. A
+      // row that disappears under a thumb is worse than one that was never
+      // offered. The spinner only owns the card when there is nothing else in
+      // it; otherwise it sits UNDER the matches as a thin strip, saying that
+      // more may still arrive.
+      child: (_loadingSuggestions && _bankSuggestions.isEmpty)
           ? Padding(
               padding: EdgeInsets.all(14.w),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 16.w,
-                    height: 16.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(_kBrandPurple),
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Text(
-                    'Finding the bank…',
-                    style: TextStyle(
-                      color: Colors.grey[700],
-                      fontSize: 12.5.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
+              child: _resolvingRow(),
             )
           : Column(
               mainAxisSize: MainAxisSize.min,
@@ -3722,15 +3842,15 @@ class _AddRecipientState extends State<AddRecipient>
                   padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 6.h),
                   child: Row(
                     children: [
-                      Icon(Icons.auto_awesome_rounded,
-                          size: 14.sp, color: _kBrandPurple),
+                      Icon(
+                          _savedOnlyPreview
+                              ? Icons.bookmark_rounded
+                              : Icons.auto_awesome_rounded,
+                          size: 14.sp,
+                          color: _kBrandPurple),
                       SizedBox(width: 6.w),
                       Text(
-                        // "Destination", not "bank": the list can now lead with
-                        // LAZERVAULT ITSELF, which is not a bank in it.
-                        _bankSuggestions.length == 1
-                            ? 'Suggested destination'
-                            : 'Suggested destinations',
+                        _suggestionHeading(),
                         style: TextStyle(
                           color: Colors.grey[700],
                           fontSize: 12.sp,
@@ -3749,8 +3869,61 @@ class _AddRecipientState extends State<AddRecipient>
                         endIndent: 12.w),
                   _buildSuggestionRow(_bankSuggestions[i]),
                 ],
+                if (_loadingSuggestions) ...[
+                  Divider(
+                      height: 1,
+                      color: Colors.grey[200],
+                      indent: 12.w,
+                      endIndent: 12.w),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 10.h),
+                    child: _resolvingRow(),
+                  ),
+                ],
               ],
             ),
+    );
+  }
+
+  /// What the card calls the rows it is showing.
+  ///
+  /// "Saved recipients" while the number is still partial, because that is
+  /// literally what they are — the payer's own book, matched on the digits so
+  /// far, with nothing resolved against any bank yet. Calling those
+  /// "suggested destinations" would claim a resolution that has not happened.
+  /// Once the number is complete the list is a mix of saved, internal and
+  /// name-enquiry rows, and "destination" is the only word that covers all
+  /// three (the list can lead with Lazervault, which is not a bank).
+  String _suggestionHeading() {
+    final one = _bankSuggestions.length == 1;
+    if (_savedOnlyPreview) {
+      return one ? 'Saved recipient' : 'Saved recipients';
+    }
+    return one ? 'Suggested destination' : 'Suggested destinations';
+  }
+
+  /// The spinner strip, shared by the empty card and the under-list footer.
+  Widget _resolvingRow() {
+    return Row(
+      children: [
+        SizedBox(
+          width: 16.w,
+          height: 16.w,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(_kBrandPurple),
+          ),
+        ),
+        SizedBox(width: 10.w),
+        Text(
+          'Finding the bank…',
+          style: TextStyle(
+            color: Colors.grey[700],
+            fontSize: 12.5.sp,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
     );
   }
 
@@ -3774,15 +3947,32 @@ class _AddRecipientState extends State<AddRecipient>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    s.accountName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: 14.5.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          // THE PAYER'S OWN LABEL LEADS WHEN THEY SET ONE.
+                          // A saved row is the only source that knows what the
+                          // payer calls this person; an external name-enquiry
+                          // for the same number returns the bank's registered
+                          // name, which is frequently not a name they would
+                          // recognise. displayName resolves that preference in
+                          // one place rather than per surface.
+                          s.displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 14.5.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      if (s.isSavedRecipient) ...[
+                        SizedBox(width: 6.w),
+                        _savedRecipientBadge(),
+                      ],
+                    ],
                   ),
                   SizedBox(height: 2.h),
                   Row(
@@ -3791,7 +3981,18 @@ class _AddRecipientState extends State<AddRecipient>
                         child: Text(
                           // Never a bare bank name: the masked number is what
                           // tells the payer WHICH account this row pays.
+                          //
+                          // AND WHEN AN ALIAS IS SHOWN ABOVE, THE REGISTERED
+                          // NAME GOES HERE. Replacing "ADEBAYO J OLUWASEUN"
+                          // with "Mum" and showing nothing else would strip the
+                          // one fact that proves the payer is paying the person
+                          // they think they are — which is the whole purpose of
+                          // a name check. Only added when it actually differs,
+                          // so an unaliased row is not padded with a repeat.
                           [
+                            if (s.displayName != s.accountName &&
+                                s.accountName.trim().isNotEmpty)
+                              s.accountName,
                             s.bankName,
                             maskedAccountNumber(s.accountNumber),
                           ].where((t) => t.isNotEmpty).join('  •  '),
@@ -3817,6 +4018,38 @@ class _AddRecipientState extends State<AddRecipient>
                 color: _kBrandPurple, size: 20.sp),
           ],
         ),
+      ),
+    );
+  }
+
+  /// "Saved" — this row came from the payer's OWN recipient list.
+  ///
+  /// It is the row they should usually take, and it needs saying because the
+  /// list can legitimately hold two rows for the same number: the saved one,
+  /// carrying the alias and the account the payer pinned, and a fresh bank
+  /// name-enquiry for the same digits. Without the badge the two look like
+  /// duplicates and the payer has no way to tell which is which.
+  Widget _savedRecipientBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: _kBrandPurple.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.bookmark_rounded, size: 11.w, color: _kBrandPurple),
+          SizedBox(width: 3.w),
+          Text(
+            'Saved',
+            style: TextStyle(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w600,
+              color: _kBrandPurple,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -4118,7 +4351,7 @@ class _AddRecipientState extends State<AddRecipient>
     final bankName = _bankController.text;
     final bankCode = _selectedBankCode ?? '';
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -4320,7 +4553,7 @@ class _AddRecipientState extends State<AddRecipient>
     // which sets _verificationResult without going through _syncSuggestOverlay).
     if (_suggestOverlay.isShowing) _suggestOverlay.hide();
     final sheetKey = GlobalKey<AccountConfirmationBottomSheetState>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

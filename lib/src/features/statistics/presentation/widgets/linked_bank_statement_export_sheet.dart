@@ -16,6 +16,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Export a linked bank's synced transaction history (the local statement
 /// store banking-service accumulates on every balance refresh) as CSV or PDF.
@@ -30,7 +31,7 @@ class LinkedBankStatementExportSheet extends StatefulWidget {
 
   static Future<void> show(BuildContext context,
       {required LinkedBankAccount account}) {
-    return showModalBottomSheet(
+    return showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -126,15 +127,37 @@ class _LinkedBankStatementExportSheetState
     ));
   }
 
+  /// Amounts arrive in MINOR UNITS from banking-service's linked-account
+  /// store, so this divides by 100 — correct for every currency Mono's
+  /// Nigerian open-banking coverage returns (NGN) and for the two-decimal
+  /// currencies generally. It was named `naira`, which hid the assumption;
+  /// a zero-decimal currency (JPY, KRW) would be shown 100x too small and
+  /// would need the exponent from the currency code, not a constant.
   String _fmtAmount(dynamic t) {
-    final naira = (t.amount as int) / 100.0;
+    final major = (t.amount as int) / 100.0;
     final sign =
         (t.transactionType as String).toLowerCase() == 'debit' ? '-' : '+';
-    return '$sign${naira.toStringAsFixed(2)}';
+    return '$sign${major.toStringAsFixed(2)}';
   }
 
   Future<File> _writeCsv(List<dynamic> rows) async {
+    // Provenance ABOVE the header row, for the same reason the PDF carries a
+    // disclaimer: a bare table of transactions with a bank's name in the
+    // filename looks like that bank's own export. Spreadsheet tools read the
+    // first row as headers, so these lines sit above it as a titled block —
+    // Excel and Numbers both show them as text rows, and anyone importing
+    // programmatically skips to the Date header.
     final data = <List<String>>[
+      ['Lazervault - linked account transactions'],
+      ['Source', widget.account.bankName],
+      ['Retrieved', DateFormat('d MMM yyyy, HH:mm').format(DateTime.now())],
+      [
+        'Note',
+        'Shared with Lazervault via regulated open banking. Not a statement '
+            'issued or certified by ${widget.account.bankName}, and not a '
+            'balance confirmation.'
+      ],
+      [],
       ['Date', 'Type', 'Description', 'Category', 'Amount', 'Currency'],
     ];
     for (final t in rows) {
@@ -211,8 +234,32 @@ class _LinkedBankStatementExportSheetState
               }).toList(),
             ),
             pw.Spacer(),
+            // THE DISCLAIMER IS NOT DECORATION.
+            //
+            // This page carries the Lazervault wordmark at the top and the
+            // words "<Bank> statement" under it, over transactions that came
+            // from a THIRD-PARTY bank through open banking. Without a line
+            // saying so it reads as a bank-issued statement, and somebody
+            // will submit it to a landlord or a visa officer as one. It is
+            // not: we did not hold these funds, we cannot certify the
+            // balances, and the data is only as current as the last sync.
+            //
+            // Naming the source and the limitation is what makes the document
+            // honest, and costs nothing to the user who just wants their
+            // transactions in a file.
+            pw.Divider(color: PdfColors.grey300, thickness: 0.5),
             pw.Text(
-                'Generated ${DateFormat('d MMM yyyy, h:mm a').format(DateTime.now())} · page ${p + 1}/$pages',
+                'Source: $bank, retrieved via regulated open banking on '
+                '${DateFormat('d MMM yyyy').format(DateTime.now())}. '
+                'This is a record of transactions shared with Lazervault, not a '
+                'statement issued or certified by $bank, and not a balance '
+                'confirmation.',
+                style: pw.TextStyle(fontSize: 6.5, color: PdfColors.grey600)),
+            pw.SizedBox(height: 2),
+            pw.Text(
+                'Lazervault LTD · Generated '
+                '${DateFormat('d MMM yyyy, h:mm a').format(DateTime.now())} · '
+                'page ${p + 1} of $pages',
                 style: pw.TextStyle(fontSize: 7, color: PdfColors.grey500)),
           ],
         ),

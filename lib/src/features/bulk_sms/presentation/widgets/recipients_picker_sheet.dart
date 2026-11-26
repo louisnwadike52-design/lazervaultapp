@@ -10,6 +10,7 @@ import '../view/bulk_sms_theme.dart';
 import 'recipients_contacts_sheet.dart';
 import 'recipients_csv_importer.dart';
 import 'recipients_groups_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet that builds the recipient list four ways: manual/paste,
 /// contacts, CSV/file import, and saved groups. Returns the deduped recipient
@@ -88,7 +89,7 @@ class _RecipientsPickerSheetState extends State<RecipientsPickerSheet> {
   }
 
   Future<void> _pickContacts() async {
-    final result = await showModalBottomSheet<List<SmsRecipientEntity>>(
+    final result = await showAppBottomSheet<List<SmsRecipientEntity>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -98,7 +99,7 @@ class _RecipientsPickerSheetState extends State<RecipientsPickerSheet> {
   }
 
   Future<void> _openGroups() async {
-    final result = await showModalBottomSheet<List<SmsRecipientEntity>>(
+    final result = await showAppBottomSheet<List<SmsRecipientEntity>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

@@ -1,6 +1,7 @@
 import '../entities/crypto_entity.dart';
 import '../entities/global_market_data.dart';
 import '../entities/price_point.dart';
+import 'package:lazervault/src/features/crypto/data/models/crypto_wallet_model.dart';
 
 abstract class CryptoRepository {
   Future<List<Crypto>> getCryptos({int page = 1, int perPage = 100});
@@ -55,6 +56,9 @@ abstract class CryptoRepository {
   /// asset as a zero-balance wallet for the authenticated user. Idempotent —
   /// safe to call from the crypto landing page when holdings come back empty.
   /// Returns true if any wallet was newly created.
+  /// Provisioned wallets with deposit addresses (see CryptoGrpcClient.getWallets).
+  Future<List<CryptoWalletModel>> getWallets();
+
   Future<bool> ensureUserWallets();
 
   /// Creates a 15-second locked Quidax swap quote for the given Buy/Sell.

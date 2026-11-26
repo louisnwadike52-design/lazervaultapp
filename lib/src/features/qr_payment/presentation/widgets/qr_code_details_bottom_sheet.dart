@@ -17,6 +17,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import '../../domain/repositories/qr_payment_repository.dart';
 import '../view/qr_payers_screen.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class QRCodeDetailsBottomSheet extends StatefulWidget {
   final QRPaymentEntity qrCode;
@@ -174,7 +175,7 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
       ('24 hours', 1440),
       ('7 days', 10080),
     ];
-    final minutes = await showModalBottomSheet<int>(
+    final minutes = await showAppBottomSheet<int>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

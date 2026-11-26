@@ -253,7 +253,7 @@ class PINEntryBottomSheet extends StatelessWidget {
     VoidCallback? onPINBlocked,
     VoidCallback? onCancelled,
   }) {
-    return showModalBottomSheet(
+    return showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

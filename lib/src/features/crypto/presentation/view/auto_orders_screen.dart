@@ -14,6 +14,7 @@ import '../../../../generated/crypto.pb.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'auto_orders_screen_widgets.dart';
 
 const _bg = Color(0xFF0A0A0A);

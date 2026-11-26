@@ -9,6 +9,8 @@ import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 // Dark theme palette.
 const Color _background = Color(0xFF0A0A0A);
@@ -55,7 +57,7 @@ class SourceCurrencyPicker {
     required String currentCode,
     required List<SupportedCurrencyInfo> supportedCurrencies,
   }) {
-    return showModalBottomSheet<String>(
+    return showAppBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: _cardBackground,
@@ -385,7 +387,7 @@ class _SourceCurrencyPickerSheetState
                 // Send the user back to the exchange home with conversion
                 // mode pre-selected. They can then fund a non-NGN wallet
                 // from NGN and come back.
-                Get.offAllNamed(AppRoutes.exchangeHome);
+                offAllKeepingHome(AppRoutes.exchangeHome);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _primary,

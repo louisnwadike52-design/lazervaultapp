@@ -14,6 +14,7 @@ import '../../cubit/create_policy_state.dart';
 import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Screen 4: Confirm payment - active account selector with bottom sheet to change, amount display, confirm button
 class InsurancePaymentConfirmScreen extends StatefulWidget {
@@ -525,7 +526,7 @@ class _InsurancePaymentConfirmScreenState
   }) {
     final formatter = NumberFormat('#,##0.00');
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -718,7 +719,7 @@ class _InsurancePaymentConfirmScreenState
   }
 
   void _showProductInfoSheet(BuildContext context, InsuranceProduct product) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

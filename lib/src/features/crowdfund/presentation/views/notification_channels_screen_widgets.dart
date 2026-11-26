@@ -519,7 +519,7 @@ class _NotificationChannelsScreenState
   }
 
   void _showAddChannelSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: const RoundedRectangleBorder(

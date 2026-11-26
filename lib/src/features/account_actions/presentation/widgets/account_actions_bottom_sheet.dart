@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:lazervault/src/features/statements/data/services/statement_file_service.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/document_entity.dart';
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
@@ -18,7 +18,9 @@ import '../widgets/documents_tab.dart';
 import '../widgets/help_tab.dart';
 import '../widgets/account_preview_card.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/lv_snackbar.dart';
 import 'package:lazervault/core/config/locale_gating.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'account_actions_bottom_sheet_widgets.dart';
 
 /// Account Actions Bottom Sheet - Clean, tabbed interface for card management
@@ -37,6 +39,11 @@ class AccountActionsBottomSheet extends StatefulWidget {
 
 class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
     with SingleTickerProviderStateMixin {
+  /// Downloads, verifies and opens generated documents. Same service the
+  /// statements screen uses, deliberately — one implementation, one set of
+  /// fixes.
+  final StatementFileService _documentFiles = StatementFileService();
+
   late TabController _tabController;
   late AccountActionTab _selectedTab;
 
@@ -391,31 +398,167 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
     }
   }
 
-  /// Opens the backend-rendered document in the device's browser/PDF viewer.
-  /// Mirrors StatementExportScreen._openDocument so behaviour is consistent.
+  /// Saves the backend-rendered document to the device, then offers the same
+  /// Open / Print / Share actions a statement gets.
+  ///
+  /// IT USED TO `launchUrl` THE STORAGE URL STRAIGHT INTO THE BROWSER.
+  ///
+  /// That "worked" in the sense that a PDF appeared, and was wrong in four
+  /// ways for a document somebody submits to an embassy or a landlord:
+  ///
+  ///  * nothing was saved — leaving the browser lost the document, and
+  ///    regenerating it costs a fresh render and a new reference number;
+  ///  * the digest the backend computes was never checked, so a truncated
+  ///    object would have been displayed as a valid letter;
+  ///  * there was no print and no share, which is what these documents are
+  ///    FOR. The browser's own menu is not an answer on either platform;
+  ///  * the URL went into browser history and sync. A proof-of-funds URL is
+  ///    a bearer link to the holder's balance.
+  ///
+  /// `statements` already solved this properly, so this uses that service
+  /// rather than growing a second implementation — the same mistake the
+  /// removed `downloadAccountStatement` made (see account_actions_cubit.dart).
   Future<void> _openDownloadedDocument(DocumentEntity doc) async {
     final url = doc.downloadUrl;
-    final uri = (url == null || url.isEmpty) ? null : Uri.tryParse(url);
-    if (uri == null) {
-      Get.snackbar(
-        'Document unavailable',
-        'We couldn\'t open ${doc.title}. Please try again.',
-        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
+    if (url == null || url.isEmpty) {
+      LVSnackbar.showError(
+        title: 'Document unavailable',
+        message: "We couldn't prepare your ${doc.title}. Please try again.",
       );
       return;
     }
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!ok) {
-      Get.snackbar(
-        'Couldn\'t open document',
-        'Your ${doc.title} is ready but couldn\'t be opened automatically.',
-        backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.1),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
+
+    try {
+      final path = await _documentFiles.downloadToFile(
+        url,
+        _documentFilename(doc),
+        // Null for the letter types: accounts-service computes a digest and
+        // writes it to the document audit trail, but does not return it on
+        // GenerateAccountConfirmation / GenerateProofOfFunds. Statements do
+        // return one and it IS checked. Verification is skipped, never faked.
+        expectedSha256: doc.sha256,
       );
+      if (!mounted) return;
+      await _showDocumentActions(path, doc);
+    } catch (e) {
+      if (!mounted) return;
+      LVSnackbar.showErrorFor(e, context: 'prepare your ${doc.title}');
     }
+  }
+
+  /// `Lazervault-Account-confirmation-LV-240118-7F3A.pdf` — the reference
+  /// number is on the face of the letter, so a recipient can match the file to
+  /// the document and the holder can find it again months later.
+  String _documentFilename(DocumentEntity doc) {
+    final title = doc.title.trim().isEmpty ? 'Document' : doc.title.trim();
+    final parts = <String>[
+      'Lazervault',
+      title.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '-'),
+    ];
+    final ref = doc.reference?.trim();
+    if (ref != null && ref.isNotEmpty) {
+      parts.add(ref.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '-'));
+    }
+    return '${parts.join('-').replaceAll(RegExp(r'-+'), '-')}.pdf';
+  }
+
+  Future<void> _showDocumentActions(String path, DocumentEntity doc) async {
+    if (!mounted) return;
+    await showAppBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A2A2D),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text('${doc.title} ready',
+                  style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white)),
+              if (doc.validUntil != null) ...[
+                SizedBox(height: 4.h),
+                Text(
+                  'Valid until ${_formatDocumentDate(doc.validUntil!)}',
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
+                ),
+              ],
+              SizedBox(height: 8.h),
+              ListTile(
+                leading: const Icon(Icons.open_in_new, color: Color(0xFF4E03D0)),
+                title: Text('Open',
+                    style: GoogleFonts.inter(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _runDocumentAction(
+                      () => _documentFiles.openFile(path), 'open', doc);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.print, color: Color(0xFF4E03D0)),
+                title: Text('Print',
+                    style: GoogleFonts.inter(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _runDocumentAction(
+                      () => _documentFiles.printPdf(path), 'print', doc);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.ios_share, color: Color(0xFF4E03D0)),
+                title: Text('Share',
+                    style: GoogleFonts.inter(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _runDocumentAction(
+                      () => _documentFiles.shareFile(path), 'share', doc);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _runDocumentAction(
+      Future<void> Function() action, String verb, DocumentEntity doc) async {
+    try {
+      await action();
+    } on StatementOpenFallback catch (e) {
+      // The file is saved and the share sheet is up — information, not failure.
+      if (mounted) {
+        LVSnackbar.showInfo(
+            title: 'Opened the share sheet', message: e.message);
+      }
+    } catch (e) {
+      if (mounted) {
+        LVSnackbar.showErrorFor(e, context: '$verb your ${doc.title}');
+      }
+    }
+  }
+
+  static String _formatDocumentDate(DateTime d) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${d.day} ${months[d.month - 1]} ${d.year}';
   }
 
   void _showPINDialog(String pin, DateTime? expiresAt) {

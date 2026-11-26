@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../../data/services/sales_service.dart';
 import '../../domain/entities/sale_entity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'sales_list_screen_widgets.dart';
 
 /// Sell landing page — lists all recorded sales with a revenue/receivables
@@ -340,7 +341,7 @@ class _SalesListScreenState extends State<SalesListScreen>
   }
 
   Future<void> _openDetail(SaleEntity s) async {
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

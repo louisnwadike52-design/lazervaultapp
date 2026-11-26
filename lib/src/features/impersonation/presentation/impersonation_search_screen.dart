@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 
 import '../data/impersonation_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The admin's searchable directory for starting a read-only session.
 ///
@@ -92,7 +93,7 @@ class _ImpersonationSearchScreenState extends State<ImpersonationSearchScreen> {
     // account without noticing. The sheet also states read-only up front, so
     // nobody starts a session expecting to fix something.
     final reasonController = TextEditingController();
-    final go = await showModalBottomSheet<bool>(
+    final go = await showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

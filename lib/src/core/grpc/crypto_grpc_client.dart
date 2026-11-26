@@ -190,6 +190,16 @@ class CryptoGrpcClient {
   /// Provisions the Quidax sub-account (if missing) and creates zero-balance
   /// wallet mirrors for every supported asset. Idempotent on the server side.
   /// Used by the crypto landing-page fallback when holdings come back empty.
+  /// The user's provisioned wallets — deposit address, chain and type per
+  /// asset — from crypto-service's own wallet table (user from the auth
+  /// context; the request carries nothing). Holdings are Quidax balances and
+  /// know no address, so this is the only source of one.
+  Future<GetWalletsResponse> getWallets() async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = GetWalletsRequest();
+    return await _client.getWallets(request, options: options);
+  }
+
   Future<BatchCreateWalletsResponse> batchCreateWallets() async {
     final options = await _callOptionsHelper.withAuth();
     final request = BatchCreateWalletsRequest();
@@ -849,5 +859,70 @@ class CryptoGrpcClient {
   /// Close the gRPC channel
   Future<void> close() async {
     await _channel.shutdown();
+  }
+
+  // ============================================================
+  // PAY WITH CRYPTO
+  // ============================================================
+
+  /// What this customer may actually pay with.
+  ///
+  /// The SERVER decides — their holdings narrowed by the admin policy, with
+  /// stablecoins first. The app never filters this itself: which coins may
+  /// move money is an operator decision, and a client-side copy of that rule
+  /// would drift the moment an asset is added or removed from the dashboard.
+  ///
+  /// An empty list is a legitimate answer and means "offer Buy crypto".
+  Future<ListPayableAssetsResponse> listPayableAssets({
+    String currency = 'NGN',
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    return _client.listPayableAssets(
+      ListPayableAssetsRequest()..currency = currency,
+      options: options,
+    );
+  }
+
+  /// Starts the conversion that funds an ALREADY-AUTHORISED payment.
+  ///
+  /// Called AFTER the payment exists, never before: core-payments records the
+  /// transfer as awaiting_crypto_funding and returns its reference, and that
+  /// reference is what this funds. A conversion started with no payment
+  /// waiting for it would sell someone's crypto for an errand nothing tracks.
+  ///
+  /// [idempotencyKey] is the double-sell guard and must be STABLE across
+  /// retries of the same payment — derive it from the payment reference, never
+  /// a fresh uuid, or a retry opens a second conversion.
+  Future<CreateFundedPaymentResponse> createFundedPayment({
+    required String accountId,
+    required String paymentReference,
+    required Int64 requiredMinor,
+    required String asset,
+    required String idempotencyKey,
+    String service = 'transfer',
+    String currency = 'NGN',
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    return _client.createFundedPayment(
+      CreateFundedPaymentRequest()
+        ..accountId = accountId
+        ..service = service
+        ..paymentReference = paymentReference
+        ..currency = currency
+        ..requiredMinor = requiredMinor
+        ..asset = asset
+        ..idempotencyKey = idempotencyKey,
+      options: options,
+    );
+  }
+
+  /// Where a funded payment has got to. `terminal` says stop polling;
+  /// `reason` is written for the customer and shown verbatim.
+  Future<GetFundedPaymentResponse> getFundedPayment(String id) async {
+    final options = await _callOptionsHelper.withAuth();
+    return _client.getFundedPayment(
+      GetFundedPaymentRequest()..fundedPaymentId = id,
+      options: options,
+    );
   }
 }

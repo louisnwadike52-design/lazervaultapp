@@ -5,6 +5,8 @@ import '../../data/datasources/lazervault_account_lookup.dart';
 import '../../domain/entities/account_suggestion.dart';
 import 'account_verification_state.dart';
 import '../../../../../core/utilities/banks_data.dart';
+import '../../data/models/recipient_model.dart';
+import 'package:lazervault/core/utils/destination_account_number.dart';
 
 /// Process-local verification cache.
 ///
@@ -70,6 +72,17 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
   /// this existed, so a wiring gap costs a suggestion and nothing else.
   final LazervaultAccountLookup? _lazervaultLookup;
 
+  /// The payer's already-loaded saved recipients.
+  ///
+  /// A PROVIDER rather than a list, because the saved set changes while this
+  /// cubit lives — add a payee, then type their number, and a captured list
+  /// would not contain them.
+  ///
+  /// Optional for the same reason as the lookup above: absent means the
+  /// suggestion list behaves exactly as it did before, so a wiring gap costs a
+  /// convenience and never a payment.
+  final List<RecipientModel> Function()? _savedRecipients;
+
   // Store last verification parameters for retry
   String? _lastBankCode;
   String? _lastAccountNumber;
@@ -78,8 +91,10 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
   AccountVerificationCubit({
     required RecipientVerificationRemoteDataSource dataSource,
     LazervaultAccountLookup? lazervaultLookup,
+    List<RecipientModel> Function()? savedRecipients,
   })  : _dataSource = dataSource,
         _lazervaultLookup = lazervaultLookup,
+        _savedRecipients = savedRecipients,
         super(const AccountVerificationInitial());
 
   /// Verify a bank account and fetch account holder name.
@@ -224,7 +239,34 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
     required String accountNumber,
     String country = 'NG',
   }) async {
-    if (accountNumber.length != 10) return const <AccountSuggestion>[];
+    // The same forms the account field accepts, not 10 digits alone.
+    //
+    // This read `length != 10`, so an 11-digit wallet number — OPay, PalmPay,
+    // Moniepoint, all of which assign phone-number-based accounts — returned
+    // NOTHING: no saved payee, no internal match, no bank. The field had
+    // already been widened to accept them (`maxLength: 11`) and the surface
+    // treated the empty result as "could not resolve", so a perfectly valid
+    // wallet number silently dropped the payer into manual bank selection.
+    // LazervaultAccountLookup.candidatesFor already tries both forms.
+    if (!_isCompleteAccountNumber(accountNumber)) {
+      return const <AccountSuggestion>[];
+    }
+
+    // SAVED RECIPIENTS FIRST, and they cost nothing.
+    //
+    // The payer's saved set is already in memory (RecipientCubit holds it
+    // behind an SWR cache), so this is a list filter, not a round trip — it
+    // resolves before the bank name-enquiry has finished opening a socket.
+    // That ordering is the point: the overwhelmingly common case for a typed
+    // account number is someone the payer has paid before, and making them
+    // wait on a provider lookup to be shown a payee they already saved is
+    // latency for nothing.
+    //
+    // The bank lookup still runs. The same ten digits legitimately exist at
+    // different institutions, and suppressing the external list would hide a
+    // destination the payer may actually want.
+    final saved = _savedSuggestions(accountNumber);
+
     final internalFuture = lazervaultSuggestion(accountNumber: accountNumber);
     List<AccountSuggestion> external = const <AccountSuggestion>[];
     try {
@@ -236,9 +278,152 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
       external = const <AccountSuggestion>[];
     }
     final internal = await internalFuture;
-    if (internal == null) return external;
-    return <AccountSuggestion>[internal, ...external];
+
+    final ordered = <AccountSuggestion>[
+      ...saved,
+      if (internal != null) internal,
+      ...external,
+    ];
+    return _dedupeDestinations(ordered);
   }
+
+  /// Whether [v] is a complete destination number: a 10-digit NUBAN, or an
+  /// 11-digit wallet number with the leading zero (which core-payments'
+  /// `normalizePhoneAccount` reduces to the same NUBAN).
+  ///
+  /// Held here rather than read from the widget because the cubit is what
+  /// decides whether to spend a network call, and the two must agree — they
+  /// did not, which is how 11-digit wallet numbers resolved to nothing.
+  static bool _isCompleteAccountNumber(String v) =>
+      isCompleteDestinationAccount(v);
+
+  /// Saved recipients matching what has been typed SO FAR.
+  ///
+  /// Synchronous, allocation-light and network-free by design: this is what
+  /// the account field calls on every keystroke, and the whole point is that
+  /// it answers before anything could be fetched. The payer's saved set is
+  /// already in memory (RecipientCubit holds it behind an SWR cache), so this
+  /// is a list filter.
+  ///
+  /// Matching is on DIGITS ONLY, both sides. Saved rows have been written by
+  /// several generations of this app and some carry spaces or dashes, so a
+  /// literal comparison silently misses them.
+  ///
+  /// RANKED, not merely filtered. An account number is typed from the left, so
+  /// a PREFIX match is what the payer is doing and leads; a CONTAINS match is
+  /// kept behind it because people reliably remember the last four digits of a
+  /// number whose start they do not. Within each group the saved order is
+  /// preserved — it is the payer's own, and re-sorting it by anything we
+  /// invented would move payees around under their thumb between keystrokes.
+  ///
+  /// [limit] caps the rows: this list floats over the form in an overlay, and
+  /// a payer with sixty saved payees typing one digit must not be handed a
+  /// list taller than the screen.
+  List<AccountSuggestion> savedRecipientMatches(
+    String typedNumber, {
+    int limit = 5,
+  }) {
+    final provider = _savedRecipients;
+    if (provider == null) return const <AccountSuggestion>[];
+    final typed = _digitsOnly(typedNumber);
+    if (typed.isEmpty || limit <= 0) return const <AccountSuggestion>[];
+
+    final prefix = <AccountSuggestion>[];
+    final inner = <AccountSuggestion>[];
+    try {
+      for (final r in provider()) {
+        final digits = _digitsOnly(r.accountNumber);
+        if (digits.isEmpty) continue;
+        final bucket = digits.startsWith(typed)
+            ? prefix
+            : (digits.contains(typed) ? inner : null);
+        if (bucket == null) continue;
+        bucket.add(AccountSuggestion.savedRecipient(
+          accountNumber: r.accountNumber,
+          accountName: (r.accountHolderName?.trim().isNotEmpty ?? false)
+              ? r.accountHolderName!.trim()
+              : r.name,
+          bankName: r.bankName,
+          bankCode: r.sortCode,
+          alias: r.alias ?? '',
+          internalUserId: r.internalUserId ?? '',
+          internalAccountId: r.internalAccountId ?? '',
+        ));
+      }
+    } catch (_) {
+      // A provider that throws must cost a convenience, never the suggestion
+      // list — the bank results are still perfectly usable.
+      return const <AccountSuggestion>[];
+    }
+
+    final ordered = _dedupeDestinations(<AccountSuggestion>[...prefix, ...inner]);
+    return ordered.length <= limit ? ordered : ordered.sublist(0, limit);
+  }
+
+  /// Saved recipients whose account number IS the one typed — the exact-match
+  /// subset [savedRecipientMatches] degenerates to once the number is
+  /// complete. Kept separate because [suggestBanks] merges this with the bank
+  /// results and must not pull in a payee who merely shares a prefix.
+  List<AccountSuggestion> _savedSuggestions(String accountNumber) {
+    final provider = _savedRecipients;
+    if (provider == null) return const <AccountSuggestion>[];
+    final typed = _digitsOnly(accountNumber);
+    if (typed.isEmpty) return const <AccountSuggestion>[];
+
+    final out = <AccountSuggestion>[];
+    try {
+      for (final r in provider()) {
+        if (_digitsOnly(r.accountNumber) != typed) continue;
+        out.add(AccountSuggestion.savedRecipient(
+          accountNumber: r.accountNumber,
+          accountName: (r.accountHolderName?.trim().isNotEmpty ?? false)
+              ? r.accountHolderName!.trim()
+              : r.name,
+          bankName: r.bankName,
+          bankCode: r.sortCode,
+          alias: r.alias ?? '',
+          internalUserId: r.internalUserId ?? '',
+          internalAccountId: r.internalAccountId ?? '',
+        ));
+      }
+    } catch (_) {
+      // A provider that throws must cost a convenience, never the suggestion
+      // list — the bank results below are still perfectly usable.
+      return const <AccountSuggestion>[];
+    }
+    return out;
+  }
+
+  /// Collapses rows that name the SAME destination, keeping the first.
+  ///
+  /// Order is the priority: saved, then internal, then external. So a payee
+  /// the payer already saved suppresses the bank's own row for that account —
+  /// which matters because the saved row carries the alias the payer chose and
+  /// the account they pinned, while the bank row carries only the registered
+  /// name.
+  ///
+  /// Keyed on bank + digits rather than on the display name, because the two
+  /// sources routinely disagree about the name for one real account, which is
+  /// exactly the disagreement that would defeat a name-based key.
+  static List<AccountSuggestion> _dedupeDestinations(
+    List<AccountSuggestion> rows,
+  ) {
+    final seen = <String>{};
+    final out = <AccountSuggestion>[];
+    for (final r in rows) {
+      final bank = r.isLazervault
+          ? 'lazervault'
+          : (r.bankCode.trim().isNotEmpty
+              ? r.bankCode.trim().toLowerCase()
+              : r.bankName.trim().toLowerCase());
+      final key = '$bank|${_digitsOnly(r.accountNumber)}';
+      if (!seen.add(key)) continue;
+      out.add(r);
+    }
+    return out;
+  }
+
+  static String _digitsOnly(String v) => v.replaceAll(RegExp(r'[^0-9]'), '');
 
   /// The LAZERVAULT destination [accountNumber] names, or null when it is not
   /// an account on this platform (which is the common case).

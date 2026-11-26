@@ -199,6 +199,25 @@ class CountryConfig {
   final List<DocumentRequirement> documentRequirements;
   final KycLevel requiredKycLevel;
   final Map<KycLevel, int> dailyLimits;
+
+  /// Per-tier MONTHLY caps, in the same major units as [dailyLimits].
+  ///
+  /// WHY THIS EXISTS. The limits screen had no monthly figures to show, so it
+  /// INVENTED them — daily x4 for basic, x8 for standard, x20 for advanced,
+  /// with a comment admitting it was a heuristic "pending an explicit monthly
+  /// map". For NG those multipliers are simply wrong against the canonical
+  /// shared/kyctiers table: Tier 1 is 6x daily (₦50,000 -> ₦300,000) and
+  /// Tier 2 is 25x (₦200,000 -> ₦5,000,000). The screen whose entire job is
+  /// to state the right number showed ₦200,000 and ₦1,600,000.
+  ///
+  /// Empty means "no canonical monthly figure recorded for this country", and
+  /// the caller falls back to the old ratio. That fallback is kept rather than
+  /// back-filling every country from the Go table because the non-NG DAILY
+  /// values here already diverge from it deliberately (GB basic is £500 here
+  /// against the table's £50,000), so importing its monthly values would pair
+  /// a local daily with a foreign monthly and make the pair incoherent.
+  final Map<KycLevel, int> monthlyLimits;
+
   final List<String> regulatoryNotes;
   final bool isActive;
   final bool isBeta;
@@ -214,6 +233,7 @@ class CountryConfig {
     required this.documentRequirements,
     required this.requiredKycLevel,
     required this.dailyLimits,
+    this.monthlyLimits = const {},
     required this.regulatoryNotes,
     this.isActive = true,
     this.isBeta = false,

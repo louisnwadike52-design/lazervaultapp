@@ -26,6 +26,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 import '../../domain/trade_amounts.dart';
 import 'package:lazervault/src/features/crypto/domain/trade_pricing.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class BuyCryptoScreen extends StatefulWidget {
   final Crypto? selectedCrypto;
@@ -1643,7 +1644,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     final cryptoCubit = context
         .read<CryptoCubit>(); // Capture cubit before showing bottom sheet
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

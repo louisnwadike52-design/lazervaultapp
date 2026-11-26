@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -322,6 +323,16 @@ class CableTVPdfService {
                 'Customer Name',
                 payment.customerName,
               ),
+              // HOW IT WAS PAID — the same rows the screen shows.
+              //
+              // The document a customer forwards has to say exactly what the
+              // screen said; two renderers of one split is how the two come
+              // to disagree, and the PDF is the copy other people read.
+              // ASCII money: the embedded font falls back to Helvetica when
+              // the HTTP fetch fails, and that fallback throws on the naira
+              // sign.
+              ...nairaFundingRowsAscii(payment.metadata)
+                  .map((e) => _buildDetailRow(e.key, e.value)),
               if (payment.renewalDate.isNotEmpty)
                 _buildDetailRow(
                   'Renewal Date',

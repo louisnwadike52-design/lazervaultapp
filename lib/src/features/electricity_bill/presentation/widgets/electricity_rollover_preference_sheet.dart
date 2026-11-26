@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Captures the recurring auto-recharge cadence for an electricity meter.
 ///
@@ -31,7 +32,7 @@ class ElectricityRolloverPreferenceSheet extends StatefulWidget {
   const ElectricityRolloverPreferenceSheet({super.key});
 
   static Future<ElectricityRolloverPreference?> show(BuildContext context) {
-    return showModalBottomSheet<ElectricityRolloverPreference>(
+    return showAppBottomSheet<ElectricityRolloverPreference>(
       context: context,
       isScrollControlled: true,
       backgroundColor: InvoiceThemeColors.secondaryBackground,

@@ -24,6 +24,7 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/fcy_account/data/fcy_capabilities.dart';
 import 'package:lazervault/core/config/locale_gating.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'account_carousel_widgets.dart';
 
 class AccountCarousel extends StatefulWidget {
@@ -100,6 +101,21 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   // Whether we're currently resolving a family account ID for setup navigation
   bool _isResolvingFamilyId = false;
+
+  /// Drives the slider when the active account is changed by something OTHER
+  /// than a swipe. `initialPage` only applies to the slider's FIRST build, so
+  /// without a controller there is no way to move it afterwards.
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
+
+  /// The active account id this carousel has already followed.
+  ///
+  /// accountIdStream is a BehaviorSubject with no `distinct()` — the auto
+  /// selector re-asserts the same id on every refresh — so without this the
+  /// carousel would re-animate to the card it is already showing.
+  String? _followedAccountId;
+
+  StreamSubscription<String?>? _activeAccountSub;
   // Helper to convert currency code to symbol
   /// Delegates to the shared resolver.
   ///
@@ -166,6 +182,46 @@ class _AccountCarouselState extends State<AccountCarousel> {
     _checkForPendingAnimation();
     // Re-render when the panic decoy is toggled (shake / long-press) or edited.
     _panic.addListener(_onPanicChanged);
+    // FOLLOW AN ACTIVE ACCOUNT CHOSEN ELSEWHERE.
+    //
+    // _initializeCarouselPosition runs once, in initState, so the slider only
+    // ever honoured the selection that existed when the dashboard was built.
+    // Switching region re-selects the active account (the cards cubit picks the
+    // wallet in the new currency) and the carousel stayed on the card it was
+    // on — a Personal Naira card on screen while the services grid, the
+    // transaction list and every account-scoped fetch had moved to another
+    // wallet entirely. That divergence is the "switching currency and back
+    // messes things up" report.
+    _followedAccountId = _accountManager.activeAccountId;
+    _activeAccountSub = _accountManager.accountIdStream.listen(_followActive);
+  }
+
+  /// Move to the card for [id] when the active account was set from outside.
+  void _followActive(String? id) {
+    if (!mounted || id == null || id.isEmpty) return;
+    if (id == _followedAccountId) return;
+    final index = widget.accountSummaries.indexWhere(
+        (a) => a.spendingAccountId == id || a.id == id);
+    // An id that is not in the list is NOT followed — and deliberately not
+    // corrected to card 0 either. Mid-refresh the summaries and the selection
+    // can disagree for a frame; snapping the carousel on that would move the
+    // user's card for no reason they can see.
+    if (index < 0 || index == _currentIndex) {
+      _followedAccountId = id;
+      return;
+    }
+    _followedAccountId = id;
+    setState(() => _currentIndex = index);
+    _carouselController.animateToPage(index);
+    // The slider's own onPageChanged fires from the animation and would set the
+    // active account again (same id — harmless), but the flags are mirrored
+    // here too so they are right even if the animation is cut short.
+    final active = widget.accountSummaries[index];
+    _accountManager.setActiveAccountFrozen(active.isFrozen);
+    _accountManager.setActiveFamilyContext(
+      isFamily: active.isFamilyAccount,
+      fundMode: active.fundDistributionMode,
+    );
   }
 
   void _onPanicChanged() {
@@ -187,6 +243,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
   @override
   void dispose() {
     _panicRollTimer?.cancel();
+    _activeAccountSub?.cancel();
     _panic.removeListener(_onPanicChanged);
     super.dispose();
   }
@@ -341,6 +398,26 @@ class _AccountCarouselState extends State<AccountCarousel> {
     }
     // Summaries refreshed (e.g. a freeze/unfreeze from the details sheet) — keep
     // the global active-frozen flag current so service tiles gate correctly.
+    //
+    // Re-check the active account FIRST. A selection made while this carousel
+    // had no row to match it against (the auto-select that fires with the
+    // cached rows, before the fetch lands) would otherwise never be followed,
+    // and _syncActiveFrozenFlag would then publish the VISIBLE card's flags
+    // over it — mirroring the wrong account's freeze/family state.
+    if (!identical(oldWidget.accountSummaries, widget.accountSummaries)) {
+      final active = _accountManager.activeAccountId;
+      if (active != null && active.isNotEmpty) {
+        final index = widget.accountSummaries.indexWhere(
+            (a) => a.spendingAccountId == active || a.id == active);
+        if (index >= 0 && index != _currentIndex) {
+          _followedAccountId = active;
+          _currentIndex = index;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _carouselController.animateToPage(index);
+          });
+        }
+      }
+    }
     _syncActiveFrozenFlag();
   }
 
@@ -415,10 +492,23 @@ class _AccountCarouselState extends State<AccountCarousel> {
       _accountManager.setActiveFamilyContext(isFamily: false);
       return;
     }
-    final idx =
-        _currentIndex >= 0 && _currentIndex < widget.accountSummaries.length
-            ? _currentIndex
-            : 0;
+    // Mirror the flags of the ACTIVE account, resolving it the same way every
+    // other reader does (spending id, then row id), and only fall back to the
+    // visible card when the selection cannot be resolved at all. Keying this
+    // off _currentIndex alone published the visible card's freeze/family state
+    // whenever the two had diverged — which is precisely the state these flags
+    // exist to describe correctly.
+    var idx = -1;
+    final activeId = _accountManager.activeAccountId;
+    if (activeId != null && activeId.isNotEmpty) {
+      idx = widget.accountSummaries.indexWhere(
+          (a) => a.spendingAccountId == activeId || a.id == activeId);
+    }
+    if (idx < 0) {
+      idx = _currentIndex >= 0 && _currentIndex < widget.accountSummaries.length
+          ? _currentIndex
+          : 0;
+    }
     final active = widget.accountSummaries[idx];
     _accountManager.setActiveAccountFrozen(active.isFrozen);
     // Same mirror, for the same reason: a refusal dialog opened from a screen
@@ -442,6 +532,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
     if (widget.accountSummaries.isNotEmpty &&
         index < widget.accountSummaries.length) {
       final active = widget.accountSummaries[index];
+      _followedAccountId = active.spendingAccountId;
       _accountManager.setActiveAccount(active.spendingAccountId);
       // Keep the global frozen flag aligned with the newly-active account.
       _accountManager.setActiveAccountFrozen(active.isFrozen);
@@ -535,6 +626,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
       child: Column(
         children: [
           CarouselSlider.builder(
+            carouselController: _carouselController,
             itemCount: _totalItemCount,
             options: CarouselOptions(
               // Slightly trimmed so the Referral Bonus gift icon + label
@@ -2079,7 +2171,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
     // Source of truth is the cubit's persisted period, so reopening the sheet
     // always reflects the currently-active selection.
     final current = _TrendPeriod.fromApi(_cubit.trendPeriod);
-    showModalBottomSheet<_TrendPeriod>(
+    showAppBottomSheet<_TrendPeriod>(
       context: context,
       // Match the dashboard account-card gradient so the sheet reads as
       // a natural extension of the chip the user tapped, not a generic

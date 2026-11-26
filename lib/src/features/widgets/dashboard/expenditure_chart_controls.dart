@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'expenditure_chart.dart';
 import 'expenditure_chart_type.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The chart-shape cycle button.
 ///
@@ -220,7 +221,7 @@ Future<void> showExpenditureChartInfoSheet(
   /// are the same control instead of two.
   ValueChanged<ExpenditureChartType>? onSelect,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: const Color(0xFF1F1F1F),

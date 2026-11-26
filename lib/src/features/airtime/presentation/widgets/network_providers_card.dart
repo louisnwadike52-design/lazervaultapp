@@ -9,6 +9,7 @@ import '../../domain/entities/country.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/network_logo.dart';
 import 'package:lazervault/src/features/widgets/history/view_all_button.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Static Nigerian network providers for instant display (no API call needed).
 /// These are the canonical providers from our database — IDs and operator IDs
@@ -175,7 +176,7 @@ class NetworkProvidersCard extends StatelessWidget {
             ? state.providers
             : _staticNigerianProviders;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

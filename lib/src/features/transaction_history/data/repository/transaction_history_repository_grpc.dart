@@ -1,3 +1,5 @@
+import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/utils/grpc_error_handler.dart';
 import 'dart:convert';
 import 'package:lazervault/src/features/transaction_history/utils/self_transfer_title.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
@@ -31,6 +33,28 @@ import '../../../../../core/utils/brand_bank.dart';
 /// - Uses account_id from AccountManager and locale from LocaleManager
 /// - Both active account and active locale are sent to filter results
 /// - Service name filtering allows for service-specific views
+/// Turn a failed history read into something a customer can act on.
+///
+/// WHAT WAS ON SCREEN BEFORE THIS. Tapping a deposit push on a cold start put
+/// the raw gRPC envelope on the Deposit page — the status code, the trailers,
+/// the Cloudflare `cf-ray` and a base64 NEL report URL — under the heading
+/// "Something went wrong". Fifteen lines of infrastructure, none of it
+/// actionable, in place of the one sentence that is: your session expired,
+/// sign in again.
+///
+/// GrpcErrorHandler already had that sentence and every other code's. This
+/// repository simply never used it and interpolated the exception instead.
+String _readable(String what, Object e) {
+  if (e is GrpcError) {
+    // The handler keeps the server's own words where the server writes for
+    // customers, and substitutes plain copy for infrastructure failures.
+    return GrpcErrorHandler.userFriendlyMessage(e);
+  }
+  // Not a gRPC failure — a decode, a cache read. Name the thing that failed
+  // without pasting the object's toString into the UI.
+  return "We couldn't load $what just now. Pull down to try again.";
+}
+
 class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   final AccountsGrpcClient grpcClient;
   final TransactionHistoryCacheDataSource cacheDataSource;
@@ -48,6 +72,48 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   /// contains "::", so this stays collision-free.
   String _accountScopedKey(String userId, String accountId) =>
       '$userId::$accountId';
+
+  /// The account these transactions belong to, RESOLVED rather than demanded.
+  ///
+  /// THIS IS WHY A DEPOSIT PUSH OPENED AN ERROR PAGE.
+  ///
+  /// `AccountManager` keeps the active account in memory only — its own doc
+  /// says the account "must be re-selected by the user after each app
+  /// launch", and it is the dashboard carousel that selects it. A
+  /// notification deep link goes STRAIGHT to a history screen without
+  /// passing the dashboard, so on a cold start nothing had ever selected an
+  /// account and this read null. The old code threw `No active account
+  /// selected`, which the catch in each caller re-wrapped into "We couldn't
+  /// load transactions just now. Pull down to try again." — a sentence that
+  /// blames the network for a screen that never asked it anything, and that
+  /// pulling down could never fix. Opening the same tab from the dashboard
+  /// worked, which is why it read as an authentication fault rather than an
+  /// ordering one.
+  ///
+  /// `ensureActiveAccountSnapshot` is the house answer to exactly this: it
+  /// reads the loaded summaries and FETCHES them when none are loaded,
+  /// falling back to the first wallet. Its own doc records the same bug on a
+  /// funding sheet — the same sheet reached directly could not resolve an
+  /// account while the one reached via the dashboard could.
+  ///
+  /// The resolved id is written back to `AccountManager` so everything else
+  /// on the screen — the header, a tapped receipt, a pull-to-refresh —
+  /// agrees with the list being shown instead of resolving again, later, and
+  /// possibly to a different wallet.
+  Future<String> _resolveAccountId() async {
+    final selected = accountManager.activeAccountId;
+    if (selected != null && selected.isNotEmpty) return selected;
+
+    final snapshot = await ensureActiveAccountSnapshot();
+    final resolved = snapshot?.id ?? '';
+    if (resolved.isEmpty) {
+      // Genuinely no accounts — a brand-new profile, or the fetch failed.
+      // Still a refusal, but now it is a true one.
+      throw Exception('No active account selected');
+    }
+    accountManager.setActiveAccount(resolved);
+    return resolved;
+  }
 
   final IPaymentsTransferDataSource? _paymentsDataSource;
 
@@ -155,10 +221,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     TransactionFilters? filters,
   }) async {
     try {
-      final accountId = accountManager.activeAccountId;
-      if (accountId == null) {
-        throw Exception('No active account selected');
-      }
+      final accountId = await _resolveAccountId();
 
       // Try cache first (but skip if search query is present — apply locally after).
       // Cache is scoped per (user, account) so selecting the Family & Friends
@@ -387,7 +450,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         nextCursor: null,
       );
     } catch (e) {
-      throw Exception('Failed to fetch transaction history: $e');
+      throw Exception(_readable('transaction history', e));
     }
   }
 
@@ -400,10 +463,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     TransactionFilters? filters,
   }) async {
     try {
-      final accountId = accountManager.activeAccountId;
-      if (accountId == null) {
-        throw Exception('No active account selected');
-      }
+      final accountId = await _resolveAccountId();
 
       // Try cache first for page 1 — scoped per (user, account) so the
       // service-filtered list also respects the selected account card.
@@ -486,7 +546,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         nextCursor: null,
       );
     } catch (e) {
-      throw Exception('Failed to fetch service transactions: $e');
+      throw Exception(_readable('transactions', e));
     }
   }
 
@@ -520,10 +580,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     final needle = id.trim();
     if (needle.isEmpty) return null;
 
-    final accountId = accountManager.activeAccountId;
-    if (accountId == null) {
-      throw Exception('No active account selected');
-    }
+    final accountId = await _resolveAccountId();
 
     try {
       // Resolved once, awaiting the summaries if they have not loaded — that
@@ -607,7 +664,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       final cached = await _cachedTransaction(needle);
       if (cached != null) return cached;
       if (e.toString().contains('not found')) return null;
-      throw Exception('Failed to fetch transaction: $e');
+      throw Exception(_readable('this transaction', e));
     }
   }
 
@@ -623,10 +680,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   @override
   Future<List<UnifiedTransaction>> searchTransactions(String query) async {
     try {
-      final accountId = accountManager.activeAccountId;
-      if (accountId == null) {
-        throw Exception('No active account selected');
-      }
+      final accountId = await _resolveAccountId();
 
       // Note: The accounts-service doesn't have a search endpoint
       // We fetch all transactions and filter locally
@@ -648,7 +702,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
                   true)
           .toList();
     } catch (e) {
-      throw Exception('Failed to search transactions: $e');
+      throw Exception(_readable('search results', e));
     }
   }
 
@@ -659,10 +713,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     DateTime? endDate,
   }) async {
     try {
-      final accountId = accountManager.activeAccountId;
-      if (accountId == null) {
-        throw Exception('No active account selected');
-      }
+      final accountId = await _resolveAccountId();
 
       final response = await grpcClient.getTransactionStatistics(
         accountId: accountId,
@@ -687,7 +738,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         transactionCountsByStatus: {}, // Empty for now, not provided by backend
       );
     } catch (e) {
-      throw Exception('Failed to fetch statistics: $e');
+      throw Exception(_readable('your statistics', e));
     }
   }
 
@@ -697,10 +748,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     required DateTime endDate,
   }) async {
     try {
-      final accountId = accountManager.activeAccountId;
-      if (accountId == null) {
-        throw Exception('No active account selected');
-      }
+      final accountId = await _resolveAccountId();
 
       // Fetch up to 500 transactions for export
       final response = await grpcClient.getTransactionHistory(
@@ -717,17 +765,14 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
           .map((t) => _convertFromProto(t, fallbackCurrency: ccy))
           .toList();
     } catch (e) {
-      throw Exception('Failed to fetch transactions for export: $e');
+      throw Exception(_readable('transactions to export', e));
     }
   }
 
   @override
   Future<void> refreshTransactions() async {
     try {
-      final accountId = accountManager.activeAccountId;
-      if (accountId == null) {
-        throw Exception('No active account selected');
-      }
+      final accountId = await _resolveAccountId();
 
       // Clear cache after refresh — only the active account's scoped bucket,
       // so refreshing one account doesn't wipe another account's cache.
@@ -741,7 +786,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       // Note: The accounts-service doesn't have a refresh endpoint
       // Fetching fresh transactions will happen on next call
     } catch (e) {
-      throw Exception('Failed to refresh transactions: $e');
+      throw Exception(_readable('transactions', e));
     }
   }
 
@@ -1036,6 +1081,24 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // From line — the document proving money arrived could not say who sent
     // it. The name is right there in the text; recover it rather than shipping
     // a receipt with a blank counterparty.
+    if (counterpartyName == null || counterpartyName.isEmpty) {
+      // THE FIELD FIRST, THE PROSE SECOND.
+      //
+      // banking-service writes the payer into metadata as `sender_name` (the
+      // Nomba path) or `payer_name` (Stitch), which is the record. Reading it
+      // was simply never wired up, so every deposit receipt depended on
+      // parsing the English out of "Deposit from X" — which breaks the moment
+      // anyone rewords that sentence, and returns nothing at all when the
+      // description is the neutral "Bank transfer deposit".
+      //
+      // The description parse stays as the fallback for rows written before
+      // the metadata carried it.
+      counterpartyName = _firstNonEmpty([
+        metadata['sender_name'],
+        metadata['payer_name'],
+        metadata['originator_name'],
+      ]);
+    }
     if (counterpartyName == null || counterpartyName.isEmpty) {
       counterpartyName = _senderFromDepositDescription(protoTx.description);
     }
@@ -1470,6 +1533,21 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   }
 }
 
+/// The first value that is a real, non-placeholder name.
+///
+/// Placeholders are filtered here as well as in the description parse: a
+/// provider that puts "Anonymous customer" in a FIELD is as wrong to print on
+/// a receipt as one that puts it in a sentence.
+String? _firstNonEmpty(List<Object?> candidates) {
+  for (final c in candidates) {
+    final v = c?.toString().trim() ?? '';
+    if (v.isEmpty) continue;
+    if (_isDepositPlaceholderName(v)) continue;
+    return v;
+  }
+  return null;
+}
+
 /// Recovers the sender's name from a deposit description.
 ///
 /// banking-service writes "Deposit from {name}" and leaves counterparty_name
@@ -1490,15 +1568,27 @@ String? _senderFromDepositDescription(String description) {
 
   // "Deposit from Anonymous customer" / "Unknown" are provider placeholders,
   // not people. A receipt naming them reads as a real counterparty.
+  if (_isDepositPlaceholderName(name)) return null;
+
+  return name;
+}
+
+/// Provider placeholders that are NOT people.
+///
+/// Shared by the metadata read and the description parse, so a name refused
+/// in one path cannot be printed by the other — which is the shape of bug
+/// that puts "Anonymous customer" on a receipt as though somebody by that
+/// name had sent money.
+bool _isDepositPlaceholderName(String name) {
   const placeholders = {
     'anonymous customer',
     'anonymous',
     'unknown',
     'unknown customer',
     'n/a',
+    'na',
     'null',
+    '-',
   };
-  if (placeholders.contains(name.toLowerCase())) return null;
-
-  return name;
+  return placeholders.contains(name.trim().toLowerCase());
 }

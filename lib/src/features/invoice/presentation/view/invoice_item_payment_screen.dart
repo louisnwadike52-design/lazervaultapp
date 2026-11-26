@@ -196,6 +196,22 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
               'fromPaymentFlow': true,
             },
           );
+        } else if (state is TaggedInvoiceCryptoFundingStarted) {
+          // AUTHORISED, CONVERTING, NOT PAID — and deliberately NOT routed to
+          // the receipt: there is nothing to receipt yet, and a receipt here
+          // reads as "done" to the one person who would then tell the issuer
+          // so. Without this branch the screen held its spinner for ever.
+          setState(() => _isProcessingPayment = false);
+          _fetchAccounts();
+          Get.snackbar(
+            'Converting your ${state.asset.toUpperCase()}',
+            "We're selling your ${state.asset.toUpperCase()} to pay this "
+                "invoice. It will be marked paid as soon as the funds land — "
+                "you'll get a notification, and nothing has left your wallet "
+                "yet.",
+            duration: const Duration(seconds: 6),
+            snackPosition: SnackPosition.BOTTOM,
+          );
         } else if (state is TaggedInvoiceError) {
           setState(() => _isProcessingPayment = false);
           // SANITISED. This rendered the backend's words verbatim, so a payer

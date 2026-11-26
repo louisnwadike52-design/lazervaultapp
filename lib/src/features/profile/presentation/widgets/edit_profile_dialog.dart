@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/src/features/profile/presentation/view/change_phone_screen.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/profile_address_section.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class EditProfileDialog extends StatefulWidget {
   final User user;
@@ -24,6 +25,7 @@ class EditProfileDialog extends StatefulWidget {
 
 class _EditProfileDialogState extends State<EditProfileDialog> {
   late TextEditingController _firstNameController;
+  late TextEditingController _middleNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _usernameController;
   late TextEditingController _phoneController;
@@ -40,6 +42,8 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   void initState() {
     super.initState();
     _firstNameController = TextEditingController(text: widget.user.firstName);
+    _middleNameController =
+        TextEditingController(text: widget.user.middleName);
     _lastNameController = TextEditingController(text: widget.user.lastName);
     _usernameController =
         TextEditingController(text: widget.user.username ?? '');
@@ -51,6 +55,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   @override
   void dispose() {
     _firstNameController.dispose();
+    _middleNameController.dispose();
     _lastNameController.dispose();
     _usernameController.dispose();
     _phoneController.dispose();
@@ -79,6 +84,12 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
       context.read<ProfileCubit>().updateUserProfile(
             firstName: _firstNameController.text.trim(),
             lastName: _lastNameController.text.trim(),
+            // DELIBERATELY NOT SENT. The name fields on this form are
+            // readOnly — this screen must not become a second door to a name
+            // change — and a middle name is part of the same legal name, gated
+            // server-side by the same rule. Passing null leaves the server's
+            // update_middle_name flag unset, so this save cannot touch it.
+            // The editable door is KycUpdateDetailsScreen.
             username: cleanUsername,
             // Always sent from this form, because this form owns the address.
             // Sending it only when changed would make clearing a line
@@ -168,7 +179,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                   );
                   return;
                 }
-                final choice = await showModalBottomSheet<String>(
+                final choice = await showAppBottomSheet<String>(
                   context: context,
                   backgroundColor: const Color(0xFF1A1A1A),
                   shape: RoundedRectangleBorder(
@@ -329,9 +340,18 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                     // NOT EDITABLE. The name on this account is whatever KYC
                     // verified; a profile that disagrees with the document
                     // used to approve it is worse than one that cannot be
-                    // changed here. The server ignores these fields too, so
-                    // this is the honest surface for a decision already made
-                    // rather than the thing enforcing it.
+                    // changed here.
+                    //
+                    // THIS readOnly NOW CARRIES WEIGHT. The line that used to
+                    // sit here — "the server ignores these fields too" — is
+                    // STALE and dangerous to act on: auth-service now ACCEPTS
+                    // a name change from an UNVERIFIED holder, so this is
+                    // enforcement, not decoration. Removing it would make
+                    // Settings a second door to a name change, and a name
+                    // changed after a verification attempt makes Mono refuse
+                    // every later session ("Customer name does not match the
+                    // existing record") — a dead end only support can open.
+                    // KycUpdateDetailsScreen is the ONE door, and it warns.
                     readOnly: true,
                     enableInteractiveSelection: false,
                     decoration: InputDecoration(
@@ -363,15 +383,44 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
 
                   SizedBox(height: 16.h),
 
+                  // Middle Name — shown, never editable here, exactly like the
+                  // two around it. Displayed because after verification this
+                  // holds the REGISTRY's middle name: a customer checking why
+                  // a name looks unfamiliar should be able to see all of it.
+                  TextFormField(
+                    controller: _middleNameController,
+                    readOnly: true,
+                    enabled: false,
+                    decoration: InputDecoration(
+                      labelText: 'Middle Name',
+                      hintText: _middleNameController.text.trim().isEmpty
+                          ? 'None on file'
+                          : null,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r)),
+                    ),
+                  ),
+
+                  SizedBox(height: 16.h),
+
                   // Last Name Field
                   TextFormField(
                     controller: _lastNameController,
                     // NOT EDITABLE. The name on this account is whatever KYC
                     // verified; a profile that disagrees with the document
                     // used to approve it is worse than one that cannot be
-                    // changed here. The server ignores these fields too, so
-                    // this is the honest surface for a decision already made
-                    // rather than the thing enforcing it.
+                    // changed here.
+                    //
+                    // THIS readOnly NOW CARRIES WEIGHT. The line that used to
+                    // sit here — "the server ignores these fields too" — is
+                    // STALE and dangerous to act on: auth-service now ACCEPTS
+                    // a name change from an UNVERIFIED holder, so this is
+                    // enforcement, not decoration. Removing it would make
+                    // Settings a second door to a name change, and a name
+                    // changed after a verification attempt makes Mono refuse
+                    // every later session ("Customer name does not match the
+                    // existing record") — a dead end only support can open.
+                    // KycUpdateDetailsScreen is the ONE door, and it warns.
                     readOnly: true,
                     enableInteractiveSelection: false,
                     decoration: InputDecoration(

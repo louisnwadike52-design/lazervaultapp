@@ -13,6 +13,7 @@ import '../cubit/data_auto_recharge_state.dart';
 import '../cubit/data_beneficiary_cubit.dart';
 import '../cubit/data_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Saved data contacts. Mirrors `AirtimeBeneficiariesScreen` — list + add
 /// + delete + tap-to-purchase. Tap routes the user back into the data
@@ -268,7 +269,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
       _navigateEditRollover(b, autos.first);
       return;
     }
-    final picked = await showModalBottomSheet<DataAutoRecharge>(
+    final picked = await showAppBottomSheet<DataAutoRecharge>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -629,7 +630,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
   }
 
   void _showOptions(DataBeneficiary b) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

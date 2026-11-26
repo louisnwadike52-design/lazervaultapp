@@ -22,8 +22,25 @@ import 'package:shimmer/shimmer.dart';
 class KycStatusSkeleton extends StatelessWidget {
   const KycStatusSkeleton({super.key});
 
-  static const Color _card = Color(0xFF1F1F1F);
-  static const Color _highlight = Color(0xFF2D2D2D);
+  // Kept in step with bvn_verification_screen's surface tokens. The skeleton is
+  // the FIRST thing drawn on that screen and the real cards replace it in
+  // place, so a different shade here reads as the page changing colour under
+  // the user rather than as content arriving.
+  //
+  // THESE WERE DARK (#17171C / #212128) ON A LIGHT PAGE. The comment above
+  // claimed they tracked the screen's surface tokens, and they did not: that
+  // screen's ground is `_bg` #F6F5FB with white cards (bvn_verification_screen
+  // L59-60). So opening Identity Verification from Settings painted a column of
+  // near-black blocks over a near-white page for as long as the status took to
+  // load — which reads as a rendering fault, not as loading, and is the first
+  // thing a customer sees on the screen that asks for their BVN.
+  //
+  // Now: a light placeholder a shade below the page ground, with a near-white
+  // sweep. The contrast against #F6F5FB is deliberately gentle — a skeleton is
+  // meant to be ignorable, and a hard edge against a pale page draws more
+  // attention than the content that replaces it.
+  static const Color _card = Color(0xFFE6E4EF);
+  static const Color _highlight = Color(0xFFF7F6FB);
 
   Widget _box({required double width, required double height, double radius = 8}) {
     return Container(
@@ -49,40 +66,35 @@ class KycStatusSkeleton extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header — title then subtitle, two lines because the real
-            // subtitle wraps at every phone width we support.
-            _box(width: 200.w, height: 22.h, radius: 6),
+            // The header is CENTRED on the real screen — a badge, then a
+            // centred title and a centred two-line subtitle. A left-aligned
+            // skeleton makes the content appear to slide sideways when it
+            // lands, which reads as a layout bug rather than a load.
+            SizedBox(height: 8.h),
+            Center(child: _box(width: 84.w, height: 84.w, radius: 42)),
+            SizedBox(height: 18.h),
+            Center(child: _box(width: 210.w, height: 24.h, radius: 6)),
             SizedBox(height: 10.h),
-            _box(width: double.infinity, height: 12.h, radius: 4),
+            Center(child: _box(width: 280.w, height: 12.h, radius: 4)),
             SizedBox(height: 6.h),
-            _box(width: 220.w, height: 12.h, radius: 4),
+            Center(child: _box(width: 200.w, height: 12.h, radius: 4)),
 
-            SizedBox(height: 20.h),
-            // Tier card.
-            _box(width: double.infinity, height: 88.h, radius: 14),
+            SizedBox(height: 22.h),
+            // Tier card — taller than it was, because it now carries the
+            // three-segment tier rail under its heading row.
+            _box(width: double.infinity, height: 124.h, radius: 18),
 
-            SizedBox(height: 16.h),
-            // Info card — the long explanatory paragraph.
-            _box(width: double.infinity, height: 96.h, radius: 12),
+            SizedBox(height: 12.h),
+            // "What you'll need" — heading, three icon rows, a footnote.
+            _box(width: double.infinity, height: 232.h, radius: 18),
 
             SizedBox(height: 18.h),
-            // Benefits list: a heading and three rows.
-            _box(width: 120.w, height: 14.h, radius: 4),
-            SizedBox(height: 12.h),
-            for (var i = 0; i < 3; i++) ...[
-              Row(
-                children: [
-                  _box(width: 18.w, height: 18.h, radius: 9),
-                  SizedBox(width: 10.w),
-                  _box(width: (i.isEven ? 200 : 160).w, height: 12.h, radius: 4),
-                ],
-              ),
-              SizedBox(height: 10.h),
-            ],
+            // The numbered next-tier steps.
+            _box(width: double.infinity, height: 120.h, radius: 18),
 
-            SizedBox(height: 20.h),
+            SizedBox(height: 22.h),
             // The CTA, so the button does not appear to jump in late.
-            _box(width: double.infinity, height: 50.h, radius: 12),
+            _box(width: double.infinity, height: 54.h, radius: 16),
           ],
         ),
       ),

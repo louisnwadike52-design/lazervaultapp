@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -316,6 +317,12 @@ class InternetBillPdfService {
                 'Account Number',
                 payment.customerNumber,
               ),
+              // HOW IT WAS PAID — the same rows the screen shows, so the
+              // forwarded document and the screen cannot disagree. ASCII
+              // money: the embedded font's Helvetica fallback throws on the
+              // naira sign.
+              ...nairaFundingRowsAscii(payment.metadata)
+                  .map((e) => _buildDetailRow(e.key, e.value)),
               if (payment.renewalDate.isNotEmpty)
                 _buildDetailRow(
                   'Renewal Date',

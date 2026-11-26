@@ -71,6 +71,26 @@ class CableTVPaymentProcessing extends CableTVState {
   List<Object?> get props => [progress, currentStep];
 }
 
+/// PAY WITH CRYPTO: the subscription is authorised and recorded, and the
+/// conversion that funds it is running.
+///
+/// A STATE OF ITS OWN, not a flavour of Success or Processing. It is not
+/// success — the customer has no subscription yet — and it is not a failure,
+/// because nothing has gone wrong. Callers that wait for a terminal outcome
+/// settle on this too, so they do not hang until a timeout and then report a
+/// failure for a payment that is proceeding normally.
+class CableTVAwaitingCryptoFunding extends CableTVState {
+  final CableTVPaymentEntity payment;
+
+  /// The coin being sold, lowercase.
+  final String asset;
+
+  CableTVAwaitingCryptoFunding({required this.payment, required this.asset});
+
+  @override
+  List<Object?> get props => [payment, asset];
+}
+
 class CableTVPaymentSuccess extends CableTVState {
   final CableTVPaymentEntity payment;
 

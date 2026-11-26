@@ -6,6 +6,7 @@ import 'package:lazervault/src/features/authentication/domain/entities/user.dart
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class InputPin extends StatefulWidget {
   final User recipient;
@@ -158,7 +159,7 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
                       // Terminal: wipe the flow (amount/account/PIN) so the
                       // receipt can never fall back onto the send screen — matches
                       // every real flow (all use offAllNamed to reach the receipt).
-                      Get.offAllNamed(AppRoutes.transferProof,
+                      offAllKeepingHome(AppRoutes.transferProof,
                           arguments: widget.recipient);
                     } finally {
                       setState(() => isLoading = false);

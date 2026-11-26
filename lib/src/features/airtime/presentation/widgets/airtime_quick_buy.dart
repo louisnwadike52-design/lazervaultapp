@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:lazervault/src/features/crypto_pay/presentation/confirm_crypto_payment.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -23,6 +24,9 @@ import '../../domain/entities/network_provider.dart';
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/repositories/airtime_repository.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/pay_source.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/pay_with_crypto_selector.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/utils/ng_msisdn.dart';
 import '../../../../../core/widgets/amount_preset_row.dart';
@@ -85,6 +89,11 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   bool _saveContact = false;
   String? _saveNickname;
   bool _submitting = false;
+
+  /// PAY WITH CRYPTO: how this purchase will be funded. Always starts on the
+  /// wallet — choosing to sell crypto is a decision and must never be
+  /// inherited from a previous purchase.
+  PaySource _paySource = PaySource.wallet;
   Timer? _detectDebounce;
 
   // ── Saved-contact dedup — loaded once, matched against the typed number so
@@ -394,8 +403,39 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
         'airtime_${DateTime.now().millisecondsSinceEpoch}_${phone.replaceAll(RegExp(r'[^\d]'), '')}';
 
     AirtimeTransaction? result;
+    // THE CONVERSION IS CONFIRMED BEFORE THE PIN PAD, NOT AFTER IT.
+    //
+    // Selling crypto is irreversible, and this screen used to go straight
+    // from the pay button to the PIN — so the first thing the customer heard
+    // about the rate, the quantity sold, or their coin being short was a
+    // server refusal AFTER they had entered it. The send-funds flow was fixed
+    // for exactly this and the bill screens were not.
+    //
+    // Returns null when the customer backs out, which aborts the purchase
+    // without touching anything. It may also return a DIFFERENT coin — they
+    // are offered the picker when theirs falls short — so the chosen source
+    // is carried into the request rather than the one they rejected.
+    // THE BUTTON GOES BUSY BEFORE THE CONVERSION IS PRICED, NOT AFTER.
+    //
+    // confirmCryptoPayment re-prices the coin over the network before
+    // it shows the customer anything. This flag used to be raised
+    // AFTER that call, so for the whole round trip the pay button sat
+    // enabled with no feedback: a second tap started a second pricing
+    // call and could open a second confirmation sheet over the first.
+    // Raising it here covers the pricing, the sheet and the PIN as one
+    // busy span, and the existing finally clears it on every exit —
+    // including the customer backing out of the sheet.
     setState(() => _submitting = true);
     try {
+      if (_paySource.isCrypto) {
+        final chosen = await confirmCryptoPayment(
+          context,
+          source: _paySource,
+          totalMinor: ((amount) * 100).round(),
+        );
+        if (chosen == null || !mounted) return;
+        if (chosen != _paySource) setState(() => _paySource = chosen);
+      }
       final ok = await validateTransactionPin(
         context: context,
         transactionId: txnId,
@@ -409,6 +449,10 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
         // Non-committal beat: the provider may settle synchronously (delivered)
         // OR asynchronously (queued) — the receipt shows the definitive status.
         successMessage: 'Airtime request sent',
+        // The coin, the quantity and the wallet top-up, so the last screen
+        // before an irreversible sale names what is being sold. Null on a
+        // wallet payment, and the sheet is then unchanged.
+        cryptoQuote: _paySource.quote,
         onPinValidated: (token) async {
           // Drive the real purchase and AWAIT its terminal state so the sheet's
           // processing spinner stays up until it's actually done/failed.
@@ -417,6 +461,12 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
           sub = cubit.stream.listen((state) {
             if (completer.isCompleted) return;
             if (state is AirtimePaymentSuccess) {
+              completer.complete(state.transaction);
+            } else if (state is AirtimeAwaitingCryptoFunding) {
+              // A THIRD TERMINAL OUTCOME for this sheet. The purchase is
+              // authorised and the conversion is running; without completing
+              // here the sheet spins until its 90s timeout and then reports a
+              // failure for a purchase that is proceeding normally.
               completer.complete(state.transaction);
             } else if (state is AirtimePaymentFailed) {
               completer.completeError(state.message);
@@ -434,6 +484,9 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
               operatorId: network.operatorId,
               reloadlyOperatorId: network.reloadlyOperatorId,
               sourceAccountId: accountId,
+              // PAY WITH CRYPTO. Null on the ordinary wallet-funded path,
+              // which leaves every existing purchase unchanged.
+              fundingAsset: _paySource.asset,
             );
             result =
                 await completer.future.timeout(const Duration(seconds: 90));
@@ -970,31 +1023,57 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     });
   }
 
+  /// The `Wallet | Crypto` choice, directly above the pay button — the last
+  /// moment the customer can change HOW they pay. Hides itself entirely when
+  /// the gate is off.
+  Widget _paySourceSelector() {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: PayWithCryptoSelector(
+        onDarkSurface: true,
+        value: _paySource,
+        amountMinor: ((_amount ?? 0) * 100).round(),
+        email: context.read<AuthenticationCubit>().currentProfile?.user.email,
+        userId: context.read<AuthenticationCubit>().currentProfile?.user.id,
+        // Locked while a purchase is in flight: the choice has already been
+        // sent and must not change underneath it.
+        enabled: !_submitting,
+        onChanged: (src) => setState(() => _paySource = src),
+      ),
+    );
+  }
+
   Widget _payButton() {
     final enabled = _ready && !_submitting;
-    return SizedBox(
-      width: double.infinity,
-      height: 52.h,
-      child: ElevatedButton(
-        onPressed: enabled ? _pay : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _accent,
-          disabledBackgroundColor: _accent.withValues(alpha: 0.35),
-          foregroundColor: Colors.white,
-          disabledForegroundColor: Colors.white.withValues(alpha: 0.6),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _paySourceSelector(),
+        SizedBox(
+          width: double.infinity,
+          height: 52.h,
+          child: ElevatedButton(
+            onPressed: enabled ? _pay : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _accent,
+              disabledBackgroundColor: _accent.withValues(alpha: 0.35),
+              foregroundColor: Colors.white,
+              disabledForegroundColor: Colors.white.withValues(alpha: 0.6),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14.r)),
+            ),
+            child: _submitting
+                ? SizedBox(
+                    width: 20.w, height: 20.w, child: LazerVaultLoader.small())
+                : Text(
+                    _amount != null && _amount! > 0
+                        ? 'Buy ₦${_amount!.toStringAsFixed(0)} airtime'
+                        : 'Buy airtime',
+                    style: GoogleFonts.inter(
+                        fontSize: 15.sp, fontWeight: FontWeight.w700)),
+          ),
         ),
-        child: _submitting
-            ? SizedBox(
-                width: 20.w, height: 20.w, child: LazerVaultLoader.small())
-            : Text(
-                _amount != null && _amount! > 0
-                    ? 'Buy ₦${_amount!.toStringAsFixed(0)} airtime'
-                    : 'Buy airtime',
-                style: GoogleFonts.inter(
-                    fontSize: 15.sp, fontWeight: FontWeight.w700)),
-      ),
+      ],
     );
   }
 }

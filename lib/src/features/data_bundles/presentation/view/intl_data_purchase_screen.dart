@@ -9,6 +9,7 @@ import '../../domain/entities/intl_data_bundle.dart';
 import '../../domain/entities/intl_data_operator.dart';
 import '../cubit/intl_data_cubit.dart';
 import 'intl_data_checkout_screen.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'intl_data_purchase_screen_widgets.dart';
 
 /// Screen 1 of the international data purchase flow.
@@ -175,7 +176,7 @@ class IntlDataPurchaseScreen extends StatelessWidget {
 
   Future<void> _openCountryPicker(BuildContext context) async {
     final cubit = context.read<IntlDataCubit>();
-    final picked = await showModalBottomSheet<IntlDataCountry>(
+    final picked = await showAppBottomSheet<IntlDataCountry>(
       context: context,
       isScrollControlled: true,
       backgroundColor: _card,

@@ -96,6 +96,10 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
     String? beneficiaryId,
     String? transactionId,
     String? verificationToken,
+
+    /// Pay with crypto: the asset to sell to fund this payment,
+    /// lowercase. Null means the ordinary wallet-funded payment.
+    String? fundingAsset,
   }) async {
     try {
       final result = await remoteDataSource.initiatePayment(
@@ -110,6 +114,7 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
         beneficiaryId: beneficiaryId,
         transactionId: transactionId,
         verificationToken: verificationToken,
+        fundingAsset: fundingAsset,
       );
       return Right(result);
     } on GrpcError catch (e) {

@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/spray_room_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'create_session_screen_widgets.dart';
 
 const _occasionTypes = [
@@ -88,7 +89,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   /// Returns null when the sheet is dismissed, which is NOT a cancellation of
   /// the pick so much as a change of mind; the caller simply does nothing.
   Future<ImageSource?> _chooseImageSource() {
-    return showModalBottomSheet<ImageSource>(
+    return showAppBottomSheet<ImageSource>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -206,7 +207,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   }
 
   void _showOccasionPicker() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

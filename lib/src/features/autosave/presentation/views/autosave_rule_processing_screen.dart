@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class AutoSaveRuleProcessingScreen extends StatefulWidget {
   const AutoSaveRuleProcessingScreen({super.key});
@@ -23,6 +24,10 @@ class _AutoSaveRuleProcessingScreenState
 
   Map<String, dynamic> ruleData = {};
   bool _hasStartedProcessing = false;
+
+  /// Terminal-failure latch, read by the PopScope above so the phone's back
+  /// button stops being inert the moment there is nothing left to wait for.
+  bool _failed = false;
   bool _invalidArgs = false;
 
   @override
@@ -35,7 +40,7 @@ class _AutoSaveRuleProcessingScreenState
     if (ruleData['name'] == null || ruleData['triggerType'] == null) {
       _invalidArgs = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
+        if (mounted) offAllKeepingHome(AppRoutes.autoSaveDashboard);
       });
     }
 
@@ -68,7 +73,7 @@ class _AutoSaveRuleProcessingScreenState
       _dispatchCreate();
     } catch (_) {
       if (mounted) {
-        Get.offAllNamed(AppRoutes.autoSaveDashboard);
+        offAllKeepingHome(AppRoutes.autoSaveDashboard);
       }
     }
   }
@@ -103,7 +108,15 @@ class _AutoSaveRuleProcessingScreenState
   @override
   Widget build(BuildContext context) {
     return PopScope(
+      // Blocked while the rule is being created. Once the create has FAILED
+      // the screen is terminal — it shows an error and pops itself after two
+      // seconds — and a back press in that window did nothing at all. It now
+      // leaves immediately rather than making the user wait out an animation.
       canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop || !_failed) return;
+        backOrHome(fallbackRoute: AppRoutes.autoSaveDashboard);
+      },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
         body: BlocConsumer<AutoSaveCubit, AutoSaveState>(
@@ -131,6 +144,7 @@ class _AutoSaveRuleProcessingScreenState
                 }
               });
             } else if (state is AutoSaveError) {
+              _failed = true;
               _animationController.stop();
               Get.snackbar(
                 'Error',

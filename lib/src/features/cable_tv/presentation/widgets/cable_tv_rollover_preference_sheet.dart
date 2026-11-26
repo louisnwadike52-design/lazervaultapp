@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Captures the recurring auto-renewal cadence for a cable TV
 /// subscription. Mirrors `InternetRolloverPreferenceSheet`:
@@ -30,7 +31,7 @@ class CableTVRolloverPreferenceSheet extends StatefulWidget {
   const CableTVRolloverPreferenceSheet({super.key});
 
   static Future<CableTVRolloverPreference?> show(BuildContext context) {
-    return showModalBottomSheet<CableTVRolloverPreference>(
+    return showAppBottomSheet<CableTVRolloverPreference>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

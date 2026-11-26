@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/investments/presentation/navigation/invest_route_args.dart';
 import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Confirms portfolio cash operations (add / withdraw / rebalance fees).
 /// Stock equity trades use [StockTradeFlowScreen] → carousel → [StockTradeReviewScreen].
@@ -112,7 +113,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen> {
                     return;
                   }
                   final hub = InvestRouteArgs.parseHub(_args);
-                  Get.offAllNamed(
+                  offAllKeepingHome(
                     AppRoutes.stockPortfolio,
                     arguments: InvestRouteArgs.hub(hub),
                   );

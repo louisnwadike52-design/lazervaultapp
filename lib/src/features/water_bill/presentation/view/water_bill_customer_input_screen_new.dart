@@ -8,6 +8,7 @@ import '../cubit/water_bill_cubit.dart';
 import '../cubit/water_bill_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Water Bill Customer Input Screen - Corrected Version
 /// Handles customer number input and validation before payment
@@ -42,7 +43,7 @@ class _WaterBillCustomerInputScreenNewState
     final provider = args['provider'];
     if (provider is! WaterProviderEntity) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Get.offAllNamed(AppRoutes.waterBillHome);
+        if (mounted) offAllKeepingHome(AppRoutes.waterBillHome);
       });
       return;
     }

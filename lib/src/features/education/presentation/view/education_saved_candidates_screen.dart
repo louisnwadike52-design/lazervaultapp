@@ -13,6 +13,7 @@ import '../../domain/repositories/education_repository.dart';
 import '../cubit/education_beneficiary_cubit.dart';
 import '../cubit/education_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Saved exam candidates for education PIN purchases. Actions: View
 /// Details, View Purchases, Buy PIN, Set Reminder, Edit Nickname, Delete.
@@ -183,7 +184,7 @@ class _EducationSavedCandidatesScreenState
   }
 
   void _showOptions(EducationBeneficiary b) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

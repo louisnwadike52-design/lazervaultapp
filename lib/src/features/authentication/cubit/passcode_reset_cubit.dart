@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/repositories/i_auth_repository.dart';
+import '../utils/login_identifier.dart';
 import 'passcode_reset_state.dart';
 
 /// Drives the phone+passcode "Forgot your passcode?" reset flow:
@@ -17,37 +18,59 @@ class PasscodeResetCubit extends Cubit<PasscodeResetState> {
   String _phone = '';
   String _countryCode = 'NG';
   String _code = '';
+  ResetDeliveryChannel _channel = ResetDeliveryChannel.phone;
 
   String get phone => _phone;
 
-  /// Step 1: send a reset OTP to [phone].
+  /// The channel the LAST request was sent on. A resend must not silently
+  /// change channel on a user who chose one.
+  ResetDeliveryChannel get channel => _channel;
+
+  /// Step 1: send a reset OTP for [phone] — which may be an E.164 phone or an
+  /// email address — over [channel].
   Future<void> requestReset({
     required String phone,
     required String countryCode,
+    ResetDeliveryChannel channel = ResetDeliveryChannel.phone,
   }) async {
     if (isClosed || state is PasscodeResetLoading) return;
     _phone = phone;
     _countryCode = countryCode;
+    _channel = channel;
     emit(const PasscodeResetLoading());
 
     final result = await _authRepository.requestPasscodeReset(
       phone: phone,
       countryCode: countryCode,
+      deliveryChannel: channel.wire,
     );
     if (isClosed) return;
     result.fold(
       (failure) => emit(PasscodeResetFailure(failure.message)),
-      (otp) => emit(PasscodeResetOtpSent(
-        phone: phone,
-        expiresInSeconds: otp.expiresInSeconds,
-        resendAfterSeconds: otp.resendAfterSeconds,
-      )),
+      (otp) {
+        // THE SERVER'S ANSWER WINS. The app asks for a channel; the server may
+        // only have one it can actually deliver on, and the verification
+        // screen has to name the place the code really went.
+        _channel = otp.deliveryChannel.isEmpty
+            ? channel
+            : ResetDeliveryChannel.fromWire(otp.deliveryChannel);
+        emit(PasscodeResetOtpSent(
+          phone: phone,
+          expiresInSeconds: otp.expiresInSeconds,
+          resendAfterSeconds: otp.resendAfterSeconds,
+          channel: _channel,
+          destinationMasked: otp.deliveryDestinationMasked,
+        ));
+      },
     );
   }
 
-  /// Resend the OTP for the current phone.
-  Future<void> resendOtp() =>
-      requestReset(phone: _phone, countryCode: _countryCode);
+  /// Resend the OTP for the current identifier, on the SAME channel.
+  Future<void> resendOtp() => requestReset(
+        phone: _phone,
+        countryCode: _countryCode,
+        channel: _channel,
+      );
 
   /// Step 2: stash the entered OTP so the passcode step can submit it.
   void setCode(String code) {

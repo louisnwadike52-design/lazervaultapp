@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Detail / edit screen for a single saved batch. Lets the user rename
 /// the batch, add or remove recipients, edit per-item amounts, apply a
@@ -100,7 +101,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
 
   Future<void> _openRenameSheet(SavedBatchEntity batch) async {
     final controller = TextEditingController(text: batch.name);
-    final newName = await showModalBottomSheet<String>(
+    final newName = await showAppBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -262,7 +263,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
     final multiplierCtrl = TextEditingController(text: '1.0');
     final absoluteCtrl = TextEditingController();
     var useMultiplier = true;
-    final result = await showModalBottomSheet<Map<String, double>>(
+    final result = await showAppBottomSheet<Map<String, double>>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -500,7 +501,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
       amounts[item.id] =
           TextEditingController(text: existing.toStringAsFixed(2));
     }
-    final confirmed = await showModalBottomSheet<bool>(
+    final confirmed = await showAppBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

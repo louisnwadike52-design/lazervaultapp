@@ -7,6 +7,7 @@ import '../../../../core/types/app_routes.dart';
 import '../../../../core/services/injection_container.dart';
 import 'package:lazervault/src/features/currency_exchange/data/services/transfer_requirements_service.dart';
 import '../data/fcy_account_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The gate in front of an international payout.
 ///
@@ -85,7 +86,7 @@ Future<bool> ensureFcyKycForPayout(
 
   if (!context.mounted) return false;
 
-  final proceed = await showModalBottomSheet<bool>(
+  final proceed = await showAppBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

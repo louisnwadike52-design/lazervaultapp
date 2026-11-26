@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:lazervault/core/utilities/safe_args.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -11,6 +10,7 @@ import '../../domain/entities/id_pay_entity.dart';
 import '../../services/id_pay_pdf_service.dart';
 import '../../domain/entities/id_pay_fee_rule_entity.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class IDPayCreatedScreen extends StatelessWidget {
   const IDPayCreatedScreen({super.key});
@@ -371,7 +371,7 @@ class IDPayCreatedScreen extends StatelessWidget {
         width: double.infinity,
         height: 52.h,
         child: ElevatedButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.idPayHome),
+          onPressed: () => offAllKeepingHome(AppRoutes.idPayHome),
           style: ElevatedButton.styleFrom(
             backgroundColor: InvoiceThemeColors.primaryPurple,
             shape: RoundedRectangleBorder(

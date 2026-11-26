@@ -9,6 +9,7 @@ import 'package:record/record.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet that records a short voice sample and performs a SERVER-ATTESTED
 /// voice LOGIN (voice = password): the sample + cached identity go to the
@@ -43,7 +44,7 @@ class VoiceLoginSheet extends StatefulWidget {
 
   static Future<VoiceLoginResult?> _present(
       BuildContext context, VoiceLoginSheet sheet) {
-    return showModalBottomSheet<VoiceLoginResult>(
+    return showAppBottomSheet<VoiceLoginResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

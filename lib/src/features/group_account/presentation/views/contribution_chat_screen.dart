@@ -18,6 +18,7 @@ import '../../data/datasources/contribution_chat_remote_data_source.dart';
 import '../cubit/contribution_chat_cubit.dart';
 import '../../utils/mention_text.dart';
 import '../widgets/mention_picker.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Full-screen group chat for one contribution.
 ///
@@ -496,7 +497,7 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
           .map((c) => (userId: c.userId, name: c.name)),
     ];
 
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -1490,7 +1491,7 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
       }
       return;
     }
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: _card,
       shape: RoundedRectangleBorder(
@@ -1538,7 +1539,7 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
   /// The "views" surface: exactly who has read this message.
   void _showSeenBy(ContributionMessage m) {
     final seen = _chat.readersOf(m);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: _card,
       shape: RoundedRectangleBorder(

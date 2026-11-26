@@ -12,6 +12,7 @@ import 'package:lazervault/core/utils/share_origin.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_pb;
 import 'package:lazervault/src/features/account_actions/presentation/widgets/held_funds_breakdown_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Reusable account/card preview shown at the top of the account-actions bottom
 /// sheet (and anywhere a "card" needs to be previewed with live status).
@@ -929,7 +930,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
       return;
     }
 
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

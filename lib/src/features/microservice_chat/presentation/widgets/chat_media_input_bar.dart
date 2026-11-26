@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Row of media action buttons for chat input. Collapses camera + gallery
 /// behind a single attachment icon (ChatGPT pattern) so the first-view
@@ -38,7 +39,7 @@ class ChatMediaInputBar extends StatelessWidget {
   }
 
   Future<void> _openAttachmentSheet(BuildContext context) async {
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: const RoundedRectangleBorder(

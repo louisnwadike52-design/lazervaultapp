@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Processing screen shown during bank details payment processing
 ///
@@ -64,7 +65,17 @@ class _BankDetailsProcessingScreenState
 
   Widget _buildBody(BuildContext context) {
     return PopScope(
-      canPop: false, // Prevent back button during processing
+      // Back is INTERCEPTED, not swallowed.
+      //
+      // "Prevent back button during processing" was the whole implementation,
+      // and nothing moves money here — this screen reads a scanned image. A
+      // slow or hanging analysis left the user on a spinner the phone's back
+      // button could not leave, with no other way out.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        backOrHome();
+      },
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(

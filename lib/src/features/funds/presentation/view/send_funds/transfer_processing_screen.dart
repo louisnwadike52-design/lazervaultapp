@@ -12,6 +12,7 @@ import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'transfer_processing_screen_widgets.dart';
 
 class TransferProcessingScreen extends StatefulWidget {
@@ -270,7 +271,7 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
     transferDetails['settledEmitted'] = true;
 
     // Navigate immediately to receipt
-    Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
+    offAllKeepingHome(AppRoutes.transferProof, arguments: transferDetails);
   }
 
   void _handleTransferFailure(String reason) {

@@ -40,6 +40,22 @@ NotificationTarget? _resolveAccount(String type, Map<String, String> data) {
     return _landing(AppRoutes.myAccount);
   }
 
+  // ---- Connected banks -----------------------------------------------------
+  // "Your bank was disconnected" / "your bank needs reconnecting". One screen
+  // answers both, and it is the only screen where the single action either
+  // message implies — reconnect — can actually be taken.
+  //
+  // Both shapes are matched: the type (what the outbox publishes) and the
+  // `action` the payload carries, because the re-authorisation notice
+  // predates the type and sends only the action.
+  if (_is(type, 'linked_account') ||
+      _is(type, 'linked_account_unlinked') ||
+      _is(type, 'account_reauthorization_required') ||
+      (data['action'] ?? '') == 'linked_accounts' ||
+      (data['action'] ?? '') == 'reauthorize') {
+    return _landing(AppRoutes.linkedBanks);
+  }
+
   // ---- KYC -----------------------------------------------------------------
   // "Your verification succeeded / needs another document" — the progressive
   // KYC screen is the one page that explains where the user stands and what is
@@ -50,6 +66,42 @@ NotificationTarget? _resolveAccount(String type, Map<String, String> data) {
   // compile and then dead-end at runtime.
   if (_is(type, 'kyc') || _is(type, 'verification') || _is(type, 'bvn')) {
     return _landing(AppRoutes.kycProgressive);
+  }
+
+  // ---- Support -------------------------------------------------------------
+  // A reply on a support ticket. BEFORE the generic `account` case below:
+  // support-service publishes this as an account notification, and until
+  // notifications-service learned to set type "support" these arrived as
+  // "account" and opened the customer's PROFILE — told that support had
+  // answered, then shown their account details.
+  //
+  // `ticket_number` is the ticket this is about; `account_number` carries the
+  // same value for older server builds that only set that key. With neither we
+  // still land on the list, which is the right fallback — the reply is in there.
+  // THE SUPPORT DESK, first — and the ordering is the whole point.
+  //
+  // `_is` matches a `_` suffix, so `_is('support_desk', 'support')` is TRUE:
+  // put this after the branch below and every desk push would open the AGENT's
+  // own ticket list instead of the queue, with a customer waiting in it.
+  //
+  // `entity_id` is the ticket id (what the desk fetches); `ticket_number` is
+  // for display only, so it is not enough to open one.
+  if (_is(type, 'support_desk') ||
+      data['event_type'] == 'support_desk') {
+    final id = (data['entity_id'] ?? '').trim();
+    if (id.isNotEmpty && _looksLikeId(id)) {
+      return _record(AppRoutes.supportDesk, arguments: id);
+    }
+    return _landing(AppRoutes.supportDesk);
+  }
+
+  if (_is(type, 'support') ||
+      data['event_type'] == 'support_reply') {
+    final ticket = (data['ticket_number'] ?? data['account_number'] ?? '').trim();
+    if (ticket.isNotEmpty) {
+      return _record(AppRoutes.supportTickets, arguments: ticket);
+    }
+    return _landing(AppRoutes.supportTickets);
   }
 
   // ---- Account -------------------------------------------------------------

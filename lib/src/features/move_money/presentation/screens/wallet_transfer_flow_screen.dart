@@ -22,6 +22,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../cubit/wallet_transfer_cubit.dart';
 import '../../cubit/wallet_transfer_state.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class WalletTransferFlowScreen extends StatefulWidget {
   const WalletTransferFlowScreen({super.key});
@@ -780,7 +781,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
   }) {
     final filtered = accounts.where((a) => a.id != excludeId).toList();
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

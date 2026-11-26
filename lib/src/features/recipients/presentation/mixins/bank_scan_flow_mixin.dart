@@ -21,6 +21,7 @@ import 'package:lazervault/src/features/recipients/data/models/recipient_model.d
 import 'package:lazervault/src/features/recipients/data/services/bank_scan_upload_service.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/scan_bank_details_modal.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/scan_history_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The shared "Scan Account" pipeline: live camera → OCR (`/scan/bank-details`)
 /// → verify sheet → route into send-funds. Extracted from `select_recipients`
@@ -438,7 +439,7 @@ mixin BankScanFlowMixin<T extends StatefulWidget> on State<T> {
   }
 
   void _showScanProcessingSheet() {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(
@@ -509,7 +510,7 @@ mixin BankScanFlowMixin<T extends StatefulWidget> on State<T> {
     final color = isWarning ? Colors.orange : Colors.red;
     final icon = isWarning ? Icons.warning_amber_rounded : Icons.error_outline;
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(

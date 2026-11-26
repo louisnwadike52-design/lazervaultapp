@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/otp_field_behaviour.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -388,10 +389,25 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
                           ),
                         ],
                       ),
-                      child: TextFormField(
+                      // AutofillGroup: Flutter forwards autofillHints to the
+                      // platform only when one is an ancestor, so the tag
+                      // below would otherwise be inert.
+                      child: AutofillGroup(
+                          child: TextFormField(
                         controller: _otpController,
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
+                        // iOS's "From Messages" suggestion over the keyboard,
+                        // and the field handed to Android's autofill
+                        // framework. There was none here before.
+                        autofillHints: otpAutofillHints,
+                        // Stated rather than left to the default: a plain
+                        // TextFormField does enable selection, but every code
+                        // field in this app now says so explicitly, so "can
+                        // this be pasted into" is answerable by reading the
+                        // field instead of knowing which widget it is.
+                        enableInteractiveSelection: true,
+                        contextMenuBuilder: otpContextMenu,
                         style: TextStyle(
                           fontSize: 24.sp,
                           fontWeight: FontWeight.w600,
@@ -401,6 +417,26 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly
                         ],
+                        // THE SIXTH DIGIT SUBMITS, as on every other OTP
+                        // surface in the app. This screen was the last one
+                        // still requiring a separate tap after the code was
+                        // already fully typed — a step with nothing in it.
+                        //
+                        // DEFERRED to the next frame rather than run inline.
+                        // _verifyOTP reads the controller and the cubit
+                        // rebuilds this subtree; doing that synchronously
+                        // inside onChanged makes Android revert the in-flight
+                        // editing value, so the sixth digit disappears and the
+                        // submit goes out five digits long.
+                        onChanged: (value) {
+                          if (value.length != 6) return;
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (!mounted) return;
+                            if (_otpController.text.length != 6) return;
+                            FocusScope.of(context).unfocus();
+                            _verifyOTP();
+                          });
+                        },
                         decoration: InputDecoration(
                           hintText: '000000',
                           counterText: '',
@@ -412,7 +448,7 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
                           fillColor: Colors.white,
                           contentPadding: EdgeInsets.symmetric(vertical: 20.h),
                         ),
-                      ),
+                      )),
                     ),
                     SizedBox(height: 16.h),
 

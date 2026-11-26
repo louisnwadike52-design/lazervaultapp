@@ -6,6 +6,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart'
     as currency_formatter;
 import '../../../domain/entities/lock_fund_entity.dart';
 import '../../cubit/create_lock_cubit.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Lock type selection — top half of wizard step 1 (Plan & Amount).
 ///
@@ -284,21 +285,53 @@ class LockTypeSelector extends StatelessWidget {
       return '${fmt(config.minDurationDays)} to ${fmt(config.maxDurationDays)}';
     }
 
-    String amountText() {
+    // THE LABEL NAMES WHAT THE NUMBER ACTUALLY IS.
+    //
+    // This row was always headed "Amount" over a value of "From ₦1,000.00".
+    // "From" is doing all the work there, and it is the easiest word on the
+    // card to skim past — so the figure read as the amount the plan takes
+    // rather than the least it accepts. On a plan whose minimum is the one
+    // thing that stops a deposit being refused, that is the wrong thing to be
+    // ambiguous about.
+    //
+    // The heading now varies with what the plan actually constrains, and the
+    // value drops the preposition:
+    //
+    //   fixed-amount plan  "Amount"            ₦10,000.00      (it IS the amount)
+    //   min and max        "Amount range"      ₦1,000 – ₦5,000,000
+    //   min only           "Minimum save"      ₦1,000.00       (the common case)
+    //
+    // Falls back to "Amount" when the plan sets no bounds at all, rather than
+    // claiming a minimum of zero.
+    (String label, String value) amountRow() {
       if (config.isFixedAmount && config.fixedAmount > 0) {
-        return 'Fixed at ${money(config.fixedAmount)}';
+        return ('Amount', money(config.fixedAmount));
       }
-      final min = 'From ${money(config.minAmount)}';
-      if (config.maxAmount > 0) {
-        return '$min to ${money(config.maxAmount)}';
+      final hasMin = config.minAmount > 0;
+      final hasMax = config.maxAmount > 0;
+      if (hasMin && hasMax) {
+        return (
+          'Amount range',
+          '${money(config.minAmount)} – ${money(config.maxAmount)}'
+        );
       }
-      return min;
+      if (hasMin) {
+        return ('Minimum save', money(config.minAmount));
+      }
+      if (hasMax) {
+        return ('Maximum save', money(config.maxAmount));
+      }
+      return ('Amount', 'Any amount');
     }
 
     final rows = <(IconData, String, String)>[
       (Icons.percent_rounded, 'Interest rate', config.interestRangeText),
       (Icons.schedule_rounded, 'Duration', durationText()),
-      (Icons.account_balance_wallet_rounded, 'Amount', amountText()),
+      (
+        Icons.account_balance_wallet_rounded,
+        amountRow().$1,
+        amountRow().$2
+      ),
       (
         Icons.savings_rounded,
         'Interest payout',
@@ -331,7 +364,7 @@ class LockTypeSelector extends StatelessWidget {
         .where((s) => s.isNotEmpty)
         .toList();
 
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1F1F35),
       isScrollControlled: true,

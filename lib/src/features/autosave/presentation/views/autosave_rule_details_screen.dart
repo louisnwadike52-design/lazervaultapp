@@ -31,6 +31,8 @@ import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_
 import '../../utils/autosave_trigger_labels.dart';
 import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
 import 'package:lazervault/core/utils/logger.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'autosave_rule_details_screen_widgets.dart';
 
 class AutoSaveRuleDetailsScreen extends StatefulWidget {
@@ -65,7 +67,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
     if (args is! AutoSaveRuleEntity) {
       _invalidArgs = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
+        if (mounted) offAllKeepingHome(AppRoutes.autoSaveDashboard);
       });
       return;
     }
@@ -91,7 +93,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
 
   /// Explains a switched-off trigger instead of failing at the server.
   void _showTriggerUnavailableSheet(String reason) {
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -553,7 +555,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
       text: isPercentage ? '' : rule.amountValue.toStringAsFixed(2),
     );
 
-    return showModalBottomSheet<double>(
+    return showAppBottomSheet<double>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -891,7 +893,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
         actionLabel: 'Go to Auto-Save',
         // The label names a destination, so the button must go there
         // rather than pop to whatever happens to be underneath.
-        onAction: () => Get.offAllNamed(AppRoutes.autoSaveDashboard),
+        onAction: () => offAllKeepingHome(AppRoutes.autoSaveDashboard),
       );
     }
     return BlocListener<AutoSaveCubit, AutoSaveState>(

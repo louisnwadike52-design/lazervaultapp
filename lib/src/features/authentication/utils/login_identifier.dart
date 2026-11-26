@@ -9,6 +9,30 @@ import 'package:lazervault/core/config/country_config.dart';
 /// The three kinds of login/recovery identifier a single smart field accepts.
 enum LoginIdentifierType { phone, email, username }
 
+/// Where a passcode-reset code is DELIVERED.
+///
+/// Only two, and that is the point: a code has to arrive somewhere that
+/// receives messages, and a username does not. The reset screen used to accept
+/// one — the field detected it, the badge said "Username" — and the backend
+/// then quietly resolved it to the account's phone and texted the code there.
+/// Login keeps all three ([LoginIdentifierType]); recovery cannot.
+enum ResetDeliveryChannel {
+  phone('sms'),
+  email('email');
+
+  const ResetDeliveryChannel(this.wire);
+
+  /// The value auth-service's `delivery_channel` field expects.
+  final String wire;
+
+  /// Parse what the server said it used. Unknown/empty falls back to phone,
+  /// which is what every build before this one did.
+  static ResetDeliveryChannel fromWire(String? wire) =>
+      (wire ?? '').toLowerCase() == 'email'
+          ? ResetDeliveryChannel.email
+          : ResetDeliveryChannel.phone;
+}
+
 /// Detect the identifier TYPE from what the user has typed SO FAR, using a
 /// deterministic precedence so the field can adapt live as they type:
 ///  1. starts with '@'    → username (an explicit @handle)
@@ -131,5 +155,19 @@ String normalizePhoneIdentifier(String raw, {String countryIso = 'NG'}) {
 /// This distinction is already visible in the API's responses, so acting on it
 /// in the UI reveals nothing to an attacker that probing did not already.
 bool isUnknownIdentifierFailure(String message) {
+  // auth-service answers these two DIFFERENTLY, and this is the seam.
+  //
+  //   user == nil            -> "invalid credentials"
+  //                             (auth_phone_passcode.go:315, auth_passcode_login.go)
+  //   wrong passcode         -> friendlyInvalidCredMsg(...) ->
+  //                             "Incorrect passcode. N attempts remaining..."
+  //                             (auth_phone_passcode.go:341)
+  //
+  // So matching this one string really does mean "nobody matched the
+  // identifier", and the screen can safely send the user back to the field
+  // they mistyped. Checked at the source on 2026-11-17 after it was briefly
+  // "corrected" to always return false on the mistaken belief that the server
+  // returned one message for both — it does not, and the change would have
+  // cost the transposed-email case this file was written for.
   return message.toLowerCase().contains('invalid credentials');
 }

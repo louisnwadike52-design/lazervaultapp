@@ -7,6 +7,7 @@ import '../../data/datasources/water_beneficiary_remote_datasource.dart';
 import '../cubit/water_beneficiary_cubit.dart';
 import '../cubit/water_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Save / edit a water utility account. Mirrors
 /// `SaveInternetBeneficiarySheet` — minimal single-field (nickname) sheet
@@ -41,7 +42,7 @@ class SaveWaterBeneficiarySheet extends StatefulWidget {
     String? existingBeneficiaryId,
     String? existingNickname,
   }) {
-    return showModalBottomSheet<bool>(
+    return showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

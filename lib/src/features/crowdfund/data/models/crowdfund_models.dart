@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:lazervault/src/generated/crowdfund.pb.dart' as pb;
 import '../../domain/entities/crowdfund_entities.dart';
+import '../../domain/entities/crowdfund_moderation.dart';
 import '../../domain/entities/notification_channel_entities.dart';
 part 'crowdfund_models_widgets.dart';
 

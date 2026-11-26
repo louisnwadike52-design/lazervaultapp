@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_c
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_state.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/widgets/withdraw_funds_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_analytics_charts.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Crowdfund money, both directions, on one page.
 ///
@@ -242,7 +243,7 @@ class _CrowdfundStatisticsScreenState extends State<CrowdfundStatisticsScreen> {
     // The campaigns cubit is handed to the sheet: it performs the withdrawal
     // through the same cubit whose list this page is showing, so the result
     // lands in the state this screen already watches.
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

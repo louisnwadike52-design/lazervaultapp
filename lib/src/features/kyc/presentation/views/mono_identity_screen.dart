@@ -7,6 +7,7 @@ import 'package:mono_connect/mono_connect.dart';
 import '../../../../core/config/mono_config.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_profile_fix.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Mono Identity verification screen for Nigerian users (BVN-based KYC).
 ///
@@ -148,7 +149,7 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
   }
 
   void _launchMonoBottomSheet(ConnectConfiguration config) {
-    showModalBottomSheet<dynamic>(
+    showAppBottomSheet<dynamic>(
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
@@ -348,10 +349,12 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
                         final field = kycProfileFieldFor(_errorMessage);
                         final changed = await openKycProfileFix(field);
                         if (!mounted) return;
-                        // Changing the phone is the one case we can confirm,
-                        // so it retries straight away rather than making the
-                        // user find their way back to a screen they only left
-                        // to satisfy.
+                        // Retries straight away rather than making the user
+                        // find their way back to a screen they only left to
+                        // satisfy. Phone was once the only fix we could
+                        // CONFIRM; the name is now confirmable too — the
+                        // update screen reads the saved profile back and
+                        // reports true only when the change really applied.
                         if (changed) _launchMonoIdentity();
                       },
                       icon: const Icon(Icons.edit_outlined,

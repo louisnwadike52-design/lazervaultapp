@@ -1,4 +1,6 @@
 import 'settings_search_vocabulary.dart';
+import 'package:lazervault/src/features/support/presentation/support_desk_entry_tile.dart';
+import 'package:lazervault/src/features/support/presentation/support_desk_screen.dart';
 import 'dart:async';
 import 'package:lazervault/src/features/uplift/data/services/uplift_guide_preference.dart';
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_entry_tile.dart';
@@ -16,7 +18,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/chat_sound_settings.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/search_privacy_service.dart';
 import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/src/features/fraud_detection/data/fraud_detection_service.dart';
 import 'package:lazervault/core/services/service_order_service.dart';
@@ -26,6 +30,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/login_method_sheet.dart';
@@ -73,6 +78,7 @@ import 'package:lazervault/src/features/widgets/themed_app_bar.dart';
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/birthday_celebration_card.dart';
 import 'package:lazervault/src/features/escrow/presentation/widgets/escrow_terms.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'settings_screen_widgets.dart';
 
 // ============================================================
@@ -172,6 +178,15 @@ class _SettingsViewState extends State<_SettingsView> {
   /// the server: it records that THIS person has read it.
   bool _escrowNoticeOn = true;
 
+  /// Whether the holder is hidden from user search.
+  ///
+  /// Null until the first read lands. Painted from the cached value so the
+  /// switch shows its real position on the first frame rather than flicking,
+  /// then replaced by the server's answer — the server is authoritative here,
+  /// because this governs what OTHER people can see.
+  bool? _searchHidden;
+  bool _searchPrivacySaving = false;
+
   /// Admin-configured Help & Support content (contact, terms/privacy/about
   /// links, support materials). Starts from the safe fallback so the section
   /// always renders, then refreshes from the admin endpoint.
@@ -212,6 +227,16 @@ class _SettingsViewState extends State<_SettingsView> {
     });
     UpliftGuidePreference.isDismissed().then((v) {
       if (mounted) setState(() => _lazerfundsGuidesDismissed = v);
+    });
+    // Cached position first (instant, correct almost always), then the live
+    // value. A failed fetch returns null and leaves the cached position alone
+    // rather than claiming the holder is discoverable when it does not know.
+    SharedPreferences.getInstance().then((prefs) {
+      if (!mounted) return;
+      setState(() => _searchHidden = SearchPrivacyService.cachedHidden(prefs));
+      SearchPrivacyService.instance.fetch().then((live) {
+        if (mounted && live != null) setState(() => _searchHidden = live);
+      });
     });
     // Admin gates can flip while this screen is open (the registry re-applies
     // its snapshot in the background). Tiles that EXIST only while a gate is on
@@ -625,6 +650,17 @@ class _SettingsViewState extends State<_SettingsView> {
           'fx',
           'money',
         ],
+      ),
+      // PRIVACY — who can find this holder. There was no Privacy section
+      // before, only a Privacy Policy link, so there was no place for a
+      // setting that governs what other people can see. Sits directly after
+      // Security because it is the same question from the other side: Security
+      // is who can get IN, Privacy is who can see you.
+      _SectionSpec(
+        title: 'Privacy',
+        icon: Icons.visibility_off_outlined,
+        body: _privacyBody(),
+        keywords: SettingsSearchVocabulary.privacy,
       ),
       _SectionSpec(
         title: 'Notifications & Display',
@@ -1227,280 +1263,301 @@ class _SettingsViewState extends State<_SettingsView> {
   Widget _securityBody() {
     // Rebuild on profile changes so the verification / 2FA tiles reflect the
     // current auth state (Settings ↔ auth sync).
-    return BlocBuilder<ProfileCubit, ProfileState>(
-      bloc: context.read<ProfileCubit>(),
-      builder: (context, pState) {
-        final user = pState is ProfileLoaded ? pState.user : null;
-        final emailVerified = user?.isEmailVerified ?? false;
-        final phoneVerified = user?.verified ?? false;
-        final twoFaOn = user?.twoFactorEnabled ?? false;
-        final twoFaMethod = user?.twoFactorMethod;
-        // A phone+passcode account has no password to change. Hide the tile when
-        // either signal says so: the backend profile (empty email + a phone
-        // number) OR the signup-flow tracked locally (login_method /
-        // stored_phone / platform mode).
-        final backendPasswordless = user != null &&
-            user.email.isEmpty &&
-            (user.phoneNumber?.isNotEmpty ?? false);
-        // Password presence: has_password (mirrored on login) is authoritative;
-        // fall back to "not passwordless" for older sessions.
-        final hasPassword = _hasPassword && !backendPasswordless;
-        // The user's ACTIVE login mode. Password management only belongs to the
-        // email+password mode — a phone+passcode user has no password to manage.
-        // Setting a first password happens inside the "Login Method" switch flow
-        // (switching to email+password), not as a standalone tile here.
-        final currentMode = _preferredLoginMethod ??
-            ((backendPasswordless || _isPasswordless)
-                ? 'phone_passcode'
-                : 'email_password');
-        final isEmailMode = currentMode == 'email_password';
-        return _filterableColumn([
-          // Login method now lives under the "Customize" section (it's a flow
-          // choice). Security keeps password / passcode / PIN management.
-          // Update Password — shown ONLY in email+password mode. Opens the change
-          // dialog when a password exists, or the set-password sheet as a safety
-          // net (email mode normally implies a password is already set).
-          if (isEmailMode)
+    // NESTED ON AuthenticationCubit TOO, so the 2FA tile below actually
+    // repaints. `TwoFactorSettingsScreen` finishes by calling
+    // `AuthenticationCubit.refreshProfile()`; without listening to it, coming
+    // back here showed the pre-change state until something unrelated rebuilt
+    // the route — which reads as a toggle that did not take. A rebuild is all
+    // this subscribes to: Settings is not a login surface, so the
+    // `AuthenticationSuccess` that `goAfterLogin` keys off is inert here.
+    return BlocBuilder<AuthenticationCubit, AuthenticationState>(
+      bloc: context.read<AuthenticationCubit>(),
+      builder: (context, _) => BlocBuilder<ProfileCubit, ProfileState>(
+        bloc: context.read<ProfileCubit>(),
+        builder: (context, pState) {
+          final user = pState is ProfileLoaded ? pState.user : null;
+          final emailVerified = user?.isEmailVerified ?? false;
+          final phoneVerified = user?.verified ?? false;
+          // 2FA RIDES THE AUTH PROFILE, like the birthday banner above and for
+          // the same reason: the settings ProfileState user comes via the COMMON
+          // proto, which carries no `two_factor_enabled` / `two_factor_method`
+          // at all — so read from there this tile said "Off", with no badge and
+          // no method name, to every holder who had 2FA enrolled. Not stale:
+          // never populated. `TwoFactorSettingsScreen` loads the real status
+          // itself and calls `AuthenticationCubit.refreshProfile()` precisely so
+          // this tile can see the change, which it could not while reading the
+          // other cubit.
+          final authUser2fa =
+              context.read<AuthenticationCubit>().currentProfile?.user;
+          final twoFaOn = authUser2fa?.twoFactorEnabled ?? false;
+          final twoFaMethod = authUser2fa?.twoFactorMethod;
+          // A phone+passcode account has no password to change. Hide the tile when
+          // either signal says so: the backend profile (empty email + a phone
+          // number) OR the signup-flow tracked locally (login_method /
+          // stored_phone / platform mode).
+          final backendPasswordless = user != null &&
+              user.email.isEmpty &&
+              (user.phoneNumber?.isNotEmpty ?? false);
+          // Password presence: has_password (mirrored on login) is authoritative;
+          // fall back to "not passwordless" for older sessions.
+          final hasPassword = _hasPassword && !backendPasswordless;
+          // The user's ACTIVE login mode. Password management only belongs to the
+          // email+password mode — a phone+passcode user has no password to manage.
+          // Setting a first password happens inside the "Login Method" switch flow
+          // (switching to email+password), not as a standalone tile here.
+          final currentMode = _preferredLoginMethod ??
+              ((backendPasswordless || _isPasswordless)
+                  ? 'phone_passcode'
+                  : 'email_password');
+          final isEmailMode = currentMode == 'email_password';
+          return _filterableColumn([
+            // Login method now lives under the "Customize" section (it's a flow
+            // choice). Security keeps password / passcode / PIN management.
+            // Update Password — shown ONLY in email+password mode. Opens the change
+            // dialog when a password exists, or the set-password sheet as a safety
+            // net (email mode normally implies a password is already set).
+            if (isEmailMode)
+              _navTile(
+                icon: Icons.lock_outline,
+                title: 'Update Password',
+                subtitle: 'Change your account password',
+                onTap: () {
+                  if (!hasPassword) {
+                    _openSetPasswordSheet();
+                    return;
+                  }
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => BlocProvider.value(
+                      value: context.read<ProfileCubit>(),
+                      child: const ChangePasswordDialog(),
+                    ),
+                  );
+                },
+              ),
+            // Admin-only. Renders nothing at all for everyone else, so the
+            // Security section is unchanged for ordinary users.
+            _viewAsUserTile(),
             _navTile(
-              icon: Icons.lock_outline,
-              title: 'Update Password',
-              subtitle: 'Change your account password',
-              onTap: () {
-                if (!hasPassword) {
-                  _openSetPasswordSheet();
-                  return;
-                }
-                showDialog(
-                  context: context,
-                  builder: (dialogContext) => BlocProvider.value(
-                    value: context.read<ProfileCubit>(),
-                    child: const ChangePasswordDialog(),
-                  ),
-                );
-              },
+              icon: Icons.pin_outlined,
+              title: 'Passcode',
+              subtitle: 'Set up or change your 6-digit login passcode',
+              onTap: () => _openPasscodeFlow(context),
             ),
-          // Admin-only. Renders nothing at all for everyone else, so the
-          // Security section is unchanged for ordinary users.
-          _viewAsUserTile(),
-          _navTile(
-            icon: Icons.pin_outlined,
-            title: 'Passcode',
-            subtitle: 'Set up or change your 6-digit login passcode',
-            onTap: () => _openPasscodeFlow(context),
-          ),
-          _switchTile(
-            icon: Icons.shield_outlined,
-            title: 'Fraud detection',
-            subtitle:
-                'Automatically pause unusually large transfers on your account for review',
-            value: _fraudDetectionEnabled,
-            onChanged: _fraudSettingBusy ? (_) {} : _setFraudSetting,
-            keywords: SettingsSearchVocabulary.fraudDetection,
-          ),
-          _navTile(
-            icon: Icons.lock_clock_outlined,
-            title: 'Transaction PIN',
-            subtitle: 'Set or change your 4-digit payment PIN',
-            onTap: () => Get.toNamed(AppRoutes.pinManagement),
-          ),
-          // Panic Balance now lives under Security (a decoy balance + its
-          // triggers/sound are a personal-safety control).
-          _navTile(
-            icon: Icons.shield_moon_outlined,
-            title: 'Panic Balance',
-            subtitle: 'Decoy balance, triggers & sound',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const PanicBalanceScreen()),
-            ),
-          ),
-          _navTile(
-            icon: Icons.swap_horiz_rounded,
-            title: 'Banking Channels',
-            subtitle: 'Manage WhatsApp, phone & SMS banking',
-            onTap: () => Get.toNamed(AppRoutes.channelManagement),
-          ),
-          // Admin-only: operational alerts (Prometheus/Alertmanager). Hidden from
-          // non-admin users; the backend feed is admin-gated too.
-          if (isAdminRoles(
-              context.read<AuthenticationCubit>().currentProfile?.user.roles))
-            _navTile(
+            _switchTile(
               icon: Icons.shield_outlined,
-              title: 'Admin Alerts',
-              subtitle: 'Operational alerts for system admins',
+              title: 'Fraud detection',
+              subtitle:
+                  'Automatically pause unusually large transfers on your account for review',
+              value: _fraudDetectionEnabled,
+              onChanged: _fraudSettingBusy ? (_) {} : _setFraudSetting,
+              keywords: SettingsSearchVocabulary.fraudDetection,
+            ),
+            _navTile(
+              icon: Icons.lock_clock_outlined,
+              title: 'Transaction PIN',
+              subtitle: 'Set or change your 4-digit payment PIN',
+              onTap: () => Get.toNamed(AppRoutes.pinManagement),
+            ),
+            // Panic Balance now lives under Security (a decoy balance + its
+            // triggers/sound are a personal-safety control).
+            _navTile(
+              icon: Icons.shield_moon_outlined,
+              title: 'Panic Balance',
+              subtitle: 'Decoy balance, triggers & sound',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PanicBalanceScreen()),
+              ),
+            ),
+            _navTile(
+              icon: Icons.swap_horiz_rounded,
+              title: 'Banking Channels',
+              subtitle: 'Manage WhatsApp, phone & SMS banking',
+              onTap: () => Get.toNamed(AppRoutes.channelManagement),
+            ),
+            // Admin-only: operational alerts (Prometheus/Alertmanager). Hidden from
+            // non-admin users; the backend feed is admin-gated too.
+            if (isAdminRoles(
+                context.read<AuthenticationCubit>().currentProfile?.user.roles))
+              _navTile(
+                icon: Icons.shield_outlined,
+                title: 'Admin Alerts',
+                subtitle: 'Operational alerts for system admins',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AdminAlertsScreen()),
+                ),
+              ),
+            _navTile(
+              icon: Icons.fingerprint,
+              title: 'Biometric Login',
+              // Names Google/Apple so the search reveals WHY this tile matched —
+              // their Social-login toggles live inside this screen.
+              subtitle: 'Fingerprint, Face ID, voice · Google/Apple sign-in',
+              keywords: SettingsSearchVocabulary.socialAndBiometricLogin,
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const AdminAlertsScreen()),
-              ),
-            ),
-          _navTile(
-            icon: Icons.fingerprint,
-            title: 'Biometric Login',
-            // Names Google/Apple so the search reveals WHY this tile matched —
-            // their Social-login toggles live inside this screen.
-            subtitle: 'Fingerprint, Face ID, voice · Google/Apple sign-in',
-            keywords: SettingsSearchVocabulary.socialAndBiometricLogin,
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const BiometricLoginScreen(),
-              ),
-            ),
-          ),
-          _navTile(
-            icon: Icons.timer_outlined,
-            title: 'Auto-logout',
-            subtitle: _autoLogoutSubtitle(),
-            keywords: SettingsSearchVocabulary.autoLogout,
-            onTap: _showAutoLogoutPicker,
-          ),
-          _navTile(
-            icon: Icons.email_outlined,
-            title: 'Verify Email',
-            subtitle: emailVerified
-                ? 'Your email is verified'
-                : 'Verify the email on your account',
-            badge: emailVerified ? 'Verified' : 'Not verified',
-            badgeColor: emailVerified
-                ? const Color(0xFF10B981)
-                : const Color(0xFFFB923C),
-            onTap: () async {
-              final result = await Navigator.push(
-                context,
                 MaterialPageRoute(
-                  builder: (_) => BlocProvider(
-                    create: (_) => serviceLocator<EmailVerificationCubit>(),
-                    child: EmailVerificationScreen(
-                      email: user?.email,
-                      fromSettings: true,
-                    ),
-                  ),
+                  builder: (_) => const BiometricLoginScreen(),
                 ),
-              );
-              if (result == true && context.mounted) {
-                context.read<ProfileCubit>().getUserProfile();
-              }
-            },
-          ),
-          _navTile(
-            icon: Icons.phone_android_outlined,
-            title: 'Verify Phone Number',
-            // THIS TILE OPENED A DEAD END. PhoneVerificationScreen sends an SMS
-            // OTP, so with no provider active the user tapped "Verify", waited
-            // for a code nobody sent, and had no way to tell that from a
-            // broken app. The tile stays VISIBLE and states the reason instead
-            // of disappearing — "Not verified" next to a vanished verify
-            // button is the version they cannot act on.
-            subtitle: phoneVerified
-                ? 'Your phone number is verified'
-                : SmsPolicy.canVerifyPhoneNumber
-                    ? 'Verify your phone number'
-                    : SmsPolicy.unavailableReason,
-            badge: phoneVerified
-                ? 'Verified'
-                : SmsPolicy.canVerifyPhoneNumber
-                    ? 'Not verified'
-                    : 'Unavailable',
-            badgeColor: phoneVerified
-                ? const Color(0xFF10B981)
-                : SmsPolicy.canVerifyPhoneNumber
-                    ? const Color(0xFFFB923C)
-                    : const Color(0xFF9CA3AF),
-            onTap: () async {
-              if (!phoneVerified && !SmsPolicy.canVerifyPhoneNumber) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(SmsPolicy.unavailableReason),
-                    backgroundColor: Color(0xFFFB923C),
+              ),
+            ),
+            _navTile(
+              icon: Icons.timer_outlined,
+              title: 'Auto-logout',
+              subtitle: _autoLogoutSubtitle(),
+              keywords: SettingsSearchVocabulary.autoLogout,
+              onTap: _showAutoLogoutPicker,
+            ),
+            _navTile(
+              icon: Icons.email_outlined,
+              title: 'Verify Email',
+              subtitle: emailVerified
+                  ? 'Your email is verified'
+                  : 'Verify the email on your account',
+              badge: emailVerified ? 'Verified' : 'Not verified',
+              badgeColor: emailVerified
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFFB923C),
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider(
+                      create: (_) => serviceLocator<EmailVerificationCubit>(),
+                      child: EmailVerificationScreen(
+                        email: user?.email,
+                        fromSettings: true,
+                      ),
+                    ),
                   ),
                 );
-                return;
-              }
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider(
-                    create: (_) => serviceLocator<PhoneVerificationCubit>(),
-                    child: PhoneVerificationScreen(
-                      phoneNumber: user?.phoneNumber,
-                      fromSettings: true,
+                if (result == true && context.mounted) {
+                  context.read<ProfileCubit>().getUserProfile();
+                }
+              },
+            ),
+            _navTile(
+              icon: Icons.phone_android_outlined,
+              title: 'Verify Phone Number',
+              // THIS TILE OPENED A DEAD END. PhoneVerificationScreen sends an SMS
+              // OTP, so with no provider active the user tapped "Verify", waited
+              // for a code nobody sent, and had no way to tell that from a
+              // broken app. The tile stays VISIBLE and states the reason instead
+              // of disappearing — "Not verified" next to a vanished verify
+              // button is the version they cannot act on.
+              subtitle: phoneVerified
+                  ? 'Your phone number is verified'
+                  : SmsPolicy.canVerifyPhoneNumber
+                      ? 'Verify your phone number'
+                      : SmsPolicy.unavailableReason,
+              badge: phoneVerified
+                  ? 'Verified'
+                  : SmsPolicy.canVerifyPhoneNumber
+                      ? 'Not verified'
+                      : 'Unavailable',
+              badgeColor: phoneVerified
+                  ? const Color(0xFF10B981)
+                  : SmsPolicy.canVerifyPhoneNumber
+                      ? const Color(0xFFFB923C)
+                      : const Color(0xFF9CA3AF),
+              onTap: () async {
+                if (!phoneVerified && !SmsPolicy.canVerifyPhoneNumber) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(SmsPolicy.unavailableReason),
+                      backgroundColor: Color(0xFFFB923C),
+                    ),
+                  );
+                  return;
+                }
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider(
+                      create: (_) => serviceLocator<PhoneVerificationCubit>(),
+                      child: PhoneVerificationScreen(
+                        phoneNumber: user?.phoneNumber,
+                        fromSettings: true,
+                      ),
                     ),
                   ),
-                ),
-              );
-              if (result == true && context.mounted) {
-                context.read<ProfileCubit>().getUserProfile();
-              }
-            },
-          ),
-          _navTile(
-            icon: Icons.vpn_key_outlined,
-            keywords: SettingsSearchVocabulary.twoFactor,
-            title: 'Two-Factor Authentication',
-            subtitle: twoFaOn
-                ? 'On${twoFaMethod != null && twoFaMethod.isNotEmpty ? ' · ${twoFaMethod.toUpperCase()}' : ''}. Extra login security'
-                : 'Off. Add an extra layer of login security',
-            badge: twoFaOn ? 'On' : null,
-            badgeColor: const Color(0xFF3B82F6),
-            onTap: () {
-              // Pass the existing AuthenticationCubit through — the 2FA
-              // settings screen reads `currentProfile` from it for the
-              // user id used in EnableTwoFactor.
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<AuthenticationCubit>(),
-                    child: const TwoFactorSettingsScreen(),
-                  ),
-                ),
-              );
-            },
-          ),
-          if (_kTrustedDevicesEnabled)
+                );
+                if (result == true && context.mounted) {
+                  context.read<ProfileCubit>().getUserProfile();
+                }
+              },
+            ),
             _navTile(
-              icon: Icons.devices_outlined,
-              title: 'Trusted Devices',
-              subtitle: 'Manage devices with access to your account',
+              icon: Icons.vpn_key_outlined,
+              keywords: SettingsSearchVocabulary.twoFactor,
+              title: 'Two-Factor Authentication',
+              subtitle: twoFaOn
+                  ? 'On${twoFaMethod != null && twoFaMethod.isNotEmpty ? ' · ${twoFaMethod.toUpperCase()}' : ''}. Extra login security'
+                  : 'Off. Add an extra layer of login security',
+              badge: twoFaOn ? 'On' : null,
+              badgeColor: const Color(0xFF3B82F6),
               onTap: () {
+                // Pass the existing AuthenticationCubit through — the 2FA
+                // settings screen reads `currentProfile` from it for the
+                // user id used in EnableTwoFactor.
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const TrustedDevicesScreen(),
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<AuthenticationCubit>(),
+                      child: const TwoFactorSettingsScreen(),
+                    ),
                   ),
                 );
               },
             ),
-          if (_kLoginActivityEnabled)
+            if (_kTrustedDevicesEnabled)
+              _navTile(
+                icon: Icons.devices_outlined,
+                title: 'Trusted Devices',
+                subtitle: 'Manage devices with access to your account',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TrustedDevicesScreen(),
+                    ),
+                  );
+                },
+              ),
+            if (_kLoginActivityEnabled)
+              _navTile(
+                icon: Icons.history_outlined,
+                title: 'Login Activity',
+                subtitle: 'Review recent sign-ins',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const LoginActivityScreen()),
+                  );
+                },
+              ),
             _navTile(
-              icon: Icons.history_outlined,
-              title: 'Login Activity',
-              subtitle: 'Review recent sign-ins',
+              icon: Icons.admin_panel_settings_outlined,
+              title: 'Device Permissions',
+              subtitle: 'Camera, mic and contacts access',
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const LoginActivityScreen()),
+                    builder: (_) => BlocProvider(
+                      create: (_) => serviceLocator<IdentityCubit>(),
+                      child: const DevicePermissionsScreen(),
+                    ),
+                  ),
                 );
               },
             ),
-          _navTile(
-            icon: Icons.admin_panel_settings_outlined,
-            title: 'Device Permissions',
-            subtitle: 'Camera, mic and contacts access',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider(
-                    create: (_) => serviceLocator<IdentityCubit>(),
-                    child: const DevicePermissionsScreen(),
-                  ),
-                ),
-              );
-            },
-          ),
-        ]);
-      },
+          ]);
+        },
+      ),
     );
   }
 
@@ -1579,6 +1636,66 @@ class _SettingsViewState extends State<_SettingsView> {
             );
           },
         ),
+      ),
+    ]);
+  }
+
+  Widget _privacyBody() {
+    final hidden = _searchHidden ?? false;
+    return _filterableColumn([
+      _switchTile(
+        icon: Icons.person_search_outlined,
+        title: 'Hide me from search',
+        // The consequence stated plainly. A holder turning this on needs to
+        // know they are still payable — otherwise the honest reading is "I
+        // can no longer be sent money", and they would leave it off.
+        //
+        // THE COPY NAMES THE USERNAME AS COVERED, because as of 2026-11-18 it
+        // is: the exact-username carve-out is an operator dial that defaults
+        // OFF (auth_search_privacy_allow_exact_username). The earlier wording
+        // promised a handle search that now returns nothing, and a privacy
+        // control that overstates what still works is worse than one that
+        // understates it.
+        //
+        // The account number is NOT covered and is named for that reason: it
+        // resolves through accounts-service on the same rail an external bank
+        // transfer uses, so claiming otherwise would be untrue.
+        subtitle: hidden
+            ? "You won't appear in any search — by name, username, phone or "
+                'email. People who already have you saved, and anyone you give '
+                'your account number to, can still pay you.'
+            : 'Stop appearing when people search by name, username, phone or '
+                'email',
+        value: hidden,
+        onChanged: _searchPrivacySaving
+            ? (_) {}
+            : (v) async {
+                final previous = _searchHidden;
+                // Flip immediately so the switch feels live, then revert if
+                // the server did not take it. A switch that sits where the
+                // holder put it while they remain visible to everyone is the
+                // one outcome this setting exists to prevent.
+                setState(() {
+                  _searchHidden = v;
+                  _searchPrivacySaving = true;
+                });
+                final ok = await SearchPrivacyService.instance.setHidden(v);
+                if (!mounted) return;
+                setState(() {
+                  _searchPrivacySaving = false;
+                  if (!ok) _searchHidden = previous;
+                });
+                if (!ok) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        "Couldn't save that — your search setting is unchanged.",
+                      ),
+                    ),
+                  );
+                }
+              },
+        keywords: SettingsSearchVocabulary.privacy,
       ),
     ]);
   }
@@ -2052,6 +2169,21 @@ class _SettingsViewState extends State<_SettingsView> {
           onTap: () => _openHelpLink(mat.url, mat.title),
         ),
       ),
+      // THE SUPPORT DESK, for operators only. Renders a zero-height box for
+      // everyone else — the widget resolves access from the server itself, so
+      // this screen never has to know who is an agent. Placed ABOVE "Contact
+      // support" because an agent opening Help is far more likely to be
+      // heading for the queue than for their own ticket.
+      SupportDeskEntryTile(
+        builder: (_, access) => _navTile(
+          icon: Icons.headset_mic_outlined,
+          title: 'Support desk',
+          subtitle: access.pushEnabled
+              ? 'Work the ticket queue · notifications on'
+              : 'Work the ticket queue',
+          onTap: () => Get.to(() => const SupportDeskScreen()),
+        ),
+      ),
       // In-app support — lands on the ticket hub (open/closed tickets +
       // new-ticket FAB), the same first screen as the drawer entry.
       _navTile(
@@ -2188,7 +2320,7 @@ class _SettingsViewState extends State<_SettingsView> {
           () => _launch('mailto:${HelpConfig.fallback.contactEmail}')));
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: _kCard,
       shape: RoundedRectangleBorder(
@@ -2252,7 +2384,7 @@ class _SettingsViewState extends State<_SettingsView> {
 
   void _showAutoLogoutPicker() {
     final platform = endpointRegistry.inactivityTimeoutSeconds;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: _kCard,
       shape: RoundedRectangleBorder(

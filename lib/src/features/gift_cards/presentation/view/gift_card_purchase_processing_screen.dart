@@ -14,6 +14,7 @@ import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'widgets/gift_card_error_widget.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class GiftCardPurchaseProcessingScreen extends StatefulWidget {
   final GiftCardPurchaseArgs purchaseArgs;
@@ -226,7 +227,19 @@ class _GiftCardPurchaseProcessingScreenState
     // released when this screen is disposed, whatever the outcome.
     return AutoLogoutSuppressed(
       child: PopScope(
+        // BLOCKED WHILE THE MONEY IS MOVING, NOT AFTERWARDS.
+        //
+        // Refusing the back button during a provider call is right — leaving
+        // mid-purchase is how a user ends up not knowing whether they bought
+        // the card. Refusing it once the screen has FAILED is not: the error
+        // view offers "Back to gift cards" and the phone's own back button
+        // did nothing at all, which reads as a frozen app. It now does what
+        // that button does.
         canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop || !_hasError) return;
+          offAllKeepingHome(AppRoutes.giftCards);
+        },
         child: Scaffold(
           backgroundColor: kGiftCardBgTop,
           body: GiftCardBackground(
@@ -681,7 +694,7 @@ class _GiftCardPurchaseProcessingScreenState
                 // already resolved.
                 onTap: _errorRetryable
                     ? _retryPurchase
-                    : () => Get.offAllNamed(AppRoutes.giftCards),
+                    : () => offAllKeepingHome(AppRoutes.giftCards),
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
@@ -716,7 +729,7 @@ class _GiftCardPurchaseProcessingScreenState
               SizedBox(
                 width: double.infinity,
                 child: TextButton(
-                  onPressed: () => Get.offAllNamed(AppRoutes.giftCards),
+                  onPressed: () => offAllKeepingHome(AppRoutes.giftCards),
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(

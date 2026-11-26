@@ -33,14 +33,31 @@ class AppLoadingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bg = backgroundColor ?? Theme.of(context).primaryColor;
     return SizedBox(
       width: width ?? double.infinity,
       height: height ?? 50.h,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? Theme.of(context).primaryColor,
+          backgroundColor: bg,
           foregroundColor: textColor ?? Colors.white,
+          // A LOADING BUTTON MUST STILL LOOK LIKE A BUTTON.
+          //
+          // `onPressed: null` is how this widget blocks a second tap, but it
+          // also puts Material into its DISABLED colours — which ignore
+          // `backgroundColor` entirely and fall back to
+          // `onSurface.withOpacity(0.12)`. On the dark KYC/auth screens that
+          // is very nearly the page colour, so the moment the user tapped,
+          // the button vanished and left a bare loader floating on black.
+          // Reported 2026-11-09 on "Verify Your Identity", where it reads as
+          // a broken screen at the exact moment we ask for someone's BVN.
+          //
+          // Keep the brand colour, just dimmed, so the control stays visible
+          // and obviously busy rather than obviously broken.
+          disabledBackgroundColor: bg.withValues(alpha: 0.55),
+          disabledForegroundColor:
+              (textColor ?? Colors.white).withValues(alpha: 0.9),
           padding: padding ?? EdgeInsets.symmetric(vertical: 12.h),
           shape: RoundedRectangleBorder(
             borderRadius: borderRadius ?? BorderRadius.circular(8.r),
@@ -56,7 +73,11 @@ class AppLoadingButton extends StatelessWidget {
     // Branded loader instead of the generic spinner so every button
     // shows the company logo while it's working. Size matches the
     // previous 24px spinner so existing button layouts are pixel-stable.
-    return const LazerVaultLoader.small();
+    //
+    // Centred explicitly: ElevatedButton centres its child, but the loader is
+    // the ONLY thing in the button while loading, so any future change to the
+    // button's padding would otherwise shift it off-axis.
+    return const Center(child: LazerVaultLoader.small());
   }
 
   Widget _buildNormalState() {

@@ -17,8 +17,12 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
-import 'package:lazervault/core/utils/kyc_error_handler.dart';
 import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/pay_source.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/crypto_pay_unavailable_dialog.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/pay_with_crypto_selector.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/confirm_crypto_payment.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/pay_with_crypto_sheet.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_prediction_cubit.dart';
@@ -55,6 +59,8 @@ import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/re
 import 'package:lazervault/src/features/funds/domain/min_balance_policy.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/grant_restriction_notice.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/min_balance_sheet.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class InitiateSendFunds extends StatefulWidget {
   final RecipientModel? recipient;
@@ -99,6 +105,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       ServiceCategory.commonTransferCategories;
   final TextEditingController _referenceController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
+
+  /// A crypto refusal to show on the RECEIPT, not on the PIN pad.
+  ///
+  /// crypto-service checks its gate before any quote exists, so a decline is
+  /// immediate and has nothing to do with the PIN the customer just entered.
+  /// Throwing it out of onPinValidated painted "Transaction Failed" over the
+  /// PIN sheet; this carries it to the receipt, which has the figures and
+  /// room to explain. Cleared at the start of every attempt.
+  String? _longDeferredFailure;
+
   bool _isConfirmingTransfer = false; // State for dialog loading
   bool _autoShowConfirm = false;
   bool _autoConfirmTriggered = false;
@@ -111,6 +127,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   // TimeOfDay? scheduledTime; // Removed as DateTime handles both
 
   bool _isRecurringEnabled = false;
+
+  /// PAY WITH CRYPTO: how this transfer will be funded.
+  ///
+  /// State-level, like _isRecurringEnabled, because the PIN callback reads it
+  /// after the sheet's own builders are gone. ALWAYS reset to the wallet when
+  /// the confirmation opens — choosing to sell crypto is a decision, and it
+  /// must never be inherited from a previous transfer.
+  PaySource _paySource = PaySource.wallet;
   RecurringTransferConfig? _recurringConfig;
 
   // Budget enforcement state
@@ -879,7 +903,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   /// scheduled transfers / recurring rules). Each tile navigates or opens the
   /// existing flow — the date picker and RecurringTransferModal are unchanged.
   void _showScheduleOptions() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(
@@ -929,7 +953,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                       fontSize: 12.sp)),
               onTap: () {
                 Navigator.of(sheetCtx).pop();
-                showModalBottomSheet(
+                showAppBottomSheet(
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
@@ -1066,6 +1090,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   // Updated to use AccountSummaryEntity from AccountCardsSummaryCubit state
   Future<void> _showTransferConfirmation(
       AccountCardsSummaryState accountState) async {
+    // PAY WITH CRYPTO: fiat on every entry. Selling crypto is a decision, and
+    // a decision taken for the LAST transfer must never carry into this one.
+    _paySource = PaySource.wallet;
+
     // COMPREHENSIVE EDGE CASE VALIDATION
 
     // 1. Validate amount is not empty and parseable
@@ -1241,6 +1269,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         amountMajor: transferAmountMajor,
         feeMajor: isExternalTransfer ? estimatedFee : 0,
         availableMajor: availableBalance,
+        // CRYPTO, OFFERED WHERE IT IS ACTUALLY WANTED — the same addition as
+        // the short flow, so the two refusals stay identical. Suppressed on a
+        // scheduled or repeating transfer for the money reason the selector
+        // itself carries: the conversion runs on authorisation, so pairing it
+        // with a later payment sells the coin today to pay next month.
+        email: context.read<AuthenticationCubit>().currentProfile?.user.email,
+        userId: context.read<AuthenticationCubit>().currentProfile?.user.id,
+        onPayWithCrypto: (scheduledDate == null && !_isRecurringEnabled)
+            ? () => _chooseCryptoSource(
+                  amountMinor: (totalRequired * 100).round(),
+                  walletBalanceMinor: (availableBalance * 100).round(),
+                )
+            : null,
       );
       return;
     }
@@ -1714,6 +1755,50 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                 ),
                               ),
                             ),
+                          // PAY WITH CRYPTO — placed here, immediately before
+                          // the PIN, because this is the last moment the
+                          // customer can change HOW they pay and the first at
+                          // which the amount is settled. It hides itself
+                          // entirely when the gate is off.
+                          //
+                          // NOT OFFERED ON A SCHEDULED TRANSFER, and that is a
+                          // money rule rather than a layout one: the
+                          // conversion runs as soon as the transfer is
+                          // authorised, so pairing it with a schedule would
+                          // sell the customer's coin today to pay someone next
+                          // month, leaving the naira idle and the customer
+                          // exposed to a fall they never agreed to.
+                          // ALSO HIDDEN FOR A REPEAT, for the same reason
+                          // as a schedule: the conversion happens now and a
+                          // repeat pays later, many times.
+                          if (scheduledDate == null && !_isRecurringEnabled)
+                            StatefulBuilder(
+                              builder: (context, setPayState) {
+                                return Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4.h),
+                                  child: PayWithCryptoSelector(
+                                    onDarkSurface: false,
+                                    value: _paySource,
+                                    amountMinor:
+                                        ((int.tryParse(amount) ?? 0) * 100),
+                                    email: context
+                                        .read<AuthenticationCubit>()
+                                        .currentProfile
+                                        ?.user
+                                        .email,
+                                    userId: context
+                                        .read<AuthenticationCubit>()
+                                        .currentProfile
+                                        ?.user
+                                        .id,
+                                    onChanged: (src) {
+                                      setPayState(() {});
+                                      setState(() => _paySource = src);
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
                           // Recurring payment toggle
                           if (scheduledDate == null)
                             StatefulBuilder(
@@ -1767,9 +1852,35 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                         Switch(
                                           value: _isRecurringEnabled,
                                           activeColor: const Color(0xFF3B82F6),
-                                          onChanged: (value) {
+                                          onChanged: (value) async {
+                                            // PAY WITH CRYPTO CANNOT REPEAT.
+                                            //
+                                            // The conversion runs when the
+                                            // transfer is authorised, so a
+                                            // repeat would either sell again
+                                            // every time or pay later from a
+                                            // sale made now. The schedule row
+                                            // hides the selector outright;
+                                            // this one is reached in the other
+                                            // order — crypto first, repeat
+                                            // second — so it has to be said
+                                            // rather than silently undone.
+                                            if (value && _paySource.isCrypto) {
+                                              final useWallet =
+                                                  await CryptoPayUnavailableDialog
+                                                      .show(
+                                                dialogContext,
+                                                conflict:
+                                                    CryptoPayConflict.recurring,
+                                                assetLabel: _paySource.label,
+                                              );
+                                              if (!useWallet) return;
+                                              setRecurringState(() {});
+                                              setState(() => _paySource =
+                                                  PaySource.wallet);
+                                            }
                                             if (value) {
-                                              showModalBottomSheet(
+                                              showAppBottomSheet(
                                                 context: dialogContext,
                                                 isScrollControlled: true,
                                                 backgroundColor:
@@ -1843,6 +1954,51 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                         Navigator.of(dialogCtx).pop();
 
                                         if (!mounted) return;
+
+                                        // THE CONVERSION IS CONFIRMED BEFORE
+                                        // THE PIN PAD, NOT AFTER IT.
+                                        //
+                                        // The short flow and all six bill
+                                        // screens already do this; the long
+                                        // flow showed the Pay-with selector
+                                        // and then went straight to the PIN,
+                                        // so the first a customer heard about
+                                        // the rate, the quantity sold or
+                                        // their coin falling short was a
+                                        // server refusal AFTER they had
+                                        // entered it — and selling crypto is
+                                        // irreversible.
+                                        //
+                                        // Null means they backed out, which
+                                        // abandons the transfer without
+                                        // touching anything. The flag MUST be
+                                        // cleared on that path or the button
+                                        // stays spinning for ever.
+                                        _longDeferredFailure = null;
+                                        if (_paySource.isCrypto) {
+                                          final chosen =
+                                              await confirmCryptoPayment(
+                                            context,
+                                            source: _paySource,
+                                            totalMinor:
+                                                int.tryParse(amount) ?? 0,
+                                          );
+                                          if (chosen == null || !mounted) {
+                                            if (mounted) {
+                                              setState(() {
+                                                _isConfirmingTransfer = false;
+                                              });
+                                            }
+                                            return;
+                                          }
+                                          // They may have switched coins in
+                                          // the sheet; carry that forward
+                                          // rather than paying with the one
+                                          // they rejected.
+                                          if (chosen != _paySource) {
+                                            setState(() => _paySource = chosen);
+                                          }
+                                        }
 
                                         // Validate PIN using the widget's context (not the dialog's)
                                         final summaries =
@@ -1921,8 +2077,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                             // return `pending`), so don't claim success here.
                                             successMessage:
                                                 'Transfer Initiated',
+                                            // PIN pad validates the PIN; the
+                                            // receipt reports the payment.
+                                            showProcessingPhase:
+                                                !_paySource.isCrypto,
                                             memberAllocationRemaining:
                                                 memberAllowance,
+                                            // The coin, the quantity and the
+                                            // wallet top-up, so the last
+                                            // screen before an irreversible
+                                            // sale names what is being sold.
+                                            // Null on a wallet payment, and
+                                            // the sheet is then unchanged.
+                                            cryptoQuote: _paySource.quote,
                                             onPinValidated:
                                                 (verificationToken) async {
                                               // Execute transfer inside callback — PIN modal stays open
@@ -1955,8 +2122,60 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                                   transferCubit.state;
                                               if (finalState
                                                   is TransferFailure) {
-                                                throw Exception(
-                                                    finalState.message);
+                                                // A CRYPTO REFUSAL IS NOT A
+                                                // RECEIPT — IT IS AN EDIT.
+                                                //
+                                                // Every crypto decline used
+                                                // to be carried to the
+                                                // receipt, which is right
+                                                // only when the outcome is
+                                                // UNKNOWN. A refusal is not
+                                                // unknown: the server closed
+                                                // the funding row
+                                                // `failed_no_charge` before
+                                                // answering, nothing was
+                                                // converted, nothing was
+                                                // reserved, and what the
+                                                // customer is being told is
+                                                // "this amount cannot be
+                                                // funded with that coin".
+                                                //
+                                                // Reported 2026-11-24: a
+                                                // ₦1,000 transfer refused for
+                                                // being under the exchange's
+                                                // per-asset swap minimum, and
+                                                // the customer was shown a
+                                                // FAILED TRANSFER receipt for
+                                                // a transfer that never
+                                                // happened — with no way back
+                                                // to the amount they needed
+                                                // to change.
+                                                //
+                                                // So a refusal is thrown like
+                                                // any other: the PIN sheet
+                                                // shows the reason, closes,
+                                                // and leaves them on this
+                                                // screen with the amount
+                                                // field and their recipient
+                                                // intact. The authorisation
+                                                // row reserves nothing and is
+                                                // closed by
+                                                // SweepOrphanedAuthorisations.
+                                                //
+                                                // Only a genuinely uncertain
+                                                // outcome still goes to the
+                                                // receipt, because that is
+                                                // where a customer can see
+                                                // what actually happened.
+                                                if (_paySource.isCrypto &&
+                                                    !finalState
+                                                        .isSpendRefusal) {
+                                                  _longDeferredFailure =
+                                                      finalState.message;
+                                                } else {
+                                                  throw Exception(
+                                                      finalState.message);
+                                                }
                                               } else if (finalState
                                                   is TransferPinFailure) {
                                                 throw Exception('Invalid PIN');
@@ -2031,10 +2250,32 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                           }
                                         }
 
+                                        // A declined crypto payment still
+                                        // gets a receipt — with the reason on
+                                        // it. Nothing was converted and
+                                        // nothing was charged; the transfer
+                                        // sits parked until the orphan sweep
+                                        // closes it.
+                                        if (_longDeferredFailure != null &&
+                                            mounted) {
+                                          setState(() {
+                                            _isConfirmingTransfer = false;
+                                          });
+                                          offAllKeepingHome(
+                                            AppRoutes.transferProof,
+                                            arguments: {
+                                              ...?_lastTransferDetails,
+                                              'status': 'failed',
+                                              'failureReason':
+                                                  _longDeferredFailure,
+                                            },
+                                          );
+                                          return;
+                                        }
                                         // Transfer completed and PIN modal dismissed — navigate to receipt
                                         if (_lastTransferDetails != null &&
                                             mounted) {
-                                          Get.offAllNamed(
+                                          offAllKeepingHome(
                                               AppRoutes.transferProof,
                                               arguments: _lastTransferDetails);
                                         }
@@ -2226,6 +2467,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           scheduledAt: scheduledDate,
           expenseCategory: selectedCategory?.budgetCategory,
           flow: 'long',
+          // PAY WITH CRYPTO. Null on the ordinary wallet-funded path, which
+          // leaves every existing transfer byte-for-byte unchanged.
+          fundingAsset: _paySource.asset,
         );
     print("_executeTransferWithPin: Transfer initiated.");
 
@@ -2321,6 +2565,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       'reference': _referenceController.text.trim().isNotEmpty
           ? _referenceController.text.trim()
           : null,
+      // WHAT THE CUSTOMER TYPED, ON THE DOCUMENT THEY KEEP.
+      //
+      // The note goes to the server as the transfer's narration and was
+      // never put on the receipt map, so the Description row — which the
+      // receipt and the share PDF both render — had nothing to show and
+      // silently disappeared. A receipt that drops the one line the sender
+      // wrote is the receipt failing at the thing it is for.
+      //
+      // The USER'S words, not the composed narration: that one carries the
+      // category prefix, and the receipt already states the category on its
+      // own row.
+      if (_referenceController.text.trim().isNotEmpty)
+        'narration': _referenceController.text.trim(),
       'providerReference': transferState.response.providerReference,
       'internalReference': transferState.response.internalReference,
       'status': transferState.response.status,
@@ -2366,7 +2623,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // Navigate directly to receipt
-    Get.offAllNamed(AppRoutes.transferProof, arguments: {
+    offAllKeepingHome(AppRoutes.transferProof, arguments: {
       ...transferDetails,
       // Absent when this transfer had no recurring rule, so the receipt
       // shows nothing.
@@ -2561,6 +2818,31 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   }
 
   // --- Main Build Method ---
+
+  /// Opens the asset sheet and, if a coin is chosen, switches the source.
+  ///
+  /// Shared by the selector and the insufficient-funds sheet so the two entry
+  /// points cannot diverge. A dismissed sheet changes nothing: leaving the
+  /// source on "Crypto" with no asset chosen would send a request that cannot
+  /// be priced.
+  ///
+  /// [amountMinor] is the TOTAL required including the fee, not the amount —
+  /// converting only the amount lands short by exactly the fee and fails the
+  /// replay on insufficient funds, which is the same trap the bills intents
+  /// carry a note about.
+  Future<void> _chooseCryptoSource({
+    required int amountMinor,
+    required int walletBalanceMinor,
+  }) async {
+    final picked = await PayWithCryptoSheet.open(
+      context,
+      amountMinor: amountMinor,
+      walletBalanceMinor: walletBalanceMinor,
+      current: _paySource.isCrypto ? _paySource.asset : null,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _paySource = picked);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2854,6 +3136,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 'reference': _referenceController.text.trim().isNotEmpty
                     ? _referenceController.text.trim()
                     : null,
+                // See the note on the other construction site: the typed
+                // description never reached the receipt or its PDF.
+                if (_referenceController.text.trim().isNotEmpty)
+                  'narration': _referenceController.text.trim(),
                 'providerReference': transferState.response.providerReference,
                 'internalReference': transferState.response.internalReference,
                 'status': transferState.response.status,
@@ -2915,6 +3201,55 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             // Reset all recurring state to prevent stale flags
             _resetRecurringState();
 
+            // TIER CAPS ARE ANSWERED FIRST, and can be: isTierCapRefusal
+            // excludes the family-allowance wordings by construction, so a
+            // message that reaches the tier branch is never a family refusal
+            // and the two cannot steal each other's cases. Ordered this way
+            // because a tier cap on a family wallet still needs the tier
+            // remedy — verification or support — which the family dialog has
+            // no way to offer.
+            // A TIER CAP GETS THE SHEET THAT CAN LIFT IT, AND NOTHING RACES IT.
+            //
+            // The order below is the whole fix. What was here instead:
+            //
+            //   modalState.setFailed(msg);
+            //   Future.delayed(2s, () => Navigator.of(context).pop());  // (a)
+            //   ...
+            //   showTransferErrorBottomSheet(context, msg);             // (b)
+            //
+            // (b) pushes a route immediately; (a) fires two seconds later and
+            // pops whatever is TOPMOST — which is (b). So the limit sheet was
+            // shown and then torn down by a pop that was meant for the PIN
+            // sheet, and the PIN sheet itself was left standing. From the
+            // customer's side: a flash, then a dead PIN sheet, then nothing.
+            // That is the reported "the limit dialog never showed".
+            //
+            // Now: unwind the payment sheets FIRST, by route predicate rather
+            // than by a blind pop, THEN push exactly one thing and await it.
+            // There is no scheduled pop left to land on the wrong route.
+            if (transferState.isKYCError ||
+                isTierCapRefusal(transferState.message)) {
+              if (!context.mounted) return;
+              dismissPaymentSheets(context);
+              // One frame for the route stack to settle before pushing onto it.
+              await Future<void>.delayed(Duration.zero);
+              if (!context.mounted) return;
+              await showTierLimitRefusalIfAny(
+                context,
+                // isKYCError can arrive with copy that names no window at all
+                // ("Transaction limit reached. Upgrade your account…"), which
+                // the classifier inside would not recognise — so the flag
+                // supplies the sentence it needs rather than the sheet being
+                // skipped on a message that was already rewritten.
+                transferState.isKYCError
+                    ? 'kyc_tier_insufficient ${transferState.message}'
+                    : transferState.message,
+                operationName: 'send money',
+                enforcedTier: transferState.enforcedKycTier,
+              );
+              return;
+            }
+
             // FAMILY WALLET REFUSAL — a dialog, not a two-second flash.
             //
             // A member spending beyond their allowance (or beyond a shared pool)
@@ -2935,13 +3270,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               if (!context.mounted) return;
               final refusalAccount = _familySourceAccount();
               if (refusalAccount != null) {
-                if (pinModalKey.currentState != null) {
-                  try {
-                    Navigator.of(context).pop();
-                  } catch (_) {}
-                } else if (Get.isDialogOpen ?? false) {
-                  Get.back();
-                }
+                dismissPaymentSheets(context);
                 if (!context.mounted) return;
                 await showFamilySpendRefusalDialog(
                   context,
@@ -2957,25 +3286,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             final modalState = pinModalKey.currentState;
             if (modalState != null) {
               modalState.setFailed(transferState.message);
-              // Auto-close after showing failure
-              Future.delayed(const Duration(seconds: 2), () {
-                if (mounted) {
-                  try {
-                    Navigator.of(context).pop();
-                  } catch (_) {}
-                }
-              });
+              // Let the reason land inside the sheet, THEN take the sheets
+              // down — awaited, not scheduled, so nothing can be pushed over
+              // the top of the sheet this pop is aimed at.
+              await Future<void>.delayed(const Duration(seconds: 2));
+              if (!mounted || !context.mounted) return;
+              dismissPaymentSheets(context);
+              await Future<void>.delayed(Duration.zero);
+              if (!mounted || !context.mounted) return;
             } else {
               // Fallback: close any open dialog
               if (Get.isDialogOpen ?? false) {
                 Get.back();
               }
-            }
-
-            // KYC UPGRADE MODAL — show before generic error handling
-            if (transferState.isKYCError && mounted) {
-              handleKYCError(transferState.message, context, 'send money');
-              return; // Don't show snackbar — modal is shown
             }
 
             // Show error bottom sheet for financial errors that need user attention,
@@ -2997,7 +3320,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 lowerMessage.contains('too many');
 
             if (isFinancialError && mounted) {
-              showTransferErrorBottomSheet(
+              await showTransferErrorBottomSheet(
                 context,
                 transferState.message,
                 onRetry: transferState.isRetryable
@@ -3005,6 +3328,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                         // User can retry from the current screen
                       }
                     : null,
+                enforcedKycTier: transferState.enforcedKycTier,
               );
             } else {
               // Lightweight snackbar for network, session, provider, and generic errors

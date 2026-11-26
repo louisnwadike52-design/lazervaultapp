@@ -47,6 +47,7 @@ import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/widgets/dashboard/expenditure_chart.dart';
 import 'package:lazervault/src/features/widgets/dashboard/expenditure_chart_controls.dart';
 import 'package:lazervault/src/features/widgets/dashboard/expenditure_chart_type.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'statistics_widgets.dart';
 
 /// Returns true for platform/internal fee categories that should be
@@ -291,10 +292,25 @@ class _StatisticsState extends State<Statistics>
       // Prefer the personal account, fallback to first. Case-insensitive: the
       // model stores the capitalized display value ("Personal"), so a lowercase
       // 'personal' compare never matched and the default always fell through.
-      final personal =
-          accounts.where((a) => a.accountType.toLowerCase() == 'personal');
-      final selected = personal.isNotEmpty ? personal.first : accounts.first;
-      accountManager.setActiveAccount(selected.id);
+      //
+      // `main` counts with `personal` (same wallet to a customer), and the
+      // fallback skips the wallets nobody means by "my account" — a family pot,
+      // a crowdfund campaign — so analytics does not silently scope itself to
+      // shared money.
+      final preferred = accounts.where((a) =>
+          a.accountTypeEnum == VirtualAccountType.personal ||
+          a.accountTypeEnum == VirtualAccountType.main);
+      final ordinary = accounts.where((a) =>
+          !a.isFamilyAccount &&
+          a.accountTypeEnum != VirtualAccountType.family &&
+          a.accountTypeEnum != VirtualAccountType.campaign &&
+          a.accountTypeEnum != VirtualAccountType.unknown);
+      final selected = preferred.isNotEmpty
+          ? preferred.first
+          : (ordinary.isNotEmpty ? ordinary.first : accounts.first);
+      // The SPENDING id: a family row's `id` is the group id, which is not a
+      // row in accounts.accounts, so every account-scoped read refuses it.
+      accountManager.setActiveAccount(selected.spendingAccountId);
     }
   }
 
@@ -783,7 +799,7 @@ class _StatisticsState extends State<Statistics>
   Future<void> _openFilterSheet(String title, Widget child) {
     final statsCubit = context.read<StatisticsCubit>();
     final obCubit = context.read<OpenBankingCubit>();
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,
@@ -2589,7 +2605,7 @@ class _StatisticsState extends State<Statistics>
   /// reconnect, unlink) without leaving the AI Budgeting page.
   void _showBankManagementSheet(LinkedBankAccount account) {
     final cubit = context.read<OpenBankingCubit>();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,

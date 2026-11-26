@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/vendor_access_refresher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,6 +15,7 @@ import 'package:lazervault/src/features/sprayme/presentation/screens/sprayme_hom
 import 'package:lazervault/src/features/support/presentation/support_tickets_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/widgets/lazer_points_nav_widget.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/widgets/lifestyle_view_mode.dart';
+import 'package:lazervault/core/services/vendor_access.dart';
 
 // ─── Main Screen ───────────────────────────────────────────────────────────────
 class NewLifestyleScreen extends StatefulWidget {
@@ -41,6 +43,20 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
     LifestyleViewModePrefs.load().then((m) {
       if (mounted) setState(() => _viewMode = m);
     });
+    // THE TAB THAT SHOWS THE VENDOR SECTION ASKS WHETHER TO SHOW IT.
+    //
+    // Vendor Campaigns is the one entry here gated on a per-user ROLE, and
+    // the only thing that fetched that role was the DASHBOARD's services
+    // grid. So this tab's content depended on a different tab having been
+    // built first — true on a normal cold start, and not true for a deep link
+    // that lands here, a layout that drops the grid, or any future change to
+    // the dashboard. An enrolled vendor then opens the last tab and finds
+    // nothing, with no way to make it appear.
+    //
+    // Latched once per session inside the refresher, so this is free when the
+    // dashboard has already asked, and the ValueListenableBuilder in `build`
+    // repaints when the answer lands.
+    VendorAccessRefresher.refreshInBackground();
   }
 
   void _setViewMode(LifestyleViewMode m) {
@@ -191,19 +207,43 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
           onTap: _openPlanMyDay,
           gate: FeatureFlags.featurePrefix('lifestyle', 'planmyday'),
         ),
+        // VENDOR CAMPAIGNS LIVES HERE, NOT IN QUICK SERVICES.
+        //
+        // It was a quick-service tile, which put a scanner only enrolled
+        // vendors can use in the same grid as airtime and send money — a grid
+        // whose whole premise is that every tile is for everyone. Lifestyle is
+        // where a destination that belongs to a subset of users belongs, next
+        // to Lazerspray.
+        //
+        // `visible` rather than `gate` alone: this is the app's one per-user
+        // ROLE gate, and VendorAccess answers false when unknown, so a failed
+        // or not-yet-made enrolment call hides it rather than offering a
+        // scanner every scan of which the backend would refuse.
+        _LifestyleEntry(
+          title: 'Vendor Campaigns',
+          subtitle: 'Scan customer codes & redeem venue promotions',
+          emoji: '\u{1F3EA}',
+          colors: const [Color(0xFF0EA5E9), Color(0xFF2563EB)],
+          onTap: _openVendorCampaigns,
+          gate: FeatureFlags.featurePrefix('lifestyle', 'vendorcampaigns'),
+          visible: () => VendorAccess.isActiveVendor,
+        ),
       ];
 
   /// Entries an admin has switched off are REMOVED here, not dimmed.
   ///
-  /// Unlike a bill tile or a nav destination, these two are the entire content
-  /// of the tab and nothing is addressed by their position — there is no index
-  /// a deep link can land on wrongly, so a withdrawn product is better absent
-  /// than present-and-refusing. A whitelisted tester still sees it.
-  List<_LifestyleEntry> get _visibleEntries =>
-      _entries.where((e) => FeatureFlags.gateAllowed(e.gate)).toList();
+  /// Unlike a bill tile or a nav destination, these entries are the entire
+  /// content of the tab and nothing is addressed by their position — there is
+  /// no index a deep link can land on wrongly, so a withdrawn product is
+  /// better absent than present-and-refusing. A whitelisted tester still sees
+  /// it.
+  List<_LifestyleEntry> get _visibleEntries => _entries
+      .where((e) => FeatureFlags.gateAllowed(e.gate) && e.visible())
+      .toList();
 
-  /// Both Lifestyle services withdrawn. Says so rather than leaving the tab
-  /// empty under a header that promises services.
+  /// Every Lifestyle entry withdrawn (or, for Vendor Campaigns, not this
+  /// user's). Says so rather than leaving the tab empty under a header that
+  /// promises services.
   Widget _buildNoEntries() {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 48.h),
@@ -236,8 +276,9 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
 
   Widget _buildEntries() {
     final entries = _visibleEntries;
-    // Both withdrawn at once is a legal configuration and must not render as
-    // a blank tab under a header that promises services.
+    // All of them withdrawn at once is a legal configuration — and now the
+    // common case for a non-vendor with both others off — so it must not
+    // render as a blank tab under a header that promises services.
     if (entries.isEmpty) return _buildNoEntries();
     switch (_viewMode) {
       case LifestyleViewMode.grid:
@@ -407,6 +448,14 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
     );
   }
 
+  /// Routes through the SAME dispatcher the quick-service grid used, so the
+  /// frozen-account guard, the admin availability gate and usage recording all
+  /// still run — moving the entry point must not move it outside the gates.
+  void _openVendorCampaigns() {
+    HapticFeedback.lightImpact();
+    Get.toNamed(AppRoutes.vendorCampaigns);
+  }
+
   void _openSprayMe() {
     HapticFeedback.lightImpact();
     Navigator.push<int>(
@@ -446,7 +495,10 @@ class _LifestyleEntry {
     required this.colors,
     required this.onTap,
     required this.gate,
+    this.visible = _alwaysVisible,
   });
+
+  static bool _alwaysVisible() => true;
 
   final String title;
   final String subtitle;
@@ -456,4 +508,10 @@ class _LifestyleEntry {
 
   /// Admin gate prefix, e.g. `feature_lifestyle_sprayme`.
   final String gate;
+
+  /// An extra, non-admin condition — today only the vendor ROLE. Kept separate
+  /// from [gate] because an admin switch and a per-user role are different
+  /// questions: an operator must be able to withdraw the product from everyone
+  /// without that being confused with "this user is not a vendor".
+  final bool Function() visible;
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import 'package:lazervault/src/features/app_status/widgets/maintenance_screen.da
 import 'package:lazervault/src/features/app_status/widgets/outage_copy.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// App-wide startup gate wrapping every route (mounted inside GetMaterialApp so
 /// it has Navigator/Overlay/theme). Both of its checks run entirely in the
@@ -32,6 +34,26 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 class AppStartupGate extends StatefulWidget {
   final Widget child;
   const AppStartupGate({super.key, required this.child});
+
+  /// True while this gate is painting something the user cannot navigate past.
+  ///
+  /// WHY A FLAG AND NOT A ROUTE CHECK. The two blocking surfaces here are
+  /// neither routes nor dialogs: the forced-update screen is returned INSTEAD
+  /// of `child` (so the app's Navigator is not even in the tree), and the
+  /// maintenance overlay is a `Positioned.fill` inside a Stack. Nothing a
+  /// caller can inspect — `Get.currentRoute` still reads whatever it was, and
+  /// `Get.isDialogOpen` is false — so a deep-link replay checking either of
+  /// those concludes the coast is clear.
+  ///
+  /// What that cost: a push or a shared link arriving on a build below the
+  /// minimum version was resolved, "navigated" into a Navigator that is not
+  /// displayed, and CONSUMED from the stash. The user updates, reopens, and
+  /// the link is gone — and a user on an outdated build is exactly who gets
+  /// sent a link telling them to do something.
+  ///
+  /// [PendingDeepLink] consults this and defers instead. The stash is on disk,
+  /// so the target survives the update and replays afterwards.
+  static bool blockingTheScreen = false;
 
   @override
   State<AppStartupGate> createState() => _AppStartupGateState();
@@ -218,6 +240,38 @@ class _AppStartupGateState extends State<AppStartupGate>
     }
   }
 
+  /// Whether the identity cached on this device is on the maintenance
+  /// allow-list.
+  ///
+  /// Reads the CACHED identity rather than a live session, because this gate
+  /// runs before login: a tester opening the app during a declared window has
+  /// no session yet, and requiring one would make the allow-list useless
+  /// exactly when it is needed. The same keys the passcode lock and
+  /// LoginFlowResolver use.
+  ///
+  /// Any failure answers "not whitelisted" — the notice shows. Failing the
+  /// other way would let a storage error silently suppress a maintenance
+  /// notice for everybody.
+  Future<bool> _whitelistedForMaintenance() async {
+    if (FeatureFlags.maintenanceWhitelist.isEmpty) return false;
+    try {
+      const storage = FlutterSecureStorage(
+        aOptions: AndroidOptions(
+          encryptedSharedPreferences: true,
+          resetOnError: true,
+        ),
+      );
+      final results = await Future.wait([
+        storage.read(key: 'stored_email'),
+        storage.read(key: 'user_id'),
+        storage.read(key: 'stored_phone'),
+      ]);
+      return FeatureFlags.maintenanceAllows(results);
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Decides WHOSE problem this is, or null when there is no problem.
   ///
   /// The old logic was `!healthy && deviceOnline()`, which asked the wrong
@@ -238,6 +292,25 @@ class _AppStartupGateState extends State<AppStartupGate>
     // interrupt a transfer somebody has already submitted, and every backend
     // worker and reconciler keeps running behind it regardless.
     if (FeatureFlags.maintenanceModeEnabled) {
+      // WHITELISTED PEOPLE WALK THROUGH A DECLARED WINDOW.
+      //
+      // An operator who puts the app behind the notice almost always needs
+      // somebody — themselves, a tester, a support responder — still using it
+      // to confirm the fix before the notice comes down. The alternative is
+      // turning maintenance off for everyone to check one thing.
+      //
+      // DELIBERATELY ONLY HERE. Every branch below is a MEASURED outage: a
+      // 5xx, a timeout, an unreachable host. Being on a list cannot conjure a
+      // working backend, so letting someone past those would hand them a
+      // broken app with no explanation — strictly worse than the notice. The
+      // whitelist is about a decision we made, never about a failure we found.
+      if (await _whitelistedForMaintenance()) {
+        if (!mounted) return null;
+        debugPrint('[startup-gate] maintenance declared, but this identity is '
+            'whitelisted — letting them through');
+        return null;
+      }
+      if (!mounted) return null;
       return OutageKind.plannedMaintenance;
     }
 
@@ -367,7 +440,7 @@ class _AppStartupGateState extends State<AppStartupGate>
             // THIS IS WHY THE SHEET ONLY EVER APPEARED AFTER LOGIN. The gate
             // is built inside GetMaterialApp.builder, which wraps the
             // Navigator — so its own context sits ABOVE the Navigator, and
-            // showModalBottomSheet(context: thatContext) cannot find one and
+            // showAppBottomSheet(context: thatContext) cannot find one and
             // throws. The throw landed in _run's catch-all, so nothing was
             // logged and nothing appeared; the dashboard's own AppUpdateCubit
             // then showed the sheet post-login with a real route context, and
@@ -391,19 +464,38 @@ class _AppStartupGateState extends State<AppStartupGate>
               return;
             }
             try {
-              await showUpdateModal(
+              // MARKED WHEN THE SHEET IS PUSHED, NOT WHEN IT CLOSES.
+              //
+              // THE BUG THIS FIXES, reported 2026-11-10: "the app keeps
+              // telling me to update anytime I want to open the app."
+              //
+              // Marking after the await meant the prompt was only ever spent
+              // when the sheet was DISMISSED. A customer who met it on the
+              // passcode screen — which is exactly "anytime I open the app" —
+              // and killed the app from the task switcher instead of
+              // dismissing it never reached the mark, so the same prompt
+              // returned on the next launch, and the next, for ever. The app
+              // was behaving correctly by its own rules and felt broken.
+              //
+              // The original reasoning was right and is preserved: a prompt
+              // that FAILS TO APPEAR must stay owed rather than be spent (it
+              // was once marked before the call, so the context throw above
+              // silently consumed it). The mistake was the boundary, not the
+              // idea — "closed" and "rendered" are different events, and only
+              // the second one is what "the user has seen it" means.
+              //
+              // showModalBottomSheet pushes its route synchronously and throws
+              // synchronously on a bad context. So holding the Future without
+              // awaiting it proves the sheet is on screen: if we have a
+              // Future, it rendered; if it threw, we are in the catch and
+              // nothing is marked. Same protection, correct boundary.
+              final shown = showUpdateModal(
                 navCtx,
                 info: info,
                 onUpdate: () => service.openStore(info),
               );
-              // MARKED ONLY AFTER IT ACTUALLY SHOWED.
-              //
-              // This used to be marked BEFORE the call, so the throw above
-              // consumed the one-time prompt for that build: the gate recorded
-              // it as seen, the sheet never rendered, and the dashboard's
-              // later check correctly declined to show it again. A prompt that
-              // fails to appear must stay owed, not be spent.
               await service.markOptionalModalSeen(info);
+              await shown;
             } catch (e) {
               debugPrint('[startup-gate] update sheet failed to show: $e');
             }
@@ -429,18 +521,26 @@ class _AppStartupGateState extends State<AppStartupGate>
         : OutageCopy.of(outage, isSignUp: _isSignUpFlow());
     final forced = _forcedInfo;
     if (forced != null) {
+      // Assigned here rather than in _run() because this is the question the
+      // flag actually answers — "what am I painting right now" — and the
+      // maintenance branch below depends on _isPreLoginScreen(), which is only
+      // meaningful at build time. A plain assignment of derived state, so it
+      // cannot loop.
+      AppStartupGate.blockingTheScreen = true;
       return ForcedUpdateScreen(
         info: forced,
         onUpdate: () => serviceLocator<AppUpdateService>().openStore(forced),
       );
     }
+    final maintenanceVisible = outage != null && _isPreLoginScreen();
+    AppStartupGate.blockingTheScreen = maintenanceVisible;
     return Stack(
       children: [
         widget.child,
         // Belt-and-suspenders: only ever paint the maintenance overlay on a
         // pre-login screen, even if a stale `_backendUnhealthy` lingers after a
         // route change (the next `_run` on resume reconciles the flag).
-        if (outage != null && _isPreLoginScreen())
+        if (maintenanceVisible)
           Positioned.fill(
             child: MaintenanceModal(
               onRetry: _run,

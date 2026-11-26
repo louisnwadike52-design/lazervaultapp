@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/core/shared_widgets/service_unavailable_modal.dart';
 import 'package:lazervault/core/types/route_service_map.dart';
@@ -14,6 +15,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/app_status/widgets/app_startup_gate.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 /// Takes a notification to its destination, whenever that becomes possible.
@@ -53,6 +55,27 @@ class PendingDeepLink {
   // so the sign-out/auto-login teardown must not wipe it. Only targets captured
   // under a live session are account-specific and cleared on teardown.
   bool _stashedUnderSession = false;
+
+  /// Whether this target came from a link opened OUTSIDE the app — a shared
+  /// campaign, an escrow offer, a group invite, a ticketed event.
+  ///
+  /// THE BUG THIS EXISTS FOR. `clear()` drops a target captured under a
+  /// session, because a tapped receipt belongs to the user who tapped it and
+  /// must never replay into the next person on a shared device. On a cold
+  /// start that rule fired against the wrong target: the auth cubit restores a
+  /// cached profile OPTIMISTICALLY, so `_isAuthenticated()` can be true at the
+  /// moment a link is ingested, and when the stored refresh token is then
+  /// rejected the teardown ran and took the link with it. The supporter tapped
+  /// a campaign, was asked to log in, logged in, and landed on the dashboard
+  /// with no sign the link had ever existed — reported against
+  /// `https://lazervault.app/crowdfund/<id>`.
+  ///
+  /// A shared link is not account-specific by construction. It names something
+  /// its sender wants ANYONE to open, it carries no private record, and
+  /// whoever is holding the phone is its intended audience. So it is exempt
+  /// from the sign-out rule — and its owner is left null, so the
+  /// shared-device ownership check lets it through too.
+  bool _stashedFromSharedLink = false;
 
   /// The user a session-captured target belongs to. A restored target with an
   /// owner may only replay for that same user — otherwise, on a shared device,
@@ -200,10 +223,12 @@ class PendingDeepLink {
     NotificationTarget target, {
     String? sourceType,
     Map<String, String>? sourceData,
+    bool fromSharedLink = false,
   }) {
     _pending = target;
     _stashedAt = DateTime.now();
-    _stashedUnderSession = _isAuthenticated();
+    _stashedFromSharedLink = fromSharedLink;
+    _stashedUnderSession = !fromSharedLink && _isAuthenticated();
     _stashedOwnerUserId = _stashedUnderSession ? _currentUserId() : null;
     unawaited(_persist(target, sourceType, sourceData));
     consumeAndNavigate();
@@ -239,10 +264,18 @@ class PendingDeepLink {
   /// anywhere, at any time — it self-checks every precondition.
   void consumeAndNavigate() {
     final target = _take(peek: true);
-    if (target == null) return;
-    if (Get.context == null) return; // navigator not mounted yet
-    if (target.requiresAuth && !_isAuthenticated()) return;
-    if (_onAuthOrLockRoute()) return; // wait until past the gate
+    if (target == null) {
+      _stopRetrying();
+      return;
+    }
+    if (Get.context == null) return _retryShortly(); // no navigator yet
+    if (target.requiresAuth && !_isAuthenticated()) return _retryShortly();
+    // Hold the replay until a call from the destination would carry a token.
+    // The observer retries on the next frame and on every pop, so this costs
+    // a few frames at worst and saves the destination from rendering an
+    // authentication failure as its first impression.
+    if (target.requiresAuth && !_tokenLooksReady()) return _retryShortly();
+    if (_onAuthOrLockRoute()) return _retryShortly(); // wait past the gate
 
     // OWNERSHIP. A target captured under a session belongs to that user. On a
     // shared device the next person to log in must never be shown the previous
@@ -259,6 +292,7 @@ class PendingDeepLink {
 
     final confirmed = _take();
     if (confirmed == null) return; // another caller won the race
+    _stopRetrying();
 
     _prepare(confirmed);
 
@@ -320,10 +354,14 @@ class PendingDeepLink {
   /// its ingestion. Clearing it there silently dropped the link the user just
   /// tapped — they logged in and landed on the dashboard instead of the offer.
   void clear() {
+    // A shared link belongs to whoever opened it, not to the session that
+    // happened to be restored when it arrived. See _stashedFromSharedLink.
+    if (_stashedFromSharedLink) return;
     if (!_stashedUnderSession) return; // fresh pre-auth intent — preserve it
     _pending = null;
     _stashedAt = null;
     _stashedUnderSession = false;
+    _stashedFromSharedLink = false;
     _stashedOwnerUserId = null;
     unawaited(PendingDeepLinkStore.clear());
   }
@@ -334,8 +372,49 @@ class PendingDeepLink {
     _pending = null;
     _stashedAt = null;
     _stashedUnderSession = false;
+    _stashedFromSharedLink = false;
     _stashedOwnerUserId = null;
     unawaited(PendingDeepLinkStore.clear());
+  }
+
+  /// A BOUNDED TICK, BECAUSE A ROUTE CHANGE IS NOT GUARANTEED TO COME.
+  ///
+  /// Replay used to be driven entirely by events: the tap, the dashboard's
+  /// first frame, and [DeepLinkReplayObserver] on every push/pop/replace.
+  /// That covers every case where something MOVES — and the one that strands
+  /// a link is the case where nothing does. The last route change of a login
+  /// is `offAllNamed(dashboard)`, and the access token is written to secure
+  /// storage after it; a target held back by `_tokenLooksReady()` at that
+  /// instant has no further event to wake it. The user then sits on a
+  /// dashboard with their campaign link still in the stash, which reads
+  /// exactly like the link having done nothing.
+  ///
+  /// Bounded on purpose. It stops the moment the target is routed, dropped or
+  /// has run out of attempts, so there is no timer alive in the common case
+  /// and no unbounded poll in any case. Thirty attempts at 400ms is twelve
+  /// seconds — comfortably past a token write, and far short of a user having
+  /// moved on.
+  static const _retryEvery = Duration(milliseconds: 400);
+  static const _maxRetries = 30;
+  Timer? _retryTimer;
+  int _retriesLeft = 0;
+
+  void _retryShortly() {
+    if (_retryTimer != null) return; // already ticking
+    _retriesLeft = _maxRetries;
+    _retryTimer = Timer.periodic(_retryEvery, (t) {
+      if (_retriesLeft-- <= 0) {
+        _stopRetrying();
+        return;
+      }
+      consumeAndNavigate();
+    });
+  }
+
+  void _stopRetrying() {
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    _retriesLeft = 0;
   }
 
   /// Side effects that must happen before landing on certain destinations.
@@ -365,6 +444,7 @@ class PendingDeepLink {
       _pending = null;
       _stashedAt = null;
       _stashedUnderSession = false;
+      _stashedFromSharedLink = false;
       _stashedOwnerUserId = null;
       unawaited(PendingDeepLinkStore.clear());
       return null;
@@ -373,6 +453,7 @@ class PendingDeepLink {
       _pending = null;
       _stashedAt = null;
       _stashedUnderSession = false;
+      _stashedFromSharedLink = false;
       _stashedOwnerUserId = null;
       // The disk copy must go with it. Leaving it behind would replay an
       // already-consumed notification on the next cold start — yanking the
@@ -382,12 +463,48 @@ class PendingDeepLink {
     return target;
   }
 
+  /// Overridable in tests, the same seam [PendingDeepLinkStore.prefs] uses.
+  ///
+  /// Without it the session-ownership rules are untestable: the service
+  /// locator is empty under `flutter test`, so `_isAuthenticated()` always
+  /// answers false and every stash looks like a pre-auth one — which is
+  /// exactly the branch the crowdfund bug was NOT in.
+  @visibleForTesting
+  static bool Function()? debugIsAuthenticated;
+
   bool _isAuthenticated() {
+    final override = debugIsAuthenticated;
+    if (override != null) return override();
     try {
       final s = serviceLocator<AuthenticationCubit>().state;
       return s is AuthenticationSuccess || s is AuthenticationAuthenticated;
     } catch (_) {
       return false;
+    }
+  }
+
+  /// Whether a CALL made by the destination would actually carry a token.
+  ///
+  /// "AUTHENTICATED" AND "HAS A USABLE TOKEN" ARE NOT THE SAME THING, and the
+  /// gap between them is what a cold start from a tapped notification lands
+  /// in. The cubit reports a session the moment it is restored; the access
+  /// token is written to secure storage separately and asynchronously. A
+  /// target replayed in that window pushes a screen that fetches immediately,
+  /// with no authorization header, and the gateway answers UNAUTHENTICATED —
+  /// which reached the customer as a page of gRPC trailers on the Deposit
+  /// screen after tapping a deposit push.
+  ///
+  /// SYNCHRONOUS AND CHEAP, deliberately: this is called from a post-frame
+  /// callback and from the replay observer on every pop, so it reads a value
+  /// the token helper already keeps in memory rather than touching storage.
+  /// Unknown reads as READY — the destination's own call then waits for the
+  /// token (GrpcCallOptionsHelper does, for up to 3.6s, whenever a refresh
+  /// token exists), so being wrong here only costs what it cost before.
+  bool _tokenLooksReady() {
+    try {
+      return GrpcCallOptionsHelper.lastKnownTokenUsable ?? true;
+    } catch (_) {
+      return true;
     }
   }
 
@@ -407,9 +524,30 @@ class PendingDeepLink {
     // retries on didPop as soon as the dialog closes.
     if (Get.isDialogOpen == true || Get.isBottomSheetOpen == true) return true;
 
+    // AND THE TWO BLOCKERS THAT ARE NEITHER ROUTE NOR DIALOG.
+    //
+    // AppStartupGate returns the forced-update screen INSTEAD of the app (so
+    // the Navigator is not in the tree at all) and paints the maintenance
+    // overlay as a Positioned.fill. Neither moves Get.currentRoute and neither
+    // registers as a dialog, so every check above reads "clear" while the user
+    // cannot reach anything. A replay then navigated into a Navigator nobody
+    // could see and CONSUMED the stash — the link silently lost, on exactly
+    // the outdated or offline build most likely to have been sent one.
+    if (AppStartupGate.blockingTheScreen) return true;
+
     final r = Get.currentRoute;
+    // Breadth is the right direction here. A false positive costs a short
+    // wait — the replay observer retries on the next didPop — while a false
+    // negative pushes a destination OVER a gate the user has not passed.
     return r.startsWith('/auth/') ||
         r.startsWith('/kyc/') ||
+        // THE INTRO CAROUSEL IS A GATE TOO, and it is under none of the
+        // prefixes above. A fresh install shows it before the auth entry, and
+        // `has_seen_onboarding` is only written when it finishes or is
+        // skipped — so a target that does not require auth, replayed here,
+        // navigated away from the carousel, left the flag unwritten, and the
+        // carousel came back on the next launch.
+        r.startsWith(AppRoutes.onboarding) ||
         r.contains('login') ||
         r.contains('passcode') ||
         r.contains('sign-in') ||

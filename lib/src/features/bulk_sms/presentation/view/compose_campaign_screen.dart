@@ -13,6 +13,7 @@ import '../utils/bulk_sms_utils.dart';
 import '../widgets/bulk_sms_shared_widgets.dart';
 import '../widgets/recipients_picker_sheet.dart';
 import 'bulk_sms_theme.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Compose a bulk SMS: sender-ID, message (live segment/unit count),
 /// `{{variable}}` insertion, and recipients (via the recipients sheet).
@@ -99,7 +100,7 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
   }
 
   Future<void> _openRecipients() async {
-    final result = await showModalBottomSheet<List<SmsRecipientEntity>>(
+    final result = await showAppBottomSheet<List<SmsRecipientEntity>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

@@ -14,6 +14,7 @@ import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import 'gift_card_sale_receipt_screen.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Sell-side analog of [GiftCardPurchaseProcessingScreen]. Stays
 /// mounted while the sale row sits at `pending` (async-sell waiting
@@ -119,7 +120,14 @@ class _GiftCardSellProcessingScreenState
   @override
   Widget build(BuildContext context) {
     return PopScope(
+      // Blocked while the sale is in flight; once it is terminal the OS back
+      // button does what the on-screen CTA does. See the note on the purchase
+      // processing screen.
       canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop || !_hasError) return;
+        offAllKeepingHome(AppRoutes.mySales);
+      },
       child: Scaffold(
         backgroundColor: kGiftCardBgTop,
         body: GiftCardBackground(
@@ -248,7 +256,7 @@ class _GiftCardSellProcessingScreenState
             ),
             SizedBox(height: 24.h),
             TextButton(
-              onPressed: () => Get.offAllNamed(AppRoutes.mySales),
+              onPressed: () => offAllKeepingHome(AppRoutes.mySales),
               child: Text(
                 'Check status in My Sales',
                 style: GoogleFonts.inter(
@@ -333,7 +341,7 @@ class _GiftCardSellProcessingScreenState
             ),
             SizedBox(height: 24.h),
             ElevatedButton(
-              onPressed: () => Get.offAllNamed(AppRoutes.mySales),
+              onPressed: () => offAllKeepingHome(AppRoutes.mySales),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,

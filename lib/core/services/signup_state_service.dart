@@ -194,6 +194,7 @@ class SignupStateService {
   /// Update draft with personal info (first name, last name, DOB)
   Future<void> updateDraftPersonalInfo({
     String? firstName,
+    String? middleName,
     String? lastName,
     DateTime? dateOfBirth,
     String? username,
@@ -202,6 +203,7 @@ class SignupStateService {
     final draft = await loadDraft() ?? SignupDraft();
     await saveDraft(draft.copyWith(
       firstName: firstName,
+      middleName: middleName,
       lastName: lastName,
       dateOfBirth: dateOfBirth,
       username: username,

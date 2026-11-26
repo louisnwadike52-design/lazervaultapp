@@ -11,6 +11,7 @@ import 'package:intl_phone_field/country_picker_dialog.dart';
 import '../cubit/customer_cubit.dart';
 import '../cubit/customer_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Add Customer — a 3-step wizard (Basics → Contact → Business) with per-step
 /// validation, a searchable country-code picker on the phone field (and a
@@ -690,7 +691,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   void _showCountryPicker() {
     final search = TextEditingController();
     List<Country> filtered = List.of(countries);
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       StatefulBuilder(
         builder: (context, setSheet) {
           return Container(

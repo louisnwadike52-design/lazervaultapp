@@ -63,12 +63,34 @@ class ReferralTransactionEntity extends Equatable {
   /// Signed up, but the bonus is still waiting on their KYC.
   bool get awaitingRefereeKyc => status == ReferralStatus.pending;
 
+  /// True when the server has told us this referral cannot pay, even though it
+  /// is still sitting in `pending`.
+  ///
+  /// A bonus needs a KYC-verified referee AND a handset nobody else signed up
+  /// on. Only the backend can judge the second, so it writes the reason onto
+  /// the row rather than inventing a new status — the referral stays `pending`
+  /// because the referrer has not lost anything permanent, but it will not pay
+  /// as things stand, and saying "KYC not completed yet" about somebody who
+  /// completed it is simply false.
+  bool get blockedWhilePending =>
+      status == ReferralStatus.pending &&
+      (failureReason?.trim().isNotEmpty ?? false);
+
   /// One short line naming the stage this referral is at.
   String get kycStageLabel {
     switch (status) {
       case ReferralStatus.completed:
         return 'KYC verified · bonus earned';
       case ReferralStatus.pending:
+        // A server-supplied reason WINS over the stage wording. It is the only
+        // thing on this screen that can explain a referral which is verified
+        // and still unpaid; without it the row said "KYC not completed yet" to
+        // a referrer whose referee was plainly verified, and one referrer with
+        // six signups and no bonus had no way to find out why.
+        final blockedReason = failureReason?.trim();
+        if (blockedReason != null && blockedReason.isNotEmpty) {
+          return blockedReason;
+        }
         return refereeHasJoined
             ? 'Joined · KYC not completed yet'
             : 'Signed up · KYC not completed yet';

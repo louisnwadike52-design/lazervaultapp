@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'sms_dnd_notice.dart';
+
 /// Shared "resend verification code" control used by EVERY OTP/verification
 /// screen (email + phone, both the email_password and phone_passcode flows).
 ///
@@ -20,13 +22,31 @@ class ResendCodeButton extends StatefulWidget {
   /// during signup/login). 0 → the button is immediately tappable.
   final int initialSeconds;
 
-  /// Performs the resend and returns the new cooldown (seconds). Defaults to 60
-  /// when the future resolves to null.
+  /// Performs the resend and returns the new cooldown in seconds.
+  ///
+  /// RETURN null WHEN NO CODE WAS SENT — a refusal, a rate limit, an offline
+  /// failure. A cooldown is a statement that a code just went out and the next
+  /// one has to wait; running one after a refusal tells the customer to wait
+  /// for something that never happened. It also contradicts the error they are
+  /// looking at: "too many codes requested, try again in 24 minutes" sat above
+  /// a cheerful "Resend in 57s", because this used to substitute 60 for null
+  /// and start counting regardless.
+  ///
+  /// Returning null leaves the button tappable, which is the honest state: the
+  /// server is the authority on whether another code may be sent, and it says
+  /// so in the message it already returned.
   final Future<int?> Function() onResend;
 
   final bool dark;
   final String label;
   final String prompt; // optional leading text, e.g. "Didn't receive the code?"
+
+  /// Show the DND delivery notice once the first cooldown has elapsed.
+  ///
+  /// SMS screens only. DND is a phone-network register, so mounting this on an
+  /// email verification screen would show the customer advice that cannot
+  /// possibly apply to them.
+  final bool showSmsDndHelp;
 
   const ResendCodeButton({
     super.key,
@@ -35,6 +55,7 @@ class ResendCodeButton extends StatefulWidget {
     this.dark = false,
     this.label = 'Resend code',
     this.prompt = '',
+    this.showSmsDndHelp = false,
   });
 
   @override
@@ -45,6 +66,15 @@ class _ResendCodeButtonState extends State<ResendCodeButton> {
   int _seconds = 0;
   Timer? _timer;
   bool _busy = false;
+
+  /// How many cooldowns have run down to zero on this screen.
+  ///
+  /// Gates the DND notice on "the customer WAITED and still has nothing",
+  /// not merely on "the resend button is tappable". With initialSeconds = 0
+  /// the button is live immediately and nobody has waited for anything, so
+  /// troubleshooting advice would be premature and would read as the app
+  /// blaming the user before its own code had a chance to arrive.
+  int _cooldownsElapsed = 0;
 
   @override
   void initState() {
@@ -65,7 +95,10 @@ class _ResendCodeButtonState extends State<ResendCodeButton> {
       if (!mounted) return;
       if (_seconds <= 1) {
         t.cancel();
-        setState(() => _seconds = 0);
+        setState(() {
+          _seconds = 0;
+          _cooldownsElapsed += 1;
+        });
       } else {
         setState(() => _seconds -= 1);
       }
@@ -78,7 +111,9 @@ class _ResendCodeButtonState extends State<ResendCodeButton> {
     try {
       final next = await widget.onResend();
       if (!mounted) return;
-      _start(next ?? 60);
+      // NO FABRICATED COOLDOWN. null means nothing was sent, so there is
+      // nothing to count down from — see the note on [onResend].
+      if (next != null && next > 0) _start(next);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -102,7 +137,7 @@ class _ResendCodeButtonState extends State<ResendCodeButton> {
       );
     }
 
-    return TextButton(
+    final button = TextButton(
       onPressed: _busy ? null : _onTap,
       child: Text(
         widget.label,
@@ -114,6 +149,18 @@ class _ResendCodeButtonState extends State<ResendCodeButton> {
           decorationColor: widget.dark ? Colors.white : accent,
         ),
       ),
+    );
+
+    if (!widget.showSmsDndHelp || _cooldownsElapsed == 0) return button;
+
+    // The notice decides for itself whether this many waits is enough — the
+    // threshold is an admin setting, not something each screen hardcodes.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        button,
+        SmsDndNotice(dark: widget.dark, cooldownsElapsed: _cooldownsElapsed),
+      ],
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -112,6 +113,86 @@ class HowItWorksCard extends StatelessWidget {
               Icons.celebration_rounded,
             ),
           ],
+          SizedBox(height: 14.h),
+          // THE QUALIFYING TIER, READ FROM THE SETTING.
+          //
+          // An outline, not a paragraph: one line stating the single condition
+          // a referrer actually needs to know. The tier is NEVER hardcoded —
+          // an operator switches between Tier 2 (BVN verified) and Tier 3
+          // (full KYC) from the dashboard, and the allocator pays on the same
+          // key. A number written in here would promise one thing while a
+          // different one was paid.
+          _buildConditions(),
+        ],
+      ),
+    );
+  }
+
+  /// The conditions a referral must meet, read from the dashboard CMS.
+  ///
+  /// THE COPY IS NOT IN THIS FILE. It was — a single hardcoded sentence about
+  /// the tier — and it omitted the other condition the allocator actually
+  /// enforces: the referee must sign up on a device no other account has used
+  /// (`IneligibleSharedDevice` in referral-service). A referrer reading only
+  /// the tier rule would believe a referral on a shared handset would pay,
+  /// and it never would.
+  ///
+  /// Now both come from `feature_referral_terms_message`, so a condition can
+  /// be reworded, added or removed without an app release. `{tier}` inside the
+  /// copy is substituted from the enforced setting, so the number shown cannot
+  /// drift from the number paid.
+  ///
+  /// Nothing configured renders NOTHING, deliberately: an invented condition
+  /// is worse than a missing one, because the referrer acts on it.
+  Widget _buildConditions() {
+    final terms = FeatureFlags.referralTerms();
+    if (terms.isEmpty) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10.r),
+        border:
+            Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.45)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            terms.length == 1 ? 'Condition' : 'Conditions',
+            style: TextStyle(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
+              color: const Color(0xFF3B82F6),
+            ),
+          ),
+          SizedBox(height: 7.h),
+          for (final line in terms)
+            Padding(
+              padding: EdgeInsets.only(bottom: line == terms.last ? 0 : 6.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: 2.h),
+                    child: Icon(Icons.check_circle_outline,
+                        size: 13.sp, color: const Color(0xFF3B82F6)),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      line,
+                      style: TextStyle(
+                        fontSize: 11.5.sp,
+                        height: 1.35,
+                        color: const Color(0xFFD1D5DB),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

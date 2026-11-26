@@ -19,6 +19,66 @@ import 'package:lazervault/core/types/unified_transaction.dart';
 /// Extracted from the repository because it is pure: no gRPC client, no
 /// account manager, no storage. Testing it should not require constructing any
 /// of those.
+/// Strip the suffixes that mark a row as one LEG of a transfer rather than a
+/// transfer of its own.
+///
+/// `-CR` is the credit leg of an internal transfer.
+///
+/// `-EXEC` IS THE ONE THAT WAS MISSING, and it made a crypto-funded transfer
+/// appear TWICE in history. Such a transfer writes two payment rows: the
+/// authorising row at `TRF-…`, created when the customer chose to pay with
+/// crypto and nothing had moved yet, and the execution at `TRF-…-EXEC`, which
+/// runs once the conversion lands and is what actually debits the wallet. Both
+/// are external, both are completed, and with different keys both were listed
+/// — one transfer, two identical entries.
+///
+/// It also kept the breakdown off the receipt. core-payments records the
+/// crypto/wallet split on the AUTHORISING row (that is where the funding event
+/// meets the payment), while the ledger debit joins on the EXECUTION
+/// reference. Collapsing them is what puts the split and the money that moved
+/// on the same row.
+String _baseReference(String ref) {
+  for (final suffix in const ['-EXEC', '-CR']) {
+    if (ref.endsWith(suffix)) {
+      return ref.substring(0, ref.length - suffix.length);
+    }
+  }
+  return ref;
+}
+
+/// The funding keys the payment row contributes to a merged row.
+///
+/// A CLOSED LIST, in step with core-payments' own projection. The ledger row
+/// and the payment row describe the same transfer and disagree about
+/// `reference` — that is the join key — so a blanket spread would re-key the
+/// row and un-join it on the next merge. Naming the keys also means a new
+/// field on the payment row cannot silently start overwriting ledger state.
+///
+/// `funding_source` is required: without it the receipt refuses to render a
+/// breakdown, so the figures alone are keys nothing reads. Carrying them
+/// anyway would invite a later "any funding_* key means crypto" reading, and
+/// that is how an ordinary wallet payment comes to claim it was paid in coin.
+Map<String, dynamic> _fundingKeys(Map<String, dynamic>? payment) {
+  if (payment == null || payment.isEmpty) return const {};
+  if ((payment['funding_source'] ?? '').toString().trim().isEmpty) {
+    return const {};
+  }
+  const keys = [
+    'funding_source',
+    'funding_asset',
+    'funding_crypto_minor',
+    'funding_fiat_minor',
+    'funding_total_minor',
+    'funding_asset_amount',
+  ];
+  final out = <String, dynamic>{};
+  for (final k in keys) {
+    final v = payment[k];
+    if (v != null) out[k] = v;
+  }
+  return out;
+}
+
 List<UnifiedTransaction> mergeExternalTransfers(
   List<UnifiedTransaction> ledger,
   List<UnifiedTransaction> external,
@@ -31,8 +91,7 @@ List<UnifiedTransaction> mergeExternalTransfers(
             metaRef.isNotEmpty)
         ? metaRef
         : selfRef;
-    final base = ref.endsWith('-CR') ? ref.substring(0, ref.length - 3) : ref;
-    return '${base}_${tx.flow.name}';
+    return '${_baseReference(ref)}_${tx.flow.name}';
   }
 
   final byKey = <String, UnifiedTransaction>{};
@@ -71,6 +130,18 @@ List<UnifiedTransaction> mergeExternalTransfers(
     final principal = tx.amount;
     final mergedMetadata = <String, dynamic>{
       ...?existing.metadata,
+      // HOW IT WAS FUNDED COMES FROM THE PAYMENT ROW, AND ONLY FROM THERE.
+      //
+      // The ledger row is the money that moved; the payment row is the only
+      // side that knows a crypto conversion paid for part of it. This merge
+      // kept the ledger's metadata wholesale and dropped the payment's, so a
+      // crypto-funded transfer's split was fetched by the app and thrown away
+      // one line before anything could render it.
+      //
+      // Named keys rather than a blanket spread: the two sides disagree on
+      // `reference` (the join key itself), and letting the payment row
+      // overwrite the ledger's would re-key the row on the next merge.
+      ..._fundingKeys(tx.metadata),
       // Only when the two sides genuinely disagree. When they match there is
       // no fee to report and inventing a zero row adds noise to every receipt.
       if (principal > 0 && total > principal) ...{

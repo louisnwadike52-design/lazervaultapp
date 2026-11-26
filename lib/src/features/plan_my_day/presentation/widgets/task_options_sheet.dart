@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_d
 import 'package:lazervault/src/features/plan_my_day/presentation/widgets/task_edit_sheet.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/widgets/reschedule_sheet.dart';
 import 'package:lazervault/src/features/plan_my_day/contacts/presentation/widgets/contact_picker_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Shared task actions menu — the SINGLE source of task actions, opened
 /// identically by a long-press on a task card and by the card's 3-dot button,
@@ -27,7 +28,7 @@ class TaskOptionsSheet extends StatefulWidget {
     required PlanMyDayCubit cubit,
   }) {
     HapticFeedback.selectionClick();
-    return showModalBottomSheet(
+    return showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

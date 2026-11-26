@@ -12,6 +12,10 @@ import '../../domain/entities/user_tag_entity.dart';
 import '../../domain/repositories/tag_pay_repository.dart';
 import '../../domain/entities/user_search_result_entity.dart';
 import 'tag_pay_state.dart';
+import 'package:lazervault/core/pagination/next_page_prefetch.dart';
+import 'package:lazervault/core/cache/session_page_store.dart';
+import 'tag_pay_session_store.dart';
+import 'package:lazervault/core/cache/session_user_id.dart';
 
 class TagPayCubit extends Cubit<TagPayState> {
   final TagPayRepository repository;
@@ -277,6 +281,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     required String sourceAccountId,
     required String transactionPin,
   }) async {
+    _invalidateTagPages();
     try {
       if (isClosed) return;
       emit(TagPayLoading());
@@ -314,6 +319,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     required String requestId,
     String? reason,
   }) async {
+    _invalidateTagPages();
     try {
       if (isClosed) return;
       emit(TagPayLoading());
@@ -362,6 +368,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     required String currency,
     String? description,
   }) async {
+    _invalidateTagPages();
     try {
       if (isClosed) return;
       emit(TagPayLoading());
@@ -471,6 +478,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     required String sourceAccountId,
     String? transactionPin,
   }) async {
+    _invalidateTagPages();
     try {
       print(
           '🏷️ [TagPayCubit] Starting payTag - tagId: $tagId, accountId: $sourceAccountId');
@@ -527,6 +535,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     required String tagId,
     String? reason,
   }) async {
+    _invalidateTagPages();
     try {
       if (isClosed) return;
       emit(TagPayLoading());
@@ -548,6 +557,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     required String tagId,
     String? reason,
   }) async {
+    _invalidateTagPages();
     try {
       if (isClosed) return;
       emit(TagPayLoading());
@@ -655,30 +665,90 @@ class TagPayCubit extends Cubit<TagPayState> {
     }
   }
 
+  // ── One page ahead, per list ────────────────────────────────────────────
+  //
+  // Modelled on Escrow Pay, which is the only list in the app that already
+  // did this. Two separate prefetchers, not one: Received and Created are
+  // two tabs the user moves between, and a single slot would have each tab's
+  // page evicting the other's on every switch — a prefetch that is never
+  // there is just a wasted request.
+  //
+  // KEYED on (status, page) so changing the filter cannot serve rows fetched
+  // under the previous one. See NextPagePrefetch.
+  final NextPagePrefetch<TagsPageResult> _incomingAhead =
+      NextPagePrefetch<TagsPageResult>();
+  final NextPagePrefetch<TagsPageResult> _outgoingAhead =
+      NextPagePrefetch<TagsPageResult>();
+
+  /// A MUTATION INVALIDATES WHAT WAS FETCHED AHEAD.
+  ///
+  /// The prefetched page was read before the tag was paid, cancelled or
+  /// declined, so serving it afterwards shows the customer a row they have
+  /// just acted on — still pending, still offering the button they pressed.
+  /// That is the specific way a prefetch becomes worse than none, and it is
+  /// invisible: the rows look plausible.
+  void _invalidateTagPages() {
+    _incomingAhead.clear();
+    _outgoingAhead.clear();
+    // AND the remembered page one. Painting it after a tag is paid shows the
+    // row still pending, with the button the user just pressed — the cache
+    // and the prefetch fail the same way, so they are dropped together.
+    incomingTagsPageStore.clear();
+    outgoingTagsPageStore.clear();
+  }
+
   /// Load incoming tags page (Received tab)
   Future<void> loadIncomingTagsPage(
       {int page = 1, int limit = 20, String? status}) async {
     try {
       if (isClosed) return;
       final currentState = state;
+      final isPendingFilter = status == 'pending';
+      final effective = isPendingFilter ? null : status;
       if (currentState is! TagPayHomeLoaded) {
-        emit(TagPayLoading());
+        // PAINT WHAT WE ALREADY HAD, rather than a shimmer over it.
+        //
+        // This cubit is a factory registration, so re-entering the screen
+        // starts from Initial and used to blank a list the user was looking
+        // at seconds ago. Page one only, scoped to the same filter the
+        // prefetch keys on — a page stored under "pending" must never be
+        // painted when the user reopens on "all".
+        final cached = page == 1
+            ? incomingTagsPageStore.peek(
+                userId: SessionUserId.current(), scope: tagsScope(effective))
+            : null;
+        if (cached != null) {
+          emit(TagPayHomeLoaded(
+            incomingTags: cached,
+            incomingPage: 1,
+          ));
+        } else {
+          emit(TagPayLoading());
+        }
       }
 
-      final isPendingFilter = status == 'pending';
-      final result = await repository.getMyIncomingTags(
-        page: page,
-        limit: limit,
-        status: isPendingFilter ? null : status,
-      );
+      final want = pageKey([effective, limit], page);
+      final result = _incomingAhead.take(want) ??
+          await repository.getMyIncomingTags(
+            page: page,
+            limit: limit,
+            status: effective,
+          );
 
       final tags = isPendingFilter
           ? result.tags.where((t) => t.status == TagStatus.pending).toList()
           : result.tags;
 
       if (isClosed) return;
-      if (currentState is TagPayHomeLoaded) {
-        emit(currentState.copyWith(
+      if (result.page == 1) {
+        incomingTagsPageStore.put(tags,
+            userId: SessionUserId.current(), scope: tagsScope(effective));
+      }
+      // The live state, not the one captured before the await — the cached
+      // paint above may have replaced it.
+      final latest = state;
+      if (latest is TagPayHomeLoaded) {
+        emit(latest.copyWith(
           incomingTags: tags,
           incomingTotal: result.total,
           incomingPage: result.page,
@@ -691,6 +761,17 @@ class TagPayCubit extends Cubit<TagPayState> {
           incomingPage: result.page,
           incomingTotalPages: result.totalPages,
         ));
+      }
+
+      // AFTER the emit, never before: a prefetch that delays the page the
+      // user asked for has inverted its own purpose.
+      if (result.page < result.totalPages) {
+        final next = result.page + 1;
+        _incomingAhead.warm(
+          pageKey([effective, limit], next),
+          () => repository.getMyIncomingTags(
+              page: next, limit: limit, status: effective),
+        );
       }
     } catch (e) {
       if (isClosed) return;
@@ -704,24 +785,43 @@ class TagPayCubit extends Cubit<TagPayState> {
     try {
       if (isClosed) return;
       final currentState = state;
+      final isPendingFilter = status == 'pending';
+      final effective = isPendingFilter ? null : status;
       if (currentState is! TagPayHomeLoaded) {
-        emit(TagPayLoading());
+        final cached = page == 1
+            ? outgoingTagsPageStore.peek(
+                userId: SessionUserId.current(), scope: tagsScope(effective))
+            : null;
+        if (cached != null) {
+          emit(TagPayHomeLoaded(
+            outgoingTags: cached,
+            outgoingPage: 1,
+          ));
+        } else {
+          emit(TagPayLoading());
+        }
       }
 
-      final isPendingFilter = status == 'pending';
-      final result = await repository.getMyOutgoingTags(
-        page: page,
-        limit: limit,
-        status: isPendingFilter ? null : status,
-      );
+      final want = pageKey([effective, limit], page);
+      final result = _outgoingAhead.take(want) ??
+          await repository.getMyOutgoingTags(
+            page: page,
+            limit: limit,
+            status: effective,
+          );
 
       final tags = isPendingFilter
           ? result.tags.where((t) => t.status == TagStatus.pending).toList()
           : result.tags;
 
       if (isClosed) return;
-      if (currentState is TagPayHomeLoaded) {
-        emit(currentState.copyWith(
+      if (result.page == 1) {
+        outgoingTagsPageStore.put(tags,
+            userId: SessionUserId.current(), scope: tagsScope(effective));
+      }
+      final latest = state;
+      if (latest is TagPayHomeLoaded) {
+        emit(latest.copyWith(
           outgoingTags: tags,
           outgoingTotal: result.total,
           outgoingPage: result.page,
@@ -734,6 +834,15 @@ class TagPayCubit extends Cubit<TagPayState> {
           outgoingPage: result.page,
           outgoingTotalPages: result.totalPages,
         ));
+      }
+
+      if (result.page < result.totalPages) {
+        final next = result.page + 1;
+        _outgoingAhead.warm(
+          pageKey([effective, limit], next),
+          () => repository.getMyOutgoingTags(
+              page: next, limit: limit, status: effective),
+        );
       }
     } catch (e) {
       if (isClosed) return;

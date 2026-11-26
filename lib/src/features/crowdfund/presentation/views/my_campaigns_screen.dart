@@ -14,6 +14,8 @@ import '../utils/crowdfund_status_display.dart';
 import '../utils/crowdfund_withdrawal_index.dart';
 import '../../domain/repositories/crowdfund_repository.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/utils/crowdfund_progress.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/widgets/crowdfund_status_badge.dart';
 
 class MyCampaignsScreen extends StatefulWidget {
   const MyCampaignsScreen({super.key});
@@ -313,25 +315,10 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),
                 ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10.r),
-                    border:
-                        Border.all(color: statusColor.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    // The shared label, not the raw enum name:
-                    // `cancelling` rendered as "CANCELLING" where every
-                    // other surface now says "Refunding".
-                    crowdfundStatusVisual(campaign).label.toUpperCase(),
-                    style: GoogleFonts.inter(
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor),
-                  ),
-                ),
+                // The shared badge, so the owner's list, the discover list,
+                // the landing strip and the card all draw one thing — and a
+                // completed campaign stands out here too.
+                CrowdfundStatusBadge.of(campaign, compact: true),
                 if (_withdrawals.hasWithdrawals(campaign.id)) ...[
                   SizedBox(width: 6.w),
                   _withdrawnBadge(campaign),
@@ -353,7 +340,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${CurrencySymbols.getSymbol(campaign.currency)}${campaign.currentAmount.toStringAsFixed(0)} raised',
+                  '${CurrencySymbols.getSymbol(campaign.currency)}${CrowdfundProgress.of(campaign).raised.toStringAsFixed(0)} raised',
                   style: GoogleFonts.inter(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w700,

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/tier_limit_refusal.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/create_lock_cubit.dart';
@@ -25,6 +25,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'create_lock_carousel_widgets.dart';
 
 /// Main carousel controller for lock fund creation
@@ -278,7 +279,7 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
           if (!mounted) return;
           Future.microtask(() {
             if (!mounted) return;
-            Get.offAllNamed(
+            offAllKeepingHome(
               AppRoutes.lockFundReceipt,
               arguments: {
                 'lockFund': lockFund,
@@ -353,6 +354,26 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
   }
 
   void _showErrorSnackBar(String message) {
+    // A TIER CAP IS NOT A SNACKBAR.
+    //
+    // Creating a lock debits the wallet through the same accounts-service
+    // path as a transfer (accounts_lockfunds_create calls checkSpendingLimits),
+    // so a daily or monthly cap refuses it here — and arrived as a red
+    // snackbar at the end of a multi-step carousel with no way forward.
+    // Same modal, same route, as every other place a tier stops you.
+    // One presenter, shared with send funds and batch transfer. The copy of
+    // this that lived here read the AUTH-service tier and so could tell a
+    // customer approved at Tier 3 that they were on Tier 3 and should verify
+    // to reach Tier 3 — over a button leading to a BVN flow they had already
+    // finished. See core/utils/tier_limit_refusal.dart.
+    if (isTierCapRefusal(message)) {
+      unawaited(showTierLimitRefusalIfAny(
+        context,
+        message,
+        operationName: 'lock funds',
+      ));
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

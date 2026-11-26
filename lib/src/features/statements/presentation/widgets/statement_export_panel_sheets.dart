@@ -11,7 +11,7 @@ extension _StatementExportPanelSheets on _StatementExportPanelState {
     DateTime? start = _startDate;
     DateTime? end = _endDate;
 
-    final applied = await showModalBottomSheet<bool>(
+    final applied = await showAppBottomSheet<bool>(
       context: context,
       backgroundColor: _sheetBackground,
       isScrollControlled: true,
@@ -265,7 +265,7 @@ extension _StatementExportPanelSheets on _StatementExportPanelState {
   // ── Post-download actions ──────────────────────────────────────────────
   void _showActions(String path, StatementFormat format) {
     final isPdf = format == StatementFormat.pdf;
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: _sheetBackground,
       shape: RoundedRectangleBorder(

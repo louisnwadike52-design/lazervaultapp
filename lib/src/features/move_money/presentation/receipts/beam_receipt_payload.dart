@@ -62,6 +62,23 @@ Map<String, dynamic> beamReceiptPayloadFromMoveTransfer(
   };
 }
 
+/// Fold a payment's funding split into a receipt payload.
+///
+/// WHY A HELPER AND NOT A LITERAL AT EACH SITE. The receipt reads the split
+/// from `transferDetails['metadata']`, and three builders feed it. A builder
+/// that forgets the key does not fail — it renders a receipt that is quietly
+/// missing which coin paid, how much of it was sold, and what the wallet
+/// covered. That is invisible in review and only shows up when a customer
+/// opens an old crypto payment and finds it indistinguishable from a wallet
+/// one.
+///
+/// Omitted entirely when there is nothing to say, so an ordinary transfer
+/// carries no empty map.
+Map<String, dynamic> fundingMetadataArgs(Map<String, dynamic>? metadata) =>
+    (metadata == null || metadata.isEmpty)
+        ? const <String, dynamic>{}
+        : <String, dynamic>{'metadata': metadata};
+
 /// Inter-Lazervault-account (Wallet) LazerBeam transfer → receipt payload.
 /// Internal transfers settle synchronously, so the status is final (no live
 /// fetcher). Prefers the record's OWN enriched fields (currency, counterparty
@@ -144,6 +161,8 @@ Map<String, dynamic> beamReceiptPayloadFromWalletTransfer(
     'sourceAccountMasked': sourceAccountMasked ?? '',
     'sourceAccountInfo': 'Lazervault Wallet',
     'narration': r.description,
+    // The funding split, when this payment had one.
+    ...fundingMetadataArgs(r.metadata),
     'timestamp': date.toLocal(),
     'createdAt': date.toLocal(),
     'backRoute': backRoute,

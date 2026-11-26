@@ -29,6 +29,18 @@ class _RecentHistoryState extends State<RecentHistory> {
   bool _wasVisible = false;
   DateTime? _lastAutoFetch;
 
+  /// Coalesces the account + country reloads into one fetch.
+  ///
+  /// A region switch fires BOTH listeners: LocaleManager emits country first,
+  /// then currency, and the currency event is what makes the cards cubit
+  /// re-select the active account. So the country listener fired a fetch with
+  /// the OUTGOING account id and the account listener fired another with the
+  /// incoming one, one round-trip apart. The cubit's generation guard means the
+  /// stale answer can no longer win, but the request itself was still wasted —
+  /// and it is the one that asks the backend for an account the user has just
+  /// left, which is exactly the fetch that fails.
+  Timer? _reloadDebounce;
+
   @override
   void initState() {
     super.initState();
@@ -44,18 +56,31 @@ class _RecentHistoryState extends State<RecentHistory> {
     _accountSub = accountManager.accountIdStream
         .distinct()
         .where((id) => id != null)
-        .listen((_) => _cubit.loadAllTransactions());
+        .listen((_) => _scheduleReload());
 
     // Reload transactions whenever the locale/country changes
-    _localeSub = localeManager.countryStream
-        .distinct()
-        .listen((_) => _cubit.loadAllTransactions());
+    _localeSub =
+        localeManager.countryStream.distinct().listen((_) => _scheduleReload());
 
     // Explicit dashboard refresh (swipe-down → "Refresh accounts"): hard-reload
     // this list too. Foreground (background:false) so it visibly reloads, and
     // refreshTransactions() clears the repo's scoped cache first — a true
     // revalidation, not a cache-served page.
     DashboardRefreshSignal.instance.listenable.addListener(_onManualRefresh);
+  }
+
+  /// Reload once, after the current burst of scope changes has settled.
+  ///
+  /// Zero-duration: one event-loop turn is enough, because the account
+  /// re-selection happens synchronously inside the currency event that follows
+  /// the country event — no network wait sits between them.
+  void _scheduleReload() {
+    _reloadDebounce?.cancel();
+    _reloadDebounce = Timer(Duration.zero, () {
+      if (!mounted) return;
+      _lastAutoFetch = DateTime.now();
+      _cubit.loadAllTransactions();
+    });
   }
 
   void _onManualRefresh() {
@@ -93,6 +118,7 @@ class _RecentHistoryState extends State<RecentHistory> {
 
   @override
   void dispose() {
+    _reloadDebounce?.cancel();
     _accountSub?.cancel();
     _localeSub?.cancel();
     DashboardRefreshSignal.instance.listenable.removeListener(_onManualRefresh);

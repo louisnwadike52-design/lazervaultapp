@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard_state.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/utils/crowdfund_ownership.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/widgets/crowdfund_ownership_badge.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/utils/crowdfund_progress.dart';
 
 class TrendingCrowdfunds extends StatefulWidget {
   const TrendingCrowdfunds({super.key});
@@ -305,7 +306,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
             SizedBox(height: 8.h),
             // Raised amount and percentage
             Text(
-              '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(0)} raised',
+              '${crowdfund.currency} ${CrowdfundProgress.of(crowdfund).raised.toStringAsFixed(0)} raised',
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,

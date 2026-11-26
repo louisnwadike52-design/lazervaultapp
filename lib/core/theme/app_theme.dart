@@ -22,6 +22,19 @@ class AppTheme {
         brightness: Brightness.light,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         appBarTheme: const AppBarTheme(
+          // FLAT, LIKE THE DARK THEME BESIDE IT.
+          //
+          // Material 3 defaults an AppBar to `scrolledUnderElevation: 3` plus
+          // a surfaceTint overlay, so with neither value set every app bar in
+          // the app lifted and tinted the moment content scrolled under it —
+          // reported as "the entire app elevation increased". The dark theme
+          // sets `elevation: 0` and never showed it, which is why it read as a
+          // change rather than a theme that had always been asymmetric.
+          //
+          // BOTH are needed: `elevation` alone governs the resting state, and
+          // M3 applies scrolledUnderElevation independently of it.
+          elevation: 0,
+          scrolledUnderElevation: 0,
           systemOverlayStyle: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
             statusBarIconBrightness: Brightness.light,
@@ -55,6 +68,10 @@ class AppTheme {
           backgroundColor: _darkBg,
           foregroundColor: Colors.white,
           elevation: 0,
+          // `elevation: 0` alone does NOT stop the M3 scroll-under lift — it
+          // is a separate value, and the dark theme was relying on its own
+          // near-black surface to hide the tint rather than turning it off.
+          scrolledUnderElevation: 0,
           systemOverlayStyle: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
             statusBarIconBrightness: Brightness.light,

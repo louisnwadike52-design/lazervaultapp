@@ -24,6 +24,7 @@ import '../widgets/escrow_media_viewer.dart';
 import '../widgets/escrow_offer_fund_sheet.dart';
 import 'escrow_role_labels.dart';
 import 'escrow_theme.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Escrow OFFER view — the listing page both sides see before money moves.
 ///
@@ -199,7 +200,7 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
     required Color accent,
   }) {
     final ctrl = TextEditingController();
-    return showModalBottomSheet<String>(
+    return showAppBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: EscrowTheme.card,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../domain/entities/intl_airtime_operator.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet for selecting an international airtime operator/network.
 ///
@@ -29,7 +30,7 @@ class IntlOperatorBottomSheet extends StatefulWidget {
     IntlAirtimeOperator? selectedOperator,
     IntlAirtimeOperator? autoDetectedOperator,
   }) {
-    return Get.bottomSheet<IntlAirtimeOperator>(
+    return showAppGetBottomSheet<IntlAirtimeOperator>(
       IntlOperatorBottomSheet(
         operators: operators,
         selectedOperator: selectedOperator,

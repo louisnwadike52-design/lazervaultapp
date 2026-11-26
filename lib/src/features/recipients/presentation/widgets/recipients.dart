@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_transaction_history_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_transaction_history_modal.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class Recipients extends StatefulWidget {
   final List<RecipientModel> recipients;
@@ -160,7 +161,7 @@ class _RecipientsState extends State<Recipients> {
   }
 
   void _showViewDetailsSheet(BuildContext context, RecipientModel recipient) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -687,7 +688,7 @@ class _RecipientsState extends State<Recipients> {
       return;
     }
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       BlocProvider(
         create: (_) => GetIt.I<RecipientTransactionHistoryCubit>(),
         child: RecipientTransactionHistoryModal(recipient: recipient),
@@ -698,7 +699,7 @@ class _RecipientsState extends State<Recipients> {
   }
 
   void _showOptionsSheet(BuildContext context, RecipientModel recipient) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         decoration: BoxDecoration(
           color: Colors.white,

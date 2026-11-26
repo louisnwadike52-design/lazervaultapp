@@ -1,3 +1,7 @@
+import '../../domain/entities/leaderboard_entry_entity.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/error/failure.dart';
+import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/utilities/invite_link.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_country_reward_config_usecase.dart';
 import 'package:flutter/services.dart';
@@ -94,11 +98,23 @@ class ReferralCubit extends Cubit<ReferralState> {
       print(
           '[ReferralCubit] Stats result: ${statsResult.isRight() ? "SUCCESS" : "FAILED"}');
 
-      print('[ReferralCubit] Fetching leaderboard...');
-      final leaderboardResult =
-          await _getLeaderboardUseCase(limit: 10, period: 'all_time');
-      print(
-          '[ReferralCubit] Leaderboard result: ${leaderboardResult.isRight() ? "SUCCESS" : "FAILED"}');
+      // THE LEADERBOARD IS GATED, AND THE GATE IS CHECKED BEFORE THE CALL.
+      //
+      // Hidden is the default, so on most opens this is simply not fetched:
+      // a surface nobody can see should not cost a round trip on every
+      // dashboard load, and the request returns other customers' names.
+      //
+      // Read synchronously from the flag cache — no await, so the gate cannot
+      // delay the screen.
+      final wantLeaderboard = FeatureFlags.referralLeaderboardEnabled;
+      Either<Failure, List<LeaderboardEntryEntity>>? leaderboardResult;
+      if (wantLeaderboard) {
+        print('[ReferralCubit] Fetching leaderboard...');
+        leaderboardResult =
+            await _getLeaderboardUseCase(limit: 10, period: 'all_time');
+        print(
+            '[ReferralCubit] Leaderboard result: ${leaderboardResult.isRight() ? "SUCCESS" : "FAILED"}');
+      }
 
       // The reward this country actually pays. BEST EFFORT and non-fatal: the
       // dashboard is still worth showing without it, and the card renders no
@@ -145,12 +161,21 @@ class ReferralCubit extends Cubit<ReferralState> {
         return;
       }
 
-      if (leaderboardResult.isLeft()) {
+      // A LEADERBOARD FAILURE IS NOT A DASHBOARD FAILURE.
+      //
+      // This used to emit ReferralError and return, which blanked the WHOLE
+      // screen — referral code, stats and claimable bonus included — because
+      // an optional ranking could not be fetched. The user came for their own
+      // code and balance; losing all of it to a decorative list is the wrong
+      // trade, and it happened on every leaderboard outage.
+      //
+      // Treated like the reward config above: best effort, non-fatal, and the
+      // section simply does not render.
+      if (leaderboardResult != null && leaderboardResult.isLeft()) {
         final failure = leaderboardResult.fold((l) => l, (r) => null);
-        print('[ReferralCubit] Leaderboard error: ${failure?.message}');
-        if (isClosed) return;
-        emit(ReferralError(failure?.message ?? 'Failed to load leaderboard'));
-        return;
+        print(
+            '[ReferralCubit] Leaderboard unavailable (non-fatal): ${failure?.message}');
+        leaderboardResult = null;
       }
 
       if (referralsResult.isLeft()) {
@@ -164,19 +189,26 @@ class ReferralCubit extends Cubit<ReferralState> {
       // Extract successful data
       final code = codeResult.fold((l) => null, (r) => r);
       final stats = statsResult.fold((l) => null, (r) => r);
-      final leaderboard = leaderboardResult.fold((l) => null, (r) => r);
+      // Null when the flag is off (never fetched) or when the fetch failed
+      // and was swallowed above. Either way it is an EMPTY list, never a
+      // reason to withhold the screen.
+      final leaderboard = leaderboardResult?.fold((l) => null, (r) => r);
       final referrals = referralsResult.fold((l) => null, (r) => r);
 
       print('[ReferralCubit] All data loaded successfully');
-      if (code != null &&
-          stats != null &&
-          leaderboard != null &&
-          referrals != null) {
+      // THE LEADERBOARD IS DELIBERATELY ABSENT FROM THIS TEST.
+      //
+      // It used to be required here, which meant that the moment it became
+      // optional — hidden by a flag, or simply unavailable — this condition
+      // could never be satisfied and the screen sat on its loading spinner
+      // forever. The things the user actually came for are their code, their
+      // stats and their referrals; the ranking is decoration.
+      if (code != null && stats != null && referrals != null) {
         if (isClosed) return;
         emit(ReferralLoaded(
           myCode: code,
           stats: stats,
-          leaderboard: leaderboard,
+          leaderboard: leaderboard ?? const [],
           recentReferrals: referrals,
           rewardConfig: rewardConfig,
           bonusBalance: bonusBalance,

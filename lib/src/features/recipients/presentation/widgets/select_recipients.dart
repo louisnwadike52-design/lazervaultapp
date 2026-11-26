@@ -1,6 +1,7 @@
 import 'package:lazervault/src/features/recipients/presentation/widgets/user_search_skeleton.dart';
 import 'package:lazervault/core/utils/brand_bank.dart';
 import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
+import 'package:lazervault/core/shared_widgets/load_more_footer.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
@@ -88,6 +89,7 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_outcome_notice.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class SelectRecipients extends StatefulWidget {
   /// When true, render the short send-funds flow: the AddRecipient widget is
@@ -145,6 +147,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
       _continueWithRecipient(recipient, longFlowArguments: sendFundsArgs);
   // Re-entry guard so a fast double-tap can't fire two transfers.
   bool _shortBusy = false;
+
+  /// A refusal that must be shown on the RECEIPT, not on the PIN sheet.
+  /// Set only for crypto-funded sends; cleared at the start of every attempt
+  /// so a previous refusal can never be rendered over a new transfer.
+  String? _shortDeferredFailure;
+
   Map<String, dynamic>? _shortPendingReceipt;
   // Max automatic-retry offers when recurring setup fails after a successful
   // transfer (parity with the long flow's _maxRecurringRetries).
@@ -160,7 +168,6 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   // Extra saved-recipient filter applied via the filter-icon sheet (on top of
   // the bank/Lazervault tab): favourites-only.
-  bool _savedFavoritesOnly = false;
 
   // Routing decision — see RecipientModel.canSendAsInternal. `type` alone was
   // trusted here, and it is defaulted to 'internal' whenever no bank was
@@ -212,6 +219,76 @@ class _SelectRecipientsState extends State<SelectRecipients>
   TransactionHistoryCubit? _historyCubit;
   // Re-entry guard for the History list's scroll-triggered pagination.
   bool _historyLoadingMore = false;
+
+  /// The sheet with nothing to show — which is NOT always "nothing exists".
+  ///
+  /// Filtering is client-side over the pages fetched so far, while paging is
+  /// server-side over the whole list. So a search for somebody who is on page
+  /// three legitimately matches nothing yet, and the plain "no matches" the
+  /// sheet used to show was simply wrong: it reported an absence it had not
+  /// established. When there are more pages, say so and offer to fetch them.
+  Widget _savedSheetEmpty({
+    required String query,
+    required bool searching,
+    required bool hasMore,
+    required bool loading,
+  }) {
+    final exhausted = !hasMore;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            !searching
+                ? 'No saved recipients yet'
+                : exhausted
+                    ? 'No saved recipients match "$query"'
+                    : 'Nothing matching "$query" so far',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey[500], fontSize: 13.sp),
+          ),
+          if (searching && !exhausted) ...[
+            SizedBox(height: 4.h),
+            Text(
+              'There are more saved recipients to check.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[400], fontSize: 11.5.sp),
+            ),
+            SizedBox(height: 12.h),
+            // There is nothing to scroll in an empty list, so the scroll
+            // trigger can never fire here — this button is the only way
+            // through.
+            LoadMoreFooter(
+              loading: loading,
+              onLoadMore: _loadMoreSaved,
+              onDark: false,
+              label: 'Keep looking',
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// ASK THE CUBIT FOR THE NEXT PAGE OF SAVED RECIPIENTS.
+  ///
+  /// Shared by the screen's own list and the "View all" sheet, which were
+  /// NOT equivalent: the screen had a scroll listener and the sheet had
+  /// nothing at all, so the sheet showed the first page for ever however far
+  /// it was scrolled. The token lives on the authentication cubit, which is
+  /// why this cannot simply be a method on the recipient cubit.
+  void _loadMoreSaved() {
+    final cubit = context.read<RecipientCubit>();
+    final st = cubit.state;
+    // RecipientLoadingMore means one is already in flight. Scroll
+    // notifications arrive every frame, so without this the same page is
+    // requested dozens of times over.
+    if (st is! RecipientLoaded || !st.hasMore) return;
+    final accessToken =
+        _getAccessTokenFromState(context.read<AuthenticationCubit>().state);
+    if (accessToken == null) return;
+    cubit.loadMoreRecipients(accessToken: accessToken);
+  }
 
   String? _getAccessTokenFromState(AuthenticationState authState) {
     if (authState is AuthenticationSuccess) {
@@ -970,7 +1047,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final subtitle = isInternal
         ? '@${recipient.accountNumber.replaceAll('@', '')}'
         : '${recipient.displayBankName}${recipient.maskedAccount.isNotEmpty ? ' • ${recipient.maskedAccount}' : ''}';
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
@@ -1110,7 +1187,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
   /// overlay context is above the route provider).
   void _showTransferHistory() {
     _historyCubit ??= GetIt.I<TransactionHistoryCubit>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1199,7 +1276,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     }
 
     AnalyticsService.instance.trackSendFundsScreen('amount', 'short');
-    final result = await showModalBottomSheet<SendFundsAmountResult>(
+    final result = await showAppBottomSheet<SendFundsAmountResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1243,6 +1320,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final expenseCategory = category?.budgetCategory;
     final recurring = result.recurring;
     final note = result.note;
+    // PAY WITH CRYPTO. Null on the ordinary wallet-funded path. The sheet
+    // refuses to return both this and a schedule/repeat, so the two cannot
+    // arrive together.
+    final fundingAsset = result.fundingAsset;
 
     // Budget enforcement (parity with the long flow) — strict budgets BLOCK via
     // the override dialog, flexible budgets WARN via the warning sheet. Runs
@@ -1353,6 +1434,16 @@ class _SelectRecipientsState extends State<SelectRecipients>
       final shortFeeMajor = (shortFeeQuote?.fee ?? 0) / 100.0;
       if (FeatureFlags.sendFundsPinIsRequired) {
         AnalyticsService.instance.trackSendFundsScreen('pin', 'short');
+        // THE PIN SHEET VALIDATES THE PIN. THE RECEIPT REPORTS THE PAYMENT.
+        //
+        // For a crypto-funded send the sheet skips its Processing beat and
+        // completes on "PIN Verified", and a refusal is carried to the
+        // receipt instead of being thrown — because a refusal here is not a
+        // PIN problem. crypto-service checks its gate before any quote
+        // exists, so the answer arrives in milliseconds; what was wrong was
+        // only ever WHERE it was shown.
+        _shortDeferredFailure = null;
+        final isCryptoFunded = (fundingAsset ?? '').trim().isNotEmpty;
         var usedToken = '';
         final ok = await validateTransactionPin(
           context: context,
@@ -1367,6 +1458,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
           // The real outcome is confirmed on the receipt (external transfers
           // return `pending`), so the sheet says "Initiated", not "Successful".
           successMessage: 'Transfer Initiated',
+          // No money beat on the PIN pad for a crypto-funded send: the sheet
+          // says "PIN Verified" and hands off, and everything about the
+          // payment happens on the receipt.
+          showProcessingPhase: !isCryptoFunded,
           onPinValidated: (verificationToken) async {
             usedToken = verificationToken;
             await _dispatchShortAndAwait(
@@ -1375,7 +1470,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
                 scheduledAt: scheduledAt,
                 category: category,
                 note: note,
-                expenseCategory: expenseCategory);
+                expenseCategory: expenseCategory,
+                fundingAsset: fundingAsset,
+                deferFailureToReceipt: isCryptoFunded);
           },
         );
         if (!ok) return;
@@ -1384,6 +1481,16 @@ class _SelectRecipientsState extends State<SelectRecipients>
         // about the schedule while the receipt — the thing they are waiting
         // for after paying — had not been shown yet. See
         // recurring_outcome_notice.
+        if (_shortDeferredFailure != null) {
+          // Refused. No schedule is set up for a payment that did not happen.
+          if (!mounted) return;
+          final feeMinor =
+              ((context.read<TransferCubit>().lastFeeLoaded?.fee) ?? 0);
+          _shortPendingReceipt = _buildShortFailureReceipt(
+              r, active, minor, feeMinor, _shortDeferredFailure!);
+          _navShortReceipt();
+          return;
+        }
         if (recurring != null && mounted) {
           await _setupRecurringShort(r, active, minor, shortNarration,
               recurring, transactionId, usedToken);
@@ -1395,7 +1502,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
             scheduledAt: scheduledAt,
             category: category,
             note: note,
-            expenseCategory: expenseCategory);
+            expenseCategory: expenseCategory,
+            fundingAsset: fundingAsset);
         if (!mounted) return;
         if (recurring != null) {
           await _setupRecurringShort(
@@ -1497,6 +1605,15 @@ class _SelectRecipientsState extends State<SelectRecipients>
     ServiceCategory? category,
     String? note,
     int? expenseCategory,
+
+    /// PAY WITH CRYPTO: the asset to sell to fund this transfer, lowercase.
+    /// Null is the ordinary wallet-funded transfer.
+    String? fundingAsset,
+
+    /// Report a refusal on the RECEIPT rather than by throwing, which is what
+    /// puts a failure state on the PIN sheet. Used for crypto-funded sends,
+    /// where the PIN is valid and it is the payment that was declined.
+    bool deferFailureToReceipt = false,
   }) async {
     final transferCubit = context.read<TransferCubit>();
     final recipientCubit = context.read<RecipientCubit>();
@@ -1534,6 +1651,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
       scheduledAt: scheduledAt,
       expenseCategory: expenseCategory,
       flow: 'short',
+      // TransferCubit owns the ordering from here: it records the transfer,
+      // and only then asks crypto-service to fund that reference. Doing it in
+      // the cubit rather than this screen is what makes the short and long
+      // flows behave identically, and what stops a money step being tied to
+      // a widget that may be disposed a moment later.
+      fundingAsset: fundingAsset,
     );
 
     final terminal = await transferCubit.stream
@@ -1544,13 +1667,31 @@ class _SelectRecipientsState extends State<SelectRecipients>
         .timeout(const Duration(seconds: 30),
             onTimeout: () => transferCubit.state);
 
-    if (terminal is TransferFailure) throw Exception(terminal.message);
+    if (terminal is TransferFailure) {
+      // DEFERRED, NOT SWALLOWED. The caller renders it on the receipt; see
+      // _buildShortFailureReceipt for why the PIN sheet is the wrong screen.
+      if (deferFailureToReceipt) {
+        _shortDeferredFailure = terminal.message;
+        return;
+      }
+      throw Exception(terminal.message);
+    }
     if (terminal is TransferPinFailure) throw Exception('Invalid PIN');
     if (terminal is! TransferSuccess) {
       throw Exception(
           'Transfer is taking longer than expected. Check your transaction history before retrying.');
     }
     _shortPendingReceipt = _buildShortReceipt(terminal.response, r, active);
+    // WHAT THE CUSTOMER TYPED, ON THE DOCUMENT THEY KEEP.
+    //
+    // The note reaches the server as the transfer's narration and was never
+    // put on the receipt map, so the Description row — rendered by both the
+    // receipt and the share PDF — had nothing to show and silently vanished.
+    // The long flow had the same gap; both are fixed, and the key is the
+    // same one the receipt already reads.
+    if ((note ?? '').trim().isNotEmpty) {
+      _shortPendingReceipt!['narration'] = note!.trim();
+    }
     // From-name on the receipt = the sender's REAL name (not the account-type
     // label like "personal").
     if (senderName.isNotEmpty) {
@@ -1672,6 +1813,53 @@ class _SelectRecipientsState extends State<SelectRecipients>
     return '${p.user.firstName} ${p.user.lastName}'.trim();
   }
 
+  /// A receipt for a transfer that never left — built WITHOUT a server
+  /// response, because there is not one.
+  ///
+  /// WHY A RECEIPT AT ALL FOR A FAILURE. A crypto-funded transfer is refused
+  /// by crypto-service's gate before any quote exists, and the refusal used
+  /// to be thrown out of the PIN sheet's onPinValidated callback — which
+  /// painted "Transaction Failed · Something went wrong" over the PIN pad,
+  /// the one screen in the flow with no room to explain and nothing to tap.
+  /// The PIN was correct; it was the payment that was refused, and those are
+  /// different events that deserve different screens.
+  ///
+  /// The receipt already knows how to render `status: failed` with a
+  /// `failureReason`, so the refusal goes there with the figures beside it.
+  Map<String, dynamic> _buildShortFailureReceipt(
+    RecipientModel r,
+    AccountSummaryEntity active,
+    int amountMinor,
+    int feeMinor,
+    String reason,
+  ) {
+    final isInternal = r.canSendAsInternal;
+    return {
+      'amount': amountMinor / 100.0,
+      'fee': feeMinor / 100.0,
+      'totalAmount': (amountMinor + feeMinor) / 100.0,
+      'recipientName': r.name,
+      'recipientAccountMasked': r.maskedAccount,
+      'recipientBankName': r.displayBankName,
+      'recipientBankCode': r.sortCode,
+      'sourceAccountInfo':
+          '${active.accountType} •••• ${active.accountNumberLast4}',
+      'sourceAccountName': _senderRealName().isNotEmpty
+          ? _senderRealName()
+          : (active.accountName ?? ''),
+      'currency': active.currency,
+      'timestamp': DateTime.now(),
+      'flow': AnalyticsService.instance.currentSendFlow,
+      'status': 'failed',
+      // The key the receipt already reads for the red explanation line.
+      'failureReason': reason,
+      'network': isInternal
+          ? 'Lazervault Internal Transfer'
+          : 'External Bank Transfer',
+      'transferType': isInternal ? 'Internal Transfer' : 'Domestic Transfer',
+    };
+  }
+
   Map<String, dynamic> _buildShortReceipt(
       TransferEntity res, RecipientModel r, AccountSummaryEntity active) {
     final isInternal = r.canSendAsInternal;
@@ -1733,7 +1921,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   void _navShortReceipt() {
     if (_shortPendingReceipt != null) {
-      Get.offAllNamed(AppRoutes.transferProof, arguments: {
+      offAllKeepingHome(AppRoutes.transferProof, arguments: {
         ..._shortPendingReceipt!,
         // Null when there was no recurring rule, so the receipt shows nothing.
         ...?_recurringOutcomeArgs,
@@ -1809,24 +1997,28 @@ class _SelectRecipientsState extends State<SelectRecipients>
                         ),
                       ),
                       SizedBox(width: 6.w),
-                      // Filter icon → bottom sheet (Bank / Lazervault user / Favorites /
-                      // Recurring). Shows a dot when a non-default filter is active.
-                      InkWell(
-                        borderRadius: BorderRadius.circular(20.r),
-                        onTap: _showSavedFilterSheet,
-                        child: Padding(
-                          padding: EdgeInsets.all(4.w),
-                          child: Icon(
-                            _savedFavoritesOnly
-                                ? Icons.filter_alt
-                                : Icons.filter_alt_outlined,
-                            size: 18.sp,
-                            color: _savedFavoritesOnly
-                                ? const Color.fromARGB(255, 78, 3, 208)
-                                : Colors.grey[600],
+                      // SEARCH, not filter. The filter icon that used to sit
+                      // here opened a second filter over the same list that
+                      // "View all" already filters — so a Favourites choice
+                      // made here silently narrowed the rail, and opening View
+                      // all then showed something else. Filtering now lives in
+                      // one place; this opens that same screen with the
+                      // keyboard already up, which is what someone reaching
+                      // for a magnifier on a three-card rail actually wants.
+                      if (saved.isNotEmpty)
+                        InkWell(
+                          borderRadius: BorderRadius.circular(20.r),
+                          onTap: () =>
+                              _openSavedRecipientsSheet(focusSearch: true),
+                          child: Padding(
+                            padding: EdgeInsets.all(4.w),
+                            child: Icon(
+                              Icons.search,
+                              size: 18.sp,
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ),
-                      ),
                       // Layout toggle, next to the section it controls rather than
                       // buried in settings — the same place the Lifestyle tab puts
                       // its view switch, so the gesture is already learned.
@@ -1921,149 +2113,6 @@ class _SelectRecipientsState extends State<SelectRecipients>
     ];
   }
 
-  /// Filter sheet opened from the icon beside "Saved recipients" — filter the
-  /// saved list by Lazervault user / Bank / Favourites, or jump to Recurring.
-  void _showSavedFilterSheet() {
-    const brand = Color.fromARGB(255, 78, 3, 208);
-    Widget tile({
-      required IconData icon,
-      required String label,
-      required String sub,
-      required bool active,
-      required VoidCallback onTap,
-    }) {
-      return InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 13.h),
-          child: Row(
-            children: [
-              Container(
-                width: 40.w,
-                height: 40.w,
-                decoration: BoxDecoration(
-                  color:
-                      active ? brand.withValues(alpha: 0.10) : Colors.grey[100],
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon,
-                    size: 20.sp, color: active ? brand : Colors.grey[600]),
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label,
-                        style: TextStyle(
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87)),
-                    SizedBox(height: 2.h),
-                    Text(sub,
-                        style: TextStyle(
-                            fontSize: 12.sp, color: Colors.grey[500])),
-                  ],
-                ),
-              ),
-              if (active) Icon(Icons.check_circle, size: 20.sp, color: brand),
-            ],
-          ),
-        ),
-      );
-    }
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              margin: EdgeInsets.symmetric(vertical: 12.h),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Filter recipients',
-                    style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87)),
-              ),
-            ),
-            // ONLY THE ACTIVE TAB'S OWN ENTRY.
-            //
-            // This listed both, so the Bank tab offered "Lazervault users" and
-            // vice versa — and tapping it did not filter anything, it SWITCHED
-            // TABS. A sheet titled "Filter recipients" that silently moves you
-            // to the other recipient type is not a filter, and the tab you were
-            // on is right there behind the sheet contradicting it.
-            //
-            // The active entry stays as a state indicator; Favourites still
-            // narrows WITHIN whichever tab you are on, which is what filtering
-            // means here.
-            if (_shortMethod == AddRecipientMethod.lazervaultUser)
-              tile(
-                icon: Icons.person_outline,
-                label: 'Lazervault users',
-                sub: 'Your saved Lazervault contacts',
-                active: !_savedFavoritesOnly,
-                onTap: () {
-                  Navigator.pop(ctx);
-                  setState(() => _savedFavoritesOnly = false);
-                },
-              ),
-            if (_shortMethod == AddRecipientMethod.bankDetails)
-              tile(
-                icon: Icons.account_balance_outlined,
-                label: 'Bank accounts',
-                sub: 'Your saved bank recipients',
-                active: !_savedFavoritesOnly,
-                onTap: () {
-                  Navigator.pop(ctx);
-                  setState(() => _savedFavoritesOnly = false);
-                },
-              ),
-            tile(
-              icon: _savedFavoritesOnly ? Icons.star : Icons.star_outline,
-              label: 'Favourites',
-              sub: 'Only your favourite recipients',
-              active: _savedFavoritesOnly,
-              onTap: () {
-                Navigator.pop(ctx);
-                setState(() => _savedFavoritesOnly = !_savedFavoritesOnly);
-              },
-            ),
-            tile(
-              icon: Icons.repeat,
-              label: 'Recurring transfers',
-              sub: 'View and manage scheduled transfers',
-              active: false,
-              onTap: () {
-                Navigator.pop(ctx);
-                Get.toNamed(AppRoutes.recurringTransfers);
-              },
-            ),
-            SizedBox(height: MediaQuery.of(ctx).padding.bottom + 12.h),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildShortSavedList(RecipientState state) {
     if (state is RecipientLoading || state is RecipientInitial) {
       // Saved recipients are the same row shape as a search result, so the
@@ -2075,7 +2124,6 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final wantInternal = _shortMethod == AddRecipientMethod.lazervaultUser;
     final ordered = _orderedSaved(state)
         .where((r) => _isInternalRecipient(r) == wantInternal)
-        .where((r) => !_savedFavoritesOnly || r.isFavorite)
         .toList();
     if (ordered.isEmpty) {
       return Padding(
@@ -2199,12 +2247,26 @@ class _SelectRecipientsState extends State<SelectRecipients>
   ///
   /// [savedOnly] hides the "Search all Lazervault users" directory escape — used
   /// by the long-flow top search, which must search PREVIOUS recipients only.
-  void _openSavedRecipientsSheet({bool savedOnly = false}) {
+  /// The full saved-recipients list — and the ONLY place saved recipients are
+  /// filtered.
+  ///
+  /// The filter used to live as an icon beside the "Saved recipients" header,
+  /// in a sheet of its own, while this sheet carried a separate set of pills.
+  /// Two filters over one list, in two places, neither aware of the other: the
+  /// header filter silently narrowed the rail behind this sheet, so opening
+  /// "View all" after setting Favourites showed a different list than the one
+  /// the user had just filtered. Filtering now happens here, next to the list
+  /// it filters and the search that narrows it further.
+  ///
+  /// [focusSearch] opens with the keyboard already up, for the search icon on
+  /// the header row.
+  void _openSavedRecipientsSheet(
+      {bool savedOnly = false, bool focusSearch = false}) {
     // Capture the cubit from the screen context (the sheet's overlay context is
     // above the route provider). BlocBuilder makes the list + favorite stars
     // update live when a star is toggled inside the sheet.
     final recipientCubit = context.read<RecipientCubit>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2222,6 +2284,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                 final byPill = switch (pill) {
                   'bank' => all.where((r) => !_isInternalRecipient(r)),
                   'lazervault' => all.where((r) => _isInternalRecipient(r)),
+                  'favorites' => all.where((r) => r.isFavorite),
                   _ => all,
                 };
                 final filtered = (q.isEmpty
@@ -2233,6 +2296,19 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                 (r.alias ?? '').toLowerCase().contains(q);
                           }))
                     .toList();
+
+                // PAGINATION FACTS, read from whichever state is current.
+                // `RecipientLoadingMore` carries its own `hasMore`, and
+                // reading it only off `RecipientLoaded` would make the footer
+                // disappear for the duration of every fetch — the list would
+                // jump by a row each time a page landed.
+                final hasMoreSaved = switch (state) {
+                  RecipientLoaded(:final hasMore) => hasMore,
+                  RecipientLoadingMore(:final hasMore) => hasMore,
+                  _ => false,
+                };
+                final loadingMoreSaved = state is RecipientLoadingMore;
+
                 Widget pillChip(String value, String label,
                     {VoidCallback? onSelect}) {
                   final selected = pill == value;
@@ -2263,14 +2339,27 @@ class _SelectRecipientsState extends State<SelectRecipients>
                   );
                 }
 
-                return Container(
+                // THE KEYBOARD HAS TO BE MADE ROOM FOR.
+                //
+                // The sheet is a fixed 0.85.sh and handled no view insets, so
+                // whatever the keyboard covered was simply unreachable — about
+                // the bottom third of the list. That was survivable while the
+                // search field had to be tapped deliberately; it is not now
+                // that the header's search icon opens this with the keyboard
+                // already up. Adding the inset to the bottom padding shrinks
+                // the Expanded list instead of letting it run underneath.
+                final keyboard = MediaQuery.of(ctx).viewInsets.bottom;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.easeOut,
                   height: 0.85.sh,
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius:
                         BorderRadius.vertical(top: Radius.circular(28)),
                   ),
-                  padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+                  padding:
+                      EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h + keyboard),
                   child: Column(
                     children: [
                       Center(
@@ -2310,7 +2399,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                             SizedBox(width: 10.w),
                             Expanded(
                               child: TextField(
-                                autofocus: false,
+                                autofocus: focusSearch,
                                 onChanged: (v) =>
                                     setSheetState(() => query = v),
                                 decoration: InputDecoration(
@@ -2335,6 +2424,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
                               pillChip('all', 'All'),
                               pillChip('bank', 'Bank'),
                               pillChip('lazervault', 'Lazervault user'),
+                              // Favourites moved here from the header's own
+                              // filter sheet so every way of narrowing this
+                              // list sits in one row, and so toggling it
+                              // re-renders the list underneath immediately
+                              // rather than a list the user cannot see.
+                              pillChip('favorites', 'Favourites'),
                               // Recurring shows the user's active recurring
                               // transfers instead of saved recipients. Load the
                               // cubit lazily on first selection.
@@ -2396,40 +2491,59 @@ class _SelectRecipientsState extends State<SelectRecipients>
                         ),
                       ],
                       SizedBox(height: 8.h),
+                      // SCROLL TO THE BOTTOM AND GET THE NEXT PAGE.
+                      //
+                      // This sheet is the only full view of the saved list,
+                      // and it had no pagination of any kind: a plain
+                      // ListView over whatever single page the cubit happened
+                      // to be holding. Anyone past the first page of
+                      // recipients simply could not reach them from here.
+                      //
+                      // Two details that are not optional. It must NOT borrow
+                      // the screen's `_recipientsScrollController` — the
+                      // screen's own list is still mounted underneath, and a
+                      // controller with two attached views throws on every
+                      // `.position` read, which is a crash per scroll frame.
+                      // And the footer stays pressable when idle, because a
+                      // page that fails at the very bottom leaves the extent
+                      // unchanged and so generates no further notification.
                       Expanded(
                         child: pill == 'recurring'
                             ? _buildRecurringList()
                             : filtered.isEmpty
-                                ? Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          q.isEmpty
-                                              ? 'No saved recipients yet'
-                                              : 'No saved recipients match "$query"',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              color: Colors.grey[500],
-                                              fontSize: 13.sp),
-                                        ),
-                                      ],
-                                    ),
+                                ? _savedSheetEmpty(
+                                    query: query,
+                                    searching: q.isNotEmpty,
+                                    hasMore: hasMoreSaved,
+                                    loading: loadingMoreSaved,
                                   )
-                                : ListView.builder(
-                                    padding:
-                                        EdgeInsets.symmetric(vertical: 8.h),
-                                    itemCount: filtered.length,
-                                    itemBuilder: (_, i) {
-                                      final r = filtered[i];
-                                      return _buildRecipientItem(
-                                        r,
-                                        onTapOverride: () {
-                                          Navigator.pop(sheetCtx);
-                                          _onRecipientTapped(r);
-                                        },
-                                      );
-                                    },
+                                : ScrollEndLoader(
+                                    hasMore: hasMoreSaved,
+                                    loading: loadingMoreSaved,
+                                    onReachEnd: _loadMoreSaved,
+                                    child: ListView.builder(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 8.h),
+                                      itemCount: filtered.length +
+                                          (hasMoreSaved ? 1 : 0),
+                                      itemBuilder: (_, i) {
+                                        if (i >= filtered.length) {
+                                          return LoadMoreFooter(
+                                            loading: loadingMoreSaved,
+                                            onLoadMore: _loadMoreSaved,
+                                            onDark: false,
+                                          );
+                                        }
+                                        final r = filtered[i];
+                                        return _buildRecipientItem(
+                                          r,
+                                          onTapOverride: () {
+                                            Navigator.pop(sheetCtx);
+                                            _onRecipientTapped(r);
+                                          },
+                                        );
+                                      },
+                                    ),
                                   ),
                       ),
                     ],
@@ -2982,7 +3096,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
       return;
     }
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       BlocProvider(
         create: (_) => GetIt.I<RecipientTransactionHistoryCubit>(),
         child: RecipientTransactionHistoryModal(
@@ -2997,7 +3111,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   /// Show options bottom sheet for recipient
   void _showRecipientOptionsSheet(RecipientModel recipient) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -3165,7 +3279,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   /// Show recipient details bottom sheet
   void _showRecipientDetailsSheet(RecipientModel recipient) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -3697,7 +3811,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   // ignore: unused_element  (retained: device-contacts/bank picker, may be re-surfaced)
   void _showEnhancedRecipientSelection() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -3746,7 +3860,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     String? alias;
     final sheetKey = GlobalKey<UsernameRecipientConfirmationSheetState>();
 
-    await Get.bottomSheet(
+    await showAppGetBottomSheet(
       PopScope(
         canPop: true,
         child: UsernameRecipientConfirmationSheet(
@@ -3924,7 +4038,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     // searchQuery so setSheetState mutations survive rebuilds.
     BankSort bankSort = BankSort.mostUsed;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -4266,7 +4380,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final accountController = TextEditingController();
     bool isVerifying = false;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -4509,7 +4623,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     bool isFavorite = false;
     String? alias;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -5006,7 +5120,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
   }
 
   void _showQrVerificationLoadingSheet() {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(
@@ -5074,7 +5188,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final color = isWarning ? Colors.orange : Colors.red;
     final icon = isWarning ? Icons.warning_amber_rounded : Icons.error_outline;
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(

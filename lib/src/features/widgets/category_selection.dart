@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'category_selection_widgets.dart';
 
 /// Category Selection Bottom Sheet
@@ -38,7 +39,7 @@ class CategorySelectionBottomSheet extends StatefulWidget {
     List<ServiceCategory>? categories,
     ServiceCategory? selectedCategory,
   }) {
-    return showModalBottomSheet<ServiceCategory>(
+    return showAppBottomSheet<ServiceCategory>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

@@ -116,6 +116,7 @@ const BillPayment$json = {
     },
     {'1': 'phone_number', '3': 26, '4': 1, '5': 9, '10': 'phoneNumber'},
     {'1': 'refund_source', '3': 27, '4': 1, '5': 9, '10': 'refundSource'},
+    {'1': 'metadata', '3': 28, '4': 1, '5': 9, '10': 'metadata'},
   ],
 };
 
@@ -139,7 +140,7 @@ final $typed_data.Uint8List billPaymentDescriptor = $convert.base64Decode(
     'BSCXVwZGF0ZWRBdBIjCg1lcnJvcl9tZXNzYWdlGBggASgJUgxlcnJvck1lc3NhZ2USNwoJZmFp'
     'bGVkX2F0GBkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIIZmFpbGVkQXQSIQoMcG'
     'hvbmVfbnVtYmVyGBogASgJUgtwaG9uZU51bWJlchIjCg1yZWZ1bmRfc291cmNlGBsgASgJUgxy'
-    'ZWZ1bmRTb3VyY2U=');
+    'ZWZ1bmRTb3VyY2USGgoIbWV0YWRhdGEYHCABKAlSCG1ldGFkYXRh');
 
 @$core.Deprecated('Use billBeneficiaryDescriptor instead')
 const BillBeneficiary$json = {

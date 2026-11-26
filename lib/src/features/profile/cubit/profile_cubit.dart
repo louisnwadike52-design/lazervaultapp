@@ -105,6 +105,9 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> updateUserProfile({
     String? firstName,
     String? lastName,
+    /// NULL leaves it alone; non-null (including '') sets it. See the
+    /// repository for why the distinction exists.
+    String? middleName,
     String? username,
     String? phoneNumber,
     String? language,
@@ -112,12 +115,14 @@ class ProfileCubit extends Cubit<ProfileState> {
     String? country,
     String? profilePicture,
     PostalAddress? address,
+    String? dateOfBirth,
   }) async {
     if (state is! ProfileLoaded) return;
 
     if (isClosed) return;
     emit(const ProfileLoading());
     final result = await _repository.updateUserProfile(
+      middleName: middleName,
       firstName: firstName,
       lastName: lastName,
       username: username,
@@ -127,6 +132,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       country: country,
       profilePicture: profilePicture,
       address: address,
+      dateOfBirth: dateOfBirth,
     );
 
     if (isClosed) return;

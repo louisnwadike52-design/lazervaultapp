@@ -25,6 +25,35 @@ Timer _runAnimationVibration(Duration duration) {
   });
 }
 
+/// Whether this balance is ACTUALLY ON SCREEN right now.
+///
+/// A BALANCE ROLL IS A MESSAGE, AND IT HAS TO BE DELIVERED TO SOMEBODY.
+///
+/// The counter animates whenever its value changes, and money changes while
+/// the customer is somewhere else entirely — buying airtime, paying a bill,
+/// finishing a transfer. The dashboard is still mounted underneath those
+/// screens, so it was counting down to an empty room; by the time they
+/// navigated back the roll had either finished (so they saw nothing) or was
+/// mid-flight for a payment they made two screens ago, complete with the
+/// money-counting sound and the haptic buzz. Reported exactly that way: a
+/// countdown "just because there's been a money movement".
+///
+/// `isCurrent` is true only while this widget's route is the top-most one.
+/// Off it, the new figure is adopted instantly and silently — correct the
+/// moment they arrive, with nothing to explain.
+///
+/// A MODAL ON TOP COUNTS AS NOT VISIBLE, deliberately: a dialog or a sheet
+/// owns the screen, and a balance rolling and buzzing behind one is noise
+/// over whatever the customer is being asked.
+///
+/// Unknown (no route, as in a widget test) reads as VISIBLE, so the animation
+/// stays the default and a harness does not silently test the wrong path.
+bool _balanceIsOnScreen(BuildContext context) {
+  final route = ModalRoute.of(context);
+  if (route == null) return true;
+  return route.isCurrent;
+}
+
 /// Animated balance counter widget with Revolut-style rolling digits
 /// Digits fall/roll from top to bottom as the value changes
 class AnimatedBalanceCounter extends StatefulWidget {
@@ -113,6 +142,20 @@ class _AnimatedBalanceCounterState extends State<AnimatedBalanceCounter> {
     if (oldWidget.balance != widget.balance) {
       _previousBalance = _displayBalance;
       _isIncreasing = widget.balance > _previousBalance;
+
+      // NOT ON SCREEN: adopt the figure, say nothing.
+      //
+      // The old code delayed the start "so user sees the dashboard first",
+      // which assumed the dashboard was what they were looking at. It
+      // usually is not — the money moved on a bill screen two routes up.
+      if (!_balanceIsOnScreen(context)) {
+        setState(() {
+          _isAnimating = false;
+          _previousBalance = widget.balance;
+          _displayBalance = widget.balance;
+        });
+        return;
+      }
 
       // Delay the animation start so user sees the dashboard first
       Future.delayed(widget.startDelay, () {
@@ -331,7 +374,11 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
       // delay, no pulse, no sound. This is what makes the panic balance show
       // immediately on login with no "countdown", and prevents a real→decoy
       // roll from counting through (and leaking) the real balance.
-      if (!widget.animate) {
+      // The same snap for a balance nobody is looking at. Grouped with the
+      // panic case because the REQUIRED behaviour is identical — adopt the
+      // figure with no roll, no pulse, no sound, no haptics — and two code
+      // paths doing that would drift.
+      if (!widget.animate || !_balanceIsOnScreen(context)) {
         // Anything already scheduled was scheduled for the REAL balance. A
         // roll that was pending when panic engaged must not fire over the
         // decoy: its callback flips `_isAnimating` on (the direction colour),

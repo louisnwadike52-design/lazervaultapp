@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/plan_my_day/domain/entities/reminder.dar
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_state.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/widgets/create_reminder_bottom_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Embeddable reminders list — the shared body used by BOTH the standalone
 /// [ReminderManagementScreen] and the Plan My Day "Reminders" tab. Expects a
@@ -28,7 +29,7 @@ class RemindersListBody extends StatelessWidget {
   /// the list refreshes on save. Public so a host FAB can invoke it.
   static void openCreateSheet(BuildContext context, {Reminder? existing}) {
     final cubit = context.read<PlanMyDayCubit>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

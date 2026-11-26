@@ -18,8 +18,13 @@ abstract class Failure extends Equatable {
 }
 
 class APIFailure extends Failure {
-  APIFailure({required super.message, required super.statusCode});
+  APIFailure({required super.message, required super.statusCode, this.code});
 
   APIFailure.fromException(APIException exception)
-      : this(message: exception.message, statusCode: exception.statusCode);
+      : code = exception.code,
+        super(message: exception.message, statusCode: exception.statusCode);
+
+  /// Server-sent machine-readable code, when there was one. See
+  /// [APIException.code].
+  final String? code;
 }

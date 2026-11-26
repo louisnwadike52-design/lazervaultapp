@@ -9,6 +9,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart'
 import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
+import 'plan_topup_bounds.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class LockFundAutoSaveScreen extends StatefulWidget {
@@ -40,7 +41,26 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
           widget.existingAutoSave!.amount.toStringAsFixed(0);
       _frequency = widget.existingAutoSave!.frequency;
     }
+    resolvePlanConfigFor(widget.lockFund).then((cfg) {
+      if (mounted) setState(() => _plan = cfg);
+    });
   }
+
+  /// Plan bounds. Null until loaded, and null forever if the read fails —
+  /// a skip, not a refusal. The server is authoritative.
+  PiggyVaultConfig? _plan;
+
+  /// Why this instalment cannot be scheduled, or null when it can.
+  ///
+  /// Ceiling only. The plan MINIMUM is "the least you may OPEN with"; applying
+  /// it per instalment would refuse every realistic auto-save once plan
+  /// minimums are ₦200,000. See plan_topup_bounds.dart.
+  ///
+  /// Checked against ONE instalment. The server re-checks every run, because
+  /// the plan grows between runs and an instalment that is legal today stops
+  /// being legal once earlier runs have filled the plan.
+  String? get _ceilingViolation =>
+      topUpCeilingViolation(_plan, widget.lockFund.amount, _amount);
 
   @override
   void dispose() {
@@ -269,6 +289,30 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                 SizedBox(height: 16.h),
 
                 // Summary
+                // A disabled CTA with no reason reads as a broken app, and
+                // the customer cannot discover the plan ceiling otherwise.
+                if (_ceilingViolation != null)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 12.h),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline,
+                            size: 15.sp, color: const Color(0xFFDC2626)),
+                        SizedBox(width: 6.w),
+                        Expanded(
+                          child: Text(
+                            _ceilingViolation!,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              height: 1.4,
+                              color: const Color(0xFFDC2626),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 if (_amount > 0)
                   Container(
                     width: double.infinity,
@@ -328,7 +372,11 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                   width: double.infinity,
                   height: 52.h,
                   child: ElevatedButton(
-                    onPressed: _amount > 0 && !_isSubmitting ? _onSubmit : null,
+                    onPressed: _amount > 0 &&
+                            _ceilingViolation == null &&
+                            !_isSubmitting
+                        ? _onSubmit
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF6366F1),
                       disabledBackgroundColor: const Color(0xFF2D2D2D),

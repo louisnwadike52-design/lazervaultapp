@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/two_factor_entity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Shared 2FA method picker (Authenticator / SMS / Email), reused by the setup
 /// screen and the settings screen. Extracted from the setup screen so the
@@ -167,7 +168,7 @@ class TwoFactorVerifySheet extends StatefulWidget {
     Color? iconColor,
     bool destructive = false,
   }) {
-    return showModalBottomSheet<bool>(
+    return showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -361,7 +362,7 @@ class TotpSetupSheet extends StatefulWidget {
     required TwoFactorSetup setup,
     required Future<bool> Function(String code) onVerify,
   }) {
-    return showModalBottomSheet<bool>(
+    return showAppBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,

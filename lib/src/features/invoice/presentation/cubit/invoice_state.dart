@@ -180,6 +180,43 @@ class InvoicePaymentProcessing extends InvoiceState {
   List<Object?> get props => [invoiceId];
 }
 
+/// The invoice payment is AUTHORISED and the conversion is running.
+///
+/// A STATE OF ITS OWN, not a flavour of success. The invoice is not paid: the
+/// coin has not been sold yet, and the issuer will not see anything until it
+/// has. Reusing InvoicePaymentSuccess would tell the customer the job is done
+/// in the one direction they act on — they would close the screen and tell the
+/// issuer it is settled.
+///
+/// Nor is it an error. Nothing has gone wrong and nothing has been charged.
+class InvoiceCryptoFundingStarted extends InvoiceState {
+  final String invoiceId;
+
+  /// The reference the conversion names, and the handle an operator uses to
+  /// find this payment across crypto-service and invoice-service.
+  final String reference;
+
+  /// The coin being sold, lowercase as stored.
+  final String asset;
+
+  /// What the conversion must deliver, in [currency]'s minor units. Server
+  /// resolved — the app never computes a payment total.
+  final int requiredMinor;
+  final String currency;
+
+  const InvoiceCryptoFundingStarted({
+    required this.invoiceId,
+    required this.reference,
+    required this.asset,
+    required this.requiredMinor,
+    required this.currency,
+  });
+
+  @override
+  List<Object?> get props =>
+      [invoiceId, reference, asset, requiredMinor, currency];
+}
+
 class InvoicePaymentSuccess extends InvoiceState {
   final String message;
   final Invoice? invoice;

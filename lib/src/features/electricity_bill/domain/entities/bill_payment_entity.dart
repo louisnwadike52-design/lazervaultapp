@@ -165,6 +165,19 @@ class BillPaymentEntity extends Equatable {
   /// a "Refunded" chip instead of a bare "Failed".
   final String? refundSource;
 
+  /// The row's own metadata JSON, verbatim from the backend.
+  ///
+  /// Carried for one thing the receipt cannot otherwise answer: a
+  /// crypto-funded payment has its split written here by utility-payments
+  /// (funding_source / funding_asset / funding_crypto_minor /
+  /// funding_fiat_minor) the moment the conversion's outcome meets the
+  /// payment. Until `metadata` reached this proto, the electricity receipt
+  /// was the only bill that could not name the coin that paid for it.
+  ///
+  /// A STRING, parsed at the point of use — the same shape the other bill
+  /// receipts already read, so one decoder serves all of them.
+  final String? metadata;
+
   const BillPaymentEntity({
     required this.id,
     required this.userId,
@@ -191,6 +204,7 @@ class BillPaymentEntity extends Equatable {
     this.completedAt,
     this.failedAt,
     this.refundSource,
+    this.metadata,
   });
 
   /// Creates an empty entity for use as a placeholder (e.g., null safety fallback).
@@ -332,5 +346,6 @@ class BillPaymentEntity extends Equatable {
         completedAt,
         failedAt,
         refundSource,
+        metadata,
       ];
 }

@@ -302,6 +302,24 @@ class CrowdfundServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// A creator challenging a block on their own campaign. The caller's id
+  /// comes from the JWT; the service refuses a campaign that is not theirs.
+  $grpc.ResponseFuture<$0.SubmitCrowdfundAppealResponse> submitCrowdfundAppeal(
+    $0.SubmitCrowdfundAppealRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$submitCrowdfundAppeal, request, options: options);
+  }
+
+  /// The caller's own appeals, so the blocked-campaign screen can show where
+  /// an appeal stands and the decision when one has been made.
+  $grpc.ResponseFuture<$0.ListCrowdfundAppealsResponse> listCrowdfundAppeals(
+    $0.ListCrowdfundAppealsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$listCrowdfundAppeals, request, options: options);
+  }
+
   // method descriptors
 
   static final _$createCrowdfund =
@@ -473,6 +491,16 @@ class CrowdfundServiceClient extends $grpc.Client {
       '/pb.CrowdfundService/ListCrowdfundWithdrawals',
       ($0.ListCrowdfundWithdrawalsRequest value) => value.writeToBuffer(),
       $0.ListCrowdfundWithdrawalsResponse.fromBuffer);
+  static final _$submitCrowdfundAppeal = $grpc.ClientMethod<
+          $0.SubmitCrowdfundAppealRequest, $0.SubmitCrowdfundAppealResponse>(
+      '/pb.CrowdfundService/SubmitCrowdfundAppeal',
+      ($0.SubmitCrowdfundAppealRequest value) => value.writeToBuffer(),
+      $0.SubmitCrowdfundAppealResponse.fromBuffer);
+  static final _$listCrowdfundAppeals = $grpc.ClientMethod<
+          $0.ListCrowdfundAppealsRequest, $0.ListCrowdfundAppealsResponse>(
+      '/pb.CrowdfundService/ListCrowdfundAppeals',
+      ($0.ListCrowdfundAppealsRequest value) => value.writeToBuffer(),
+      $0.ListCrowdfundAppealsResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('pb.CrowdfundService')
@@ -765,6 +793,24 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.ListCrowdfundWithdrawalsRequest.fromBuffer(value),
         ($0.ListCrowdfundWithdrawalsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SubmitCrowdfundAppealRequest,
+            $0.SubmitCrowdfundAppealResponse>(
+        'SubmitCrowdfundAppeal',
+        submitCrowdfundAppeal_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SubmitCrowdfundAppealRequest.fromBuffer(value),
+        ($0.SubmitCrowdfundAppealResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListCrowdfundAppealsRequest,
+            $0.ListCrowdfundAppealsResponse>(
+        'ListCrowdfundAppeals',
+        listCrowdfundAppeals_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ListCrowdfundAppealsRequest.fromBuffer(value),
+        ($0.ListCrowdfundAppealsResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateCrowdfundResponse> createCrowdfund_Pre(
@@ -1059,4 +1105,22 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
 
   $async.Future<$0.ListCrowdfundWithdrawalsResponse> listCrowdfundWithdrawals(
       $grpc.ServiceCall call, $0.ListCrowdfundWithdrawalsRequest request);
+
+  $async.Future<$0.SubmitCrowdfundAppealResponse> submitCrowdfundAppeal_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SubmitCrowdfundAppealRequest> $request) async {
+    return submitCrowdfundAppeal($call, await $request);
+  }
+
+  $async.Future<$0.SubmitCrowdfundAppealResponse> submitCrowdfundAppeal(
+      $grpc.ServiceCall call, $0.SubmitCrowdfundAppealRequest request);
+
+  $async.Future<$0.ListCrowdfundAppealsResponse> listCrowdfundAppeals_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ListCrowdfundAppealsRequest> $request) async {
+    return listCrowdfundAppeals($call, await $request);
+  }
+
+  $async.Future<$0.ListCrowdfundAppealsResponse> listCrowdfundAppeals(
+      $grpc.ServiceCall call, $0.ListCrowdfundAppealsRequest request);
 }

@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import '../../../open_banking/presentation/helpers/link_account_gate.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Production-ready Mono Connect Widget using native SDK
 ///
@@ -306,7 +307,7 @@ Future<dynamic> _launchCustomMonoBottomSheet(
   ConnectConfiguration config, {
   void Function(BuildContext sheetContext)? onSheetContext,
 }) {
-  return showModalBottomSheet<dynamic>(
+  return showAppBottomSheet<dynamic>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,

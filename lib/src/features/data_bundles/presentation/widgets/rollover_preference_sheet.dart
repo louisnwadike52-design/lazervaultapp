@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Which of the two rollover backends the user picked.
 ///
@@ -43,7 +44,7 @@ class RolloverPreferenceSheet extends StatefulWidget {
   const RolloverPreferenceSheet({super.key});
 
   static Future<RolloverPreference?> show(BuildContext context) {
-    return showModalBottomSheet<RolloverPreference>(
+    return showAppBottomSheet<RolloverPreference>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

@@ -239,6 +239,7 @@ class BillPayment extends $pb.GeneratedMessage {
     $1.Timestamp? failedAt,
     $core.String? phoneNumber,
     $core.String? refundSource,
+    $core.String? metadata,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -268,6 +269,7 @@ class BillPayment extends $pb.GeneratedMessage {
     if (failedAt != null) result.failedAt = failedAt;
     if (phoneNumber != null) result.phoneNumber = phoneNumber;
     if (refundSource != null) result.refundSource = refundSource;
+    if (metadata != null) result.metadata = metadata;
     return result;
   }
 
@@ -317,6 +319,7 @@ class BillPayment extends $pb.GeneratedMessage {
         subBuilder: $1.Timestamp.create)
     ..aOS(26, _omitFieldNames ? '' : 'phoneNumber')
     ..aOS(27, _omitFieldNames ? '' : 'refundSource')
+    ..aOS(28, _omitFieldNames ? '' : 'metadata')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -593,6 +596,28 @@ class BillPayment extends $pb.GeneratedMessage {
   $core.bool hasRefundSource() => $_has(26);
   @$pb.TagNumber(27)
   void clearRefundSource() => $_clearField(27);
+
+  /// HOW THE PAYMENT WAS FUNDED, and everything else the row records.
+  ///
+  /// The raw `bill_payments.metadata` JSON. The receipt needs it for ONE
+  /// thing it cannot otherwise answer: when a customer paid with crypto,
+  /// utility-payments writes `funding_source` / `funding_asset` /
+  /// `funding_crypto_minor` / `funding_fiat_minor` onto this column at the
+  /// moment the conversion's outcome meets the payment, and without the
+  /// column on the wire the electricity receipt can only show a bare naira
+  /// total. Every other bill already surfaces the split; this one could not,
+  /// because `electricity_bill.proto` carried no metadata field at all.
+  ///
+  /// A STRING, not a map: it is passed through verbatim and parsed at the
+  /// edge, which is what every other bill receipt in the app already does.
+  @$pb.TagNumber(28)
+  $core.String get metadata => $_getSZ(27);
+  @$pb.TagNumber(28)
+  set metadata($core.String value) => $_setString(27, value);
+  @$pb.TagNumber(28)
+  $core.bool hasMetadata() => $_has(27);
+  @$pb.TagNumber(28)
+  void clearMetadata() => $_clearField(28);
 }
 
 class BillBeneficiary extends $pb.GeneratedMessage {

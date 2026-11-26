@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet with WebView for DirectPay one-time authorization.
 ///
@@ -16,7 +17,7 @@ Future<bool> showDirectPayAuthorizationSheet({
   required String paymentUrl,
   Duration timeout = const Duration(minutes: 5),
 }) async {
-  final result = await showModalBottomSheet<bool>(
+  final result = await showAppBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     isDismissible: false,

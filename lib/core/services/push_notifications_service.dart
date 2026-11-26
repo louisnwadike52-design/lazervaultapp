@@ -315,7 +315,45 @@ class PushNotificationsService {
         ),
       );
 
-  /// The "<userId>:<token>" we last successfully registered, or null.
+  /// The `<userId>:<token>` we last successfully registered, or null.
+  /// How long a successful registration is trusted before we re-POST it.
+  ///
+  /// Long enough that the normal case costs one call a week, short enough that a
+  /// lost server-side record self-heals without the user reinstalling.
+  static const _registrationTtl = Duration(days: 7);
+
+  static const _kRegisteredAtKey = 'fcm_registered_at';
+
+  /// True when the last successful registration is older than [_registrationTtl],
+  /// or when we have no record of one.
+  ///
+  /// ABSENT READS AS STALE, deliberately: a device that registered before this
+  /// stamp existed has no entry, and the safe reading of "I do not know when
+  /// this was registered" is to register again. One redundant POST beats a
+  /// silently dead subscription.
+  Future<bool> _registrationIsStale() async {
+    try {
+      final raw = await _markerStore.read(key: _kRegisteredAtKey);
+      final at = DateTime.tryParse(raw ?? '');
+      if (at == null) return true;
+      return DateTime.now().toUtc().difference(at.toUtc()) > _registrationTtl;
+    } catch (_) {
+      // Storage unavailable (private mode, cleared data) — treat as stale so
+      // push still works rather than failing closed on a cache read.
+      return true;
+    }
+  }
+
+  Future<void> _stampRegisteredAt() async {
+    try {
+      await _markerStore.write(
+          key: _kRegisteredAtKey,
+          value: DateTime.now().toUtc().toIso8601String());
+    } catch (_) {
+      // A missing stamp just means the next launch re-registers. Harmless.
+    }
+  }
+
   Future<String?> _readRegisteredMarker() async {
     try {
       return await _markerStore.read(key: _kRegisteredMarkerKey);
@@ -355,7 +393,24 @@ class PushNotificationsService {
     // (onTokenRefresh) it stops matching and we re-register automatically; a new
     // user logging in also won't match, so their token gets created on first login.
     final marker = '$userId:$token';
-    if (await _readRegisteredMarker() == marker) {
+    // THE MARKER IS NOT PROOF THE SERVER STILL HAS THE TOKEN.
+    //
+    // Skipping on a matching marker is right for the common case. But the
+    // marker lives on the DEVICE and the record lives on the SERVER, and
+    // nothing keeps them in step: if the server row is lost, the device goes
+    // on believing it is registered for ever and silently stops receiving
+    // push.
+    //
+    // That failure is invisible from BOTH ends. FCM reports success for a
+    // token it still knows, so a send logs failure_count: 0 while nothing
+    // reaches the handset — exactly what a customer reported on 2026-11-10
+    // after a bill payment, with no token registration from his app that day.
+    //
+    // So the skip EXPIRES. Re-registering is idempotent and costs one POST,
+    // which is cheap against a user who would otherwise have to reinstall to
+    // get notifications back.
+    if (await _readRegisteredMarker() == marker &&
+        !await _registrationIsStale()) {
       debugPrint(
           '[push] token already registered for this user/device, skipping remote call');
       return;
@@ -386,6 +441,7 @@ class PushNotificationsService {
         // Cache the success so subsequent logins skip the remote call until the
         // token or user changes.
         await _writeRegisteredMarker(marker);
+        await _stampRegisteredAt();
       }
     } on DioException catch (e) {
       debugPrint('[push] register token failed → $url '

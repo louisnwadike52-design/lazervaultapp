@@ -14,6 +14,7 @@ import '../cubit/cable_tv_auto_recharge_state.dart';
 import '../cubit/cable_tv_beneficiary_cubit.dart';
 import '../cubit/cable_tv_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Saved smart cards for cable TV. Mirrors `DataBeneficiariesScreen`.
 class CableTVBeneficiariesScreen extends StatefulWidget {
@@ -238,7 +239,7 @@ class _CableTVBeneficiariesScreenState
   void _showDetailsSheet(CableTVBeneficiary b) {
     final displayName =
         (b.nickname?.isNotEmpty == true) ? b.nickname! : b.smartCardNumber;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -386,7 +387,7 @@ class _CableTVBeneficiariesScreenState
   }
 
   void _showOptions(CableTVBeneficiary b) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

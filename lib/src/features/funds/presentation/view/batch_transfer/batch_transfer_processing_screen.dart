@@ -14,6 +14,7 @@ import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'batch_transfer_processing_screen_widgets.dart';
 
 class BatchTransferProcessingScreen extends StatefulWidget {
@@ -321,7 +322,7 @@ class _BatchTransferProcessingScreenState
     Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) {
         // Reuse the send-funds receipt with the batch variant payload.
-        Get.offAllNamed(AppRoutes.transferProof, arguments: receiptData);
+        offAllKeepingHome(AppRoutes.transferProof, arguments: receiptData);
       }
     });
   }

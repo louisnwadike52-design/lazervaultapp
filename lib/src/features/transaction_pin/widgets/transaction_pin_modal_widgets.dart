@@ -57,6 +57,17 @@ class TransactionPinModal extends StatefulWidget {
   /// allocation and the pool balance is already the honest figure.
   final double? memberAllocationRemaining;
 
+  /// WHAT IS ACTUALLY BEING SPENT, when the customer chose to pay with crypto.
+  ///
+  /// The PIN sheet is the last screen before an IRREVERSIBLE sale. Quoting
+  /// only the naira total there tells the customer what the payment costs and
+  /// nothing about what it costs THEM — which coin leaves their holding, how
+  /// much of it, and whether any naira is taken as well.
+  ///
+  /// Null on every wallet-funded payment, and the sheet then renders exactly
+  /// what it rendered before this existed.
+  final CryptoQuotePreview? cryptoQuote;
+
   const TransactionPinModal({
     super.key,
     this.title,
@@ -80,6 +91,7 @@ class TransactionPinModal extends StatefulWidget {
     this.successSubtitle,
     this.transactionType,
     this.memberAllocationRemaining,
+    this.cryptoQuote,
   });
 
   @override

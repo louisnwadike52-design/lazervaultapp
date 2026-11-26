@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/src/features/plan_my_day/contacts/domain/entities/contact.dart';
 import 'package:lazervault/src/features/plan_my_day/contacts/presentation/cubit/contact_cubit.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Create/edit a contact. Pass [existing] to edit; omit to create.
 class ContactEditSheet extends StatefulWidget {
@@ -14,7 +15,7 @@ class ContactEditSheet extends StatefulWidget {
 
   static Future<void> show(BuildContext context,
       {required ContactCubit cubit, Contact? existing}) {
-    return showModalBottomSheet(
+    return showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

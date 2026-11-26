@@ -5,6 +5,7 @@ import 'package:grpc/grpc.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:lazervault/core/network/retry_policy.dart';
+import 'package:lazervault/src/features/kyc/domain/kyc_session_cooldown.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking;
 import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
@@ -1578,6 +1579,20 @@ class OpenBankingGrpcDataSource {
         );
       });
       if (!response.success) {
+        // A COOLDOWN IS NOT A FAILURE and must not be flattened into one.
+        //
+        // The customer corrected a detail and asked to try again; the only
+        // thing in the way is the billed-session reuse window. Its own type
+        // carries the seconds the SERVER says are left, so the screen can show
+        // a real countdown and re-offer the attempt — rather than the generic
+        // "verification could not be started" that would send them to support
+        // immediately after they did what they were asked to do.
+        if (response.errorCode == 'SESSION_COOLDOWN') {
+          throw KycSessionCooldownException(
+            retryAfter: Duration(seconds: response.retryAfterSeconds),
+            message: response.errorMessage,
+          );
+        }
         throw _mapRefreshError(response.errorCode, response.errorMessage);
       }
       return {

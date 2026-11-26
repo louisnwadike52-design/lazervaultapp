@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/authentication/domain/entities/two_facto
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
+import 'package:lazervault/src/features/widgets/sms_dnd_notice.dart';
 
 /// Screen for setting up two-factor authentication
 class TwoFactorSetupScreen extends StatefulWidget {
@@ -969,6 +970,12 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
               ),
             ],
           ),
+          // SMS method only — DND is a phone-network register and the advice
+          // is meaningless for TOTP or email. This screen has no resend
+          // cooldown of its own (Resend is live immediately), so the notice
+          // self-times instead of being gated by one.
+          if (_selectedMethod == TwoFactorMethod.sms)
+            const SmsDndNotice(revealAfter: Duration(seconds: 60)),
         ],
       ),
     );

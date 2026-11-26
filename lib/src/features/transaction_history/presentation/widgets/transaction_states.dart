@@ -152,3 +152,4 @@ class TransactionInitialLoading extends StatelessWidget {
     );
   }
 }
+

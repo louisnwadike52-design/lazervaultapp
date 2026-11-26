@@ -14,6 +14,7 @@ import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/widgets/entity_create_sheet.dart';
 import 'package:lazervault/src/features/inventory/domain/entities/supplier_entity.dart';
 import 'package:lazervault/src/features/inventory/domain/repositories/inventory_enhanced_repository.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Add a new expense. Calls `createExpense()` on the cubit and pops
 /// with `true` so the list screen reloads.
@@ -88,7 +89,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   }
 
   void _openSupplierPicker() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,

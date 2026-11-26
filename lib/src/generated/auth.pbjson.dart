@@ -457,6 +457,20 @@ const LoginResponse$json = {
       '10': 'stepUpDestination'
     },
     {
+      '1': 'step_up_alt_method',
+      '3': 16,
+      '4': 1,
+      '5': 9,
+      '10': 'stepUpAltMethod'
+    },
+    {
+      '1': 'step_up_alt_destination',
+      '3': 17,
+      '4': 1,
+      '5': 9,
+      '10': 'stepUpAltDestination'
+    },
+    {
       '1': 'two_factor_method',
       '3': 13,
       '4': 1,
@@ -484,9 +498,11 @@ final $typed_data.Uint8List loginResponseDescriptor = $convert.base64Decode(
     'FjdG9yVG9rZW4SKAoQc3RlcF91cF9yZXF1aXJlZBgJIAEoCFIOc3RlcFVwUmVxdWlyZWQSIgoN'
     'c3RlcF91cF90b2tlbhgKIAEoCVILc3RlcFVwVG9rZW4SJAoOc3RlcF91cF9tZXRob2QYCyABKA'
     'lSDHN0ZXBVcE1ldGhvZBIuChNzdGVwX3VwX2Rlc3RpbmF0aW9uGAwgASgJUhFzdGVwVXBEZXN0'
-    'aW5hdGlvbhIqChF0d29fZmFjdG9yX21ldGhvZBgNIAEoCVIPdHdvRmFjdG9yTWV0aG9kEisKEn'
-    'N0ZXBfdXBfZXhwaXJlc19pbhgOIAEoA1IPc3RlcFVwRXhwaXJlc0luEh0KCmVycm9yX2NvZGUY'
-    'DyABKAlSCWVycm9yQ29kZQ==');
+    'aW5hdGlvbhIrChJzdGVwX3VwX2FsdF9tZXRob2QYECABKAlSD3N0ZXBVcEFsdE1ldGhvZBI1Ch'
+    'dzdGVwX3VwX2FsdF9kZXN0aW5hdGlvbhgRIAEoCVIUc3RlcFVwQWx0RGVzdGluYXRpb24SKgoR'
+    'dHdvX2ZhY3Rvcl9tZXRob2QYDSABKAlSD3R3b0ZhY3Rvck1ldGhvZBIrChJzdGVwX3VwX2V4cG'
+    'lyZXNfaW4YDiABKANSD3N0ZXBVcEV4cGlyZXNJbhIdCgplcnJvcl9jb2RlGA8gASgJUgllcnJv'
+    'ckNvZGU=');
 
 @$core.Deprecated('Use loginDataDescriptor instead')
 const LoginData$json = {
@@ -742,6 +758,7 @@ const RequestPasscodeResetRequest$json = {
   '2': [
     {'1': 'phone', '3': 1, '4': 1, '5': 9, '10': 'phone'},
     {'1': 'country_code', '3': 2, '4': 1, '5': 9, '10': 'countryCode'},
+    {'1': 'delivery_channel', '3': 3, '4': 1, '5': 9, '10': 'deliveryChannel'},
   ],
 };
 
@@ -749,7 +766,8 @@ const RequestPasscodeResetRequest$json = {
 final $typed_data.Uint8List requestPasscodeResetRequestDescriptor =
     $convert.base64Decode(
         'ChtSZXF1ZXN0UGFzc2NvZGVSZXNldFJlcXVlc3QSFAoFcGhvbmUYASABKAlSBXBob25lEiEKDG'
-        'NvdW50cnlfY29kZRgCIAEoCVILY291bnRyeUNvZGU=');
+        'NvdW50cnlfY29kZRgCIAEoCVILY291bnRyeUNvZGUSKQoQZGVsaXZlcnlfY2hhbm5lbBgDIAEo'
+        'CVIPZGVsaXZlcnlDaGFubmVs');
 
 @$core.Deprecated('Use requestPasscodeResetResponseDescriptor instead')
 const RequestPasscodeResetResponse$json = {
@@ -765,15 +783,24 @@ const RequestPasscodeResetResponse$json = {
       '5': 5,
       '10': 'resendAfterSeconds'
     },
+    {'1': 'delivery_channel', '3': 5, '4': 1, '5': 9, '10': 'deliveryChannel'},
+    {
+      '1': 'delivery_destination_masked',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '10': 'deliveryDestinationMasked'
+    },
   ],
 };
 
 /// Descriptor for `RequestPasscodeResetResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List requestPasscodeResetResponseDescriptor =
-    $convert.base64Decode(
-        'ChxSZXF1ZXN0UGFzc2NvZGVSZXNldFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
-        'MSEAoDbXNnGAIgASgJUgNtc2cSHQoKZXhwaXJlc19pbhgDIAEoA1IJZXhwaXJlc0luEjAKFHJl'
-        'c2VuZF9hZnRlcl9zZWNvbmRzGAQgASgFUhJyZXNlbmRBZnRlclNlY29uZHM=');
+final $typed_data.Uint8List requestPasscodeResetResponseDescriptor = $convert.base64Decode(
+    'ChxSZXF1ZXN0UGFzc2NvZGVSZXNldFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+    'MSEAoDbXNnGAIgASgJUgNtc2cSHQoKZXhwaXJlc19pbhgDIAEoA1IJZXhwaXJlc0luEjAKFHJl'
+    'c2VuZF9hZnRlcl9zZWNvbmRzGAQgASgFUhJyZXNlbmRBZnRlclNlY29uZHMSKQoQZGVsaXZlcn'
+    'lfY2hhbm5lbBgFIAEoCVIPZGVsaXZlcnlDaGFubmVsEj4KG2RlbGl2ZXJ5X2Rlc3RpbmF0aW9u'
+    'X21hc2tlZBgGIAEoCVIZZGVsaXZlcnlEZXN0aW5hdGlvbk1hc2tlZA==');
 
 @$core.Deprecated('Use resetPasscodeWithOTPRequestDescriptor instead')
 const ResetPasscodeWithOTPRequest$json = {
@@ -1151,6 +1178,7 @@ const ResendPhoneVerificationResponse$json = {
   '2': [
     {'1': 'message', '3': 1, '4': 1, '5': 9, '10': 'message'},
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'expires_in', '3': 3, '4': 1, '5': 3, '10': 'expiresIn'},
   ],
 };
 
@@ -1158,7 +1186,8 @@ const ResendPhoneVerificationResponse$json = {
 final $typed_data.Uint8List resendPhoneVerificationResponseDescriptor =
     $convert.base64Decode(
         'Ch9SZXNlbmRQaG9uZVZlcmlmaWNhdGlvblJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3'
-        'NhZ2USGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2Vzcw==');
+        'NhZ2USGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2VzcxIdCgpleHBpcmVzX2luGAMgASgDUglleHBp'
+        'cmVzSW4=');
 
 @$core.Deprecated('Use forgotPasswordRequestDescriptor instead')
 const ForgotPasswordRequest$json = {
@@ -1626,13 +1655,14 @@ const ResendLoginOtpRequest$json = {
   '1': 'ResendLoginOtpRequest',
   '2': [
     {'1': 'step_up_token', '3': 1, '4': 1, '5': 9, '10': 'stepUpToken'},
+    {'1': 'method', '3': 2, '4': 1, '5': 9, '10': 'method'},
   ],
 };
 
 /// Descriptor for `ResendLoginOtpRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List resendLoginOtpRequestDescriptor = $convert.base64Decode(
     'ChVSZXNlbmRMb2dpbk90cFJlcXVlc3QSIgoNc3RlcF91cF90b2tlbhgBIAEoCVILc3RlcFVwVG'
-    '9rZW4=');
+    '9rZW4SFgoGbWV0aG9kGAIgASgJUgZtZXRob2Q=');
 
 @$core.Deprecated('Use skipLoginOtpRequestDescriptor instead')
 const SkipLoginOtpRequest$json = {
@@ -2740,6 +2770,7 @@ const User$json = {
       '5': 8,
       '10': 'mustChangeCredentials'
     },
+    {'1': 'sms_available', '3': 36, '4': 1, '5': 8, '10': 'smsAvailable'},
   ],
 };
 
@@ -2767,7 +2798,8 @@ final $typed_data.Uint8List userDescriptor = $convert.base64Decode(
     'F0ZRgfIAEoCVIMYWRkcmVzc1N0YXRlEi4KE2FkZHJlc3NfcG9zdGFsX2NvZGUYICABKAlSEWFk'
     'ZHJlc3NQb3N0YWxDb2RlEicKD2FkZHJlc3NfY291bnRyeRghIAEoCVIOYWRkcmVzc0NvdW50cn'
     'kSHwoLbWlkZGxlX25hbWUYIiABKAlSCm1pZGRsZU5hbWUSNgoXbXVzdF9jaGFuZ2VfY3JlZGVu'
-    'dGlhbHMYIyABKAhSFW11c3RDaGFuZ2VDcmVkZW50aWFscw==');
+    'dGlhbHMYIyABKAhSFW11c3RDaGFuZ2VDcmVkZW50aWFscxIjCg1zbXNfYXZhaWxhYmxlGCQgAS'
+    'gIUgxzbXNBdmFpbGFibGU=');
 
 @$core.Deprecated('Use signupStepProgressDescriptor instead')
 const SignupStepProgress$json = {
@@ -4216,3 +4248,60 @@ final $typed_data.Uint8List adminGenerateTokenByPhoneResponseDescriptor = $conve
     'kSHQoKZXhwaXJlc19pbhgJIAEoBVIJZXhwaXJlc0luEh0KCnVzZXJfZm91bmQYCiABKAhSCXVz'
     'ZXJGb3VuZBIdCgpmaXJzdF9uYW1lGAsgASgJUglmaXJzdE5hbWUSGwoJbGFzdF9uYW1lGAwgAS'
     'gJUghsYXN0TmFtZQ==');
+
+@$core.Deprecated('Use getUsersDisplayByIdsRequestDescriptor instead')
+const GetUsersDisplayByIdsRequest$json = {
+  '1': 'GetUsersDisplayByIdsRequest',
+  '2': [
+    {'1': 'user_ids', '3': 1, '4': 3, '5': 9, '10': 'userIds'},
+  ],
+};
+
+/// Descriptor for `GetUsersDisplayByIdsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUsersDisplayByIdsRequestDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRVc2Vyc0Rpc3BsYXlCeUlkc1JlcXVlc3QSGQoIdXNlcl9pZHMYASADKAlSB3VzZXJJZH'
+        'M=');
+
+@$core.Deprecated('Use userDisplayInfoDescriptor instead')
+const UserDisplayInfo$json = {
+  '1': 'UserDisplayInfo',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'username', '3': 2, '4': 1, '5': 9, '10': 'username'},
+    {'1': 'first_name', '3': 3, '4': 1, '5': 9, '10': 'firstName'},
+    {'1': 'last_name', '3': 4, '4': 1, '5': 9, '10': 'lastName'},
+    {'1': 'profile_picture', '3': 5, '4': 1, '5': 9, '10': 'profilePicture'},
+  ],
+};
+
+/// Descriptor for `UserDisplayInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List userDisplayInfoDescriptor = $convert.base64Decode(
+    'Cg9Vc2VyRGlzcGxheUluZm8SFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEhoKCHVzZXJuYW1lGA'
+    'IgASgJUgh1c2VybmFtZRIdCgpmaXJzdF9uYW1lGAMgASgJUglmaXJzdE5hbWUSGwoJbGFzdF9u'
+    'YW1lGAQgASgJUghsYXN0TmFtZRInCg9wcm9maWxlX3BpY3R1cmUYBSABKAlSDnByb2ZpbGVQaW'
+    'N0dXJl');
+
+@$core.Deprecated('Use getUsersDisplayByIdsResponseDescriptor instead')
+const GetUsersDisplayByIdsResponse$json = {
+  '1': 'GetUsersDisplayByIdsResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
+    {
+      '1': 'users',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.UserDisplayInfo',
+      '10': 'users'
+    },
+  ],
+};
+
+/// Descriptor for `GetUsersDisplayByIdsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUsersDisplayByIdsResponseDescriptor =
+    $convert.base64Decode(
+        'ChxHZXRVc2Vyc0Rpc3BsYXlCeUlkc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+        'MSEAoDbXNnGAIgASgJUgNtc2cSKQoFdXNlcnMYAyADKAsyEy5wYi5Vc2VyRGlzcGxheUluZm9S'
+        'BXVzZXJz');

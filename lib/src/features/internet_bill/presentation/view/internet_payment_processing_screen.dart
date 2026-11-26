@@ -11,6 +11,7 @@ import '../../domain/entities/internet_provider_entity.dart';
 import '../cubit/internet_bill_cubit.dart';
 import '../cubit/internet_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'internet_payment_processing_screen_widgets.dart';
 
 /// Stepped processing screen for internet subscription purchases.
@@ -178,7 +179,7 @@ class _InternetPaymentProcessingScreenState
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         if (_hasFailed) {
-          Get.offAllNamed(AppRoutes.internetBillHome);
+          offAllKeepingHome(AppRoutes.internetBillHome);
           return;
         }
         Get.snackbar(
@@ -230,7 +231,7 @@ class _InternetPaymentProcessingScreenState
                       ? null
                       : () => Get.back(),
                   onViewHistory: () =>
-                      Get.offAllNamed(AppRoutes.internetBillHome),
+                      offAllKeepingHome(AppRoutes.internetBillHome),
                 );
               } else if (state is InternetBillError) {
                 setState(() {
@@ -299,7 +300,7 @@ class _InternetPaymentProcessingScreenState
         children: [
           IconButton(
             onPressed: canExit
-                ? () => Get.offAllNamed(AppRoutes.internetBillHome)
+                ? () => offAllKeepingHome(AppRoutes.internetBillHome)
                 : () {
                     Get.snackbar(
                       'Payment in Progress',
@@ -589,7 +590,7 @@ class _InternetPaymentProcessingScreenState
           width: double.infinity,
           height: 52.h,
           child: ElevatedButton.icon(
-            onPressed: () => Get.offAllNamed(
+            onPressed: () => offAllKeepingHome(
               AppRoutes.internetBillHome,
               arguments: {
                 'editAccount': true,
@@ -618,7 +619,7 @@ class _InternetPaymentProcessingScreenState
         ),
         SizedBox(height: 8.h),
         TextButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.internetBillHome),
+          onPressed: () => offAllKeepingHome(AppRoutes.internetBillHome),
           child: Text(
             'Back to Internet Home',
             style: GoogleFonts.inter(

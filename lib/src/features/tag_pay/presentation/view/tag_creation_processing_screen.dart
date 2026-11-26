@@ -10,6 +10,7 @@ import '../cubit/tag_pay_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class TagCreationProcessingScreen extends StatefulWidget {
   const TagCreationProcessingScreen({super.key});
@@ -168,7 +169,7 @@ class _TagCreationProcessingScreenState
           // listener for it, and no AppBar / back button / PopScope on this
           // screen, the user was left on the pulse animation with no way out
           // and no idea their tag had been saved for later.
-          Get.offAllNamed(AppRoutes.tagPay);
+          offAllKeepingHome(AppRoutes.tagPay);
           Get.snackbar(
             'Saved for later',
             state.message,

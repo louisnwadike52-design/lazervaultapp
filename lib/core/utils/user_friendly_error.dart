@@ -128,6 +128,24 @@ String _grpcErrorMessage(GrpcError error) {
     case StatusCode.alreadyExists:
       return 'This already exists. Please check and try again.';
     case StatusCode.resourceExhausted:
+      // A LOCKOUT CARRIES ITS OWN WAIT, AND "a moment" IS A LIE.
+      //
+      // Most rate limits here are seconds, so the generic line fits. The KYC
+      // provider budget is not: it refuses for THREE HOURS, because each Mono
+      // call is billed and a retry loop was running up the bill. Telling that
+      // customer to "wait a moment" sends them straight back into a refusal
+      // they cannot clear, several times, before they conclude the app is
+      // broken.
+      //
+      // The server already words it — "try again in 2h 45m" — so when its
+      // sentence names a wait, show that instead. Routed through
+      // sanitizeUserFacingError like failedPrecondition below, so a raw rpc
+      // blob still collapses to the generic line.
+      final exhausted = sanitizeUserFacingError(error.message);
+      if (exhausted.isNotEmpty &&
+          RegExp(r'try again in', caseSensitive: false).hasMatch(exhausted)) {
+        return exhausted;
+      }
       return "You're doing that too quickly. Please wait a moment and try again.";
     case StatusCode.failedPrecondition:
     case StatusCode.invalidArgument:

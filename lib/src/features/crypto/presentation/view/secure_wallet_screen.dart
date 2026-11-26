@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,6 +8,7 @@ import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'crypto_wallets_screen.dart';
+import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/crypto/data/models/crypto_wallet_model.dart';
 
@@ -16,6 +17,20 @@ import 'package:lazervault/src/features/crypto/data/models/crypto_wallet_model.d
 // segregated sub-accounts, no key management), grounded with the
 // user's real Quidax wallet inventory at the top so the message reads
 // concrete instead of marketing-speak.
+/// The market asset for a wallet's symbol, or null when neither the market
+/// list nor the supported-asset list knows it — the detail page tolerates
+/// null; a wrong "first asset" stand-in would show another coin's price.
+Crypto? _assetFor(CryptosLoaded state, String symbol) {
+  final wanted = symbol.toLowerCase();
+  for (final c in state.cryptos) {
+    if (c.symbol.toLowerCase() == wanted) return c;
+  }
+  for (final c in state.supportedAssets) {
+    if (c.symbol.toLowerCase() == wanted) return c;
+  }
+  return null;
+}
+
 class SecureWalletScreen extends StatelessWidget {
   const SecureWalletScreen({super.key});
 
@@ -340,53 +355,71 @@ class SecureWalletScreen extends StatelessWidget {
                   SizedBox(height: 8.h),
                   ...preview.map((w) {
                     final h = byId[w.cryptoId];
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 6.h),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 24.w,
-                            height: 24.w,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(6.r),
-                            ),
-                            child: Center(
-                              child: Text(
-                                w.cryptoSymbol.toUpperCase().substring(
-                                    0, w.cryptoSymbol.length.clamp(0, 2)),
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w700,
+                    // Each row opens ITS wallet, the same page the wallets
+                    // list opens (crypto_wallets_screen.dart _buildWalletItem).
+                    // Before, only the card as a whole was a tap target, so
+                    // the rows read as inert. Nested under the card's own
+                    // GestureDetector: the row wins the hit, the card still
+                    // handles the padding around it.
+                    final crypto = _assetFor(state, w.cryptoSymbol);
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => Get.to(
+                        () => BlocProvider.value(
+                          value: context.read<CryptoCubit>(),
+                          child: CryptoWalletDetailScreen(
+                              wallet: w, crypto: crypto),
+                        ),
+                        transition: Transition.rightToLeft,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: 6.h),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 24.w,
+                              height: 24.w,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  w.cryptoSymbol.toUpperCase().substring(
+                                      0, w.cryptoSymbol.length.clamp(0, 2)),
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(width: 8.w),
-                          Expanded(
-                            child: Text(
-                              w.cryptoName.isEmpty
-                                  ? w.cryptoSymbol.toUpperCase()
-                                  : w.cryptoName,
-                              style: GoogleFonts.inter(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (h != null)
-                            Text(
-                              '$sym${h.totalValue.toStringAsFixed(2)}',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w700,
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: Text(
+                                w.cryptoName.isEmpty
+                                    ? w.cryptoSymbol.toUpperCase()
+                                    : w.cryptoName,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                        ],
+                            if (h != null)
+                              Text(
+                                '$sym${h.totalValue.toStringAsFixed(2)}',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     );
                   }),

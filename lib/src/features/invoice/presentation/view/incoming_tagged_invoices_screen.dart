@@ -59,6 +59,17 @@ class _IncomingTaggedInvoicesScreenState
                 listener: (context, state) {
                   if (state is TaggedInvoicePaymentSuccess) {
                     _showPaymentSuccess(state);
+                  } else if (state is TaggedInvoiceCryptoFundingStarted) {
+                    // Not a success and not an error: authorised, converting,
+                    // not yet paid. Shown as information so the row does not
+                    // silently stay unpaid with no explanation.
+                    Get.snackbar(
+                      'Converting your ${state.asset.toUpperCase()}',
+                      'This invoice will be marked paid as soon as the '
+                          'converted funds land.',
+                      duration: const Duration(seconds: 5),
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
                   } else if (state is TaggedInvoiceError) {
                     _showError(state.message);
                   }

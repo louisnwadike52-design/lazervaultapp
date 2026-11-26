@@ -25,6 +25,7 @@ import '../../data/datasources/education_beneficiary_remote_datasource.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/utils/ng_msisdn.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Single-page education-PIN purchase — streamlined "one page, very fast" flow.
 /// Each [EducationProviderEntity] IS a purchasable PIN product (WAEC result
@@ -178,7 +179,7 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
   }
 
   Future<void> _openProductSheet() async {
-    final picked = await showModalBottomSheet<EducationProviderEntity>(
+    final picked = await showAppBottomSheet<EducationProviderEntity>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

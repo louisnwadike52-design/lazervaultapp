@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet for selecting country/locale with search functionality
 ///
@@ -25,7 +26,7 @@ class CountryLocaleBottomSheet extends StatefulWidget {
     BuildContext context, {
     String? selectedCountryCode,
   }) async {
-    return showModalBottomSheet<CountryLocale>(
+    return showAppBottomSheet<CountryLocale>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

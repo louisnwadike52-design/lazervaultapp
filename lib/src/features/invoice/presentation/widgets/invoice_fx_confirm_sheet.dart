@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The confirmed conversion the payer agreed to when paying a tagged invoice
 /// from an account whose currency differs from the invoice currency.
@@ -64,7 +65,7 @@ class InvoiceFxConfirmSheet extends StatefulWidget {
     required double fromAmount,
     required double availableBalance,
   }) {
-    return showModalBottomSheet<InvoiceFxQuote>(
+    return showAppBottomSheet<InvoiceFxQuote>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

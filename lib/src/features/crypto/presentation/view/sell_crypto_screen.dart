@@ -20,6 +20,7 @@ import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/crypto/domain/trade_pricing.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class SellCryptoScreen extends StatefulWidget {
   final CryptoHolding? selectedHolding;
@@ -1327,7 +1328,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
 
     final searchNotifier = ValueNotifier<String>('');
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

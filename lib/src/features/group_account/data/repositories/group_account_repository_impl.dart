@@ -17,7 +17,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       final groupModels = await remoteDataSource.getUserGroups(userId);
       return groupModels.cast<GroupAccount>();
     } catch (e) {
-      throw Exception('Failed to get user groups: $e');
+      rethrow;
     }
   }
 
@@ -27,7 +27,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       final groupModel = await remoteDataSource.getGroupById(groupId);
       return groupModel;
     } catch (e) {
-      throw Exception('Failed to get group: $e');
+      rethrow;
     }
   }
 
@@ -51,7 +51,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       );
       return groupModel;
     } catch (e) {
-      throw Exception('Failed to create group: $e');
+      rethrow;
     }
   }
 
@@ -62,7 +62,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       final updatedGroupModel = await remoteDataSource.updateGroup(groupModel);
       return updatedGroupModel;
     } catch (e) {
-      throw Exception('Failed to update group: $e');
+      rethrow;
     }
   }
 
@@ -71,7 +71,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     try {
       await remoteDataSource.deleteGroup(groupId);
     } catch (e) {
-      throw Exception('Failed to delete group: $e');
+      rethrow;
     }
   }
 
@@ -81,7 +81,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       final memberModels = await remoteDataSource.getGroupMembers(groupId);
       return memberModels.cast<GroupMember>();
     } catch (e) {
-      throw Exception('Failed to get group members: $e');
+      rethrow;
     }
   }
 
@@ -107,7 +107,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       );
       return memberModel;
     } catch (e) {
-      throw Exception('Failed to add member to group: $e');
+      rethrow;
     }
   }
 
@@ -125,7 +125,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       );
       return memberModel;
     } catch (e) {
-      throw Exception('Failed to update member role: $e');
+      rethrow;
     }
   }
 
@@ -140,7 +140,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         memberId: memberId,
       );
     } catch (e) {
-      throw Exception('Failed to remove member from group: $e');
+      rethrow;
     }
   }
 
@@ -150,7 +150,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       final memberModels = await remoteDataSource.searchUsers(query);
       return memberModels.cast<GroupMember>();
     } catch (e) {
-      throw Exception('Failed to search users: $e');
+      rethrow;
     }
   }
 
@@ -161,7 +161,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
           await remoteDataSource.getGroupContributions(groupId);
       return contributionModels.cast<Contribution>();
     } catch (e) {
-      throw Exception('Failed to get group contributions: $e');
+      rethrow;
     }
   }
 
@@ -172,7 +172,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
           await remoteDataSource.getContributionById(contributionId);
       return contributionModel;
     } catch (e) {
-      throw Exception('Failed to get contribution: $e');
+      rethrow;
     }
   }
 
@@ -245,7 +245,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
           await remoteDataSource.updateContribution(contributionModel);
       return updatedContributionModel;
     } catch (e) {
-      throw Exception('Failed to update contribution: $e');
+      rethrow;
     }
   }
 
@@ -254,7 +254,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     try {
       await remoteDataSource.deleteContribution(contributionId);
     } catch (e) {
-      throw Exception('Failed to delete contribution: $e');
+      rethrow;
     }
   }
 
@@ -370,7 +370,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       );
       return memberModels.cast<ContributionMember>();
     } catch (e) {
-      throw Exception('Failed to add members to contribution: $e');
+      rethrow;
     }
   }
 
@@ -382,7 +382,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
           await remoteDataSource.getContributionMembers(contributionId);
       return memberModels.cast<ContributionMember>();
     } catch (e) {
-      throw Exception('Failed to get contribution members: $e');
+      rethrow;
     }
   }
 
@@ -397,7 +397,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         userId: userId,
       );
     } catch (e) {
-      throw Exception('Failed to remove member from contribution: $e');
+      rethrow;
     }
   }
 
@@ -412,7 +412,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         userId: userId,
       );
     } catch (e) {
-      throw Exception('Failed to clear declined invite: $e');
+      rethrow;
     }
   }
 
@@ -431,7 +431,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         pageSize: pageSize,
       );
     } catch (e) {
-      throw Exception('Failed to load cycles: $e');
+      rethrow;
     }
   }
 
@@ -446,7 +446,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         cycleIndex: cycleIndex,
       );
     } catch (e) {
-      throw Exception('Failed to load cycle details: $e');
+      rethrow;
     }
   }
 
@@ -465,7 +465,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         reason: reason,
       );
     } catch (e) {
-      throw Exception('Failed to restart contribution: $e');
+      rethrow;
     }
   }
 
@@ -519,7 +519,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         userId: userId,
       );
     } catch (e) {
-      throw Exception('Failed to preview member exit: $e');
+      rethrow;
     }
   }
 
@@ -531,7 +531,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
           await remoteDataSource.getContributionPayments(contributionId);
       return paymentModels.cast<ContributionPayment>();
     } catch (e) {
-      throw Exception('Failed to get contribution payments: $e');
+      rethrow;
     }
   }
 
@@ -563,7 +563,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       );
       return paymentModel;
     } catch (e) {
-      throw Exception('Failed to make contribution payment: $e');
+      rethrow;
     }
   }
 
@@ -581,7 +581,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       );
       return paymentModel;
     } catch (e) {
-      throw Exception('Failed to update payment status: $e');
+      rethrow;
     }
   }
 
@@ -591,7 +591,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       final receiptModel = await remoteDataSource.generateReceipt(paymentId);
       return receiptModel;
     } catch (e) {
-      throw Exception('Failed to generate receipt: $e');
+      rethrow;
     }
   }
 
@@ -601,7 +601,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       final receiptModels = await remoteDataSource.getUserReceipts(userId);
       return receiptModels.cast<ContributionReceipt>();
     } catch (e) {
-      throw Exception('Failed to get user receipts: $e');
+      rethrow;
     }
   }
 
@@ -613,7 +613,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
           await remoteDataSource.generateContributionTranscript(contributionId);
       return transcriptModel;
     } catch (e) {
-      throw Exception('Failed to generate contribution transcript: $e');
+      rethrow;
     }
   }
 
@@ -622,7 +622,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     try {
       return await remoteDataSource.getGroupStatistics(groupId);
     } catch (e) {
-      throw Exception('Failed to get group statistics: $e');
+      rethrow;
     }
   }
 
@@ -631,7 +631,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     try {
       return await remoteDataSource.getUserContributionStats(userId);
     } catch (e) {
-      throw Exception('Failed to get user contribution stats: $e');
+      rethrow;
     }
   }
 
@@ -641,7 +641,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       final logModels = await remoteDataSource.getGroupActivityLogs(groupId);
       return logModels.map((m) => m.toEntity()).toList();
     } catch (e) {
-      throw Exception('Failed to get group activity logs: $e');
+      rethrow;
     }
   }
 
@@ -653,7 +653,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
           await remoteDataSource.getContributionActivityLogs(contributionId);
       return logModels.map((m) => m.toEntity()).toList();
     } catch (e) {
-      throw Exception('Failed to get contribution activity logs: $e');
+      rethrow;
     }
   }
 
@@ -673,7 +673,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       );
       return groupModels.cast<GroupAccount>();
     } catch (e) {
-      throw Exception('Failed to list public groups: $e');
+      rethrow;
     }
   }
 
@@ -682,7 +682,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     try {
       return await remoteDataSource.getPublicGroup(groupId);
     } catch (e) {
-      throw Exception('Failed to get public group: $e');
+      rethrow;
     }
   }
 
@@ -691,7 +691,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     try {
       return await remoteDataSource.joinPublicGroup(groupId);
     } catch (e) {
-      throw Exception('Failed to join public group: $e');
+      rethrow;
     }
   }
 

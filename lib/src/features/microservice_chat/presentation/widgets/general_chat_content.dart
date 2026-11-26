@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import '../../data/datasources/chat_progress_channel.dart';
+import 'chat_stage_line.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_setup_card.dart';
 import 'package:flutter/material.dart';
 import 'chat_load_older_mixin.dart';
@@ -108,6 +111,16 @@ class _GeneralChatContentState extends State<GeneralChatContent>
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late AnimationController _typingDotsController;
+
+  /// THE BACKEND'S OWN ACCOUNT OF WHAT IT IS DOING.
+  ///
+  /// The dots animation below is a local timer and stays as the fallback. When
+  /// this channel reports, the line beside the dots says the real step
+  /// ("Checking your balance", "Sending the money") instead of an invented
+  /// phase. Rebuilt whenever the conversation changes, because the
+  /// subscription is keyed on the session.
+  ChatProgressChannel? _progress;
+  String? _progressSessionId;
   String? _userAvatarUrl;
   bool _isPinMode = false;
 
@@ -154,6 +167,39 @@ class _GeneralChatContentState extends State<GeneralChatContent>
   Future<void> loadOlderChat() =>
       context.read<GeneralChatCubit>().loadOlderHistory();
 
+  /// Opens (or re-opens) the progress channel for [sessionId].
+  ///
+  /// Fire-and-forget: a channel that cannot connect leaves the timed dots
+  /// exactly as they were. Nothing in the chat waits on this.
+  void _syncProgressChannel(String? sessionId) {
+    final id = (sessionId ?? '').trim();
+    if (id.isEmpty || id == _progressSessionId) return;
+    _progressSessionId = id;
+
+    final previous = _progress;
+    _progress = null;
+    // Disposed asynchronously so the rebuild that triggered this is not
+    // waiting on a socket teardown.
+    unawaited(previous?.dispose() ?? Future<void>.value());
+
+    unawaited(() async {
+      final storage = serviceLocator<SecureStorageService>();
+      final userId = (await storage.getUserId() ?? '').trim();
+      if (userId.isEmpty || !mounted || _progressSessionId != id) return;
+      final channel = ChatProgressChannel(
+        sessionId: id,
+        userId: userId,
+        accessToken: storage.getAccessToken,
+      );
+      if (!mounted || _progressSessionId != id) {
+        await channel.dispose();
+        return;
+      }
+      setState(() => _progress = channel);
+      await channel.connect();
+    }());
+  }
+
   Future<void> _loadUserAvatar() async {
     const storage = FlutterSecureStorage();
     final url = await storage.read(key: 'user_avatar_url');
@@ -168,6 +214,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     _scrollController.removeListener(maybeLoadOlderChat);
     _scrollController.dispose();
     _typingDotsController.dispose();
+    unawaited(_progress?.dispose() ?? Future<void>.value());
     _recordingTimer?.cancel();
     if (_isRecording) {
       _audioRecorder.stop();
@@ -392,6 +439,9 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           // conversation whose prompt happens to carry a lower sequence is
           // declined as "already handled".
           final sessionId = context.read<GeneralChatCubit>().currentSessionId;
+          // Keyed on the SESSION: a progress socket subscribed to the previous
+          // conversation would narrate the wrong turn.
+          _syncProgressChannel(sessionId);
           // Same hook the PIN opener uses: the session id is first reliably
           // known here, and it is what a verdict is scoped to.
           if (sessionId != null) _loadFeedback(sessionId);
@@ -1257,6 +1307,10 @@ class _GeneralChatContentState extends State<GeneralChatContent>
               }),
             ),
           ),
+          // WHAT IS ACTUALLY HAPPENING, when the backend has said. Renders
+          // nothing until the first stage arrives, so the dots alone are what
+          // a customer sees on a gateway with stage events switched off.
+          Flexible(child: ChatStageLine(channel: _progress)),
         ],
       ),
     );

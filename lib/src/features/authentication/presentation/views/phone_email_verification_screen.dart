@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../../../transaction_pin/presentation/utils/pin_step_prefetch.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_passcode_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_passcode_state.dart';
@@ -15,6 +16,7 @@ import 'package:lazervault/src/features/widgets/resend_code_button.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/src/features/widgets/verification_decorations.dart';
 import 'package:lazervault/src/features/authentication/domain/signup_phone_rules.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/src/features/authentication/domain/signup_steps.dart';
 
 /// Step 5 (final signup step) of the phone+passcode flow: collect the email AND
@@ -60,6 +62,24 @@ class _PhoneEmailVerificationScreenState
   String _code = '';
   int _resendInitial = 0;
   int _resendKey = 0;
+
+  /// Bumped on a refused code so the input remounts EMPTY and focused.
+  ///
+  /// Separate from [_resendKey], which only moves when a NEW code is sent. A
+  /// rejected code is the commoner case and left the boxes full — and a full
+  /// pin field is inert: `maxLength` discards further keypresses and the
+  /// decoration paints no caret past the last box, so the screen reads as
+  /// broken while behaving as written.
+  int _codeResetKey = 0;
+
+  /// Keeps the primary CTA in its loading state while the PIN step is being
+  /// resolved, between verification succeeding and the next screen appearing.
+  ///
+  /// Without it the spinner stops the instant the cubit emits PhoneEmailVerified
+  /// and the screen sits idle-looking for the length of a round trip — which is
+  /// the gap the black "second loading screen" used to fill. The wait did not
+  /// get longer; it moved under the spinner the user was already watching.
+  bool _advancing = false;
   String? _error;
 
   bool get _required => FeatureFlags.isEmailVerificationRequired;
@@ -107,10 +127,29 @@ class _PhoneEmailVerificationScreenState
   void _onSkip() {
     // Account already created (email present, just unverified). The login gate
     // re-prompts later only if the admin flips email verification to required.
-    Get.offAllNamed(AppRoutes.transactionPinSetup);
+    //
+    // Same route as verifying, so the same resolve-then-navigate: skipping
+    // should not be the one path that still lands on a black loading screen.
+    _goToPin();
   }
 
-  void _goToPin() => Get.offAllNamed(AppRoutes.transactionPinSetup);
+  /// Continue to the transaction-PIN step, having resolved it first.
+  ///
+  /// See pin_step_prefetch.dart: the PIN screen used to ask the server whether
+  /// a PIN already exists AFTER it was on screen, rendering a full-black page
+  /// with a logo while it waited. Doing it here puts that wait under the
+  /// Verify spinner instead, and the PIN keypad then paints on its first frame.
+  Future<void> _goToPin() async {
+    if (!mounted) return;
+    setState(() => _advancing = true);
+    try {
+      await continueToPinSetup();
+    } finally {
+      // The screen is usually gone by now (offAllNamed); this only matters on
+      // the path where navigation was refused and the user is still here.
+      if (mounted) setState(() => _advancing = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +187,8 @@ class _PhoneEmailVerificationScreenState
           // rejected as a duplicate phone, so a later edit must take the
           // change-email path instead.
           _accountCreated = true;
-            _resendInitial = 60;
+            // The admin's dial, not a number compiled in here.
+            _resendInitial = endpointRegistry.otpResendCooldownSeconds;
             _resendKey++;
           });
           // Moving to the code phase IS the confirmation, and that screen
@@ -169,6 +209,15 @@ class _PhoneEmailVerificationScreenState
                 type: AppSnackbarType.error);
             Get.offAllNamed(AppRoutes.phoneEntry);
           } else {
+            // On the CODE step the refusal is about the six digits on screen,
+            // so clear them — otherwise the user is left tapping a full,
+            // unresponsive field. On the EMAIL step there is nothing to clear.
+            if (_phase == _Phase.code) {
+              setState(() {
+                _code = '';
+                _codeResetKey++;
+              });
+            }
             showAppSnackbar(
                 signupFailureTitle(state.message,
                     onCodeStep: _phase == _Phase.code),
@@ -178,7 +227,7 @@ class _PhoneEmailVerificationScreenState
         }
       },
       builder: (context, state) {
-        final isLoading = state is PhonePasscodeLoading;
+        final isLoading = state is PhonePasscodeLoading || _advancing;
         final inCode = _phase == _Phase.code;
         return PhoneFlowScaffold(
           // BACK FROM THE CODE PHASE RETURNS TO THE EMAIL FIELD.
@@ -297,7 +346,13 @@ class _PhoneEmailVerificationScreenState
                                 color: _ink)),
                         SizedBox(height: 12.h),
                         VerificationCodeInput(
-                          key: ValueKey('code-$_resendKey'),
+                          key: ValueKey('code-$_resendKey-$_codeResetKey'),
+                          // This verifies an EMAIL code. Leaving SMS autofill
+                          // on subscribes the screen to Android's SMS
+                          // retriever, whose default match is any 4-6 digit
+                          // run in ANY incoming message — so an unrelated bank
+                          // alert could overwrite a half-typed code.
+                          enableSmsAutofill: false,
                           onChanged: (v) => _code = v,
                           onCompleted: (v) {
                             _code = v;
@@ -310,10 +365,22 @@ class _PhoneEmailVerificationScreenState
                           initialSeconds: _resendInitial,
                           prompt: 'Didn\'t get the code? ',
                           onResend: () async {
-                            context
-                                .read<PhonePasscodeCubit>()
-                                .resendSignupEmailCode();
-                            return 60;
+                            // AWAITED, and the ANSWER decides the cooldown.
+                            // Firing this and returning a fixed number started
+                            // the countdown before the server had said
+                            // anything, and kept it running when the answer
+                            // was a refusal — so a rate-limit banner sat above
+                            // a cheerful "Resend in 57s". null = nothing was
+                            // sent, so nothing to count down.
+                            final cubit = context.read<PhonePasscodeCubit>();
+                            await cubit.resendSignupEmailCode();
+                            if (!mounted) return null;
+                            if (cubit.state is PhonePasscodeFailure) {
+                              return null;
+                            }
+                            // The same dial the server reads, not a second
+                            // number compiled in here.
+                            return endpointRegistry.otpResendCooldownSeconds;
                           },
                         ),
                       ],

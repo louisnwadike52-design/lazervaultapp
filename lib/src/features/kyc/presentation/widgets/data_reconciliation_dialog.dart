@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Shows a bottom sheet dialog for BVN name reconciliation
 /// when the BVN-verified name doesn't closely match the profile name (50-80% match)
@@ -8,7 +9,7 @@ Future<String?> showDataReconciliationDialog(
   required String profileName,
   required double matchScore,
 }) {
-  return showModalBottomSheet<String>(
+  return showAppBottomSheet<String>(
     context: context,
     isScrollControlled: true,
     backgroundColor: const Color(0xFF1F1F1F),

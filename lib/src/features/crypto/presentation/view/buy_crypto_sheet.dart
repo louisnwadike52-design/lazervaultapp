@@ -27,6 +27,7 @@ import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
 import 'package:lazervault/src/features/crypto/domain/trade_pricing.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Streamlined BUY bottom sheet — the mirror of [SellCryptoSheet].
 ///
@@ -46,7 +47,7 @@ Future<void> showBuyCryptoSheet(
   if (!await ensureCryptoTradeAllowed(context, operation: 'buy crypto')) return;
   if (!context.mounted) return;
   final CryptoCubit c = cubit ?? context.read<CryptoCubit>();
-  return showModalBottomSheet(
+  return showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

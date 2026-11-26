@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
@@ -19,6 +20,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/utils/transfer_metadata_keys.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_outcome_notice.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class TransferReceiptScreen extends StatefulWidget {
   const TransferReceiptScreen({super.key});
@@ -76,6 +79,33 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   // and `batchId` instead of a single recipient. Details collapse to a
   // recipients summary + a "View All Recipients" sheet.
   bool get _isBatch => transferDetails['isBatch'] == true;
+
+  /// The server DECLINED to start this payment, as opposed to attempting it
+  /// and failing.
+  ///
+  /// Set by TransferCubit from the gRPC code (`isSpendRefusal`) — only the
+  /// codes that mean the server decided against it, never a lost reply. A
+  /// refusal took no hold, sold no coin and moved no money, so it must not
+  /// wear the word "Failed".
+  ///
+  /// Falls back to the message when the flag was not passed: the refusal copy
+  /// ends in the promise that nothing was charged, and a receipt carrying
+  /// that promise must not simultaneously shout failure. Belt and braces,
+  /// because this receipt is reached from several call sites and only some of
+  /// them thread the flag.
+  bool get _isSpendRefusal {
+    if (transferDetails['isSpendRefusal'] == true) return true;
+    final m = (transferDetails['failure_reason'] ??
+            transferDetails['failureReason'] ??
+            transferDetails['message'] ??
+            '')
+        .toString()
+        .toLowerCase();
+    if (m.isEmpty) return false;
+    return m.contains('you have not been charged') ||
+        m.contains('nothing was converted');
+  }
+
   List<Map<String, dynamic>> get _transfers =>
       ((transferDetails['transfers'] as List?) ?? const [])
           .whereType<Map>()
@@ -208,10 +238,37 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
 
   static const _statusPollInterval = Duration(seconds: 6);
   static const _statusPollMaxTicks = 20; // ~2 min ceiling, then give up
+
+  /// A SELL DOES NOT FINISH IN TWO MINUTES.
+  ///
+  /// The ordinary ceiling suits a bank transfer, which either lands or fails
+  /// quickly. A crypto-funded payment waits on an exchange and then on a
+  /// webhook, so the standard ceiling expires mid-conversion and leaves the
+  /// receipt frozen on "Converting crypto" — including in exactly the case
+  /// this screen most needs to report, where the conversion lands short and
+  /// the naira stays in the wallet. The WebSocket usually beats the poll, but
+  /// it is best-effort and its failure is swallowed, so the poll has to be
+  /// able to outlast the conversion on its own. Still bounded.
+  /// LATCHED, never re-read live. Reading the current status instead would
+  /// drop the ceiling back to 20 the moment funding completes — which is the
+  /// tick the transfer actually starts executing — and a poll already past 20
+  /// would then stop right there, exactly when there is something to watch.
+  bool _sawCryptoFunding = false;
+  static const _cryptoFundingPollMaxTicks = 60; // ~6 min
+  int get _maxPollTicks =>
+      _sawCryptoFunding ? _cryptoFundingPollMaxTicks : _statusPollMaxTicks;
   Timer? _statusPollTimer;
   int _statusPollTicks = 0;
 
+  void _latchCryptoFunding() {
+    if ((transferDetails['status'] as String? ?? '').toLowerCase() ==
+        'awaiting_crypto_funding') {
+      _sawCryptoFunding = true;
+    }
+  }
+
   void _startBoundedStatusPoll() {
+    _latchCryptoFunding(); // the payload may already say so
     _statusPollTimer?.cancel();
     _statusPollTicks = 0;
     _statusPollTimer = Timer.periodic(_statusPollInterval, (timer) async {
@@ -221,7 +278,8 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
       }
       _statusPollTicks++;
       await _refreshLiveStatus();
-      if (_statusIsTerminal() || _statusPollTicks >= _statusPollMaxTicks) {
+      _latchCryptoFunding();
+      if (_statusIsTerminal() || _statusPollTicks >= _maxPollTicks) {
         timer.cancel();
         _statusPollTimer = null;
       }
@@ -249,6 +307,14 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
       if (snap == null || !mounted) return;
       setState(() {
         transferDetails['status'] = snap.status;
+        // THE REASON IS THE WHOLE POINT FOR A CRYPTO-FUNDED PAYMENT. When a
+        // conversion lands short, core-payments records a sentence written
+        // for the customer — that the converted amount is in their wallet —
+        // and the snapshot has always carried it. Dropping it here left the
+        // customer with a bare "Failed" and no idea where their money went.
+        if ((snap.failureReason ?? '').trim().isNotEmpty) {
+          transferDetails['failureReason'] = snap.failureReason!.trim();
+        }
         if (snap.fee != null &&
             (transferDetails['fee'] == null ||
                 (transferDetails['fee'] as num).toDouble() == 0)) {
@@ -558,7 +624,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   }
 
   Future<ReceiptCopyType?> _showCopyTypeSheet() {
-    return Get.bottomSheet<ReceiptCopyType>(
+    return showAppGetBottomSheet<ReceiptCopyType>(
       Container(
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
@@ -706,6 +772,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     if (format == null) return; // user dismissed the format sheet
     setState(() => _isDownloading = true);
 
+    _attachFundingRowsForPdf();
     try {
       final filePath = await TagPayPdfService.downloadTransferReceipt(
         transferDetails: transferDetails,
@@ -774,6 +841,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     setState(() => _isSharing = true);
 
     try {
+      _attachFundingRowsForPdf();
       await TagPayPdfService.shareTransferReceipt(
         transferDetails: transferDetails,
         copyType: copyType,
@@ -809,7 +877,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
       );
     }
 
-    return Get.bottomSheet<ReceiptFileFormat>(
+    return showAppGetBottomSheet<ReceiptFileFormat>(
       Container(
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
@@ -999,7 +1067,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
         Get.back();
         return;
       }
-      Get.offAllNamed(backRoute, arguments: transferDetails['backArgs']);
+      offAllKeepingHome(backRoute, arguments: transferDetails['backArgs']);
       return;
     }
     // prevRoute/beneathIsFlow are computed above (the query/args suffix is
@@ -1124,6 +1192,23 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
       iconData = Icons.check_rounded;
       titleText =
           _isBatch ? 'Batch Transfer Successful' : 'Transfer Successful';
+    } else if (failedStates.contains(s) && _isSpendRefusal) {
+      // A REFUSAL IS NOT A FAILURE, and this receipt said otherwise.
+      //
+      // A customer who chose to pay with crypto while their wallet already
+      // covered the payment was shown a red cross and "Transfer Failed" —
+      // above body text that correctly read "Nothing was converted and you
+      // have not been charged." Two contradictory claims on one screen, and
+      // the one in the biggest type was the wrong one.
+      //
+      // Nothing failed: the server declined to start, no hold was taken, no
+      // coin was sold, no money moved. Amber and "not completed" say that
+      // honestly; red and "Failed" send someone to support about a payment
+      // that never began.
+      iconBg = const Color(0xFFFB923C);
+      iconData = Icons.info_outline_rounded;
+      titleText =
+          _isBatch ? 'Batch transfer not completed' : 'Transfer not completed';
     } else if (failedStates.contains(s)) {
       iconBg = const Color(0xFFEF4444);
       iconData = Icons.close_rounded;
@@ -1308,6 +1393,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
             ),
           ],
         ),
+        _explanation(),
       ],
     );
   }
@@ -1407,6 +1493,9 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
           if (fee > 0)
             _buildDetailRow('Fee', '$currencySymbol${fee.toStringAsFixed(2)}'),
           _buildDetailRow('Currency', currency.toUpperCase()),
+          // WHICH BALANCES PAID. Placed with the money rows rather than the
+          // identifiers, because it is a statement about the amount.
+          ..._fundingRows.map((e) => _buildDetailRow(e.key, e.value)),
           // Divider before QR
           Divider(
             color: const Color(0xFF2D2D2D),
@@ -1599,7 +1688,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   void _showRecipientsSheet(List<Map<String, dynamic>> transfers) {
     final currency = transferDetails['currency'] as String? ?? 'NGN';
     final symbol = _currencySymbol(currency);
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       Container(
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
@@ -1962,6 +2051,161 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     );
   }
 
+  /// The server's own sentence to the customer, when there is one.
+  ///
+  /// WHY THIS EXISTS. A crypto-funded payment can end converted-but-unspent:
+  /// the coin was sold, the naira is the customer's and sitting in their
+  /// wallet, and the payment did not happen. "Failed" on its own is, to that
+  /// customer, indistinguishable from "your money is gone" — so the sentence
+  /// that says where it actually is belongs on the receipt, not only in the
+  /// logs. Rendered for ANY transfer carrying a reason, because every one of
+  /// them is a case where the bare status does not explain itself.
+  ///
+  /// Amber rather than red: on this path nothing was lost, and red would say
+  /// the opposite of what the words say.
+  Widget _explanation() {
+    final reason = (transferDetails['failureReason'] as String?)?.trim() ?? '';
+    if (reason.isEmpty) return const SizedBox.shrink();
+    // A STATUS WORD IS NOT AN EXPLANATION, and this banner is for
+    // explanations. Providers put their own terminal word in the reason field
+    // — a successful transfer came back with "SUCCESS" — and rendering it
+    // produced an amber warning card saying SUCCESS directly beneath a green
+    // tick that already said "Transfer Successful · Completed". Three
+    // statements of the same fact, one of them in the colour used for
+    // something having gone wrong.
+    //
+    // Suppressed here rather than only at the source because the field is
+    // written by several services and read by one screen: this is the place
+    // the rule can be stated once.
+    if (_isBareStatusWord(reason)) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(top: 14.h, left: 20.w, right: 20.w),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFB923C).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+              color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.info_outline_rounded,
+                size: 16.sp, color: const Color(0xFFFB923C)),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                reason,
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  height: 1.45,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFFFFD9B3),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Whether a "reason" is really just the transfer's status repeated.
+  ///
+  /// Single words only. A real explanation is a sentence — "We converted your
+  /// crypto, but the purchase could not be completed; the converted amount is
+  /// in your wallet" — and the shortest honest one still runs to several
+  /// words, so a one-word value is a status code every time. Matching on a
+  /// closed list of words instead would miss the next provider's spelling.
+  static bool _isBareStatusWord(String reason) {
+    final r = reason.trim();
+    if (r.contains(' ')) return false;
+    return const {
+      'success',
+      'successful',
+      'completed',
+      'complete',
+      'failed',
+      'failure',
+      'pending',
+      'processing',
+      'cancelled',
+      'canceled',
+      'reversed',
+      'ok',
+      'done',
+      'n/a',
+      'none',
+      'null',
+      '-',
+    }.contains(r.toLowerCase().replaceAll('_', ''));
+  }
+
+  /// PRIMARY / SECONDARY PAYMENT METHOD, for a transfer paid out of crypto.
+  ///
+  /// Empty for an ordinary wallet transfer, which is almost all of them:
+  /// [PaymentMethodBreakdown.from] refuses to exist without a declared
+  /// funding source, so there is no condition to write here.
+  ///
+  /// THE SAME ROWS GO TO THE PDF, through `transferDetails['extraRows']`
+  /// (see `_fundingExtraRows`). The document a customer forwards has to say
+  /// exactly what the screen said — it is the copy other people read, and two
+  /// renderers of one split is how the two come to disagree.
+  List<MapEntry<String, String>> get _fundingRows {
+    final raw = transferDetails['metadata'];
+    final md = raw is Map
+        ? Map<String, dynamic>.from(raw)
+        // The flow may have flattened the funding keys straight onto the
+        // arguments map rather than nesting them, so read that shape too.
+        : transferDetails;
+    final b = PaymentMethodBreakdown.from(Map<String, dynamic>.from(md));
+    if (b == null) return const [];
+    final symbol =
+        _currencySymbolFor((transferDetails['currency'] as String?) ?? 'NGN');
+    return breakdownEntries(
+      b,
+      (minor) => '$symbol${(minor / 100).toStringAsFixed(2)}',
+    );
+  }
+
+  /// Fold the funding rows into whatever the PDF was already going to print.
+  ///
+  /// Written back onto `transferDetails` because that whole map is what the
+  /// PDF service receives — there is no separate argument for it, and the
+  /// download and share paths both read the map rather than this widget.
+  void _attachFundingRowsForPdf() {
+    final rows = _fundingRows;
+    if (rows.isEmpty) return;
+    final existing = transferDetails['extraRows'];
+    final merged = <MapEntry<String, String>>[
+      if (existing is List<MapEntry<String, String>>) ...existing,
+      ...rows,
+    ];
+    // De-duplicated by label: download, then share, then download again must
+    // not print "Primary payment method" three times.
+    final seen = <String>{};
+    transferDetails['extraRows'] = [
+      for (final e in merged)
+        if (seen.add(e.key)) e,
+    ];
+  }
+
+  static String _currencySymbolFor(String code) {
+    switch (code.toUpperCase()) {
+      case 'NGN':
+        return '\u20a6';
+      case 'GBP':
+        return '\u00a3';
+      case 'USD':
+        return '\u0024';
+      case 'EUR':
+        return '\u20ac';
+      default:
+        return '';
+    }
+  }
+
   String _formatDate(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
   }
@@ -1988,6 +2232,11 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
         return 'Partially Completed';
       case 'awaiting_webhook':
         return 'Processing';
+      // PAY WITH CRYPTO. Without this the default branch renders the raw
+      // token as "Awaiting Crypto Funding", which reads like a fault rather
+      // than the ordinary wait it is.
+      case 'awaiting_crypto_funding':
+        return 'Converting crypto';
       case 'reversed':
         return 'Reversed';
       case 'refunded':

@@ -71,6 +71,21 @@ class PaymentsTransferResult {
   final String? destinationBankName;
   final String? type; // "internal" | "external"
 
+  /// THE FUNDING SPLIT, FOR A RECEIPT OPENED FROM HISTORY.
+  ///
+  /// core-payments records which balances actually paid — the coin that was
+  /// sold, how much of it, and what the wallet covered — and projects just
+  /// those keys onto the history wire. Without carrying them here the record
+  /// arrives at the receipt stripped: a crypto-funded transfer looked
+  /// identical to a wallet one the moment a customer opened it from their
+  /// history rather than from the flow that made it, which is the ONLY way
+  /// they will ever open it again.
+  ///
+  /// Null for an ordinary wallet transfer and for any payment made before the
+  /// split was recorded — the renderer shows nothing rather than inventing a
+  /// breakdown.
+  final Map<String, dynamic>? metadata;
+
   /// Direction from the QUERIED account's point of view, when it is known.
   ///
   /// The data source already worked this out and then threw it away, so a
@@ -100,6 +115,7 @@ class PaymentsTransferResult {
     this.destinationAccountId,
     this.destinationBankName,
     this.type,
+    this.metadata,
     this.isIncoming,
   });
 
@@ -164,6 +180,7 @@ abstract class IPaymentsTransferDataSource {
     int? expenseCategory, // Budget category enum value selected by user
     String?
         flow, // Funnel flow ("long"|"short") → x-flow metadata for backend metrics
+    String? fundingAsset, // Pay with crypto: asset to sell, lowercase ("usdt")
   });
 
   /// Get payment/transfer history

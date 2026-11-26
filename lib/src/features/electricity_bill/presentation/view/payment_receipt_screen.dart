@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -20,6 +21,7 @@ import '../../../widgets/bill_receipt_qr_block.dart';
 import 'package:lazervault/core/network/network_timeouts.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class PaymentReceiptScreen extends StatefulWidget {
   const PaymentReceiptScreen({super.key});
@@ -78,7 +80,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     final args = Get.arguments as Map<String, dynamic>?;
     if (args == null || args['payment'] == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAllNamed(AppRoutes.electricityBillHome);
+        offAllKeepingHome(AppRoutes.electricityBillHome);
       });
       payment = BillPaymentEntity.empty();
       _checkController = AnimationController(
@@ -373,7 +375,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     if (_fromHistory) {
       Get.back();
     } else {
-      Get.offAllNamed(AppRoutes.electricityBillHome);
+      offAllKeepingHome(AppRoutes.electricityBillHome);
     }
   }
 
@@ -877,6 +879,15 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             valueColor: Colors.white,
             isBold: true,
           ),
+          // HOW IT WAS PAID, when crypto funded it.
+          //
+          // After the Total, because the split describes that figure. Empty
+          // for an ordinary wallet payment, which is almost all of them, so
+          // there is no condition to write here.
+          ...nairaFundingRows(payment.metadata).expand((e) => [
+                SizedBox(height: 10.h),
+                _buildDetailRow(e.key, e.value),
+              ]),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 10.h),
             child: Divider(color: const Color(0xFF2D2D2D), height: 1),

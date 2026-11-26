@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/transaction_history/presentation/cubit/t
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_receipt_router.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'transfer_history_bottom_sheet_widgets.dart';
 
 /// Whether a transaction belongs to the transfer flow. Shared by the transfer

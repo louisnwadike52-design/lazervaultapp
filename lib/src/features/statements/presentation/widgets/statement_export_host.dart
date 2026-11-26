@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/widgets/statement_export_panel.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Wires the two cubits [StatementExportPanel] needs.
 ///
@@ -57,7 +58,7 @@ Future<void> showStatementExportSheet(
   final onBackground = dark ? Colors.white : const Color(0xFF1F2937);
   final handle = dark ? const Color(0xFF2F2F2F) : const Color(0xFFE5E7EB);
 
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     backgroundColor: background,
     isScrollControlled: true,

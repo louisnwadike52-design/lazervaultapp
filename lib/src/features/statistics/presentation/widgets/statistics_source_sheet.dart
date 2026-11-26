@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../cubit/statistics_state.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet that lets the user pick which money source the budgeting /
 /// statistics content reflects: LazerVault wallet, linked banks, or both.
@@ -10,7 +11,7 @@ Future<StatisticsSource?> showStatisticsSourceSheet(
   BuildContext context, {
   required StatisticsSource current,
 }) {
-  return showModalBottomSheet<StatisticsSource>(
+  return showAppBottomSheet<StatisticsSource>(
     context: context,
     isScrollControlled: true,
     backgroundColor: const Color(0xFF1F1F1F),

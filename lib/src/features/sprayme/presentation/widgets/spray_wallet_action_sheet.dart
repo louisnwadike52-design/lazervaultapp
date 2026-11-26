@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dar
 import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Which wallet action this sheet drives.
 enum SprayWalletAction { fund, withdraw }
@@ -28,7 +29,7 @@ Future<SprayWallet?> showSprayWalletActionSheet(
   required SprayWalletAction action,
   required SprayWallet wallet,
 }) {
-  return showModalBottomSheet<SprayWallet>(
+  return showAppBottomSheet<SprayWallet>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

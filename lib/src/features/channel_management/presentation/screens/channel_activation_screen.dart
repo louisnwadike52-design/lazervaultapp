@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/otp_field_behaviour.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -209,11 +210,33 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
                       ),
                     ),
                   ] else ...[
-                    TextField(
+                    // AutofillGroup: Flutter forwards autofillHints to the
+                    // platform only when one is an ancestor, so the tag below
+                    // is inert without it.
+                    AutofillGroup(
+                        child: TextField(
                       controller: _otpController,
                       keyboardType: TextInputType.number,
                       maxLength: 6,
                       textAlign: TextAlign.center,
+                      // What produces iOS's "From Messages" suggestion over
+                      // the keyboard, and hands the field to Android's
+                      // autofill framework. There was no autofill of any kind
+                      // on this screen before.
+                      autofillHints: otpAutofillHints,
+                      // Stated rather than left to the default: a plain
+                      // TextField does enable selection, but every code field
+                      // in this app now says so explicitly, so "can this be
+                      // pasted into" is answerable by reading the field
+                      // instead of knowing which widget it is.
+                      enableInteractiveSelection: true,
+                      contextMenuBuilder: otpContextMenu,
+                      // AND THE PASTE HAS TO SURVIVE. With no formatter, a
+                      // paste of "Your Lazervault code is 123456" was accepted
+                      // whole and then cut by maxLength to its first six
+                      // CHARACTERS — "Your c". Filtering to digits first makes
+                      // the same paste 123456.
+                      inputFormatters: otpInputFormatters(6),
                       style: const TextStyle(
                           color: Colors.white, fontSize: 24, letterSpacing: 8),
                       decoration: InputDecoration(
@@ -235,7 +258,7 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
                               const BorderSide(color: Color(0xFF3B82F6)),
                         ),
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: isLoading

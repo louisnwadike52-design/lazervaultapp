@@ -10,6 +10,7 @@ import '../cubit/inventory_cubit.dart';
 import '../cubit/inventory_state.dart';
 import '../widgets/adjust_quantity_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'inventory_item_details_screen_widgets.dart';
 
 class InventoryItemDetailsScreen extends StatefulWidget {
@@ -46,7 +47,7 @@ class _InventoryItemDetailsScreenState
   }
 
   void _showAdjustSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

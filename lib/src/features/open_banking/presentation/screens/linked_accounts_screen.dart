@@ -11,6 +11,8 @@ import '../../cubit/open_banking_cubit.dart';
 import '../../cubit/open_banking_state.dart';
 import '../../domain/entities/linked_bank_account.dart';
 import '../helpers/account_reauth_helper.dart';
+import '../helpers/bank_unlink_impact.dart';
+import '../widgets/bank_unlink_impact_sheet.dart';
 import '../mixins/linked_balance_refresh_mixin.dart';
 import '../widgets/linked_account_card.dart';
 import '../widgets/link_bank_button.dart';
@@ -24,6 +26,7 @@ import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Screen to manage linked bank accounts
 class LinkedAccountsScreen extends StatefulWidget {
@@ -42,6 +45,10 @@ class LinkedAccountsScreen extends StatefulWidget {
 
 class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
     with TransactionPinMixin, LinkedBalanceRefreshMixin {
+  /// Account id whose unlink impact is being read, so the row can show a
+  /// spinner instead of appearing unresponsive while the rules are fetched.
+  String? _resolvingUnlinkFor;
+
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -176,37 +183,38 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
   }
 
   void _onUnlink(LinkedBankAccount account) async {
-    final confirm = await showDialog<bool>(
+    // SHOW WHAT IS ATTACHED BEFORE ASKING.
+    //
+    // This was a plain "Are you sure you want to unlink X (1234)?" — which is
+    // only the whole question when nothing depends on the bank. Unlinking
+    // revokes every direct-debit mandate on the account (banking-service does
+    // it first and refuses the unlink if it cannot confirm), and it strands
+    // any autosave rule funded by PULLING from this bank.
+    //
+    // The impact read is a network call, so the row shows a spinner while it
+    // runs rather than the dialog appearing after a dead pause.
+    setState(() => _resolvingUnlinkFor = account.id);
+    final impact = await resolveBankUnlinkImpact(
+      linkedAccountId: account.id,
+      isDefault: account.isDefault,
+    );
+    if (!mounted) return;
+    setState(() => _resolvingUnlinkFor = null);
+
+    final confirm = await showBankUnlinkImpactSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        title:
-            const Text('Unlink Account', style: TextStyle(color: Colors.white)),
-        content: Text(
-          'Are you sure you want to unlink ${account.bankName} (${account.displayAccountNumber})?',
-          style: const TextStyle(color: Color(0xFF9CA3AF)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel',
-                style: TextStyle(color: Color(0xFF9CA3AF))),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Unlink'),
-          ),
-        ],
-      ),
+      bankName: account.bankName,
+      maskedAccountNumber: account.displayAccountNumber,
+      impact: impact,
     );
 
-    if (confirm == true && mounted) {
+    if (confirm && mounted) {
       final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
       final accessToken = widget.accessToken.isEmpty
           ? await _getAccessToken()
           : widget.accessToken;
       if (userId.isNotEmpty && accessToken.isNotEmpty) {
+        if (!mounted) return;
         context.read<OpenBankingCubit>().unlinkAccount(
               accountId: account.id,
               userId: userId,
@@ -415,10 +423,18 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
                               final isRefreshing =
                                   refreshingAccountId == account.id ||
                                       pending.contains(account.id);
+                              // Reading what is attached is a network call,
+                              // so the row reads as busy while it runs and the
+                              // unlink is disabled — otherwise a second tap
+                              // opens a second impact sheet over the first.
+                              final resolvingUnlink =
+                                  _resolvingUnlinkFor == account.id;
                               return LinkedAccountCard(
                                 account: account,
-                                isRefreshing: isRefreshing,
-                                onUnlink: () => _onUnlink(account),
+                                isRefreshing: isRefreshing || resolvingUnlink,
+                                onUnlink: resolvingUnlink
+                                    ? null
+                                    : () => _onUnlink(account),
                                 onSetDefault: () => _onSetDefault(account),
                                 onReconnect: () => startAccountReauthorization(
                                     context, account),
@@ -553,7 +569,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
   void _showAccountDetailSheet(LinkedBankAccount account) {
     final bankColor = _getBankColor(account.bankName);
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       isScrollControlled: true,

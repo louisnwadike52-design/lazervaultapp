@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Bottom sheet that collects and validates a NEW password (no current-password
 /// field — this is for passwordless accounts setting a first password). Returns
 /// the validated password on confirm, or null if dismissed. The caller persists
 /// it via SetPassword.
 Future<String?> showSetPasswordSheet(BuildContext context) {
-  return showModalBottomSheet<String>(
+  return showAppBottomSheet<String>(
     context: context,
     backgroundColor: const Color(0xFF1F1F1F),
     isScrollControlled: true,

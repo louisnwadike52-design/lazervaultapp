@@ -3,6 +3,7 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/src/features/authentication/domain/sms_policy.dart';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/otp_field_behaviour.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -17,6 +18,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/phone_flow_scaffold.dart';
+import 'package:lazervault/src/features/widgets/sms_dnd_notice.dart';
 
 /// Adaptive step-up login OTP screen. Shown when ANY login flow (email/password,
 /// email/passcode, or phone+passcode incl. switch-user) reports that the risk
@@ -51,6 +53,15 @@ class LoginOtpScreen extends StatelessWidget {
   /// unconverted caller keeps the cautious copy.
   final bool knownDevice;
 
+  /// THE OTHER CHANNEL, when the server says one is usable.
+  ///
+  /// Empty means offer no switch — the account has no second contact, or that
+  /// channel cannot deliver right now. The client cannot work either out, so
+  /// it is TOLD: an offered switch that then fails is worse than one never
+  /// offered.
+  final String altMethod;
+  final String altDestination;
+
   const LoginOtpScreen({
     super.key,
     required this.stepUpToken,
@@ -58,6 +69,8 @@ class LoginOtpScreen extends StatelessWidget {
     required this.destination,
     this.expiresInSeconds = 0,
     this.knownDevice = false,
+    this.altMethod = '',
+    this.altDestination = '',
   });
 
   @override
@@ -67,6 +80,8 @@ class LoginOtpScreen extends StatelessWidget {
       child: _LoginOtpView(
         stepUpToken: stepUpToken,
         method: method,
+        altMethod: altMethod,
+        altDestination: altDestination,
         destination: destination,
         expiresInSeconds: expiresInSeconds,
         knownDevice: knownDevice,
@@ -81,6 +96,8 @@ class _LoginOtpView extends StatefulWidget {
   final String destination;
   final int expiresInSeconds;
   final bool knownDevice;
+  final String altMethod;
+  final String altDestination;
 
   const _LoginOtpView({
     required this.stepUpToken,
@@ -88,6 +105,8 @@ class _LoginOtpView extends StatefulWidget {
     required this.destination,
     required this.expiresInSeconds,
     required this.knownDevice,
+    this.altMethod = '',
+    this.altDestination = '',
   });
 
   @override
@@ -96,6 +115,23 @@ class _LoginOtpView extends StatefulWidget {
 
 class _LoginOtpViewState extends State<_LoginOtpView>
     with WidgetsBindingObserver {
+  // THE LIVE CHANNEL, which the widget params only SEED.
+  //
+  // A resend can move the code to the other channel, after which
+  // widget.method/widget.destination describe where the FIRST code went — so
+  // every piece of copy that names the channel reads these instead. Getting
+  // that wrong points the user at the wrong inbox, which is the exact failure
+  // the switch exists to prevent.
+  late String _method = widget.method;
+  late String _destination = widget.destination;
+  late String _altMethod = widget.altMethod;
+  late String _altDestination = widget.altDestination;
+
+  /// True while a channel switch is in flight, so the affordance can show its
+  /// own progress without the main Resend button appearing to be the one
+  /// working.
+  bool _switching = false;
+
   // This screen sits INSIDE the phone-login flow — it is the step immediately
   // after "Log in" — so it wears that flow's chrome (PhoneFlowScaffold: curved
   // background, back button, title/subtitle, pill CTA) rather than the dark
@@ -134,12 +170,57 @@ class _LoginOtpViewState extends State<_LoginOtpView>
   Timer? _ticker;
   int _remaining = 0;
   bool _submitting = false;
+
+  /// Re-arms the keypad if no answer ever arrives.
+  ///
+  /// THE BUG THIS ENDS. `_submitting` disables every box
+  /// (`enabled: !_expired && !_submitting`) and is cleared ONLY from the state
+  /// listener, which handles exactly three states: AuthenticationSuccess,
+  /// AuthenticationError and AuthenticationFailure. Anything else — a state
+  /// the cubit adds later, an exception swallowed upstream, or a request that
+  /// simply never completes on a bad link — leaves the flag true and the
+  /// screen permanently unable to accept a digit. Reported repeatedly as "the
+  /// OTP screen won't let me type".
+  ///
+  /// Enumerating states is what failed, so this does not enumerate them. It
+  /// bounds the wait instead: whatever happens or fails to happen, the keypad
+  /// comes back.
+  ///
+  /// 25 seconds, sized like ServerStatusService's probe for the same reason —
+  /// the userbase is on Nigerian mobile data where a round trip through
+  /// Cloudflare to a tunnelled origin can genuinely take most of ten seconds,
+  /// and re-arming under a real in-flight verify would invite a double submit.
+  Timer? _submitWatchdog;
+  static const Duration _submitWatchdogTimeout = Duration(seconds: 25);
+
+  /// Clears the in-flight flag and stops the watchdog. Every path that ends a
+  /// submit goes through here so the two can never disagree.
+  void _endSubmit() {
+    _submitWatchdog?.cancel();
+    _submitWatchdog = null;
+    _submitting = false;
+  }
+
   String? _errorText;
+
+  /// Kept so dispose can remove them — a focus listener outliving its node is
+  /// a leak per visit to this screen.
+  final List<VoidCallback> _selectAllListeners = <VoidCallback>[];
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // FOCUSING A BOX SELECTS IT, so the next input REPLACES rather than
+    // appends. Required now that every box accepts a full-length paste: a box
+    // holding "3" that the customer taps and types "9" into would otherwise
+    // report "39", which the paste path reads as a pasted code and spreads
+    // across the boxes — wiping the rest of what they had entered. See
+    // selectAllOnFocus.
+    for (var i = 0; i < _boxes; i++) {
+      _selectAllListeners
+          .add(selectAllOnFocus(_controllers[i], _focusNodes[i]));
+    }
     _startTicker();
   }
 
@@ -176,11 +257,15 @@ class _LoginOtpViewState extends State<_LoginOtpView>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
+    _submitWatchdog?.cancel();
     for (final c in _controllers) {
       c.dispose();
     }
-    for (final f in _focusNodes) {
-      f.dispose();
+    for (var i = 0; i < _focusNodes.length; i++) {
+      if (i < _selectAllListeners.length) {
+        _focusNodes[i].removeListener(_selectAllListeners[i]);
+      }
+      _focusNodes[i].dispose();
     }
     super.dispose();
   }
@@ -211,8 +296,10 @@ class _LoginOtpViewState extends State<_LoginOtpView>
     _deadline = null;
     _remaining = 0;
     _ticker?.cancel();
+    // Not `const`: the cooldown is read from settings now, so the Duration is
+    // built at runtime from whatever the operator has configured.
     _resendDeadline =
-        DateTime.now().add(const Duration(seconds: _resendCooldownSeconds));
+        DateTime.now().add(Duration(seconds: _resendCooldownSeconds));
     _ticker = Timer.periodic(const Duration(seconds: 1), (t) {
       if (!mounted) {
         t.cancel();
@@ -220,7 +307,10 @@ class _LoginOtpViewState extends State<_LoginOtpView>
       }
       if (_canResend) {
         t.cancel();
-        setState(() {});
+        // One more cooldown waited out. The DND notice compares this against
+        // the admin threshold (sms_dnd_help_after_attempts) rather than this
+        // screen deciding when troubleshooting is warranted.
+        setState(() => _cooldownsElapsed += 1);
         return;
       }
       setState(() {});
@@ -233,13 +323,57 @@ class _LoginOtpViewState extends State<_LoginOtpView>
   /// appeared. The countdown is not the same question as "may I ask again".
   DateTime? _resendDeadline;
 
+  /// Resend cooldowns this screen has fully waited out.
+  int _cooldownsElapsed = 0;
+
   /// Server-enforced anyway — this only decides when the affordance is shown,
   /// so a stale value can never let a request through early.
-  static const int _resendCooldownSeconds = 60;
+  /// Read from settings rather than compiled in, for the same reason the TTL
+  /// is: a client counting 60 against a server enforcing 90 shows an unlocked
+  /// button the next request is refused by.
+  int get _resendCooldownSeconds => endpointRegistry.otpResendCooldownSeconds;
+
+  /// Set once the SERVER has successfully sent this customer an SMS on this
+  /// challenge — i.e. a channel switch to SMS that came back accepted.
+  ///
+  /// SMS IS NO LONGER A SINGLE PLATFORM-WIDE FACT. While the provider is being
+  /// investigated the master switch is off for everyone and a short operator
+  /// whitelist keeps it for named testers, resolved SERVER-SIDE from the
+  /// account's own email and phone. The app deliberately does not hold that
+  /// list — it would have to be published to every handset on an
+  /// unauthenticated poll to be readable here — so `SmsPolicy.available` can
+  /// say "no SMS" while this particular user is being texted perfectly well.
+  ///
+  /// A send the server accepted is the one piece of per-user evidence the
+  /// client can honestly act on, so it is recorded rather than inferred.
+  bool _smsConfirmedForThisUser = false;
 
   /// Whether a code can actually reach this customer on this challenge's
   /// channel. See the skip affordance below for why it decides visibility.
-  bool get _codeCanBeDelivered => widget.method != 'sms' || SmsPolicy.available;
+  ///
+  /// The per-user proof wins over the global flag, and only in the permissive
+  /// direction: it can reveal that SMS works for someone the flag says it does
+  /// not, never hide a dead end from someone it would have warned.
+  bool get _codeCanBeDelivered =>
+      _method != 'sms' || _smsConfirmedForThisUser || SmsPolicy.available;
+
+  /// Seconds until a resend is offered, or 0 when it already is.
+  ///
+  /// THE NUMBER, NOT JUST "SHORTLY". This screen had the deadline all along
+  /// and said only "Resend shortly" — which tells someone to wait without
+  /// saying how long, so they tap, nothing happens, and they tap again. The
+  /// other OTP screens show the seconds through ResendCodeButton; this one
+  /// rolls its own row and was the odd one out.
+  ///
+  /// This is the countdown that stayed when the expiry one was removed: it
+  /// counts down to something the customer may DO, which is the whole
+  /// difference between the two.
+  int get _resendSecondsLeft {
+    final d = _resendDeadline;
+    if (d == null) return 0;
+    final left = d.difference(DateTime.now()).inSeconds;
+    return left > 0 ? left : 0;
+  }
 
   bool get _canResend =>
       !_resendChannelClosed &&
@@ -304,24 +438,27 @@ class _LoginOtpViewState extends State<_LoginOtpView>
 
   String get _code => _controllers.map((c) => c.text).join();
 
-  String get _countdownLabel {
-    final m = (_remaining ~/ 60).toString();
-    final s = (_remaining % 60).toString().padLeft(2, '0');
-    return '$m:$s';
-  }
-
   void _onDigitChanged(int index, String value) {
     if (_errorText != null) setState(() => _errorText = null);
 
     // Paste / autofill of the whole code into one box: distribute across boxes.
     if (value.length > 1) {
-      final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
-      for (var i = 0; i < _boxes; i++) {
-        _controllers[i].text = i < digits.length ? digits[i] : '';
-      }
+      // Shared with every other multi-box code screen, and it sets each
+      // controller's SELECTION explicitly — assigning `.text` alone leaves
+      // selection at the invalid default (-1), which on Android is a caret the
+      // input connection cannot place, so the next keypress has nowhere to go.
+      // That is the "field went dead" failure this screen has already had.
+      final digits = applyOtpPaste(_controllers, value);
       final next = digits.length >= _boxes ? _boxes - 1 : digits.length;
       _focusNodes[next].requestFocus();
-      if (digits.length >= _boxes) _submit();
+      // Deferred for the same reason as the last-digit path above: this runs
+      // inside onChanged, having just rewritten every controller, and
+      // submitting synchronously from there races the edit it is reading.
+      if (digits.length >= _boxes) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _code.length == _boxes) _submit();
+        });
+      }
       return;
     }
 
@@ -329,10 +466,30 @@ class _LoginOtpViewState extends State<_LoginOtpView>
       _focusNodes[index + 1].requestFocus();
     }
     if (value.isNotEmpty && index == _boxes - 1) {
-      // Last digit entered — auto-submit after a beat so the UI settles.
-      FocusScope.of(context).unfocus();
-      Future.delayed(const Duration(milliseconds: 120), () {
-        if (mounted && _code.length == _boxes) _submit();
+      // THE SIXTH DIGIT WAS BEING EATEN, AND unfocus() WAS EATING IT.
+      //
+      // This called FocusScope.unfocus() SYNCHRONOUSLY, from inside onChanged
+      // — i.e. while the text input client is still mid-update for the very
+      // keystroke that triggered it. Closing the IME connection there makes
+      // the platform revert the in-flight editing value on Android, so the
+      // last box ended up empty: the digit appeared and vanished, `_code` was
+      // five characters, the `== _boxes` guard below never passed, and the
+      // screen sat there having visibly accepted a keypress it then discarded.
+      // Reported as "it's not inserting the last value before validating".
+      //
+      // Deferring to after the frame lets the controller commit first. The
+      // unfocus still happens — dropping the keyboard is what makes the
+      // "Verifying…" state readable — just not during the edit that caused it.
+      //
+      // The 120ms settle is kept on top: it is what stops the submit racing
+      // the final repaint, so the user sees their sixth digit land before the
+      // screen changes under them.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        FocusScope.of(context).unfocus();
+        Future.delayed(const Duration(milliseconds: 120), () {
+          if (mounted && _code.length == _boxes) _submit();
+        });
       });
     }
   }
@@ -371,6 +528,20 @@ class _LoginOtpViewState extends State<_LoginOtpView>
     setState(() {
       _submitting = true;
       _errorText = null;
+    });
+    _submitWatchdog?.cancel();
+    _submitWatchdog = Timer(_submitWatchdogTimeout, () {
+      if (!mounted || !_submitting) return;
+      setState(() {
+        _endSubmit();
+        // Says what happened and what to do. "Verifying…" forever says
+        // neither, and the user cannot even retype the code to try again.
+        _errorText =
+            'That took too long. Check your connection and tap Verify again.';
+      });
+      // Put the caret back where they left it, so retrying is one tap.
+      final firstEmpty = _controllers.indexWhere((c) => c.text.isEmpty);
+      _focusNodes[firstEmpty < 0 ? _boxes - 1 : firstEmpty].requestFocus();
     });
     FocusScope.of(context).unfocus();
     context.read<AuthenticationCubit>().verifyLoginOtp(
@@ -440,28 +611,61 @@ class _LoginOtpViewState extends State<_LoginOtpView>
         .skipLoginOtp(stepUpToken: widget.stepUpToken);
   }
 
-  Future<void> _requestNewCode() async {
-    if (_resending) return;
+  /// Asks for a fresh code, optionally ON THE OTHER CHANNEL.
+  ///
+  /// [method] is "" for "same channel" — the plain Resend. Anything else is a
+  /// switch, and the server may refuse it (no second contact, or that channel
+  /// cannot deliver): the refusal arrives through the cubit's error state and
+  /// leaves the EXISTING code untouched, because the server checks before it
+  /// replaces anything.
+  Future<void> _requestNewCode({String method = ''}) async {
+    if (_resending || _switching) return;
+    final switching = method.isNotEmpty && method != _method;
     setState(() {
-      _resending = true;
+      if (switching) {
+        _switching = true;
+      } else {
+        _resending = true;
+      }
       _errorText = null;
     });
 
-    final seconds = await context
+    final resend = await context
         .read<AuthenticationCubit>()
-        .resendLoginOtp(stepUpToken: widget.stepUpToken);
+        .resendLoginOtp(stepUpToken: widget.stepUpToken, method: method);
 
     if (!mounted) return;
-    if (seconds == null) {
+    if (resend == null) {
       // The cubit emitted the reason; the listener has already shown it.
-      setState(() => _resending = false);
+      // Nothing about the live code changed, so the countdown keeps running.
+      setState(() {
+        _resending = false;
+        _switching = false;
+      });
       return;
     }
+    final seconds = resend.expiresInSeconds;
 
     setState(() {
       _resending = false;
+      _switching = false;
       _terminal = false;
       _errorText = null;
+      // THE SERVER'S ANSWER, not what we asked for. A refused switch comes
+      // back on the original channel, and the copy below must say so rather
+      // than sending the user to an inbox nothing arrived in.
+      _method = resend.method.isNotEmpty ? resend.method : _method;
+      _destination =
+          resend.destination.isNotEmpty ? resend.destination : _destination;
+      // The server just sent an SMS to THIS account, so SMS demonstrably
+      // reaches them whatever the platform-wide flag says. Without this the
+      // skip hatch appears immediately after a successful switch to phone —
+      // offering to abandon a step that is working.
+      if (_method == 'sms') _smsConfirmedForThisUser = true;
+      // Recomputed against the channel actually used, so after a switch the
+      // affordance offers the way back.
+      _altMethod = resend.altMethod;
+      _altDestination = resend.altDestination;
     });
     _clearBoxes();
     // Restart from the lifetime the server just told us, not the original one:
@@ -471,7 +675,7 @@ class _LoginOtpViewState extends State<_LoginOtpView>
 
     Get.snackbar(
       'New code sent',
-      'We sent a fresh code to your ${widget.method == 'sms' ? 'phone' : 'email'}.',
+      'We sent a fresh code to your ${_method == 'sms' ? 'phone' : 'email'}.',
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: _ink,
       colorText: Colors.white,
@@ -507,7 +711,7 @@ class _LoginOtpViewState extends State<_LoginOtpView>
     if (looksNetwork) {
       ServerHealthNotifier.instance.pokeRecheck();
       setState(() {
-        _submitting = false;
+        _endSubmit();
         _errorText =
             "Connection problem, couldn't reach our servers. Try again.";
       });
@@ -522,7 +726,7 @@ class _LoginOtpViewState extends State<_LoginOtpView>
         _ticker?.cancel();
         _clearBoxes(refocus: false);
         setState(() {
-          _submitting = false;
+          _endSubmit();
           _remaining = 0;
           _errorText = 'That code has expired, tap "Send me a new code" below.';
         });
@@ -533,7 +737,7 @@ class _LoginOtpViewState extends State<_LoginOtpView>
         _ticker?.cancel();
         _clearBoxes(refocus: false);
         setState(() {
-          _submitting = false;
+          _endSubmit();
           _remaining = 0;
           _errorText =
               'Too many wrong tries for that code, tap "Send me a new code" below.';
@@ -542,7 +746,7 @@ class _LoginOtpViewState extends State<_LoginOtpView>
       case 'RESEND_TOO_SOON':
         // The current code is still the live one; just relay the wait.
         setState(() {
-          _submitting = false;
+          _endSubmit();
           _errorText = message.isNotEmpty
               ? message
               : 'Please wait a moment before asking for another code.';
@@ -559,7 +763,7 @@ class _LoginOtpViewState extends State<_LoginOtpView>
         // the boxes live.
         _ticker?.cancel();
         setState(() {
-          _submitting = false;
+          _endSubmit();
           _resendChannelClosed = true;
           _errorText = message.isNotEmpty
               ? message
@@ -573,7 +777,7 @@ class _LoginOtpViewState extends State<_LoginOtpView>
       case 'STEP_UP_UNAVAILABLE':
         _ticker?.cancel();
         setState(() {
-          _submitting = false;
+          _endSubmit();
           _terminal = true;
           _remaining = 0;
           _errorText = message.isNotEmpty
@@ -585,7 +789,7 @@ class _LoginOtpViewState extends State<_LoginOtpView>
     }
 
     setState(() {
-      _submitting = false;
+      _endSubmit();
       _errorText = message.isNotEmpty ? message : 'That code is incorrect.';
     });
     _clearBoxes();
@@ -593,7 +797,7 @@ class _LoginOtpViewState extends State<_LoginOtpView>
 
   @override
   Widget build(BuildContext context) {
-    final channel = widget.method == 'sms' ? 'SMS' : 'email';
+    final channel = _method == 'sms' ? 'SMS' : 'email';
     return BlocListener<AuthenticationCubit, AuthenticationState>(
       listener: (context, state) {
         if (state is AuthenticationSuccess) {
@@ -615,7 +819,7 @@ class _LoginOtpViewState extends State<_LoginOtpView>
       child: PhoneFlowScaffold(
         title: 'Verify it\'s you',
         subtitle: 'We sent a 6-digit code to your $channel '
-            '(${widget.destination}). Enter it to continue.',
+            '($_destination). Enter it to continue.',
         showHeadingLogo: false,
         // This is a step-up SECURITY gate, so it has no back button and the
         // Android system-back gesture is inert (onBack is a no-op; the scaffold
@@ -797,7 +1001,11 @@ class _LoginOtpViewState extends State<_LoginOtpView>
         final gutter = 8.w;
         final boxWidth =
             (constraints.maxWidth - gutter * (_boxes - 1)) / _boxes;
-        return Row(
+        // AN AutofillGroup IS REQUIRED for the hint on box one to reach the
+        // platform at all — Flutter forwards autofillHints only when one is an
+        // ancestor, so without it the tag is inert and looks done.
+        return AutofillGroup(
+            child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(_boxes, (i) {
             return SizedBox(
@@ -817,7 +1025,30 @@ class _LoginOtpViewState extends State<_LoginOtpView>
                   autofocus: i == 0,
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
-                  maxLength: i == 0 ? _boxes : 1, // box 0 accepts a full paste
+                  // EVERY BOX ACCEPTS A FULL PASTE, not just the first.
+                  //
+                  // This was `i == 0 ? _boxes : 1`, so a paste only survived
+                  // if the customer happened to have pressed box one: pasting
+                  // six digits into box three was truncated to a single
+                  // character, `_onDigitChanged` never saw a multi-character
+                  // value, and the distribution below never ran. It looked
+                  // like paste worked, for one box out of six.
+                  maxLength: _boxes,
+                  // THE HINT GOES ON BOX ONE ONLY, and that is deliberate.
+                  //
+                  // It is the autofocused box, so the platform's one-time-code
+                  // suggestion appears the moment the screen opens, which is
+                  // when it is wanted. Tagging all six would invite the OS to
+                  // fill each of them with the whole code — harmless, because
+                  // the distribution is idempotent, but it would run six times
+                  // for one autofill.
+                  autofillHints: i == 0 ? otpAutofillHints : null,
+                  // Paste needs BOTH of these: the pin packages and a bare
+                  // TextField alike give no long-press menu without a
+                  // contextMenuBuilder, and nothing to long-press without
+                  // interactive selection.
+                  enableInteractiveSelection: true,
+                  contextMenuBuilder: otpContextMenu,
                   style: TextStyle(
                       color: _ink,
                       fontSize: 20.sp,
@@ -852,8 +1083,67 @@ class _LoginOtpViewState extends State<_LoginOtpView>
               ),
             );
           }),
-        );
+        ));
       },
+    );
+  }
+
+  /// "Send it to my phone instead" — the way out when the default channel is
+  /// one the user cannot reach.
+  ///
+  /// Email is the default for step-up because it is the channel every account
+  /// has; someone locked out of their inbox, or on a handset where mail does
+  /// not arrive, has no other route without this.
+  ///
+  /// ONLY WHEN THE SERVER SAYS THERE IS ONE. _altMethod is empty unless the
+  /// account carries a second contact AND that channel can deliver right now —
+  /// neither of which this screen can work out for itself. An affordance that
+  /// appears and then fails is worse than one that never appears.
+  ///
+  /// Sits under the resend row rather than beside it: this is the rarer
+  /// action, and crowding the countdown is how a user taps the wrong one.
+  Widget _buildChannelSwitch() {
+    if (_altMethod.isEmpty) return const SizedBox.shrink();
+    final toPhone = _altMethod == 'sms';
+    final label =
+        toPhone ? 'Send it to my phone instead' : 'Send it to my email instead';
+
+    return Padding(
+      padding: EdgeInsets.only(top: 10.h),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          // Disabled while EITHER request is in flight: two codes racing would
+          // leave the user holding whichever arrived second with no way to know.
+          onPressed: (_submitting || _resending || _switching || _terminal)
+              ? null
+              : () => _requestNewCode(method: _altMethod),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          icon: _switching
+              ? SizedBox(
+                  width: 14.sp,
+                  height: 14.sp,
+                  child: const CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(
+                  toPhone
+                      ? Icons.smartphone_rounded
+                      : Icons.mail_outline_rounded,
+                  size: 16.sp,
+                ),
+          label: Text(
+            // The masked destination is shown so the user can confirm it is a
+            // number or address they can actually reach BEFORE spending a
+            // resend on it.
+            _switching ? 'Sending…' : '$label ($_altDestination)',
+            style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
     );
   }
 
@@ -891,18 +1181,40 @@ class _LoginOtpViewState extends State<_LoginOtpView>
     // they could see a running timer and no way to act on it for the whole
     // window. The server enforces the cooldown regardless, so showing the
     // button can only ever be as permissive as the backend already is.
-    return Row(
+    // THE EXPIRY COUNTDOWN IS GONE, DELIBERATELY.
+    //
+    // It counted a window the customer cannot influence, beside a resend
+    // countdown that says when they MAY do something. Two live numbers at
+    // different rates, and only one of them actionable — people read the wrong
+    // one and waited. The code still expires; the server still refuses a dead
+    // one, and the expired branch below still says so, which is the only part
+    // that ever changed what anyone did.
+    final row = Row(
       children: [
-        Icon(Icons.timer_outlined, color: _textSecondary, size: 15.sp),
-        SizedBox(width: 6.w),
-        Text('Expires in $_countdownLabel',
-            style: TextStyle(color: _textSecondary, fontSize: 12.5.sp)),
         const Spacer(),
         if (_canResend)
           _linkButton('Get a new code', _requestNewCode)
         else
-          Text("Didn't get it? Resend shortly",
+          Text(
+              _resendSecondsLeft > 0
+                  ? "Didn't get it? Resend in ${_resendSecondsLeft}s"
+                  : "Didn't get it? Resend shortly",
               style: TextStyle(color: _textSecondary, fontSize: 11.5.sp)),
+      ],
+    );
+
+    // This login code is delivered by SMS ("to your phone"), so once the first
+    // cooldown has elapsed and resend is offered, DND is a real and
+    // customer-fixable reason nothing arrived. Gated on _canResend so it never
+    // appears while a code may still be in flight.
+    if (!_canResend) return row;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        row,
+        _buildChannelSwitch(),
+        SmsDndNotice(cooldownsElapsed: _cooldownsElapsed),
       ],
     );
   }

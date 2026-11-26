@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 const Color _purple = Color.fromARGB(255, 78, 3, 208);
 const Color _sheetBg = Color(0xFF1F1F1F);
@@ -40,7 +41,7 @@ class ScanHistorySheet extends StatefulWidget {
     required BankScanDataSource Function() dataSourceBuilder,
     required void Function(ScanHistoryItem item) onSelectScan,
   }) {
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       backgroundColor: _sheetBg,
       isScrollControlled: true,

@@ -750,9 +750,24 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
         appBar: AppBar(
           title: const Text('Register Your Voice'),
           centerTitle: true,
+          // The PopScope below refuses the pop, so an implied back arrow here
+          // would be a control that does nothing. See _buildVerifyingScreen
+          // in voice_verification_screen.dart.
+          automaticallyImplyLeading: false,
         ),
         body: PopScope(
-          canPop: false, // Prevent back during processing
+          canPop: false, // Prevent back during enrollment
+          // Answer the back press rather than ignoring it — see the note on
+          // _buildVerifyingScreen in voice_verification_screen.dart.
+          onPopInvokedWithResult: (didPop, _) {
+            if (didPop) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Saving your voice — this finishes on its own.'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          },
           child: const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

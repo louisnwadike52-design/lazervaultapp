@@ -84,9 +84,21 @@ class PasswordResetVerificationResult {
 class PhoneSignupOtpResult {
   final int expiresInSeconds; // OTP validity window
   final int resendAfterSeconds; // cooldown before another request is allowed
+
+  /// Where the code was ACTUALLY sent: 'sms' | 'email'. Empty from the signup
+  /// paths, which only ever use SMS; the passcode-reset path fills it so the
+  /// verification screen can name the right inbox instead of saying "your
+  /// phone" to someone who asked for an email.
+  final String deliveryChannel;
+
+  /// Masked destination for display ("jo***@gmail.com", "+23***6789").
+  final String deliveryDestinationMasked;
+
   const PhoneSignupOtpResult({
     required this.expiresInSeconds,
     required this.resendAfterSeconds,
+    this.deliveryChannel = '',
+    this.deliveryDestinationMasked = '',
   });
 }
 
@@ -111,11 +123,19 @@ class StepUpRequiredFailure extends Failure {
   /// Zero means the server did not say; the screen falls back to its default.
   final int expiresInSeconds;
 
+  /// The OTHER channel the server says is usable, masked for display. Empty
+  /// when there is none — see StepUpResend for why the client is told rather
+  /// than left to infer it.
+  final String altMethod;
+  final String altDestination;
+
   StepUpRequiredFailure({
     required this.stepUpToken,
     required this.stepUpMethod,
     required this.destination,
     this.expiresInSeconds = 0,
+    this.altMethod = '',
+    this.altDestination = '',
   }) : super(message: 'Verification required', statusCode: 0);
 }
 
@@ -208,4 +228,41 @@ class AccountDeletionOutcome {
   });
 
   bool get isFundsBlocked => errorCode == 'FUNDS_PRESENT';
+}
+
+
+/// The outcome of a step-up resend, including WHICH CHANNEL it went out on.
+///
+/// The server's answer, never the client's request. A switch can be refused —
+/// the account may have no phone, or SMS may be down — and the screen has to
+/// say where the code actually went, not where it was asked to go. Watching
+/// the wrong inbox is the exact failure the switch exists to prevent.
+class StepUpResend {
+  const StepUpResend({
+    required this.expiresInSeconds,
+    required this.method,
+    required this.destination,
+    this.altMethod = '',
+    this.altDestination = '',
+  });
+
+  /// Lifetime of the NEW code, so the screen restarts its countdown from the
+  /// value the server will actually honour.
+  final int expiresInSeconds;
+
+  /// "email" | "sms" — where the code was sent.
+  final String method;
+
+  /// Masked destination for display, e.g. `j***@x.com` or `+23*****3952`.
+  final String destination;
+
+  /// The other channel, when one is usable. Empty means DO NOT OFFER A
+  /// SWITCH: either the account has no second contact or that channel cannot
+  /// deliver right now. Told by the server rather than guessed, because the
+  /// client can know neither.
+  final String altMethod;
+  final String altDestination;
+
+  bool get hasAlternative => altMethod.isNotEmpty;
+  bool get isSms => method == 'sms';
 }

@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/data_bundles/domain/entities/data_plan_e
 import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_bundles_cubit.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_bundles_state.dart';
 import 'package:lazervault/src/features/data_bundles/utils/data_plan_validity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Pick a data plan. Returns the chosen plan, or null if dismissed.
 ///
@@ -29,7 +30,7 @@ Future<DataPlanEntity?> showDataPlanPickerSheet(
   required String network,
   String? selectedVariationId,
 }) {
-  return showModalBottomSheet<DataPlanEntity>(
+  return showAppBottomSheet<DataPlanEntity>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

@@ -1,9 +1,11 @@
+import 'package:lazervault/src/features/crypto_pay/domain/crypto_funding_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/fund_payment_with_crypto.dart';
 import '../../../../../core/cache/cache_config.dart';
 import '../../../../../core/cache/swr_cache_manager.dart';
 import '../../../../../core/services/account_manager.dart';
@@ -180,6 +182,27 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     }
   }
 
+  /// The total the purchase will reserve, in kobo, as the SERVER quoted it.
+  ///
+  /// Read from the parked payment's metadata rather than recomputed here: the
+  /// platform fee and any discount are resolved server-side from admin
+  /// settings, and a client that re-derives them drifts the moment an operator
+  /// changes one — converting a little less than the purchase needs and
+  /// failing it for a reason the customer would be told was a rate move.
+  ///
+  /// Falls back to the face amount only when the metadata is absent, which is
+  /// better than converting nothing.
+  int _requiredMinorFrom(AirtimeTransaction t) {
+    final v = t.metadata?['required_minor'];
+    if (v is int && v > 0) return v;
+    if (v is num && v > 0) return v.toInt();
+    if (v is String) {
+      final parsed = int.tryParse(v);
+      if (parsed != null && parsed > 0) return parsed;
+    }
+    return (t.totalAmount * 100).round();
+  }
+
   // Process payment with verification token (production flow via gRPC)
   Future<void> processPaymentWithToken({
     required String countryCode,
@@ -192,6 +215,10 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     String? operatorId,
     String? reloadlyOperatorId,
     String? sourceAccountId,
+
+    /// PAY WITH CRYPTO: the asset to sell to fund this purchase, lowercase.
+    /// Null means the ordinary wallet-funded purchase.
+    String? fundingAsset,
   }) async {
     try {
       final userId = await _getCurrentUserId();
@@ -249,9 +276,54 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         verificationToken: verificationToken,
         operatorId: operatorId,
         reloadlyOperatorId: reloadlyOperatorId,
+        fundingAsset: fundingAsset,
       );
 
       if (isClosed) return;
+
+      // ===== PAY WITH CRYPTO — STEP 2 OF THE ORDER =====
+      //
+      // The purchase is now recorded and NOTHING has been converted. Asking
+      // for the conversion is a separate call and must happen before anything
+      // claims success: until it lands the customer has no airtime, and
+      // emitting AirtimePaymentSuccess here would tell them otherwise.
+      final asset = fundingAsset?.trim().toLowerCase() ?? '';
+      if (asset.isNotEmpty) {
+        final reference = transaction.transactionReference;
+        if (reference.isEmpty || reference == 'processing') {
+          emit(const AirtimePaymentFailed(
+            message:
+                'We could not set up that purchase. You have not been charged.',
+          ));
+          return;
+        }
+        try {
+          await fundPaymentWithCrypto(
+            accountId: sourceAccountId ?? '',
+            paymentReference: reference,
+            // The TOTAL the purchase will reserve, as the server quoted it —
+            // face plus platform fee. The face amount alone converts short by
+            // the fee and the purchase then fails on insufficient funds.
+            requiredMinor: _requiredMinorFrom(transaction),
+            asset: asset,
+            service: (transaction.metadata?['service'] as String?) ?? 'airtime',
+          );
+        } catch (e) {
+          if (isClosed) return;
+          // Deliberately NOT "you have not been charged": the conversion may
+          // have started and we simply lost the reply. Guessing either way
+          // about a customer's money is worse than saying what we know.
+          emit(AirtimePaymentFailed(message: _fundingMessage(e)));
+          return;
+        }
+        if (isClosed) return;
+        emit(AirtimeAwaitingCryptoFunding(
+          transaction: transaction,
+          asset: asset,
+        ));
+        return;
+      }
+
       if (transaction.status == AirtimeTransactionStatus.failed) {
         emit(AirtimePaymentFailed(
           message: transaction.failureReason ?? 'Payment failed',
@@ -728,3 +800,14 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     return msg;
   }
 }
+
+/// THE SERVER'S OWN SENTENCE, when the server actually decided.
+///
+/// A refusal — the feature gate, an unsupported coin, an amount below the
+/// conversion floor, a holding too small — means NOTHING was converted and
+/// nothing charged, and the server already says why in words written for a
+/// customer. Replacing that with "check your history" sent people to look for
+/// a record that was never written, about money that never moved. Only a LOST
+/// REPLY is genuinely ambiguous, and that is the one case the old sentence is
+/// right for. See CryptoFundingFailure.
+String _fundingMessage(Object error) => CryptoFundingFailure.from(error).message;

@@ -16,6 +16,7 @@ import '../cubit/internet_auto_recharge_state.dart';
 import '../cubit/internet_beneficiary_cubit.dart';
 import '../cubit/internet_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Saved ISP accounts. Mirrors `DataBeneficiariesScreen` 1:1 —
 /// list + add-by-repeat-purchase + tap-for-options + delete with
@@ -285,7 +286,7 @@ class _InternetSavedBeneficiariesScreenState
   /// or null if the user dismisses.
   Future<InternetAutoRecharge?> _pickRolloverToEdit(
       List<InternetAutoRecharge> autos) {
-    return showModalBottomSheet<InternetAutoRecharge>(
+    return showAppBottomSheet<InternetAutoRecharge>(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
@@ -371,7 +372,7 @@ class _InternetSavedBeneficiariesScreenState
     // list so they can edit/pause/delete; with none, straight to create.
     final existingAutos = _autosFor(b);
     final hasRollover = existingAutos.isNotEmpty;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

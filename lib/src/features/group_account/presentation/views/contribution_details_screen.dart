@@ -44,6 +44,7 @@ import 'package:lazervault/src/features/group_account/domain/rotation_extension.
 import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
 import 'package:lazervault/src/features/group_account/domain/contribution_round_state.dart';
 import 'package:lazervault/src/features/group_account/presentation/widgets/contribution_round_banner.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'contribution_details_sheets.dart';
 part 'contribution_details_banners.dart';
 part 'contribution_details_payment_widgets.dart';
@@ -1237,7 +1238,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       // the one row somebody opened this to find.
       ..sort((a, b) => _autoChargeRank(a).compareTo(_autoChargeRank(b)));
 
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -4159,7 +4160,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     final isAdmin = isCreator || isGroupAdmin;
     final isSelf =
         member != null && myUserId != null && member.userId == myUserId;
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -4534,7 +4535,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   void _showTranscriptDialog(
       ContributionTranscript transcript, Contribution contribution) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -4948,7 +4949,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   void _showPaymentGroupDetails(
       _UserPaymentGroup group, Contribution contribution) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -5191,7 +5192,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   void _showPaymentDetails(ContributionPayment payment) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

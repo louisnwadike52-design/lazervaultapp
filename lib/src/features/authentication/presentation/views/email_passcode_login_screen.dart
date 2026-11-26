@@ -13,6 +13,9 @@ import 'package:lazervault/src/features/authentication/utils/login_identifier.da
 import 'package:lazervault/src/features/authentication/presentation/widgets/phone_flow_scaffold.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
+import 'package:lazervault/core/utils/auth_error_copy.dart';
+import 'package:lazervault/core/utils/verification_gate_routing.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 /// "Use Email Instead" — the passwordless analog of the email+password sign-in,
 /// for phone+passcode (passwordless) accounts logging in on a device that has no
@@ -112,8 +115,31 @@ class _EmailPasscodeLoginScreenState extends State<EmailPasscodeLoginScreen> {
                   'We don’t recognise this email. Check it and try again.';
             }
           });
-          if (!unknownAccount) {
-            Get.snackbar('Login failed', state.message,
+          if (isVerificationGate(state.message)) {
+            // The passcode was right and one step remains — route to it
+            // rather than printing the backend's code at the customer. Same
+            // gate, same treatment, as the phone+passcode screen.
+            final copy = authErrorCopy(state.message);
+            if (!copy.suppressBanner) {
+              Get.snackbar(copy.title, copy.message,
+                  snackPosition: SnackPosition.TOP);
+            }
+            routeToVerificationGate(
+              state.message,
+              // This screen has no GetPage of its own, so there is nothing
+              // to name as a return route. loginEntry is the mode-aware
+              // entry: after verifying, a returning customer lands on the
+              // login their own account actually uses.
+              returnTo: AppRoutes.loginEntry,
+              onReturn: () {
+                if (mounted) setState(() => _entered = '');
+              },
+            );
+          } else if (!unknownAccount) {
+            // Everything unrecognised still goes through authErrorCopy, so a
+            // raw backend code can never reach a person.
+            final copy = authErrorCopy(state.message);
+            Get.snackbar(copy.title, copy.message,
                 snackPosition: SnackPosition.TOP);
           }
         }

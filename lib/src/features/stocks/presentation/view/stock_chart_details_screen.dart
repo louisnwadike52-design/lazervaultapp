@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import '../widgets/price_overlay_indicators_painter.dart';
 import '../widgets/bottom_indicators_painter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'stock_chart_details_screen_widgets.dart';
 
 class StockChartDetailsScreen extends StatefulWidget {
@@ -589,7 +590,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   }
 
   void _showTimeframeBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2078,7 +2079,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
   // Add placeholder bottom sheet methods
   void _showMoreOptions() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2470,7 +2471,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   // Theme selector dialog
   void _showThemeSelector() {
     Navigator.pop(context);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
@@ -2554,7 +2555,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   // Speed selector dialog
   void _showSpeedSelector() {
     Navigator.pop(context);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
@@ -2842,7 +2843,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
   void _showKeyboardShortcuts() {
     Navigator.pop(context);
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -2953,7 +2954,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   }
 
   void _showStockInfoBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -3196,7 +3197,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   }
 
   void _showChartTypeBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
@@ -3242,7 +3243,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   }
 
   void _showIndicatorsBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -3700,7 +3701,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   }
 
   void _showDrawingsBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -4007,7 +4008,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   }
 
   void _showAnalysisBottomSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

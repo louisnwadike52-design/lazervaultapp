@@ -27,6 +27,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class InsuranceTermsBottomSheet extends StatefulWidget {
   const InsuranceTermsBottomSheet({
@@ -54,7 +55,7 @@ class InsuranceTermsBottomSheet extends StatefulWidget {
     String subtitle = 'Please review before continuing',
     IconData icon = Icons.gavel_rounded,
   }) {
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

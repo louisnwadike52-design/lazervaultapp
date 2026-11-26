@@ -13,6 +13,7 @@ import '../cubit/data_auto_recharge_state.dart';
 import '../cubit/data_beneficiary_cubit.dart';
 import '../cubit/data_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// International data contacts. Filters data_beneficiaries where
 /// country_code != 'NG'. Mirrors DataBeneficiariesScreen but scoped to
@@ -226,7 +227,7 @@ class _IntlDataBeneficiariesScreenState
   }
 
   void _showOptions(DataBeneficiary b) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(

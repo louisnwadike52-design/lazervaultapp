@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import 'package:lazervault/src/features/plan_my_day/domain/entities/task.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Edit-task bottom sheet — title, description, priority and due date.
 ///
@@ -25,7 +26,7 @@ class TaskEditSheet extends StatefulWidget {
     required Task task,
     required PlanMyDayCubit cubit,
   }) {
-    return showModalBottomSheet(
+    return showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'add_recipient_sheet_widgets.dart';
 
 class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
@@ -582,7 +583,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
   }
 
   Future<void> _pickBank(List<Map<String, String>> banks) async {
-    final picked = await showModalBottomSheet<Map<String, String>>(
+    final picked = await showAppBottomSheet<Map<String, String>>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

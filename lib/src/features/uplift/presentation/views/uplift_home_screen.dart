@@ -1,3 +1,5 @@
+import 'package:lazervault/core/shared_widgets/load_more_footer.dart'
+    show ScrollEndLoader;
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_guide_card.dart';
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_guide_sheet.dart';
 import 'package:lazervault/src/features/uplift/data/services/uplift_guide_preference.dart';
@@ -366,114 +368,125 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
     // the bottom of the landing (crypto pattern; replaces the app-bar icon).
     return RefreshIndicator(
       onRefresh: _cubit.refreshDiscover,
-      child: ListView(
-        key: const PageStorageKey('uplift_discover'),
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-        children: [
-          if (state.discover.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 28),
-              child: Center(
-                  child: Text('No open funds match your search.',
-                      style: TextStyle(color: kUpTextSecondary))),
-            )
-          else
-            for (final f in state.discover)
-              UpliftFundCard(
-                fund: f,
-                onTap: () async {
-                  await Get.to(() => UpliftDetailScreen(fundId: f.id));
-                  // Refresh without the loading flag — `loadAll()` blanked the
-                  // whole list behind a spinner every time the user came back
-                  // from a fund they had merely looked at.
-                  await _refreshAfterFundChange();
-                },
-                // Discover lists every OPEN fund, including your own. Offering
-                // "Apply" there would walk the user into a server-side refusal
-                // ("you cannot apply to your own fund"), so own funds get a
-                // label instead of an action.
-                trailing: f.isFunder
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Text('Your fund',
-                            style: TextStyle(
-                                color: kUpTextSecondary,
-                                fontWeight: FontWeight.w600)),
-                      )
-                    // ListUpliftFunds sent no my_application_* at all until
-                    // now, so this card offered "Apply" to a business that
-                    // had already applied — they filled the entire form and
-                    // were refused at the end of it. With the field
-                    // populated the card states where they stand instead.
-                    : upHasLiveApplication(f)
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Text(upAppStatusLabel(f.myApplicationStatus),
-                                style: const TextStyle(
-                                    color: kUpTextSecondary,
-                                    fontWeight: FontWeight.w600)),
-                          )
-                        // THE WINDOW HAS SHUT — say so instead of offering a
-                        // form that cannot be submitted.
-                        //
-                        // ApplyToUpliftFund refuses once the application
-                        // deadline passes, and this card went on offering
-                        // Apply anyway: tapping it opened the pitch form and
-                        // the refusal arrived at the end, after the business
-                        // had written the whole thing. The detail screen has
-                        // withdrawn the CTA for this reason since it was
-                        // built; the card simply never asked.
-                        //
-                        // A fund usually leaves `open` within a minute of its
-                        // deadline (the worker flips it to `expired`), but
-                        // "usually" is not a guard — this is the window
-                        // between the deadline and that tick, and it is
-                        // exactly when somebody racing the deadline taps.
-                        : upApplicationsClosed(f)
-                            ? const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 10),
-                                child: Text('Applications closed',
-                                    style: TextStyle(
-                                        color: kUpTextSecondary,
-                                        fontWeight: FontWeight.w600)),
-                              )
-                            : TextButton(
-                                onPressed: () async {
-                                  await Get.to(
-                                      () => ApplyUpliftScreen(fund: f));
-                                  await _refreshAfterFundChange();
-                                },
-                                child: Text(
-                                    f.myApplicationId.isNotEmpty
-                                        ? 'Apply again'
-                                        : 'Apply',
-                                    style: const TextStyle(
-                                        color: kUpPrimarySoft,
-                                        fontWeight: FontWeight.w600)),
-                              ),
+      // SCROLL TO THE BOTTOM AND THE NEXT PAGE ARRIVES. The "Load more"
+      // button below stays: at the very end of a list no further scroll
+      // notification is generated, so a page that failed there would
+      // otherwise be unreachable.
+      child: ScrollEndLoader(
+        hasMore: state.discoverHasMore,
+        loading: state.discoverLoadingMore,
+        onReachEnd: _cubit.loadMoreDiscover,
+        child: ListView(
+          key: const PageStorageKey('uplift_discover'),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          children: [
+            if (state.discover.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 28),
+                child: Center(
+                    child: Text('No open funds match your search.',
+                        style: TextStyle(color: kUpTextSecondary))),
+              )
+            else
+              for (final f in state.discover)
+                UpliftFundCard(
+                  fund: f,
+                  onTap: () async {
+                    await Get.to(() => UpliftDetailScreen(fundId: f.id));
+                    // Refresh without the loading flag — `loadAll()` blanked the
+                    // whole list behind a spinner every time the user came back
+                    // from a fund they had merely looked at.
+                    await _refreshAfterFundChange();
+                  },
+                  // Discover lists every OPEN fund, including your own. Offering
+                  // "Apply" there would walk the user into a server-side refusal
+                  // ("you cannot apply to your own fund"), so own funds get a
+                  // label instead of an action.
+                  trailing: f.isFunder
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('Your fund',
+                              style: TextStyle(
+                                  color: kUpTextSecondary,
+                                  fontWeight: FontWeight.w600)),
+                        )
+                      // ListUpliftFunds sent no my_application_* at all until
+                      // now, so this card offered "Apply" to a business that
+                      // had already applied — they filled the entire form and
+                      // were refused at the end of it. With the field
+                      // populated the card states where they stand instead.
+                      : upHasLiveApplication(f)
+                          ? Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Text(
+                                  upAppStatusLabel(f.myApplicationStatus),
+                                  style: const TextStyle(
+                                      color: kUpTextSecondary,
+                                      fontWeight: FontWeight.w600)),
+                            )
+                          // THE WINDOW HAS SHUT — say so instead of offering a
+                          // form that cannot be submitted.
+                          //
+                          // ApplyToUpliftFund refuses once the application
+                          // deadline passes, and this card went on offering
+                          // Apply anyway: tapping it opened the pitch form and
+                          // the refusal arrived at the end, after the business
+                          // had written the whole thing. The detail screen has
+                          // withdrawn the CTA for this reason since it was
+                          // built; the card simply never asked.
+                          //
+                          // A fund usually leaves `open` within a minute of its
+                          // deadline (the worker flips it to `expired`), but
+                          // "usually" is not a guard — this is the window
+                          // between the deadline and that tick, and it is
+                          // exactly when somebody racing the deadline taps.
+                          : upApplicationsClosed(f)
+                              ? const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 10),
+                                  child: Text('Applications closed',
+                                      style: TextStyle(
+                                          color: kUpTextSecondary,
+                                          fontWeight: FontWeight.w600)),
+                                )
+                              : TextButton(
+                                  onPressed: () async {
+                                    await Get.to(
+                                        () => ApplyUpliftScreen(fund: f));
+                                    await _refreshAfterFundChange();
+                                  },
+                                  child: Text(
+                                      f.myApplicationId.isNotEmpty
+                                          ? 'Apply again'
+                                          : 'Apply',
+                                      style: const TextStyle(
+                                          color: kUpPrimarySoft,
+                                          fontWeight: FontWeight.w600)),
+                                ),
+                ),
+            if (state.discoverHasMore)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Center(
+                  child: state.discoverLoadingMore
+                      ? const CircularProgressIndicator(color: kUpPrimary)
+                      : OutlinedButton(
+                          onPressed: _cubit.loadMoreDiscover,
+                          style: OutlinedButton.styleFrom(
+                              foregroundColor: kUpPrimary,
+                              side: const BorderSide(color: kUpDivider)),
+                          child: const Text('Load more'),
+                        ),
+                ),
               ),
-          if (state.discoverHasMore)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Center(
-                child: state.discoverLoadingMore
-                    ? const CircularProgressIndicator(color: kUpPrimary)
-                    : OutlinedButton(
-                        onPressed: _cubit.loadMoreDiscover,
-                        style: OutlinedButton.styleFrom(
-                            foregroundColor: kUpPrimary,
-                            side: const BorderSide(color: kUpDivider)),
-                        child: const Text('Load more'),
-                      ),
-              ),
+            const SizedBox(height: 8),
+            UpRecentActivitySection(
+              receipts: state.recentReceipts,
+              onViewAll: () => Get.to(() => const UpliftReceiptsListScreen()),
+              onTap: (r) => Get.to(() => UpliftReceiptScreen(receipt: r)),
             ),
-          const SizedBox(height: 8),
-          UpRecentActivitySection(
-            receipts: state.recentReceipts,
-            onViewAll: () => Get.to(() => const UpliftReceiptsListScreen()),
-            onTap: (r) => Get.to(() => UpliftReceiptScreen(receipt: r)),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

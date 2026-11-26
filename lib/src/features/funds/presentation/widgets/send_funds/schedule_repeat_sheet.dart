@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_modal.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// The user's timing choice for a transfer: send now, a one-off future date, or
 /// a recurring rule. Schedule and recurring are mutually exclusive.
@@ -37,7 +38,7 @@ class ScheduleRepeatSheet extends StatefulWidget {
     DateTime? scheduledAt,
     RecurringTransferConfig? recurring,
   }) {
-    return showModalBottomSheet<ScheduleRepeatResult>(
+    return showAppBottomSheet<ScheduleRepeatResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -94,7 +95,7 @@ class _ScheduleRepeatSheetState extends State<ScheduleRepeatSheet> {
   }
 
   Future<void> _configureRecurring() async {
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

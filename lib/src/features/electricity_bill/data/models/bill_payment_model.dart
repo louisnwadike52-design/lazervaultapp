@@ -30,6 +30,7 @@ class BillPaymentModel extends BillPaymentEntity {
     super.completedAt,
     super.failedAt,
     super.refundSource,
+    super.metadata,
   });
 
   factory BillPaymentModel.fromProto(pb.BillPayment proto) {
@@ -66,6 +67,9 @@ class BillPaymentModel extends BillPaymentEntity {
       refundSource: proto.hasRefundSource() && proto.refundSource.isNotEmpty
           ? proto.refundSource
           : null,
+      // Verbatim, including empty: an absent blob is "nothing recorded",
+      // which the receipt renders as no funding rows rather than as a gap.
+      metadata: proto.hasMetadata() ? proto.metadata : null,
     );
   }
 

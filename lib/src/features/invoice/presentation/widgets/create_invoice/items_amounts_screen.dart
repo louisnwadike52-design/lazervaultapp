@@ -7,6 +7,7 @@ import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart
 import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../domain/entities/invoice_entity.dart';
 import '../../cubit/create_invoice_cubit.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Screen 4: Items & Amounts
 ///
@@ -669,7 +670,7 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
     String? quantityError;
     String? priceError;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1A1A1A),
@@ -867,7 +868,7 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
     String? quantityError;
     String? priceError;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1A1A1A),

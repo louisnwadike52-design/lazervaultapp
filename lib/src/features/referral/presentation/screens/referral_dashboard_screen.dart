@@ -1,3 +1,4 @@
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,6 +15,7 @@ import '../widgets/referral_bonus_card.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/features/referral/domain/referral_programme_copy.dart';
 
 class ReferralDashboardScreen extends StatefulWidget {
   const ReferralDashboardScreen({super.key});
@@ -31,11 +33,47 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
   // when exactly one entry matches it.
   String? _myDisplayName;
 
+  /// Whether the leaderboard was enabled the last time we looked.
+  ///
+  /// Seeded in [initState] so the first revision bump after launch — which is
+  /// the ordinary one, when the startup snapshot lands — is not mistaken for
+  /// an operator flipping the switch.
+  bool _leaderboardWasEnabled = false;
+
   @override
   void initState() {
     super.initState();
+    _leaderboardWasEnabled = FeatureFlags.referralLeaderboardEnabled;
+    // TURNING THE FLAG ON MID-SESSION MUST ALSO FETCH THE DATA.
+    //
+    // The gated section repaints on a revision bump, but while the flag was
+    // off the cubit never requested the leaderboard — deliberately, so a
+    // hidden surface costs no round trip. Repainting alone would therefore
+    // reveal an empty section and leave it empty until the user navigated
+    // away and back, which reads as a broken feature rather than a flag that
+    // has just been switched on.
+    //
+    // Only an OFF→ON transition reloads. A bump that leaves the flag
+    // unchanged, or turns it off, triggers nothing: off needs no data, and
+    // reloading on every snapshot would put this screen in a refresh loop
+    // driven by an unrelated poll.
+    FeatureFlags.revision.addListener(_onFlagsChanged);
     context.read<ReferralCubit>().loadDashboard();
     _loadMyDisplayName();
+  }
+
+  void _onFlagsChanged() {
+    final nowEnabled = FeatureFlags.referralLeaderboardEnabled;
+    final justTurnedOn = nowEnabled && !_leaderboardWasEnabled;
+    _leaderboardWasEnabled = nowEnabled;
+    if (!justTurnedOn || !mounted) return;
+    context.read<ReferralCubit>().loadDashboard();
+  }
+
+  @override
+  void dispose() {
+    FeatureFlags.revision.removeListener(_onFlagsChanged);
+    super.dispose();
   }
 
   Future<void> _loadMyDisplayName() async {
@@ -200,6 +238,20 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
   Widget _buildLoadedState(ReferralLoaded state) {
     final cubit = context.read<ReferralCubit>();
 
+    // ONE RESOLUTION OF THE PROGRAMME'S STATE, FOR THE WHOLE PAGE.
+    //
+    // Four cards used to make the same promise independently, in compiled
+    // text, and none of them consulted whether the reward was still being
+    // paid. Resolving it once here means the banner, the stats footnote, the
+    // empty prompt and the KYC summary cannot say different things.
+    final copy = ReferralProgrammeCopy.resolve(
+      programmeActive: state.bonusBalance.programmeActive,
+      programmeNotice: state.bonusBalance.programmeNotice,
+      referrerRewardMinor: state.rewardConfig?.referrerReward ?? 0,
+      refereeRewardMinor: state.rewardConfig?.refereeReward ?? 0,
+      rewardConfigLoaded: state.rewardConfig != null,
+    );
+
     return RefreshIndicator(
       onRefresh: _onRefresh,
       color: const Color(0xFF3B82F6),
@@ -210,6 +262,12 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 12.h),
+
+            // THE STATE OF THE PROGRAMME, BEFORE ANYTHING THAT INVITES
+            // SHARING. A referrer who is about to send their code needs to
+            // know the reward is paused BEFORE they send it, not in a
+            // footnote below the stats.
+            if (copy.paused) _buildProgrammeNotice(copy),
 
             // Referral Code Card
             ReferralCodeCard(
@@ -251,21 +309,93 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
               totalRewardsEarned: state.stats.totalRewardsEarned,
               pendingRewards: state.stats.pendingRewards,
               currency: state.stats.currency,
+              copy: copy,
             ),
 
-            // Leaderboard
-            if (state.leaderboard.isNotEmpty)
-              LeaderboardList(
-                entries: state.leaderboard,
-                currentUserName: _myDisplayName,
-              ),
+            // LEADERBOARD — ADMIN-GATED, HIDDEN BY DEFAULT.
+            //
+            // It publishes other customers' names and referral counts to
+            // every user, so it stays off until an operator turns it on.
+            //
+            // Wrapped in a ValueListenableBuilder on FeatureFlags.revision so
+            // a flip applied by the background snapshot poll repaints THIS
+            // session. Reading the flag directly would leave the old value on
+            // screen until some unrelated rebuild happened to occur, which
+            // for a disclosure switch means "takes effect whenever the user
+            // next restarts the app".
+            //
+            // The flag read itself is synchronous, so nothing here waits on
+            // the network — and when it is off the cubit never fetched the
+            // list at all, so there is no empty section and no wasted call.
+            ValueListenableBuilder<int>(
+              valueListenable: FeatureFlags.revision,
+              builder: (context, _, __) {
+                if (!FeatureFlags.referralLeaderboardEnabled) {
+                  // Nothing, not a placeholder: a hidden surface should leave
+                  // no gap in the column for the user to wonder about.
+                  return const SizedBox.shrink();
+                }
+                if (state.leaderboard.isEmpty) {
+                  // On but empty — nobody has referred anyone yet, or the
+                  // fetch failed and was swallowed as non-fatal. Either way
+                  // the rest of the dashboard is intact and an empty ranking
+                  // is not worth a slot.
+                  return const SizedBox.shrink();
+                }
+                return LeaderboardList(
+                  entries: state.leaderboard,
+                  currentUserName: _myDisplayName,
+                );
+              },
+            ),
 
             // Recent Referrals with "View All" header
-            _buildRecentReferralsSection(state),
+            _buildRecentReferralsSection(state, copy),
 
             SizedBox(height: 24.h),
           ],
         ),
+      ),
+    );
+  }
+
+  /// THE PROGRAMME IS NOT PAYING — SAID PLAINLY, AT THE TOP.
+  ///
+  /// Amber rather than red: nothing has failed and nothing has been taken
+  /// away. Referrals are still recorded in the paused state, and an accrued
+  /// balance stays the user's in both — so this is a change of terms, not an
+  /// error, and it must not read as one.
+  ///
+  /// Every word comes from [ReferralProgrammeCopy], which reads the operator's
+  /// own notice before any compiled fallback.
+  Widget _buildProgrammeNotice(ReferralProgrammeCopy copy) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14.r),
+        border:
+            Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded,
+              size: 17.sp, color: const Color(0xFFF59E0B)),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              copy.notice,
+              style: TextStyle(
+                fontSize: 12.sp,
+                height: 1.4,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFFFCD34D),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -327,7 +457,8 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
     );
   }
 
-  Widget _buildRecentReferralsSection(ReferralLoaded state) {
+  Widget _buildRecentReferralsSection(
+      ReferralLoaded state, ReferralProgrammeCopy copy) {
     return Column(
       children: [
         // Header with "View All" button
@@ -361,6 +492,7 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
         RecentReferralsList(
           referrals: state.recentReferrals,
           currency: state.stats.currency,
+          copy: copy,
         ),
       ],
     );

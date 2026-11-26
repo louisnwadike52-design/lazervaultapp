@@ -8,6 +8,7 @@ import '../../domain/entities/user_tag_entity.dart';
 import '../../services/tag_pay_pdf_service.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class TagCreationReceiptScreen extends StatefulWidget {
   const TagCreationReceiptScreen({super.key});
@@ -104,7 +105,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.tagPay),
+          onPressed: () => offAllKeepingHome(AppRoutes.tagPay),
           icon: Icon(
             Icons.arrow_back,
             color: Colors.white,
@@ -477,7 +478,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                   onPressed: () {
                     // Land on Created — the tag they just raised is an OUTGOING
                     // one, so Received would open on a list that doesn't contain it.
-                    Get.offAllNamed(AppRoutes.tagPay,
+                    offAllKeepingHome(AppRoutes.tagPay,
                         arguments: {'tab': 'created'});
                   },
                   style: ElevatedButton.styleFrom(

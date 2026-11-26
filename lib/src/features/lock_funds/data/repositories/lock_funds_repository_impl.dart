@@ -1,4 +1,5 @@
 import 'package:lazervault/src/core/network/grpc_client.dart';
+import 'package:lazervault/core/network/retry_policy.dart';
 import 'package:lazervault/src/generated/lock_funds.pbgrpc.dart' as pb;
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/lock_fund_entity.dart';
@@ -29,9 +30,17 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         request.status = LockFundModel.convertLockStatusToProto(status);
       }
 
-      final response = await _grpcClient.lockFundsClient.getLockFunds(
-        request,
-        options: await _grpcClient.callOptions,
+      // RETRIED ONCE ON A TRANSPORT FAILURE. The channel sits behind
+      // Cloudflare, which closes idle HTTP/2 connections with GOAWAY; the
+      // in-flight call dies and ResilientClientChannel only swaps the channel
+      // for the NEXT one. Opening PiggyVault was therefore showing "Something
+      // went wrong" while the server logged this same RPC completing in 80ms.
+      // Safe to replay: it reads.
+      final response = await RetryPolicy.transientRead.execute(
+        () async => _grpcClient.lockFundsClient.getLockFunds(
+          request,
+          options: await _grpcClient.callOptions,
+        ),
       );
 
       return response.lockFunds
@@ -279,9 +288,15 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         ..page = 1
         ..perPage = 100;
 
-      final response = await _grpcClient.lockFundsClient.getLockFunds(
-        request,
-        options: await _grpcClient.callOptions,
+      // Same retry as the list above: this is the SECOND call the PiggyVault
+      // screen makes on entry, so a torn-down connection fails it just as
+      // readily — and failing it still paints the error over a screen whose
+      // list had already loaded.
+      final response = await RetryPolicy.transientRead.execute(
+        () async => _grpcClient.lockFundsClient.getLockFunds(
+          request,
+          options: await _grpcClient.callOptions,
+        ),
       );
 
       return LockFundsStatistics(

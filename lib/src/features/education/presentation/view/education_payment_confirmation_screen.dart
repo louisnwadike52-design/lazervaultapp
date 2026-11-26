@@ -14,6 +14,7 @@ import '../../domain/entities/education_provider_entity.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'education_payment_confirmation_screen_widgets.dart';
 
 class EducationPaymentConfirmationScreen extends StatefulWidget {
@@ -557,7 +558,7 @@ class _EducationPaymentConfirmationScreenState
     final ngn = all.where((a) => a.currency.toUpperCase() == 'NGN').toList();
     final list = ngn.isNotEmpty ? ngn : all;
 
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

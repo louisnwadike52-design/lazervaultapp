@@ -7,6 +7,16 @@ extension AppServiceNameMapper on AppServiceName {
     switch (this) {
       case AppServiceName.escrow:
         return TransactionServiceType.unknown;
+      // A vendor SCAN is not a transaction on anyone's ledger — nothing moves
+      // until the campaign closes and the payout runs, and that lands as an
+      // ordinary credit with its own type. Filtering history by "vendor
+      // campaigns" would therefore return nothing, so this reports unknown
+      // rather than inventing a type, exactly as escrow does above. The
+      // campaign screens are the history surface for scans.
+      case AppServiceName.vendorCampaigns:
+        return TransactionServiceType.unknown;
+      case AppServiceName.ticketing:
+        return TransactionServiceType.eventTicket;
       case AppServiceName.airtime:
         return TransactionServiceType.airtime;
       case AppServiceName.data:
@@ -38,6 +48,12 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.lazerfunds;
       case AppServiceName.qrPay:
         return TransactionServiceType.qrPayment;
+      // Open banking produces no transactions of its own — linking a bank is not
+      // a movement of money — so it maps to nothing. The return type is nullable
+      // for exactly this; inventing a transaction type would file linked-bank
+      // rows under a receipt category they do not belong in.
+      case AppServiceName.financialConnections:
+        return null;
       case AppServiceName.sendFunds:
       case AppServiceName.batchTransfer:
         return TransactionServiceType.transfer;

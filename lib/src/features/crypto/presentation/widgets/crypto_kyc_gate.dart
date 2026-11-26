@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_upgrade_modal.dart';
 import 'package:lazervault/core/utils/kyc_completion.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Proactive KYC gate for crypto money flows. Returns true when the user may
 /// proceed, or shows the identity-verification upgrade modal and returns false.
@@ -55,7 +56,7 @@ Future<bool> ensureCryptoTradeAllowed(
       return true;
     }
     if (!context.mounted) return false;
-    await showModalBottomSheet(
+    await showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

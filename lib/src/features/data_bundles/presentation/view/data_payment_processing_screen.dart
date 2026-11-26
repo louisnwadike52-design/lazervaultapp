@@ -11,6 +11,7 @@ import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/bills/presentation/widgets/bill_failure_dialog.dart';
 import 'package:lazervault/core/utils/route_args.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'data_payment_processing_screen_widgets.dart';
 
 class DataPaymentProcessingScreen extends StatefulWidget {
@@ -239,7 +240,7 @@ class _DataPaymentProcessingScreenState
                   serviceLabel: 'Data purchase',
                   onRetry: _retryForbidden ? null : () => Get.back(),
                   onViewHistory: () =>
-                      Get.offAllNamed(AppRoutes.dataBundlesHistory),
+                      offAllKeepingHome(AppRoutes.dataBundlesHistory),
                 );
               }
 
@@ -531,7 +532,7 @@ class _DataPaymentProcessingScreenState
             ],
             Expanded(
               child: ElevatedButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.dataBundlesHome),
+                onPressed: () => offAllKeepingHome(AppRoutes.dataBundlesHome),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B82F6),
                   foregroundColor: Colors.white,

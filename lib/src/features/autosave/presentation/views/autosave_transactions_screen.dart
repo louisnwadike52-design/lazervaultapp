@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_e
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'autosave_transactions_screen_widgets.dart';
 
 /// Lists every autosave transaction the user has executed across all
@@ -453,7 +454,7 @@ class _AutoSaveTransactionsScreenState
     if (_pickerOpen) return const _PickResult.cancelled();
     _pickerOpen = true;
     try {
-      final picked = await showModalBottomSheet<_PickResult<T>>(
+      final picked = await showAppBottomSheet<_PickResult<T>>(
         context: context,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
@@ -536,7 +537,7 @@ class _AutoSaveTransactionsScreenState
 
   void _showDetailsSheet(
       AutoSaveTransactionEntity tx, AutoSaveRuleEntity? rule) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

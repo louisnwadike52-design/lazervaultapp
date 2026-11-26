@@ -145,7 +145,7 @@ class _RmbQrScanSheet extends StatefulWidget {
   const _RmbQrScanSheet({required this.rail});
 
   static Future<String?> show(BuildContext context, {required RmbRail rail}) {
-    return showModalBottomSheet<String>(
+    return showAppBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

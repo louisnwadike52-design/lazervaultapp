@@ -22,12 +22,40 @@ class KYCUpgradeModal extends StatelessWidget {
   /// reactive `kyc_error_handler` path).
   final String kycStatus;
 
+  /// True when VERIFYING IS NOT THE REMEDY.
+  ///
+  /// Two situations reach here, and both used to render as "verify your
+  /// identity" over a button leading to a flow that could not help:
+  ///
+  ///  * **The ledger is behind the profile.** accounts-service refused at
+  ///    Tier [currentTier] while auth-service has the customer approved at
+  ///    Tier [profileTier]. They have already done the work; the upgrade has
+  ///    not reached their account row. Sending them back to BVN re-submits a
+  ///    verification that is already approved and lifts nothing.
+  ///  * **They are at the top of the ladder.** There is no Tier 4, and Tier 3
+  ///    is Unlimited in the canonical matrix, so a cap applied to a Tier-3
+  ///    holder is a limit somebody set — not a regulatory ceiling identity
+  ///    verification removes.
+  ///
+  /// The honest copy says the transfer was refused, says nothing was sent, and
+  /// offers the one route that can actually fix it.
+  final bool limitsOutOfSync;
+
+  /// What the auth-service profile believes the customer's tier is.
+  ///
+  /// Shown alongside [currentTier] in the out-of-sync case so the customer is
+  /// told both numbers rather than asked to accept one that contradicts the
+  /// tier badge they can see elsewhere in the app.
+  final int profileTier;
+
   const KYCUpgradeModal({
     super.key,
     required this.currentTier,
     required this.requiredTier,
     required this.operationName,
     this.kycStatus = '',
+    this.limitsOutOfSync = false,
+    this.profileTier = 0,
   });
 
   @override
@@ -39,8 +67,15 @@ class KYCUpgradeModal extends StatelessWidget {
     // currentTier is passed too: a holder can reach a verified tier while the
     // status still reads pending, and the pair resolves that consistently
     // everywhere rather than each surface guessing.
-    final inReview = resolveKycState(status: kycStatus, tier: currentTier) ==
-        KycState.inReview;
+    final inReview = !limitsOutOfSync &&
+        resolveKycState(status: kycStatus, tier: currentTier) ==
+            KycState.inReview;
+
+    // Out-of-sync takes the whole sheet: a different icon, different copy and
+    // a different route. It is checked before `inReview` above for the same
+    // reason — a customer whose limits are stale must not be told their
+    // documents are still being looked at.
+    if (limitsOutOfSync) return _buildOutOfSync(context);
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
@@ -184,6 +219,125 @@ class KYCUpgradeModal extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  /// The sheet for "verifying cannot fix this".
+  ///
+  /// Deliberately carries no tier comparison: the two columns exist to show
+  /// what an upgrade would buy, and there is no upgrade on offer here. What a
+  /// customer needs instead is (a) reassurance that their money did not move,
+  /// and (b) the one route that can resolve it.
+  Widget _buildOutOfSync(BuildContext context) {
+    final behind = profileTier > currentTier;
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: const Color(0xFF4A4A4A),
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(height: 24.h),
+          Container(
+            width: 64.w,
+            height: 64.w,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFB923C).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              behind ? Icons.sync_problem_outlined : Icons.flag_outlined,
+              color: const Color(0xFFFB923C),
+              size: 32.w,
+            ),
+          ),
+          SizedBox(height: 20.h),
+          Text(
+            behind ? 'Your limits are out of date' : 'Limit reached',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            behind
+                ? 'Your verification is approved at Tier $profileTier, but this '
+                    'account is still on Tier $currentTier limits — which is why '
+                    "we couldn't $operationName. Nothing was sent and nothing "
+                    'was charged. Support can refresh your limits.'
+                : "You're already fully verified, so this was a limit set on "
+                    "your account rather than a verification step. Nothing was "
+                    'sent and nothing was charged — support can review it with '
+                    'you.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF9CA3AF),
+              height: 1.5,
+            ),
+          ),
+          SizedBox(height: 24.h),
+          SizedBox(
+            width: double.infinity,
+            height: 52.h,
+            child: ElevatedButton(
+              // POP BEFORE NAVIGATING. Pushing the support screen while this
+              // sheet is still mounted strands the sheet over it — the same
+              // ordering the Verify button below uses.
+              onPressed: () async {
+                Get.back();
+                await Future.delayed(const Duration(milliseconds: 150));
+                Get.toNamed(AppRoutes.supportTickets);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'Contact support',
+                style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          SizedBox(
+            width: double.infinity,
+            height: 48.h,
+            child: TextButton(
+              onPressed: () => Get.back(),
+              child: Text(
+                'Got it',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF9CA3AF),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

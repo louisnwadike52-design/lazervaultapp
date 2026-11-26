@@ -37,6 +37,13 @@ class GrpcErrorHandler {
         return error.message ??
             'Operation cannot be completed. Please check your account status.';
       case StatusCode.resourceExhausted:
+        // A named wait beats "a moment". The KYC provider budget locks a user
+        // out for THREE HOURS, and telling them otherwise sends them back
+        // into a refusal they cannot clear. See user_friendly_error.dart.
+        final exhausted = error.message ?? '';
+        if (RegExp(r'try again in', caseSensitive: false).hasMatch(exhausted)) {
+          return exhausted;
+        }
         return 'Too many requests. Please wait a moment and try again.';
       case StatusCode.permissionDenied:
         return error.message ??

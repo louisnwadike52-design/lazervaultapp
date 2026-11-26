@@ -41,6 +41,7 @@ import '../widgets/source_currency_picker.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../fcy_account/presentation/fcy_kyc_gate.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'exchange_home_screen_widgets.dart';
 
 class ExchangeHomeScreen extends StatefulWidget {
@@ -382,7 +383,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       disabledFor = null;
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),

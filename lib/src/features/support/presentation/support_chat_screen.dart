@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/widgets/full_screen_image_viewer.dart';
 import 'package:lazervault/src/features/support/presentation/support_sla_notice.dart';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import '../data/support_models.dart';
 import 'package:lazervault/src/features/p2p_chat/data/services/p2p_chat_media_upload_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:lazervault/src/features/support/presentation/support_message_time.dart';
 
 /// Live "Chat with support" screen. Opens (or resumes) the user's support
 /// thread and polls for staff replies. Replies from support arrive here AND by
@@ -312,7 +314,26 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
             textColor: _textSecondary,
           );
         }
-        return _bubble(_messages[i - (showNotice ? 1 : 0)]);
+        final index = i - (showNotice ? 1 : 0);
+        final m = _messages[index];
+        // The day divider belongs ABOVE the first message of each day, so it
+        // is emitted with that message rather than as its own list item —
+        // keeping itemCount equal to the message count and the SLA notice
+        // offset above still correct.
+        if (!SupportMessageTime.needsDivider(_messages, index)) {
+          return _bubble(m);
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SupportDayDivider(
+              date: m.createdAt!,
+              background: _card,
+              textColor: _textSecondary,
+            ),
+            _bubble(m),
+          ],
+        );
       },
     );
   }
@@ -371,42 +392,52 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
               Padding(
                 padding: EdgeInsets.only(bottom: m.body.isEmpty ? 0 : 8.h),
                 child: GestureDetector(
-                  onTap: () => _openImage(m.mediaUrl),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10.r),
-                    child: Image.network(
-                      m.mediaUrl,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, progress) {
-                        if (progress == null) return child;
-                        return Container(
-                          height: 140.h,
+                  onTap: () => _openImage(
+                    m.mediaUrl,
+                    heroTag: 'support-media-${m.id}',
+                    caption: m.senderName.isNotEmpty
+                        ? m.senderName
+                        : (mine ? 'You' : 'Support'),
+                  ),
+                  child: Hero(
+                    tag: 'support-media-${m.id}',
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.r),
+                      child: Image.network(
+                        m.mediaUrl,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return Container(
+                            height: 140.h,
+                            width: 0.55.sw,
+                            color: Colors.black26,
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white70),
+                            ),
+                          );
+                        },
+                        // A dead URL must not leave a silent blank bubble: say
+                        // an image was sent and could not be loaded, so the
+                        // conversation still makes sense.
+                        errorBuilder: (_, __, ___) => Container(
+                          height: 90.h,
                           width: 0.55.sw,
                           color: Colors.black26,
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white70),
-                          ),
-                        );
-                      },
-                      // A dead URL must not leave a silent blank bubble: say
-                      // an image was sent and could not be loaded, so the
-                      // conversation still makes sense.
-                      errorBuilder: (_, __, ___) => Container(
-                        height: 90.h,
-                        width: 0.55.sw,
-                        color: Colors.black26,
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.broken_image_outlined,
-                                  color: Colors.white54, size: 20.sp),
-                              SizedBox(height: 4.h),
-                              Text('Image unavailable',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10.sp)),
-                            ],
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.broken_image_outlined,
+                                    color: Colors.white54, size: 20.sp),
+                                SizedBox(height: 4.h),
+                                Text('Image unavailable',
+                                    style: TextStyle(
+                                        color: Colors.white54,
+                                        fontSize: 10.sp)),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -426,6 +457,41 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                         color: mine ? Colors.white70 : _textSecondary,
                         fontSize: 9.sp)),
               ),
+            // SUPPORT CHANGED THIS REPLY AFTER SENDING IT.
+            //
+            // Agents can now correct a wrong figure in place rather than
+            // sending a second message that contradicts the first. Better to
+            // read — but someone who already read the original must be able
+            // to see that this is no longer the same text. A silent
+            // substitution costs more trust than the mistake did.
+            if (m.wasEdited)
+              Padding(
+                padding: EdgeInsets.only(top: 3.h),
+                child: Text('edited',
+                    style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: mine ? Colors.white70 : _textSecondary,
+                        fontSize: 9.sp)),
+              ),
+            // WHEN IT WAS SENT. A ticket gets quoted back in disputes, and a
+            // thread with no times cannot show whether a reply took two
+            // minutes or two days. Omitted rather than faked when the server
+            // sent no timestamp.
+            if (m.createdAt != null)
+              Padding(
+                padding: EdgeInsets.only(top: 4.h),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    SupportMessageTime.clock(m.createdAt!.toLocal()),
+                    style: TextStyle(
+                        color: mine
+                            ? Colors.white.withValues(alpha: 0.7)
+                            : _textSecondary,
+                        fontSize: 9.5.sp),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -433,40 +499,25 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   }
 
   /// Full-screen viewer for an attachment, pinch-to-zoom.
-  void _openImage(String url) {
-    showDialog<void>(
-      context: context,
-      barrierColor: Colors.black87,
-      builder: (ctx) => GestureDetector(
-        onTap: () => Navigator.of(ctx).pop(),
-        child: Stack(
-          children: [
-            Center(
-              child: InteractiveViewer(
-                minScale: 1,
-                maxScale: 4,
-                child: Image.network(
-                  url,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Icon(
-                      Icons.broken_image_outlined,
-                      color: Colors.white54,
-                      size: 48.sp),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 48.h,
-              right: 20.w,
-              child: IconButton(
-                icon: Icon(Icons.close, color: Colors.white, size: 26.sp),
-                onPressed: () => Navigator.of(ctx).pop(),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  /// THE ATTACHMENT, FULL SCREEN, PUT BACK WHERE IT CAME FROM.
+  ///
+  /// This was a bare `showDialog` — no Hero, so the image appeared out of
+  /// nowhere and vanished the same way, and no gesture, so the only way out
+  /// was to find the small close control. A screenshot of an error is the
+  /// reason most tickets exist; reading one should not cost the reader their
+  /// place in the thread.
+  ///
+  /// [FullScreenImageViewer] is the one implementation the whole app shares —
+  /// Hero flight in and back out (the animated restore), drag-to-dismiss in
+  /// any direction with the ground fading as it goes, pinch-to-zoom for the
+  /// small type, and three ways out.
+  ///
+  /// The Hero tag is the MESSAGE id, not the URL: a customer who sends the
+  /// same screenshot twice would otherwise have two Heroes sharing a tag in
+  /// one tree, which throws on flight.
+  void _openImage(String url, {String? heroTag, String? caption}) {
+    FullScreenImageViewer.open(context, url,
+        heroTag: heroTag, caption: caption);
   }
 
   Widget _buildReopenNotice() {

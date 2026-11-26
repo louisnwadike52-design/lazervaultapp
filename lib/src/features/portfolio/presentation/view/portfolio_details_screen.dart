@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/portfolio/domain/entities/portfolio_enti
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class PortfolioDetailsScreen extends StatefulWidget {
   const PortfolioDetailsScreen({super.key});
@@ -582,7 +583,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
     final isProfit = asset.gainLoss >= 0;
     final glColor = isProfit ? Colors.green : Colors.red;
 
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1A1A3E),
       isScrollControlled: true,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/support/presentation/support_desk_header_button.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -21,6 +22,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/widgets/country_locale_bottom_sheet.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 import 'package:lazervault/src/features/fcy_account/presentation/fcy_activation_offer.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 // Dashboard header with notifications bottomsheet - clean white background
 class DashboardHeader extends StatefulWidget {
@@ -154,6 +156,18 @@ class _DashboardHeaderState extends State<DashboardHeader>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // THE SUPPORT DESK, FOR THE PEOPLE WHO WORK IT.
+                  //
+                  // Renders a zero-width box for everyone else — it resolves
+                  // access from the server itself, so this header never has to
+                  // know who is an agent. First in the row because a waiting
+                  // customer is the one thing an agent is looking for when
+                  // they open the app; its own badge says whether there is
+                  // one. It was reachable only from Settings → Help, three
+                  // taps from the only screen an agent keeps open, with no
+                  // indication that anybody was waiting — a responder
+                  // reported being unable to find it at all.
+                  const SupportDeskHeaderButton(),
                   _buildIconButton(Icons.notifications_outlined, context),
                   SizedBox(width: 8.w),
                   _buildIconButton(Icons.mic_rounded, context),
@@ -443,7 +457,7 @@ class _DashboardHeaderState extends State<DashboardHeader>
   }
 
   void _showNotifications(BuildContext context) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       FractionallySizedBox(
         heightFactor: 0.9,
         child: Container(
@@ -559,7 +573,7 @@ class _DashboardHeaderState extends State<DashboardHeader>
     // Only open the bottom sheet after enrollment is confirmed.
     // The sheet self-sizes via DraggableScrollableSheet (90% → full screen),
     // so no fixed FractionallySizedBox wrapper here.
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       VoiceCommandSheet(skipActivationCheck: true),
       isScrollControlled: true,
       enableDrag: false,

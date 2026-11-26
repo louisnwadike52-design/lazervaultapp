@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Navigation helper for Transaction History screens
 ///
@@ -128,7 +129,7 @@ class TransactionHistoryNavigationHelper {
   ///
   /// Use this when you want to replace the current screen instead of pushing
   static Future<void> replaceWithDashboard() async {
-    await Get.offAllNamed(AppRoutes.dashboardTransactionHistory);
+    await offAllKeepingHome(AppRoutes.dashboardTransactionHistory);
   }
 
   /// Replace current screen with Service-Specific Transaction History
@@ -137,7 +138,7 @@ class TransactionHistoryNavigationHelper {
   static Future<void> replaceWithServiceHistory(
     TransactionServiceType serviceType,
   ) async {
-    await Get.offAllNamed(
+    await offAllKeepingHome(
       AppRoutes.serviceTransactionHistory,
       arguments: serviceType,
     );

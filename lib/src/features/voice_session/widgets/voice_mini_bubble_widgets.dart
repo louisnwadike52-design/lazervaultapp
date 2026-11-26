@@ -198,7 +198,7 @@ class _VoiceDockedBarState extends State<_VoiceDockedBar> {
 
   void _reopen() {
     VoiceMiniBubbleController.instance.hide();
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       VoiceCommandSheet(
         serviceName: widget.serviceName,
         conversationId: widget.conversationId,

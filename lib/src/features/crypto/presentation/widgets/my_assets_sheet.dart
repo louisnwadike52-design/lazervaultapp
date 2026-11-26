@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/crypto_entity.dart';
 import 'asset_wallet_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 const _card = Color(0xFF1F1F1F);
 const _bg = Color(0xFF0A0A0A);
@@ -31,7 +32,7 @@ Future<void> showMyAssetsSheet(
   double bestPct = 0,
   bool has24hData = false,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

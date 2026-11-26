@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/authentication/data/models/profile_model
 import 'package:lazervault/src/features/authentication/data/models/session_model.dart';
 import 'package:lazervault/src/features/authentication/data/models/user_model.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/profile_entity.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/phone_change_request_result.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart'
     as domain;
 import 'package:lazervault/src/features/authentication/domain/entities/phone_verification_entity.dart';
@@ -225,6 +226,11 @@ class AuthRepositoryImpl implements IAuthRepository {
       } else if (response.stepUpRequired) {
         // Risk-based step-up: no session yet — route to the OTP flow.
         return Left(StepUpRequiredFailure(
+          // The alternate channel the server resolved, so the OTP screen can
+          // offer "send it to my phone instead" without guessing whether that
+          // is even possible.
+          altMethod: response.stepUpAltMethod,
+          altDestination: response.stepUpAltDestination,
           stepUpToken: response.stepUpToken,
           stepUpMethod: response.stepUpMethod,
           destination: response.stepUpDestination,
@@ -270,15 +276,30 @@ class AuthRepositoryImpl implements IAuthRepository {
   /// produce a session, so that helper's success path (which requires a user
   /// and a session) would treat every resend as a failure.
   @override
-  Future<Either<Failure, int>> resendLoginOtp({
+  Future<Either<Failure, StepUpResend>> resendLoginOtp({
     required String stepUpToken,
+    String method = '',
   }) async {
     try {
       final response = await _authServiceClient.resendLoginOtp(
-        auth_req_resp.ResendLoginOtpRequest(stepUpToken: stepUpToken),
+        auth_req_resp.ResendLoginOtpRequest(
+          stepUpToken: stepUpToken,
+          // "" means "keep the current channel", which is what the server
+          // reads from every build that predates the switch.
+          method: method,
+        ),
       );
       if (response.success) {
-        return Right(response.stepUpExpiresIn.toInt());
+        // READ BACK WHAT THE SERVER DID, not what we asked for. A switch can
+        // be refused, and the screen must name the channel the code actually
+        // went to.
+        return Right(StepUpResend(
+          expiresInSeconds: response.stepUpExpiresIn.toInt(),
+          method: response.stepUpMethod,
+          destination: response.stepUpDestination,
+          altMethod: response.stepUpAltMethod,
+          altDestination: response.stepUpAltDestination,
+        ));
       }
       return Left(StepUpVerifyFailure(
         message: response.msg.isNotEmpty
@@ -558,6 +579,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String passcode,
     required String firstName,
     required String lastName,
+    String? middleName,
     String? email,
     required String countryCode,
     String? locale,
@@ -573,6 +595,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         passcode: passcode,
         firstName: firstName,
         lastName: lastName,
+        middleName: middleName ?? '',
         email: email ?? '',
         countryCode: countryCode,
         locale: locale ?? '',
@@ -613,12 +636,14 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<Either<Failure, PhoneSignupOtpResult>> requestPasscodeReset({
     required String phone,
     required String countryCode,
+    String deliveryChannel = '',
   }) async {
     try {
       final response = await _authServiceClient.requestPasscodeReset(
         auth_req_resp.RequestPasscodeResetRequest(
           phone: phone,
           countryCode: countryCode,
+          deliveryChannel: deliveryChannel,
         ),
       );
       if (!response.success) {
@@ -631,6 +656,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       return Right(PhoneSignupOtpResult(
         expiresInSeconds: response.expiresIn.toInt(),
         resendAfterSeconds: response.resendAfterSeconds,
+        deliveryChannel: response.deliveryChannel,
+        deliveryDestinationMasked: response.deliveryDestinationMasked,
       ));
     } on GrpcError catch (e) {
       return Left(ServerFailure(
@@ -852,6 +879,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<Either<Failure, ProfileEntity>> signUp({
     required String firstName,
     required String lastName,
+    String? middleName,
     required String email,
     required String password,
     required SignupPrimaryContact primaryContact,
@@ -882,6 +910,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       final signupRequest = auth_req_resp.SignupRequest(
         firstName: firstName,
         lastName: lastName,
+        middleName: middleName ?? '',
         email: email,
         password: password,
         phone: phoneNumber ?? '',
@@ -1012,14 +1041,63 @@ class AuthRepositoryImpl implements IAuthRepository {
       if (e.code == GoogleSignInExceptionCode.canceled) {
         return Left(SignInCancelledFailure());
       }
+
+      // LOG THE CODE AND THE DESCRIPTION. THIS BRANCH USED TO LOG NOTHING.
+      //
+      // Only the generic `catch` below called AppLogger, so every *typed*
+      // Google failure — which is all of them — vanished. On 2026-11-08 Google
+      // sign-in was reported broken on Android: the spinner ran, the screen
+      // returned to passcode, and there was nothing to look at. Nothing on the
+      // server either, correctly: the SDK fails before any call leaves the
+      // device, so auth-service's log is silent by design. Without this line
+      // the only evidence was a user's description.
+      //
+      // `description` is where the platform puts the actionable part (the
+      // underlying ApiException status on Android), so it has to be logged
+      // alongside the code.
+      AppLogger.error(
+        'Google sign-in failed: ${e.code.name}',
+        error: '${e.code.name}: ${e.description ?? "no description"}',
+      );
+
       return Left(ServerFailure(
-          message: 'Google sign-in failed (${e.code.name}). Please try again.',
-          statusCode: 401));
+          message: _googleFailureMessage(e), statusCode: 401));
     } catch (e) {
       AppLogger.error('Google sign-in failed', error: e);
       return Left(ServerFailure(
           message: 'Google sign-in failed. Please try again.',
           statusCode: 500));
+    }
+  }
+
+  /// What to tell the user, by failure kind.
+  ///
+  /// "Google sign-in failed (clientConfigurationError). Please try again."
+  /// was the old text for every non-cancel code, and it is wrong twice: a
+  /// configuration fault is not fixed by trying again, and the enum name means
+  /// nothing to the person reading it. A misconfigured client needs US to fix
+  /// something, so say so plainly and point at the alternative that works
+  /// rather than inviting a retry loop.
+  String _googleFailureMessage(GoogleSignInException e) {
+    switch (e.code) {
+      case GoogleSignInExceptionCode.clientConfigurationError:
+      case GoogleSignInExceptionCode.providerConfigurationError:
+        // Retrying cannot help: the app's Google client is not accepted for
+        // this build. See the google-services.json guard in
+        // test/android/google_signin_android_client_test.dart.
+        return 'Google sign-in is unavailable in this version of the app. '
+            'Please sign in with your email or phone number instead — '
+            'your account is the same either way.';
+      case GoogleSignInExceptionCode.interrupted:
+      case GoogleSignInExceptionCode.uiUnavailable:
+        return 'Google sign-in was interrupted. Please try again.';
+      case GoogleSignInExceptionCode.userMismatch:
+        return 'That is a different Google account from the one already '
+            'signed in on this device. Sign out of Google and try again.';
+      case GoogleSignInExceptionCode.canceled:
+      case GoogleSignInExceptionCode.unknownError:
+        return 'Google sign-in could not be completed. Please try again, or '
+            'sign in with your email or phone number.';
     }
   }
 
@@ -1096,6 +1174,10 @@ class AuthRepositoryImpl implements IAuthRepository {
       }
       if (response.stepUpRequired) {
         return Left(StepUpRequiredFailure(
+          // SocialLoginResponse is a DIFFERENT message and carries no
+          // alternate-channel fields, so no switch is offered on this path.
+          // Left empty rather than guessed: an affordance that appears and
+          // then fails is worse than one that never appears.
           stepUpToken: response.stepUpToken,
           stepUpMethod: response.stepUpMethod,
           destination: response.stepUpDestination,
@@ -2091,7 +2173,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, String>> requestPhoneChange({
+  Future<Either<Failure, PhoneChangeRequestResult>> requestPhoneChange({
     required String newPhone,
     String countryCode = '',
   }) async {
@@ -2104,9 +2186,17 @@ class AuthRepositoryImpl implements IAuthRepository {
       final response = await _authServiceClient.requestPhoneChange(request,
           options: callOptions);
       if (response.success) {
-        return Right(response.msg.isNotEmpty
-            ? response.msg
-            : 'A verification code has been sent to the new number');
+        // The server's OWN windows, not ours. expires_in and
+        // resend_after_seconds have been on this response since the RPC was
+        // written and were being discarded here, which left the screen
+        // inventing a cooldown the server would not honour.
+        return Right(PhoneChangeRequestResult(
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'A verification code has been sent to the new number',
+          expiresInSeconds: response.expiresIn.toInt(),
+          resendAfterSeconds: response.resendAfterSeconds,
+        ));
       }
       return Left(ServerFailure(
         message: response.msg.isNotEmpty

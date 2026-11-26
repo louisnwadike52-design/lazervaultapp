@@ -496,6 +496,25 @@ String friendlyError(Object? error, {String? context}) {
   // That is safe but wrong: nothing is down, a partner is refusing us, and
   // saying so is both more accurate and more useful to whoever reads the
   // support ticket.
+  // --- a SPENDING LIMIT, which is a refusal and not a failure --------------
+  //
+  // BEFORE the generic paths, because the sentence the server sends is
+  // accurate but arrives inside a gRPC envelope that looksTechnical() rightly
+  // rejects, so it was being replaced with "Transfer failed. Please try
+  // again." — telling someone to retry the one thing that cannot succeed
+  // until tomorrow.
+  //
+  // Measured on 2026-11-14: a Tier-3 customer with ₦101,789 available was
+  // refused ₦10,000 and ₦99,000 while ₦1,000 went through, and every screen
+  // said "Something went wrong". The server had said exactly why.
+  //
+  // The copy names the cap AND the two ways out, because "limit exceeded" on
+  // its own leaves the customer with nowhere to go.
+  final limitMsg = spendingLimitMessage(error);
+  if (limitMsg != null) {
+    return limitMsg;
+  }
+
   if (isProviderRefusalError(error)) {
     return providerUnavailableMessage;
   }
@@ -523,6 +542,13 @@ String friendlyError(Object? error, {String? context}) {
       case StatusCode.notFound:
         return contextual();
       case StatusCode.resourceExhausted:
+        // A named wait beats "a moment" — see user_friendly_error.dart. All
+        // three mappers must agree, or which message a user sees depends on
+        // which cubit happened to catch the error.
+        final exhausted = error.message ?? '';
+        if (RegExp(r'try again in', caseSensitive: false).hasMatch(exhausted)) {
+          return exhausted;
+        }
         return 'Too many attempts. Please wait a moment and try again.';
       case StatusCode.failedPrecondition:
       case StatusCode.invalidArgument:
@@ -816,4 +842,68 @@ String userFacingErrorFrom(Object? error,
   msg = msg.trim();
   if (msg.isEmpty || looksTechnical(msg)) return fallback;
   return sanitizeUserFacingError(msg);
+}
+
+/// The customer-facing sentence for a spending-limit refusal, or null when the
+/// error is not one.
+///
+/// A limit is a REFUSAL, not a failure: nothing broke, the request was
+/// understood and declined, and "please try again" is actively wrong advice.
+/// Kept here rather than in any one cubit so every surface that moves money —
+/// send funds, batch, move money, scheduled transfers — says the same thing.
+///
+/// Reads the UNWRAPPED message so a gRPC envelope
+/// (`rpc error: code = FailedPrecondition desc = …`) does not hide it; that
+/// unwrapping is what friendlyError's own sanitizer could not do for itself,
+/// because "rpc error:" correctly marks a string as technical.
+String? spendingLimitMessage(Object? error) {
+  if (error == null) return null;
+  final m = _unwrappedMessage(error).toLowerCase();
+  if (!m.contains('limit')) return null;
+
+  // A THROTTLE IS NOT A LIMIT ON WHAT YOU MAY SPEND. "rate limit exceeded"
+  // means wait a moment; rewriting it as a spending cap would send someone to
+  // verification over a problem that resolves itself in seconds.
+  if (m.contains('rate limit')) return null;
+
+  // A FAMILY ALLOWANCE IS NOT A TIER CAP, AND ITS OWN SENTENCE IS THE USEFUL
+  // ONE. family_spend_refusal.go returns "this would exceed your daily limit
+  // of 20000.00 (already spent 18000.00)" — which contains 'daily' and
+  // 'limit', so this function was rewriting it as a KYC-tier refusal and
+  // pointing the member at Settings → Verification & Limits. Verification
+  // does not move an allowance another family member set, and the shortfall
+  // figures — the only part they can act on — were discarded to say so.
+  // showFamilySpendRefusalDialog owns this case; leave the server's words
+  // intact for it.
+  if (m.contains('per-transaction limit') ||
+      m.contains('your daily limit of') ||
+      m.contains('your monthly limit of') ||
+      m.contains('family')) {
+    return null;
+  }
+
+  // A PER-TRANSACTION CEILING HAS NO WINDOW, so it needs its own sentence.
+  // accounts-service's wording is "single transaction limit exceeded (limit:
+  // X, attempted: Y)" — no 'daily', no 'monthly', no 'tier' — and it fell
+  // through every branch below to the generic "please try again", which is
+  // advice to repeat the one thing that is certain to fail again.
+  if (m.contains('single transaction limit')) {
+    //
+    // The wording names the limit — "single-transfer limit" — because the
+    // SCREEN classifies this sentence, not the server's, and a copy that
+    // mentions no limit by name is a refusal with no sheet behind it. Pinned
+    // by the agreement test in tier_limit_refusal_test.dart.
+    return 'That is more than your single-transfer limit. '
+        'You can raise it in Settings → Verification & Limits, '
+        'or split it into smaller transfers.';
+  }
+
+  final daily = m.contains('daily');
+  final monthly = m.contains('monthly');
+  if (!daily && !monthly && !m.contains('transfer amount limit')) return null;
+
+  final window = monthly ? 'monthly' : 'daily';
+  return 'This would go over your $window transfer limit. '
+      'You can raise it in Settings → Verification & Limits, '
+      'or send a smaller amount today.';
 }

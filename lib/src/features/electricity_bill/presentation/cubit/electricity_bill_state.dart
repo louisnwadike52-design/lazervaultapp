@@ -102,6 +102,22 @@ class SmartMeterValidationFailed extends ElectricityBillState {
 // Payment States
 class PaymentInitiating extends ElectricityBillState {}
 
+/// PAY WITH CRYPTO: the payment is authorised and recorded, and the conversion
+/// that funds it is running. Neither success nor failure — see the note on
+/// CableTVAwaitingCryptoFunding.
+class ElectricityAwaitingCryptoFunding extends ElectricityBillState {
+  final BillPaymentEntity payment;
+
+  /// The coin being sold, lowercase.
+  final String asset;
+
+  ElectricityAwaitingCryptoFunding(
+      {required this.payment, required this.asset});
+
+  @override
+  List<Object?> get props => [payment, asset];
+}
+
 class PaymentInitiated extends ElectricityBillState {
   final BillPaymentEntity payment;
 

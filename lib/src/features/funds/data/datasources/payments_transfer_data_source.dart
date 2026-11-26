@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/src/features/crypto_pay/data/funding_call_options.dart';
 
 import 'package:lazervault/core/exceptions/server_exception.dart';
 import 'package:lazervault/core/network/retry_policy.dart';
@@ -49,6 +50,17 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     DateTime? scheduledAt,
     int? expenseCategory,
     String? flow,
+
+    /// PAY WITH CRYPTO: the lowercase symbol to sell, or null to pay from the
+    /// wallet. Sent as gRPC METADATA rather than a request field — the same
+    /// channel x-scheduled-at uses — so no gateway that does not know about
+    /// it has to change.
+    ///
+    /// When set, core-payments AUTHORISES the transfer (the PIN token is
+    /// validated as normal) and records it as awaiting_crypto_funding without
+    /// moving anything. The caller must then fund it; see
+    /// CryptoGrpcClient.createFundedPayment.
+    String? fundingAsset,
   }) async {
     return await RetryPolicy.critical.execute(
       () async {
@@ -82,6 +94,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
                 }),
               );
             }
+            // Pay with crypto. One shared rule — see funding_call_options.
+            mergedOptions = mergedOptions.withCryptoFunding(fundingAsset);
             // Funnel attribution for backend Prometheus metrics
             // (send_funds_attempts_total / send_funds_duration_seconds flow label).
             // Backend bounds this to long|short|unknown.
@@ -123,6 +137,12 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
           _lastSendFundsCode = e.code;
           throw ServerException(
             message: 'Failed to send funds: ${e.message ?? "Unknown error"}',
+            // The CODE travels with the exception, not just in the static
+            // above. The static is consumed by the retry predicate and then
+            // cleared, so by the time the cubit handles the failure it is
+            // gone — and the cubit is where "the server refused this" has to
+            // be told apart from "the call did not complete".
+            code: e.code,
           );
         }
       },
@@ -179,6 +199,17 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
           createdAt: _paymentTimestamp(p.createdAt),
           currency: p.currency.isNotEmpty ? p.currency : null,
           description: p.description.isNotEmpty ? p.description : null,
+          // WHICH BALANCES PAID, carried to the receipt.
+          //
+          // Read but discarded before: the server projects the funding split
+          // onto this field (and only those keys — the fund-hold id, the
+          // platform fee and the rail cost stay server-side), and nothing
+          // carried it past the data source. So a crypto-funded transfer
+          // opened from history showed no coin, no quantity and no wallet
+          // top-up — on the one surface a customer returns to.
+          metadata: _paymentMetadata(p.metadata).isEmpty
+              ? null
+              : _paymentMetadata(p.metadata),
           // Counterparty = the OTHER account. For an outgoing transfer that's
           // the destination; for an incoming one we only have the source
           // account number on the wire (no source name field).
@@ -342,6 +373,19 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
               ? p.destinationAccountNumber
               : null,
           metadata: {
+            // THE SERVER'S OWN METADATA FIRST, so the typed fields below win
+            // on a disagreement — they are the ones the handler resolved.
+            //
+            // This was not read at all, and the field it comes from had never
+            // been populated either. The effect was that a crypto-funded
+            // transfer recorded its split on the server (which coin, how much
+            // of it, what the wallet covered) and the receipt could not say
+            // any of it — the one place a customer goes to check.
+            //
+            // core-payments projects only the funding keys onto this field;
+            // the fund-hold id, platform fee and rail cost in the same stored
+            // object stay on the server.
+            ..._paymentMetadata(p.metadata),
             if (p.destinationBankName.isNotEmpty)
               'bank_name': p.destinationBankName,
             if (p.destinationBankCode.isNotEmpty)
@@ -358,6 +402,24 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
       print('Error getting external transfer history: $e');
       return const [];
     }
+  }
+
+  /// Decode the server's metadata JSON, or nothing.
+  ///
+  /// TOTAL BY DESIGN. This is one field on a history row among dozens; a
+  /// malformed value must cost that row its extra detail and nothing else.
+  /// Throwing here would empty the whole transfer list — and the list is how
+  /// a customer finds out their money arrived.
+  static Map<String, dynamic> _paymentMetadata(String raw) {
+    final s = raw.trim();
+    if (s.isEmpty) return const {};
+    try {
+      final decoded = jsonDecode(s);
+      if (decoded is Map) return Map<String, dynamic>.from(decoded);
+    } catch (_) {
+      // Not JSON. The row is still correct without it.
+    }
+    return const {};
   }
 
   /// Map core-payments status strings to the unified status enum, normalizing

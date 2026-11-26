@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class PayrollHomeScreen extends StatefulWidget {
   const PayrollHomeScreen({super.key});
@@ -1446,7 +1447,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
     final employeeSummaries =
         report['employeeSummaries'] as List<dynamic>? ?? [];
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

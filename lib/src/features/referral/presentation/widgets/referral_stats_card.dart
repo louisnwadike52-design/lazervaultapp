@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/src/features/referral/domain/referral_programme_copy.dart';
 
 class ReferralStatsCard extends StatelessWidget {
   final int totalReferrals;
@@ -8,12 +9,17 @@ class ReferralStatsCard extends StatelessWidget {
   final int pendingRewards;
   final String currency;
 
+  /// What this screen is allowed to say about earning. Resolved once by the
+  /// dashboard from the programme state, so every card on the page agrees.
+  final ReferralProgrammeCopy copy;
+
   const ReferralStatsCard({
     super.key,
     required this.totalReferrals,
     required this.totalRewardsEarned,
     required this.pendingRewards,
     required this.currency,
+    required this.copy,
   });
 
   /// Delegates to the shared resolver.
@@ -101,12 +107,14 @@ class ReferralStatsCard extends StatelessWidget {
                 SizedBox(width: 5.w),
                 Expanded(
                   child: Text(
-                    pendingRewards > 0
-                        ? 'Paid out lands in your personal wallet automatically. '
-                            'On KYC is not yet due — it is released when the person you '
-                            'referred completes their KYC.'
-                        : 'Your bonus lands in your personal wallet automatically once '
-                            'the person you referred completes their KYC.',
+                    // NOT COMPILED TEXT. Both sentences promised money, and
+                    // the programme has two states in which no money is
+                    // coming — rewards paused, or closed to new referrals.
+                    // ReferralProgrammeCopy resolves which, and every word
+                    // of it is editable from the console.
+                    copy.earns
+                        ? (pendingRewards > 0 ? copy.pendingBody : copy.body)
+                        : copy.body,
                     style: TextStyle(
                       fontSize: 10.5.sp,
                       height: 1.35,

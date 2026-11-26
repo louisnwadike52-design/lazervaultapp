@@ -10,6 +10,7 @@ import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'payment_processing_screen_widgets.dart';
 
 class PaymentProcessingScreen extends StatefulWidget {
@@ -610,7 +611,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
             SizedBox(width: 12.w),
             Expanded(
               child: ElevatedButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.electricityBillHome),
+                onPressed: () => offAllKeepingHome(AppRoutes.electricityBillHome),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E03D0),
                   foregroundColor: Colors.white,

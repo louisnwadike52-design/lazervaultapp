@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'directpay_progress_bottomsheet_widgets.dart';
 
 /// Animated DirectPay Progress Bottomsheet
@@ -572,7 +573,7 @@ void showDirectPayProgressOverlay({
   VoidCallback? onRetry,
   VoidCallback? onExit,
 }) {
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
     isDismissible: false,

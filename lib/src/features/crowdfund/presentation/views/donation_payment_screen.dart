@@ -15,6 +15,8 @@ import '../cubit/crowdfund_cubit.dart';
 import 'donation_processing_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'donation_receipt_screen.dart';
 part 'donation_payment_screen_widgets.dart';
 
 class DonationPaymentScreen extends StatefulWidget {
@@ -220,12 +222,17 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
       title: 'Confirm Donation',
       message:
           'Confirm donation of ${widget.crowdfund.currency} ${amount.toStringAsFixed(2)}',
-      // We have a dedicated DonationProcessingScreen that owns the
-      // post-PIN processing UI, so the bottom sheet should ONLY
-      // show "PIN Verified" — not "Transaction Successful" (which
-      // implies the donation completed, but that happens later on
-      // the processing screen after the gRPC round trip).
-      showProcessingPhase: false,
+      // WHO OWNS THE WAIT.
+      //
+      // Async (the default): nobody waits. The sheet reports "PIN Verified"
+      // and the receipt opens straight away in Processing — it must NOT say
+      // "Transaction Successful", because at that moment nothing has been
+      // debited yet.
+      //
+      // Sync: the sheet keeps its own processing phase, which is the only
+      // honest place for the wait once the dedicated processing screen is
+      // gone. See FeatureFlags.crowdfundAsyncContribution.
+      showProcessingPhase: !FeatureFlags.crowdfundAsyncContribution,
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -254,6 +261,8 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
       transactionId: transactionId,
     );
 
+    // Dispatched BEFORE the navigation in both modes: the cubit is the one
+    // that survives the route change, and the receipt listens to it.
     cubit.makeDonation(
       crowdfundId: attempt.crowdfundId,
       amount: attempt.amount,
@@ -264,12 +273,25 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
       transactionId: attempt.transactionId,
     );
 
+    // STRAIGHT TO THE RECEIPT — no processing screen in between.
+    //
+    // The full-screen spinner was its own route, its own watchdog and its own
+    // retry panel, and all it did was wait for the state the receipt can wait
+    // for just as well. The receipt opens in Processing and settles in place,
+    // which is the send-funds shape: the customer is holding the artefact of
+    // their payment the whole time rather than a progress animation they
+    // cannot leave.
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: cubit,
-          child: DonationProcessingScreen(
+          child: DonationReceiptScreen(
+            // A LOCAL, PENDING row. Nothing from the server exists yet, so
+            // this carries only what the user themselves chose — the amount,
+            // the campaign, their message — and is replaced wholesale by the
+            // server's own donation the moment it lands.
+            donation: pendingDonationFor(attempt, widget.crowdfund),
             crowdfund: widget.crowdfund,
             attempt: attempt,
           ),

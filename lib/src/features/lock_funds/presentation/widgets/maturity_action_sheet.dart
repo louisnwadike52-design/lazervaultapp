@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/lock_fund_entity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 const _kSheetBg = Color(0xFF1B1B2B);
 const _kCardBg = Color(0xFF26263A);
@@ -22,7 +23,7 @@ Future<MaturityAction?> showMaturityActionSheet(
   required MaturityAction current,
   required bool autoRenew,
 }) {
-  return showModalBottomSheet<MaturityAction>(
+  return showAppBottomSheet<MaturityAction>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

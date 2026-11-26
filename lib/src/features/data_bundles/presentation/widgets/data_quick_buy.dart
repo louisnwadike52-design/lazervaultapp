@@ -7,6 +7,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/pay_with_crypto_selector.dart';
+import 'package:lazervault/src/features/crypto_pay/presentation/confirm_crypto_payment.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/pay_source.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -34,6 +38,7 @@ import '../../data/datasources/data_beneficiary_remote_datasource.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/utils/ng_msisdn.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Single-page data-bundle purchase — the streamlined "one page, very fast"
 /// flow (mirror of AirtimeQuickBuy). Phone prefilled from profile → network
@@ -98,6 +103,10 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
   String? _pendingPlanId;
   bool _saveContact = false;
   String? _saveNickname;
+
+  /// Wallet or a coin. Wallet by default, everywhere.
+  PaySource _paySource = PaySource.wallet;
+
   bool _submitting = false;
   Timer? _detectDebounce;
   StreamSubscription<DataBundlesState>? _planSub;
@@ -157,7 +166,8 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
     // Post-frame because _onPrefillRequested calls setState, which throws
     // before the first build.
     if (DataPrefillSignal.pending != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _onPrefillRequested());
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _onPrefillRequested());
     }
   }
 
@@ -450,7 +460,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
   // ── Styled plan bottom sheet ────────────────────────────────────────────────
   Future<void> _openPlanSheet() async {
     if (_networkCode == null) return;
-    final picked = await showModalBottomSheet<DataPlanEntity>(
+    final picked = await showAppBottomSheet<DataPlanEntity>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -503,8 +513,31 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
         'data_${DateTime.now().millisecondsSinceEpoch}_${phone.replaceAll(RegExp(r'[^\d]'), '')}';
 
     DataPurchaseEntity? result;
+
+    // THE CONVERSION IS CONFIRMED BEFORE THE PIN PAD, NOT AFTER IT.
+    // Selling crypto is irreversible; the rate, the quantity sold and any
+    // wallet top-up are shown while the customer can still change their mind.
+    // THE BUTTON GOES BUSY BEFORE THE CONVERSION IS PRICED, NOT AFTER.
+    //
+    // confirmCryptoPayment re-prices the coin over the network before
+    // it shows the customer anything. This flag used to be raised
+    // AFTER that call, so for the whole round trip the pay button sat
+    // enabled with no feedback: a second tap started a second pricing
+    // call and could open a second confirmation sheet over the first.
+    // Raising it here covers the pricing, the sheet and the PIN as one
+    // busy span, and the existing finally clears it on every exit —
+    // including the customer backing out of the sheet.
     setState(() => _submitting = true);
     try {
+      if (_paySource.isCrypto) {
+        final chosen = await confirmCryptoPayment(
+          context,
+          source: _paySource,
+          totalMinor: (plan.price * 100).round(),
+        );
+        if (chosen == null || !mounted) return;
+        if (chosen != _paySource) setState(() => _paySource = chosen);
+      }
       final ok = await validateTransactionPin(
         context: context,
         transactionId: txnId,
@@ -516,12 +549,25 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
             'Buy ${plan.name} for $phone ($_netName), $_currency ${plan.price.toStringAsFixed(0)}',
         showProcessingPhase: true,
         successMessage: 'Data request sent',
+        // The coin, the quantity and the wallet top-up, so the last screen
+        // before an irreversible sale names what is being sold. Null on a
+        // wallet payment, and the sheet is then unchanged.
+        cryptoQuote: _paySource.quote,
         onPinValidated: (token) async {
           final completer = Completer<DataPurchaseEntity>();
           late final StreamSubscription<DataBundlesState> sub;
           sub = cubit.stream.listen((state) {
             if (completer.isCompleted) return;
             if (state is DataBundlesPaymentSuccess) {
+              completer.complete(state.purchase);
+            } else if (state is DataBundlesAwaitingCryptoFunding) {
+              // PAID WITH CRYPTO: THE PIN SHEET'S WORK IS DONE HERE.
+              //
+              // The purchase is recorded and the conversion requested; the
+              // coin has not been sold and the bundle has not been sent. The
+              // sheet must not keep spinning for an outcome that arrives
+              // minutes later over a websocket — it would time out at 90s and
+              // report a failure for a purchase that is proceeding normally.
               completer.complete(state.purchase);
             } else if (state is DataBundlesPaymentFailed) {
               completer.completeError(state.message);
@@ -536,6 +582,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
               transactionId: txnId,
               verificationToken: token,
               idempotencyKey: txnId,
+              fundingAsset: _paySource.asset,
             );
             result =
                 await completer.future.timeout(const Duration(seconds: 90));
@@ -756,6 +803,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
         SizedBox(height: 14.h),
         _saveContactToggle(),
         SizedBox(height: 16.h),
+        _paySourceSelector(),
         _payButton(),
       ],
     );
@@ -1079,6 +1127,30 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
       _saveContact = true;
       _saveNickname = nickname.trim();
     });
+  }
+
+  /// The `Wallet | Crypto` choice, directly above the pay button — the last
+  /// moment the customer can change HOW they pay. Hides itself entirely when
+  /// the gate is off, so this costs nothing while the feature is dark.
+  ///
+  /// DATA WAS THE ONE BILL SERVICE THIS WAS MISSING FROM, through a backend
+  /// that had supported it since the handler was written: bph_data.go reads
+  /// the funding metadata and opens a data intent, and Flutter never sent it.
+  Widget _paySourceSelector() {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: PayWithCryptoSelector(
+        onDarkSurface: true,
+        value: _paySource,
+        amountMinor: ((_plan?.price ?? 0) * 100).round(),
+        email: context.read<AuthenticationCubit>().currentProfile?.user.email,
+        userId: context.read<AuthenticationCubit>().currentProfile?.user.id,
+        // Locked while a purchase is in flight: the choice has already been
+        // sent and must not change underneath it.
+        enabled: !_submitting,
+        onChanged: (src) => setState(() => _paySource = src),
+      ),
+    );
   }
 
   Widget _payButton() {

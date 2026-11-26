@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// "How it works" and "Terms and conditions" for joint funds.
 ///
@@ -75,7 +76,7 @@ const List<GroupFundsGuideSlide> kGroupFundsGuideSlides = [
 
 /// Shows the guide. Returns true when the reader reached the end.
 Future<bool> showGroupFundsHowItWorks(BuildContext context) async {
-  final done = await showModalBottomSheet<bool>(
+  final done = await showAppBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

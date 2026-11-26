@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_search_bottom_sheet.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'create_family_account_carousel_widgets.dart';
 
 /// Consolidated invoice-style flow that creates a Family & Friends account,
@@ -864,7 +865,7 @@ class _CreateFamilyAccountCarouselState
             ? existing.monthlyLimit.toStringAsFixed(2)
             : '');
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

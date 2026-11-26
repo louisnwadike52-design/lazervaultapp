@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/plan_my_day/notes/domain/note.dart';
 import 'package:lazervault/src/features/plan_my_day/notes/presentation/note_cubit.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Standalone Notes list for Plan My Day. Provide its own NoteCubit at push.
 class NotesScreen extends StatelessWidget {
@@ -132,7 +133,7 @@ class NotesScreen extends StatelessWidget {
     final cubit = context.read<NoteCubit>();
     final titleC = TextEditingController(text: note?.title ?? '');
     final contentC = TextEditingController(text: note?.content ?? '');
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

@@ -8,6 +8,7 @@ import '../cubit/bulk_sms_cubit.dart';
 import '../cubit/bulk_sms_state.dart';
 import '../widgets/bulk_sms_shared_widgets.dart';
 import 'bulk_sms_theme.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Sender IDs: list existing registrations (getSenderIds) and request a new one
 /// (requestSenderId), showing pending / approved / rejected states.
@@ -37,7 +38,7 @@ class _SenderIdsScreenState extends State<SenderIdsScreen> {
     final purposeController = TextEditingController();
     final cubit = context.read<BulkSmsCubit>();
 
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

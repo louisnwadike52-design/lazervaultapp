@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class CBCurrencyExchangeScreen extends StatefulWidget {
   const CBCurrencyExchangeScreen({super.key});
@@ -241,7 +242,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
     ];
 
     // Self-sizing sheet (DraggableScrollableSheet: 90% → full screen).
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       VoiceCommandSheet(),
       isScrollControlled: true,
       enableDrag: false,
@@ -265,7 +266,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
   }
 
   void _showAllRecipients() {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       FractionallySizedBox(
         heightFactor: 0.8,
         child: Container(
@@ -474,7 +475,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
   }
 
   void _showAllTransactions() {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       FractionallySizedBox(
         heightFactor: 0.8,
         child: Container(
@@ -650,7 +651,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
   }
 
   void _showTransactionDetails(Map<String, dynamic> transaction) {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       FractionallySizedBox(
         heightFactor: 0.8,
         child: Container(

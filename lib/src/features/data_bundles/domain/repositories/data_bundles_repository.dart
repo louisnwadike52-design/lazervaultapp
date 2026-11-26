@@ -16,6 +16,7 @@ abstract class DataBundlesRepository {
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+    String? fundingAsset,
   });
 
   /// Recent data purchases (domestic + international).

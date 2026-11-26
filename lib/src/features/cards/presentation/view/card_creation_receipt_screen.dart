@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart'
     as card_entity;
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
+import 'package:lazervault/core/widgets/system_bottom_inset.dart';
 // Removed ServiceVoiceButton import per #212 — voice icon lives on
 // the cards landing only; this receipt sub-screen inherits the
 // session from the parent surface.
@@ -412,7 +413,11 @@ class CardCreationReceiptScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: Container(
-        padding: EdgeInsets.all(16.w),
+        // + the system navigation bar. From Android 15 the window is laid out
+        // edge to edge, so this bar sat UNDER the phone's back/home/recents
+        // buttons and the "Go to Dashboard" button was half unreachable.
+        padding: EdgeInsets.fromLTRB(
+            16.w, 16.w, 16.w, 16.w + systemBottomInset(context)),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.95),
           boxShadow: [

@@ -17,6 +17,7 @@ import '../../domain/entities/tv_package_entity.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'cable_tv_payment_processing_screen_widgets.dart';
 
 class CableTVPaymentProcessingScreen extends StatefulWidget {
@@ -202,7 +203,7 @@ class _CableTVPaymentProcessingScreenState
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && _hasFailed) {
-          Get.offAllNamed(AppRoutes.cableTVHome);
+          offAllKeepingHome(AppRoutes.cableTVHome);
           return;
         }
         if (!didPop) {
@@ -310,7 +311,7 @@ class _CableTVPaymentProcessingScreenState
                       width: double.infinity,
                       height: 52.h,
                       child: ElevatedButton.icon(
-                        onPressed: () => Get.offAllNamed(AppRoutes.cableTVHome),
+                        onPressed: () => offAllKeepingHome(AppRoutes.cableTVHome),
                         icon: Icon(Icons.arrow_back,
                             size: 18.sp, color: Colors.white),
                         label: Text(

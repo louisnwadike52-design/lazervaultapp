@@ -3,8 +3,14 @@ import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/referral_transaction_entity.dart';
+import 'package:lazervault/src/features/referral/domain/referral_programme_copy.dart';
 
 class RecentReferralsList extends StatelessWidget {
+  /// The programme's own words for the state it is in. See
+  /// [ReferralProgrammeCopy] — the two sentences below used to promise a
+  /// bonus unconditionally.
+  final ReferralProgrammeCopy copy;
+
   final List<ReferralTransactionEntity> referrals;
   final String currency;
 
@@ -12,6 +18,7 @@ class RecentReferralsList extends StatelessWidget {
     super.key,
     required this.referrals,
     required this.currency,
+    required this.copy,
   });
 
   /// Delegates to the shared resolver.
@@ -98,7 +105,9 @@ class RecentReferralsList extends StatelessWidget {
             ),
             SizedBox(height: 4.h),
             Text(
-              'Share your code — you earn once they sign up and complete KYC.',
+              // CMS copy, and state-aware: "you earn once they sign up" is
+              // false while rewards are paused or the programme is closed.
+              copy.emptyPrompt,
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
@@ -146,7 +155,7 @@ class RecentReferralsList extends StatelessWidget {
           SizedBox(width: 5.w),
           Expanded(
             child: Text(
-              allVerified
+              allVerified || !copy.earns
                   ? '$verified of $total completed KYC'
                   : '$verified of $total completed KYC — a bonus is paid once they do',
               maxLines: 2,
@@ -163,8 +172,15 @@ class RecentReferralsList extends StatelessWidget {
   }
 
   Widget _buildReferralItem(ReferralTransactionEntity referral) {
-    final statusColor = _getStatusColor(referral.status);
-    final statusIcon = _getStatusIcon(referral.status);
+    // A referral the backend says cannot pay reads as a problem, not as
+    // progress — same treatment as the full list, so the two screens never
+    // describe the same row differently.
+    final statusColor = referral.blockedWhilePending
+        ? const Color(0xFFEF4444)
+        : _getStatusColor(referral.status);
+    final statusIcon = referral.blockedWhilePending
+        ? Icons.info_outline_rounded
+        : _getStatusIcon(referral.status);
     final displayName = referral.refereeDisplayName;
 
     return Container(
@@ -207,9 +223,11 @@ class RecentReferralsList extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      referral.refereeKycVerified
-                          ? Icons.verified_rounded
-                          : Icons.badge_outlined,
+                      referral.blockedWhilePending
+                          ? Icons.info_outline_rounded
+                          : referral.refereeKycVerified
+                              ? Icons.verified_rounded
+                              : Icons.badge_outlined,
                       size: 12.sp,
                       color: statusColor,
                     ),

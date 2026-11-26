@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../domain/entities/group_entities.dart';
 import '../../domain/rotation_extension.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// THE CIRCLE HAS RUN OUT OF CALENDAR, AND ONLY ITS CREATOR CAN FIX THAT.
 ///
@@ -43,7 +44,7 @@ class ExtendRotationSheet extends StatefulWidget {
     required Contribution contribution,
     String? serverExplanation,
   }) {
-    return showModalBottomSheet<DateTime>(
+    return showAppBottomSheet<DateTime>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

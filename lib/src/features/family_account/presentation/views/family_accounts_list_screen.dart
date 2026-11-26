@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/family_account/data/datasources/family_slots_data_source.dart';
 import 'package:lazervault/src/features/family_account/presentation/widgets/family_slots_sheet.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class FamilyAccountsListScreen extends StatefulWidget {
   const FamilyAccountsListScreen({super.key});
@@ -80,7 +81,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
   /// Reached from the quota line and from tapping "create" while at the limit —
   /// the two moments a user learns their capacity is full.
   void _openSlotsSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -668,7 +669,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
   }
 
   void _showPendingInvitationsSheet() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

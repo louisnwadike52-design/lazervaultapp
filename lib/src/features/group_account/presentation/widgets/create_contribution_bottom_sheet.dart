@@ -26,6 +26,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 import '../utils/group_validators.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'create_contribution_bottom_sheet_widgets.dart';
 part 'create_contribution_payout_receiver.dart';
 
@@ -3543,7 +3544,7 @@ class _CreateContributionBottomSheetState
       contributions: [],
     );
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

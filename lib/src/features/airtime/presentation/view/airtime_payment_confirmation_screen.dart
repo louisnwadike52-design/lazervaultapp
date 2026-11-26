@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/src/features/crypto_pay/domain/payment_method_breakdown.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../widgets/bill_receipt_qr_block.dart';
 import '../../domain/entities/airtime_transaction.dart';
@@ -14,6 +15,7 @@ import '../cubit/airtime_state.dart';
 import 'airtime_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Local airtime receipt. Mirrors the electricity bill receipt layout 1:1
 /// (status hero → consolidated details card → BillReceiptQrBlock → action
@@ -620,6 +622,25 @@ class _AirtimePaymentConfirmationScreenState
           ],
           SizedBox(height: 10.h),
           _detailRow('Network', t.networkProvider.displayName),
+          // HOW IT WAS PAID, when crypto funded it.
+          //
+          // AIRTIME WAS THE ONE BILL LEFT OUT. Electricity, cable TV,
+          // internet, water and data all render these rows on the screen AND
+          // in the PDF; the 1.0.1+544 notes said airtime did too, and it did
+          // not. The split is already on the entity — the model lifts the
+          // pay-with-crypto fields out of the payment's metadata
+          // (_fundingMetadata) — so only the rendering was missing.
+          //
+          // A receipt that says only "₦1,000" cannot answer the question the
+          // customer will actually have: which of my balances did that come
+          // out of, and how much coin did it cost me?
+          //
+          // Empty for an ordinary wallet purchase, which is almost all of
+          // them, so there is no condition to write here.
+          ...nairaFundingRows(t.metadata).expand((e) => [
+                SizedBox(height: 10.h),
+                _detailRow(e.key, e.value),
+              ]),
           _sectionDivider(),
           _detailRow('Reference', t.transactionReference),
           SizedBox(height: 10.h),
@@ -762,7 +783,7 @@ class _AirtimePaymentConfirmationScreenState
           _iconActionButton(
             icon: Icons.phone_android,
             label: 'Buy More',
-            onTap: () => Get.offAllNamed(AppRoutes.airtime),
+            onTap: () => offAllKeepingHome(AppRoutes.airtime),
           ),
           _iconActionButton(
             icon: Icons.history,
@@ -789,7 +810,7 @@ class _AirtimePaymentConfirmationScreenState
         _iconActionButton(
           icon: Icons.phone_android,
           label: 'Buy More',
-          onTap: () => Get.offAllNamed(AppRoutes.airtime),
+          onTap: () => offAllKeepingHome(AppRoutes.airtime),
         ),
         _iconActionButton(
           icon: Icons.history,

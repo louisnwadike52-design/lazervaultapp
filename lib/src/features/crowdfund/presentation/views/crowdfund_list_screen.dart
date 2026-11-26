@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../widgets/crowdfund_sort_sheet.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/widgets/crowdfund_filter_sheet.dart';
 import '../../../../../core/utils/debouncer.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../utils/crowdfund_ownership.dart';
@@ -15,6 +17,8 @@ import '../utils/crowdfund_status_display.dart';
 import '../widgets/crowdfund_shimmer.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/widgets/crowdfund_status_badge.dart';
 part 'crowdfund_list_screen_widgets.dart';
 
 class CrowdfundListScreen extends StatefulWidget {
@@ -33,7 +37,15 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   final ScrollController _fundedScrollController = ScrollController();
   String _selectedFilter = 'All';
 
-  static const _filters = ['All', 'Active', 'Completed', 'Cancelled'];
+  /// THE OPERATOR'S LANDING ORDER. "Start with the campaigns that are already
+  /// fulfilled or already have money in them, group by how far along they
+  /// are, and let a person re-sort by newest or oldest."
+  ///
+  /// Held in state rather than read from a setting: it is a per-session
+  /// browsing preference, and persisting it would mean a person who once
+  /// picked "oldest" gets the bottom of the pile on every later visit.
+  CrowdfundSort _sort = CrowdfundSort.fundedFirst;
+
 
   /// Last successful CrowdfundLoaded snapshot — used to keep the list
   /// painted across transient Loading / Error transitions so a refresh
@@ -236,17 +248,13 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     }
   }
 
-  void _onFilterSelected(String filter) {
-    setState(() => _selectedFilter = filter);
-    _loadCrowdfunds();
-  }
-
   void _loadCrowdfunds() {
     if (_tabController.index == 1) {
       context.read<CrowdfundCubit>().loadUserDonations();
     } else {
       context.read<CrowdfundCubit>().loadCrowdfunds(
             statusFilter: _statusParam,
+            sortBy: _sort.wire,
           );
     }
   }
@@ -275,7 +283,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     if (navigator.canPop()) {
       navigator.pop();
     } else {
-      Get.offAllNamed(AppRoutes.crowdfund);
+      offAllKeepingHome(AppRoutes.crowdfund);
     }
   }
 
@@ -295,7 +303,15 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
               _buildHeader(),
               _buildSearchBar(),
               _buildTabBar(),
-              _buildFilterChips(),
+              // ONE CONTROL, NOT TWO FIGHTING FOR A ROW.
+              //
+              // This was a horizontally-scrolling chip strip in an Expanded
+              // with the sort pill fixed beside it — so the pill covered the
+              // end of the strip and "Cancelled" rendered permanently as
+              // "Canc…" behind "Newest". Status and order are the same
+              // question, so they are now one button and one sheet, and the
+              // statuses wrap in there rather than scrolling out of reach.
+              _buildFilterBar(),
               _buildStaleIndicator(),
               Expanded(
                 child: TabBarView(
@@ -464,47 +480,85 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     );
   }
 
-  Widget _buildFilterChips() {
-    return Container(
-      // Vertical padding is owned by the tab bar's bottom margin
-      // above and the list's own padding below — keep this row tight
-      // so the search → tabs → chips rhythm reads as a single 8.h
-      // cadence.
-      height: 40.h,
-      alignment: Alignment.center,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: _filters.length,
-        separatorBuilder: (_, __) => SizedBox(width: 8.w),
-        itemBuilder: (context, index) {
-          final filter = _filters[index];
-          final isSelected = filter == _selectedFilter;
-          return GestureDetector(
-            onTap: () => _onFilterSelected(filter),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
-                    : const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Text(
-                filter,
-                style: GoogleFonts.inter(
-                  color: isSelected
-                      ? PayFlowTheme.accentOnDark
-                      : const Color(0xFF9CA3AF),
-                  fontSize: 13.sp,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+  /// The single filter control: what is showing, and in what order.
+  ///
+  /// BOTH VALUES ARE ON THE BUTTON. An unlabelled filter icon means a person
+  /// has to open the sheet to discover how the list they are looking at is
+  /// narrowed and ordered — which is the question the button exists to
+  /// answer.
+  Widget _buildFilterBar() {
+    final filtered = _selectedFilter != 'All';
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: _openFilterSheet,
+              child: Container(
+                height: 40.h,
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(
+                    color: filtered
+                        ? const Color(0xFF4E03D0)
+                        : const Color(0xFF4E03D0).withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.tune_rounded,
+                        size: 16.sp, color: Colors.white),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        '$_selectedFilter · ${_sort.label}',
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    // A dot only when a non-default status is applied, so an
+                    // unfiltered list does not look filtered.
+                    if (filtered)
+                      Container(
+                        width: 7.w,
+                        height: 7.w,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF4E03D0),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _openFilterSheet() async {
+    final picked = await showCrowdfundFilterSheet(
+      context,
+      status: _selectedFilter,
+      sort: _sort,
+    );
+    // null means dismissed without applying — leave the list alone. Applying
+    // the SAME values still refreshes, which is what someone who opened the
+    // sheet and tapped Show is asking for.
+    if (picked == null || !mounted) return;
+    setState(() {
+      _selectedFilter = picked.status;
+      _sort = picked.sort;
+    });
+    _loadCrowdfunds();
   }
 
   Widget _buildStaleIndicator() {
@@ -1085,35 +1139,25 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   Widget _buildStatusBadge(String? status) {
     final visual = crowdfundStatusVisualFromName(
       status,
-      // This screen's active colour is the brand purple, matching its own
-      // filter pills, rather than the green the cards use.
+      // This screen's active colour is its own filter-pill purple.
       activeColor: const Color(0xFF8B5CF6),
     );
-    final ({Color bg, Color fg, String label}) palette = visual == null
-        ? (
-            bg: const Color(0xFF2D2D2D),
-            fg: const Color(0xFF9CA3AF),
-            label: '…',
-          )
-        : (
-            bg: visual.color.withValues(alpha: 0.18),
-            fg: visual.color,
-            label: visual.label,
-          );
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: palette.bg,
-        borderRadius: BorderRadius.circular(6.r),
-      ),
-      child: Text(
-        palette.label,
-        style: GoogleFonts.inter(
-          color: palette.fg,
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w600,
+    // A null is the one case that is NOT a status: the campaign has not
+    // resolved yet, and a neutral skeleton says so without inventing one.
+    if (visual == null) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D2D2D),
+          borderRadius: BorderRadius.circular(999.r),
         ),
-      ),
-    );
+        child: Text('…',
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w600)),
+      );
+    }
+    return CrowdfundStatusBadge(visual: visual, compact: true);
   }
 }

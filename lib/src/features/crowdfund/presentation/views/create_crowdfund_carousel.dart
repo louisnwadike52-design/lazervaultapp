@@ -25,6 +25,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/services/locale_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 /// Main carousel controller for crowdfund creation
 ///
@@ -439,7 +440,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
     if (navigator.canPop()) {
       navigator.pop();
     } else {
-      Get.offAllNamed(AppRoutes.crowdfund);
+      offAllKeepingHome(AppRoutes.crowdfund);
     }
   }
 

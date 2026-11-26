@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'qr_pay_home_screen_widgets.dart';
 
 class QRPayHomeScreen extends StatefulWidget {
@@ -511,7 +512,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
   Widget _buildQRCodeTile(QRPaymentEntity qr) {
     return GestureDetector(
       onTap: () {
-        showModalBottomSheet(
+        showAppBottomSheet(
           context: context,
           backgroundColor: Colors.transparent,
           isScrollControlled: true,
@@ -679,7 +680,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
 
     return GestureDetector(
       onTap: () {
-        showModalBottomSheet(
+        showAppBottomSheet(
           context: context,
           backgroundColor: Colors.transparent,
           isScrollControlled: true,

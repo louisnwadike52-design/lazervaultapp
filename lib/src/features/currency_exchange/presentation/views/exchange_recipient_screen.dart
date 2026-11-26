@@ -25,6 +25,7 @@ import '../../data/flutterwave_country_rules.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 part 'exchange_recipient_screen_widgets.dart';
 
 // ---------------------------------------------------------------------------
@@ -690,7 +691,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     final popular = banks.take(6).toList();
     String searchQuery = '';
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

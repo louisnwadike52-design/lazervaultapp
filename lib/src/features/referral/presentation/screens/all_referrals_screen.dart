@@ -223,23 +223,31 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
   }
 
   Widget _buildReferralItem(ReferralTransactionEntity referral) {
-    final statusColor = switch (referral.status) {
-      ReferralStatus.completed => const Color(0xFF10B981),
-      ReferralStatus.pending => const Color(0xFFFB923C),
-      ReferralStatus.failed => const Color(0xFFEF4444),
-      ReferralStatus.cancelled => const Color(0xFF6B7280),
-    };
+    // A referral the backend has told us cannot pay reads as a PROBLEM, not as
+    // progress. Amber ("On KYC") says "wait"; this one is not waiting for
+    // anything the referee is going to do, and the badge has to agree with the
+    // line underneath it or the row contradicts itself.
+    final statusColor = referral.blockedWhilePending
+        ? const Color(0xFFEF4444)
+        : switch (referral.status) {
+            ReferralStatus.completed => const Color(0xFF10B981),
+            ReferralStatus.pending => const Color(0xFFFB923C),
+            ReferralStatus.failed => const Color(0xFFEF4444),
+            ReferralStatus.cancelled => const Color(0xFF6B7280),
+          };
 
     // These used to read 'Joined' / 'Pending', which named the wrong thing:
     // a pending referral HAS joined — what is outstanding is their KYC, and
     // that is what releases the bonus. 'Joined' on a completed one likewise
     // credited the signup rather than the verification.
-    final statusLabel = switch (referral.status) {
-      ReferralStatus.completed => 'Verified',
-      ReferralStatus.pending => 'On KYC',
-      ReferralStatus.failed => 'Failed',
-      ReferralStatus.cancelled => 'Cancelled',
-    };
+    final statusLabel = referral.blockedWhilePending
+        ? 'No bonus'
+        : switch (referral.status) {
+            ReferralStatus.completed => 'Verified',
+            ReferralStatus.pending => 'On KYC',
+            ReferralStatus.failed => 'Failed',
+            ReferralStatus.cancelled => 'Cancelled',
+          };
 
     final displayName = referral.refereeDisplayName;
     final initials = _getInitials(referral);
@@ -302,9 +310,11 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
                 Row(
                   children: [
                     Icon(
-                      referral.refereeKycVerified
-                          ? Icons.verified_rounded
-                          : Icons.badge_outlined,
+                      referral.blockedWhilePending
+                          ? Icons.info_outline_rounded
+                          : referral.refereeKycVerified
+                              ? Icons.verified_rounded
+                              : Icons.badge_outlined,
                       size: 12.sp,
                       color: statusColor,
                     ),

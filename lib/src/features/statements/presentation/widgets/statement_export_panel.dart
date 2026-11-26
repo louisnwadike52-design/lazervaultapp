@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/statements/data/services/statement_recen
 import 'package:lazervault/src/features/statements/domain/entities/statement_entity.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_state.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 part 'statement_export_panel_widgets.dart';
 part 'statement_export_panel_sheets.dart';
@@ -206,9 +207,7 @@ class _StatementExportPanelState extends State<StatementExportPanel> {
 
     setState(() => _isPreparingFile = true);
     try {
-      final filename = 'statement_${statement.accountId}'
-          '_${statement.startDate.millisecondsSinceEpoch}'
-          '.${_extensionFor(statement.format)}';
+      final filename = _statementFilename(statement);
       final localPath = await _fileService.downloadToFile(
         url,
         filename,
@@ -245,6 +244,13 @@ class _StatementExportPanelState extends State<StatementExportPanel> {
   Future<void> _openFile(String path) async {
     try {
       await _fileService.openFile(path);
+    } on StatementOpenFallback catch (e) {
+      // Not a failure: the file is saved and the share sheet is already up.
+      // Showing this as an error taught the user the feature was broken when
+      // all that happened is their phone has no CSV viewer.
+      if (mounted) {
+        LVSnackbar.showInfo(title: 'Opened the share sheet', message: e.message);
+      }
     } catch (e) {
       if (mounted) LVSnackbar.showErrorFor(e, context: 'open your statement');
     }
@@ -264,6 +270,47 @@ class _StatementExportPanelState extends State<StatementExportPanel> {
     } catch (e) {
       if (mounted) LVSnackbar.showErrorFor(e, context: 'share your statement');
     }
+  }
+
+  /// The name the user sees when they share or save the file.
+  ///
+  /// It was `statement_<account-uuid>_<epoch-millis>.pdf`, which is the shape
+  /// of a temp file, not of a document somebody emails to a landlord, an
+  /// embassy or a lender. A 36-character uuid tells the recipient nothing and
+  /// tells the holder nothing either — two statements for two different
+  /// accounts are indistinguishable in a Downloads list.
+  ///
+  /// Reads as `Lazervault-Statement-NGN-1234-2026-01-01-to-2026-03-31.pdf`:
+  /// institution, document type, currency, which account, which period. The
+  /// currency and last-4 come from the account summary that is already loaded
+  /// to draw the picker, and both are omitted rather than faked when absent.
+  String _statementFilename(StatementEntity statement) {
+    String d(DateTime t) =>
+        '${t.year.toString().padLeft(4, '0')}-'
+        '${t.month.toString().padLeft(2, '0')}-'
+        '${t.day.toString().padLeft(2, '0')}';
+
+    final parts = <String>['Lazervault', 'Statement'];
+    final account = _summaryFor(statement.accountId);
+    if (account != null) {
+      if (account.currency.isNotEmpty) parts.add(account.currency.toUpperCase());
+      if (account.accountNumberLast4.isNotEmpty) {
+        parts.add(account.accountNumberLast4);
+      }
+    }
+    parts.add('${d(statement.startDate)}-to-${d(statement.endDate)}');
+    return '${parts.join('-')}.${_extensionFor(statement.format)}';
+  }
+
+  /// The loaded summary for [accountId], or null when the list is not loaded.
+  AccountSummaryEntity? _summaryFor(String accountId) {
+    if (!mounted) return null;
+    final state = context.read<AccountCardsSummaryCubit>().state;
+    if (state is! AccountCardsSummaryLoaded) return null;
+    for (final a in state.accountSummaries) {
+      if (a.id == accountId) return a;
+    }
+    return null;
   }
 
   static String _extensionFor(StatementFormat format) {

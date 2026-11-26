@@ -8,6 +8,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/airtime_to_cash_conversion.dart';
 import '../cubit/airtime_to_cash_cubit.dart';
 import '../cubit/airtime_to_cash_state.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 
 class A2CProcessingScreen extends StatefulWidget {
   const A2CProcessingScreen({super.key});
@@ -443,7 +444,7 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.airtimeHistory),
+                onPressed: () => offAllKeepingHome(AppRoutes.airtimeHistory),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
                     color: Colors.white.withValues(alpha: 0.3),

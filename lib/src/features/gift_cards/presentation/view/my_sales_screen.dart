@@ -13,6 +13,7 @@ import 'widgets/gift_card_error_widget.dart';
 import 'widgets/sell_rejection_reasons_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'gift_card_sale_receipt_screen.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class MySalesScreen extends StatefulWidget {
   const MySalesScreen({super.key});
@@ -375,7 +376,7 @@ class _MySalesScreenState extends State<MySalesScreen>
     // pick up SellStatusLoaded and re-render the displaySale).
     context.read<GiftCardCubit>().getSellStatus(sale.id);
 
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       BlocProvider.value(
         value: context.read<GiftCardCubit>(),
         child: BlocConsumer<GiftCardCubit, GiftCardState>(

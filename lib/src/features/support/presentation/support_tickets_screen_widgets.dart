@@ -13,7 +13,24 @@ class _NewTicketResult {
 /// crash seen when disposing in `whenComplete`.
 class _NewTicketSheet extends StatefulWidget {
   final List<SupportTicket> openTickets;
-  const _NewTicketSheet({required this.openTickets});
+
+  /// Pre-filled subject and first message, for callers that already KNOW what
+  /// the ticket is about.
+  ///
+  /// The KYC refusals are the case this exists for. "Contact support" on an
+  /// already-registered BVN opened a blank composer and left the customer to
+  /// explain, in their own words, a failure the app had already classified —
+  /// and with nothing identifying for the agent to work from, so the first
+  /// reply is always "what is your BVN?". The refusal knows its own code; it
+  /// should say so.
+  final String? initialSubject;
+  final String? initialMessage;
+
+  const _NewTicketSheet({
+    required this.openTickets,
+    this.initialSubject,
+    this.initialMessage,
+  });
 
   @override
   State<_NewTicketSheet> createState() => _NewTicketSheetState();
@@ -33,6 +50,23 @@ class _NewTicketSheetState extends State<_NewTicketSheet> {
   final _subject = TextEditingController();
   final _message = TextEditingController();
   bool _showError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Seeded, not locked: the customer can edit or clear either field. The
+    // prefill is a head start for the agent, not a script for the customer.
+    final subject = widget.initialSubject?.trim() ?? '';
+    final message = widget.initialMessage?.trim() ?? '';
+    if (subject.isNotEmpty) {
+      _subject.text =
+          subject.length > _maxSubject ? subject.substring(0, _maxSubject) : subject;
+    }
+    if (message.isNotEmpty) {
+      _message.text =
+          message.length > _maxMessage ? message.substring(0, _maxMessage) : message;
+    }
+  }
 
   @override
   void dispose() {

@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/investments/presentation/models/invest_a
 import 'package:lazervault/src/features/investments/presentation/navigation/invest_route_args.dart';
 import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class StockDetailsScreen extends StatefulWidget {
   final Stock stock;
@@ -1753,7 +1754,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen>
   }
 
   void _showIndicatorSelector() {
-    Get.bottomSheet(
+    showAppGetBottomSheet(
       TechnicalIndicatorsBottomSheet(
         availableIndicators: _availableIndicators,
         selectedIndicators: _selectedIndicators,

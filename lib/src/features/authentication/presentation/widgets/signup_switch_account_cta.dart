@@ -33,9 +33,24 @@ import 'package:lazervault/core/types/app_routes.dart';
 /// number; this device simply stops resuming into it. Confirmed first, because
 /// the person tapping it may be the owner who merely pressed the wrong thing.
 class SignupSwitchAccountCta extends StatelessWidget {
-  const SignupSwitchAccountCta({super.key, this.bottomPadding = 24});
+  const SignupSwitchAccountCta({
+    super.key,
+    this.bottomPadding = 24,
+    this.onLightSurface = false,
+  });
 
   final double bottomPadding;
+
+  /// Render for a LIGHT page instead of the dark passcode background.
+  ///
+  /// The default is white-on-dark, which is correct for the screens that
+  /// carried this first — the passcode steps use PhoneFlowScaffold's
+  /// `darkBackground` photo. The OTP step does NOT: it is the light curved
+  /// scaffold, where white text at 72% opacity is invisible against white.
+  ///
+  /// So the same affordance, coloured for where it actually is — the same
+  /// split, and the same reason, as KycGateExitCta.onLightSurface.
+  final bool onLightSurface;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +68,9 @@ class SignupSwitchAccountCta extends StatelessWidget {
             text: TextSpan(
               style: GoogleFonts.inter(
                 fontSize: 13.sp,
-                color: Colors.white.withValues(alpha: 0.72),
+                color: onLightSurface
+                    ? const Color(0xFF6B7280)
+                    : Colors.white.withValues(alpha: 0.72),
               ),
               children: [
                 const TextSpan(text: 'Not you?  '),
@@ -62,9 +79,13 @@ class SignupSwitchAccountCta extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: onLightSurface
+                        ? Theme.of(context).primaryColor
+                        : Colors.white,
                     decoration: TextDecoration.underline,
-                    decorationColor: Colors.white70,
+                    decorationColor: onLightSurface
+                        ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
+                        : Colors.white70,
                   ),
                 ),
               ],

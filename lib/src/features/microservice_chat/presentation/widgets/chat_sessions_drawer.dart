@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubit/chat_sessions_cubit.dart';
 import '../../cubit/chat_sessions_state.dart';
 import '../../domain/entities/chat_session_summary.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// ChatGPT-style left-side drawer listing the user's chat sessions.
 ///
@@ -233,7 +234,7 @@ class ChatSessionsDrawer extends StatelessWidget {
   void _showSessionActionSheet(
       BuildContext context, ChatSessionSummary session) {
     final cubit = context.read<ChatSessionsCubit>();
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
       backgroundColor: _card,
       shape: const RoundedRectangleBorder(

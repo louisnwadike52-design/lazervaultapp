@@ -63,6 +63,13 @@ AppService notificationServiceFor(String type) {
       has('interest_accrual')) {
     return of(AppServiceName.lockFunds, AppServiceImg.lockFunds);
   }
+  // Event ticketing: ticket.sold / .received / .given_away / .refunded /
+  // .event_cancelled / .payout. Must sit ABOVE the money-movement block —
+  // `ticket.refunded` is a ticket notification, not a generic refund, and the
+  // ticket glyph is the thing that makes it recognisable in a feed.
+  if (has('ticket') || has('ticketing')) {
+    return of(AppServiceName.ticketing, AppServiceImg.ticketing);
+  }
   if (has('crowdfund') || has('donation')) {
     return of(AppServiceName.crowdfund, AppServiceImg.crowdfund);
   }

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import 'package:lazervault/src/features/group_account/domain/entities/group_entities.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// What the creator chose on the start sheet.
 class StartEsusuChoice {
@@ -38,7 +39,7 @@ Future<StartEsusuChoice?> showStartEsusuSheet(
   required int activeMembers,
   required List<String> rotationNames,
 }) {
-  return showModalBottomSheet<StartEsusuChoice>(
+  return showAppBottomSheet<StartEsusuChoice>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/core/navigation/back_or_home.dart';
 part 'deposit_success_screen_widgets.dart';
 
 class DepositSuccessScreen extends StatefulWidget {
@@ -98,7 +99,7 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
   }
 
   void _returnToInternationalTransfer() {
-    Get.offAllNamed(AppRoutes.exchangeHome);
+    offAllKeepingHome(AppRoutes.exchangeHome);
   }
 
   void _makeAnotherDeposit() {

@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/customers/presentation/views/add_custome
 import 'package:lazervault/src/features/payroll/domain/entities/employee_entity.dart';
 import 'package:lazervault/src/features/payroll/presentation/cubit/payroll_cubit.dart';
 import 'package:lazervault/src/features/payroll/presentation/views/add_employee_screen.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Reusable "create a record inline, then hand it back selected" bottom sheets.
 ///
@@ -43,7 +44,7 @@ const Color _kError = Color(0xFFEF4444);
 /// Hosts [child] in a tall, rounded-top modal bottom sheet and returns whatever
 /// the child pops with (its own `Get.back(result:)` / `Navigator.pop(value)`).
 Future<T?> _hostSheet<T>(BuildContext context, Widget child) {
-  return showModalBottomSheet<T>(
+  return showAppBottomSheet<T>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,

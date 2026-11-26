@@ -33,6 +33,20 @@ class TransactionHistoryLoaded extends TransactionHistoryState {
   final TransactionFilters? activeFilters;
   final TransactionStatistics? statistics;
 
+  /// A NEXT PAGE IS IN FLIGHT — and this list is still the truth.
+  ///
+  /// Appending used to emit [TransactionHistoryLoading], which every screen
+  /// renders as a full-page skeleton. That tore the ListView down mid-scroll:
+  /// the rows vanished, the offset reset to the top, and — because the scroll
+  /// listeners only fire while the state is Loaded — nothing could ask for
+  /// page three. Pagination looked broken because it WAS: one page was all
+  /// anybody could ever reach.
+  ///
+  /// So "loading" and "loading MORE" are different states. This one keeps the
+  /// rows, the offset and the listener alive, and screens show it as a footer
+  /// spinner under the last row.
+  final bool isLoadingMore;
+
   const TransactionHistoryLoaded({
     required this.transactions,
     required this.hasMore,
@@ -40,6 +54,7 @@ class TransactionHistoryLoaded extends TransactionHistoryState {
     required this.totalPages,
     this.activeFilters,
     this.statistics,
+    this.isLoadingMore = false,
   });
 
   TransactionHistoryLoaded copyWith({
@@ -50,6 +65,7 @@ class TransactionHistoryLoaded extends TransactionHistoryState {
     TransactionFilters? activeFilters,
     TransactionStatistics? statistics,
     bool clearFilters = false,
+    bool? isLoadingMore,
   }) {
     return TransactionHistoryLoaded(
       transactions: transactions ?? this.transactions,
@@ -59,6 +75,10 @@ class TransactionHistoryLoaded extends TransactionHistoryState {
       activeFilters:
           clearFilters ? null : (activeFilters ?? this.activeFilters),
       statistics: statistics ?? this.statistics,
+      // NOT carried forward by default. Every existing copyWith call site is
+      // a page that has ARRIVED, so the spinner has to clear itself unless
+      // the caller is explicitly starting another fetch.
+      isLoadingMore: isLoadingMore ?? false,
     );
   }
 
@@ -70,6 +90,7 @@ class TransactionHistoryLoaded extends TransactionHistoryState {
         totalPages,
         activeFilters,
         statistics,
+        isLoadingMore,
       ];
 }
 

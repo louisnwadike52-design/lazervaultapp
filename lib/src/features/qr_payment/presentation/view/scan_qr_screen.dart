@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.d
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/domain/qr_payload_parser.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 class ScanQRScreen extends StatefulWidget {
   const ScanQRScreen({super.key});
@@ -294,7 +295,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
   Future<void> _enterCodeManually() async {
     if (_isProcessing) return;
     final ctrl = TextEditingController();
-    final code = await showModalBottomSheet<String>(
+    final code = await showAppBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1F1F1F),
