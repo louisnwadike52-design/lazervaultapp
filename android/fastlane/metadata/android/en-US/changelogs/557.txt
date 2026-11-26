@@ -1,0 +1,6 @@
+Improvements and fixes:
+
+• If you ask for help from the sign-in screen, our reply now reaches you by email, even while you are signed out
+• Support requests you raise before signing in keep the address you gave, so nothing you send goes unanswered
+
+Thank you for using Lazervault.
