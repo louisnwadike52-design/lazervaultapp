@@ -1,0 +1,10 @@
+Improvements and fixes:
+
+• Your bank's logo and an in/out arrow now show on every transaction on the home page, matching the full list
+• A clearer icon for money paid into your wallet
+• "Customise your dashboard" now sits under your recent activity
+• Batch transfer, Scan to pay, Auto-save and PayID on the basic home page
+• "Use passcode instead" opens your passcode, and you can get back
+• The sign-up link no longer covers the buttons while typing
+
+Thank you for using Lazervault.
