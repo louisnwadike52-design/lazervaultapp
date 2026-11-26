@@ -14,3 +14,8 @@ key.properties
 **/*.jks
 keystore.properties
 *.jks
+
+# Gradle/Flutter build output. /build at the repo root does NOT cover this
+# path, so a local Android build left it showing as untracked.
+/app/build
+/build
