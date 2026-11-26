@@ -78,9 +78,23 @@ class ThemedDrawer extends StatelessWidget {
                           BorderRadius.vertical(bottom: Radius.circular(28.r)),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(24.w),
+                      // 24 on every side made this read as a page rather than a
+                      // header. Tighter at the sides and bottom; the top keeps room
+                      // for the curve the avatar sits against.
+                      padding: EdgeInsets.fromLTRB(18.w, 20.h, 18.w, 16.h),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          // IDENTITY ON ONE LINE.
+                          //
+                          // Avatar, name and address were a centred column —
+                          // avatar, 16px, name, 3px, address — which spent
+                          // most of the drawer's top third on three pieces of
+                          // information that belong together. Side by side
+                          // they read as one block and leave the profile code
+                          // below it room to be the thing you notice.
+                          Row(
+                            children: [
                           // Profile Avatar — tap for photo actions (view full
                           // screen / change photo / account / settings).
                           GestureDetector(
@@ -105,20 +119,23 @@ class ThemedDrawer extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: 16.h),
-
+                          SizedBox(width: 13.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
                           // User Name
                           Text(
                             userName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
-                              fontSize: 19.sp,
+                              fontSize: 17.sp,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
                               height: 1.2,
                             ),
-                            textAlign: TextAlign.center,
                           ),
 
                           // THE USERNAME IS NOT REPEATED HERE.
@@ -144,13 +161,17 @@ class ThemedDrawer extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(
-                                fontSize: 12.sp,
+                                fontSize: 11.5.sp,
                                 color: Colors.white.withValues(alpha: 0.62),
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ],
-                          SizedBox(height: 16.h),
+                              ],
+                            ),
+                          ),
+                            ],
+                          ),
+                          SizedBox(height: 14.h),
 
                           // THE PROFILE CODE, with the identity it belongs to.
                           //
@@ -478,7 +499,7 @@ class ThemedDrawer extends StatelessWidget {
           final base64String = profilePicture.split(',')[1];
           final bytes = base64Decode(base64String);
           return CircleAvatar(
-            radius: 30.r,
+            radius: 26.r,
             backgroundColor: Colors.white.withValues(alpha: 0.2),
             backgroundImage: MemoryImage(bytes),
           );
@@ -488,7 +509,7 @@ class ThemedDrawer extends StatelessWidget {
       } else if (profilePicture.startsWith('http')) {
         // It's a URL
         return CircleAvatar(
-          radius: 30.r,
+          radius: 26.r,
           backgroundColor: Colors.white.withValues(alpha: 0.2),
           backgroundImage: NetworkImage(profilePicture),
         );
@@ -497,7 +518,7 @@ class ThemedDrawer extends StatelessWidget {
 
     // Default: show initials
     return CircleAvatar(
-      radius: 30.r,
+      radius: 26.r,
       backgroundColor: Colors.white.withValues(alpha: 0.2),
       child: Text(
         userInitials,
