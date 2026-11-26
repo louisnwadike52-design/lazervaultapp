@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/widgets/otp_expiry_countdown.dart';
 import 'package:lazervault/core/services/post_reset_handoff.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
@@ -150,6 +151,15 @@ class _ForgotPasscodePhoneScreenState extends State<ForgotPasscodePhoneScreen> {
   /// Masked destination the server reported sending to, for the OTP copy.
   String _sentToMasked = '';
   int _resendInitial = 0;
+
+  /// The window the SERVER says it minted for the code just sent.
+  ///
+  /// Separate from [_resendInitial], which is the resend cooldown. The screen
+  /// previously showed only the cooldown, so an operator who set the OTP
+  /// window to 120s on the dashboard watched it count down from 60 and
+  /// concluded the setting had not taken — it had; the number on screen was
+  /// answering a different question.
+  int _expiresInitial = 0;
   int _resendKey = 0;
   int _otpResetKey = 0;
 
@@ -359,6 +369,7 @@ class _ForgotPasscodePhoneScreenState extends State<ForgotPasscodePhoneScreen> {
             _code = '';
             _otpResetKey++;
             _resendInitial = state.resendAfterSeconds;
+            _expiresInitial = state.expiresInSeconds;
             _resendKey++;
             // THE SERVER'S ANSWER, not the chip the user tapped. It is the
             // only party that knows which channel could actually deliver.
@@ -447,6 +458,13 @@ class _ForgotPasscodePhoneScreenState extends State<ForgotPasscodePhoneScreen> {
           key: ValueKey('$_fieldKey-$_countryCode-${_initialNsn ?? ''}'),
           countryCode: _countryCode,
           initialPhoneNational: _initialNsn,
+          // THE EMAIL BRANCH'S PREFILL. _prefilledEmail was being read from
+          // storage and stored in _identifier, but the field itself only ever
+          // seeded from initialPhoneNational — so choosing the Email chip
+          // emptied the box on a screen that knew the address perfectly well.
+          initialIdentifier: _channel == ResetDeliveryChannel.email
+              ? (_prefilledEmail.isEmpty ? null : _prefilledEmail)
+              : null,
           onCountryTap: _openCountryPicker,
           onChanged: _onIdentifierChanged,
           onSubmitted: (_) => isLoading ? null : _onSendCode(),
@@ -622,7 +640,17 @@ class _ForgotPasscodePhoneScreenState extends State<ForgotPasscodePhoneScreen> {
             if (!isLoading) _onOtpContinue();
           },
         ),
-        SizedBox(height: 28.h),
+        SizedBox(height: 14.h),
+        // THE CODE'S OWN CLOCK, which is not the resend cooldown below it.
+        // Keyed on the window so a resend restarts it rather than letting the
+        // previous code's countdown expire one that was just issued.
+        Center(
+          child: OtpExpiryCountdown(
+            key: ValueKey('reset-expiry-$_resendKey'),
+            seconds: _expiresInitial,
+          ),
+        ),
+        SizedBox(height: 14.h),
         Center(
           child: ResendCodeButton(
             // The DND help is about SMS delivery over a downgraded route — it

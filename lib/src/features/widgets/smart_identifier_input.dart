@@ -24,6 +24,20 @@ class SmartIdentifierInput extends StatefulWidget {
   /// puts the field in phone mode with the number filled.
   final String? initialPhoneNational;
 
+  /// Seed for the field when the identifier is NOT a phone number — an email
+  /// address, typically.
+  ///
+  /// The controller only ever read [initialPhoneNational], so a screen that
+  /// knew the customer's email had no way to put it in the box. The
+  /// passcode-reset screen does exactly that: it reads `stored_email`, sets
+  /// its own `_prefilledEmail`, and then handed the user an empty field the
+  /// moment they chose the Email channel — the one channel they had switched
+  /// to deliberately.
+  ///
+  /// [initialPhoneNational] still wins when both are given: a phone-mode
+  /// field must not be seeded with an address.
+  final String? initialIdentifier;
+
   /// Tapped on the country pill (phone mode only) — parent shows the picker.
   final VoidCallback? onCountryTap;
 
@@ -87,6 +101,7 @@ class SmartIdentifierInput extends StatefulWidget {
     required this.countryCode,
     required this.onChanged,
     this.initialPhoneNational,
+    this.initialIdentifier,
     this.onCountryTap,
     this.onSubmitted,
     this.errorText,
@@ -108,8 +123,9 @@ class _SmartIdentifierInputState extends State<SmartIdentifierInput> {
   @override
   void initState() {
     super.initState();
-    _controller =
-        TextEditingController(text: widget.initialPhoneNational ?? '');
+    _controller = TextEditingController(
+      text: widget.initialPhoneNational ?? widget.initialIdentifier ?? '',
+    );
     _country =
         CountryConfigs.getByCode(widget.countryCode) ?? CountryConfigs.nigeria;
     // Emit the initial resolved value so the parent starts in sync.
@@ -129,6 +145,16 @@ class _SmartIdentifierInputState extends State<SmartIdentifierInput> {
     // Re-emit so its notion of the detected type matches what is on screen
     // even before a single character is typed.
     if (oldWidget.emptyStateType != widget.emptyStateType && _raw.isEmpty) {
+      _emit();
+    }
+    // Same for a non-phone seed arriving after the first build — the email
+    // comes from secure storage, which resolves a frame or two late.
+    final seed = widget.initialIdentifier ?? '';
+    if (oldWidget.initialIdentifier != widget.initialIdentifier &&
+        seed.isNotEmpty &&
+        seed != _controller.text &&
+        (widget.initialPhoneNational ?? '').isEmpty) {
+      _controller.text = seed;
       _emit();
     }
     // A device-SIM hint fill replaces the national number + re-emits.
