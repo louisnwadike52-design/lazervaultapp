@@ -12,11 +12,49 @@ void main() {
       expect(resolveKycState(tier: 3, status: ''), KycState.verified);
     });
 
-    test('an approved status is verified even before the tier replica lands', () {
-      // The tier and the status are written by separate paths, so a
-      // freshly-approved user holds one before the other. Requiring both would
-      // gate a verified user on a race.
-      expect(resolveKycState(tier: 1, status: 'approved'), KycState.verified);
+    test('an APPROVED status at a KNOWN tier 1 is NOT verified', () {
+      // THIS TEST ASSERTED THE OPPOSITE, AND THE ASSUMPTION IN IT WAS THE BUG.
+      //
+      // It read "an approved status is verified even before the tier replica
+      // lands", reasoning that the tier and the status are written by separate
+      // paths so a freshly-approved user holds one before the other, and that
+      // requiring both would gate a verified user on a race.
+      //
+      // The race is real in ONE direction only — tier up, status lagging — and
+      // resolveKycState answers that first, with `t >= kMinVerifiedKycTier`,
+      // before it ever looks at the status. The direction this test pinned is
+      // not a race at all. auth-service's SyncVerifiedTier ends with
+      // `UpdateKYCStatus(userID, tier, KYCStatusApproved)`: it writes the tier
+      // and the status TOGETHER, with the status approved at whatever tier was
+      // synced. A NIN verifies to Tier 1 (a NIN alone is not Tier 2), so
+      // `tier 1 + approved` is not a transient skew — it is the permanent,
+      // correct, steady state of every NIN-verified holder.
+      //
+      // Reading that as verified opened the dashboard to a Tier-1 holder, who
+      // has no account number, because only Tier 2 mints one and both Nomba
+      // and Flutterwave require a BVN to mint. A wallet that cannot receive a
+      // transfer and nothing on screen explaining why.
+      expect(resolveKycState(tier: 1, status: 'approved'), KycState.unverified);
+      expect(resolveKycState(tier: 1, status: 'verified'), KycState.unverified);
+      expect(resolveKycState(tier: 1, status: 'completed'), KycState.unverified);
+    });
+
+    test('an UNKNOWN tier still falls through to the status', () {
+      // The guard is on a tier we were actually TOLD. Biometric and voice
+      // logins rebuild the profile from a proto with no KYC fields, so the
+      // tier arrives absent — and locking out a verified holder because the
+      // payload omitted it would be the opposite mistake. A real account
+      // always carries a tier of at least 1, so "0 or null" means "not told".
+      expect(resolveKycState(tier: 0, status: 'approved'), KycState.verified);
+      expect(resolveKycState(tier: null, status: 'approved'), KycState.verified);
+    });
+
+    test('a sub-tier-2 holder in review or rejected keeps that state', () {
+      // The floor only intercepts the statuses that GRANT verification. A
+      // Tier-1 holder waiting on a review must still read as inReview, or the
+      // app would walk them back into a form whose documents we already hold.
+      expect(resolveKycState(tier: 1, status: 'pending_review'), KycState.inReview);
+      expect(resolveKycState(tier: 1, status: 'rejected'), KycState.rejected);
     });
 
     test('tier 1 is NOT verified — it is the baseline everyone starts on', () {

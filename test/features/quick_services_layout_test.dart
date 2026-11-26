@@ -106,9 +106,17 @@ void main() {
     });
 
     test('was APPENDED to the enum, never inserted', () {
-      // The fallback rank is `100 + index`. Inserting mid-enum silently
-      // reshuffles every service after it, so data must be last.
-      expect(AppServiceName.values.last, AppServiceName.data);
+      // The fallback rank is `100 + index`, so inserting mid-enum silently
+      // reshuffles every service after it.
+      //
+      // This asserted `data` was LAST, which was the same thing when it WAS
+      // last — but it also forbade the one safe way to add a service. The
+      // invariant that actually matters is that nothing was inserted BEFORE
+      // data, which pins its index rather than its position from the end, and
+      // still fails loudly on a mid-enum insert.
+      expect(AppServiceName.values.indexOf(AppServiceName.data), 39,
+          reason: 'data moved, so something was inserted before it and every '
+              'service after it silently changed rank');
     });
 
     test('no two services tie on rank', () {

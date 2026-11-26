@@ -44,35 +44,39 @@ void main() {
 
   group('quickServicePageSizes', () {
     test('no paging needed — one short page, no reserved cell', () {
-      expect(quickServicePageSizes(3, 4), [3]);
-      expect(quickServicePageSizes(11, 12), [11]);
+      expect(quickServicePageSizes(3, 4, reservesCell: true), [3]);
+      expect(quickServicePageSizes(11, 12, reservesCell: true), [11]);
     });
 
     test('empty list pages to nothing', () {
-      expect(quickServicePageSizes(0, 4), isEmpty);
+      expect(quickServicePageSizes(0, 4, reservesCell: true), isEmpty);
     });
 
     test('every page gives up a cell', () {
       // 4 services, page size 4: page one holds 3 + the tile, the 4th moves
       // over and sits beside a Back tile.
-      expect(quickServicePageSizes(4, 4), [3, 1]);
-      expect(quickServicePageSizes(12, 12), [11, 1]);
+      expect(quickServicePageSizes(4, 4, reservesCell: true), [3, 1]);
+      expect(quickServicePageSizes(12, 12, reservesCell: true), [11, 1]);
     });
 
     test('the stride is uniform, so no page is wider than another', () {
       // Previously the shift applied to page one ALONE and later pages were
       // full-size. That made the grid reflow mid-swipe and left later pages
       // with no cell for a way back.
-      expect(quickServicePageSizes(8, 4), [3, 3, 2]);
-      expect(quickServicePageSizes(11, 4), [3, 3, 3, 2]);
+      expect(quickServicePageSizes(8, 4, reservesCell: true), [3, 3, 2]);
+      expect(quickServicePageSizes(11, 4, reservesCell: true), [3, 3, 3, 2]);
       // The real geometry: 20 services over two pages of 11.
-      expect(quickServicePageSizes(20, 12), [11, 9]);
+      expect(quickServicePageSizes(20, 12, reservesCell: true), [11, 9]);
     });
 
     test('every service lands on exactly one page, at every size', () {
+      // Swept across BOTH placements: the invariant "no service is lost or
+      // duplicated" has to hold whether or not the control takes a cell.
+      for (var reservesCell in [true, false])
       for (var itemsPerPage in [2, 3, 4, 12]) {
         for (var n = 0; n <= 60; n++) {
-          final sizes = quickServicePageSizes(n, itemsPerPage);
+          final sizes =
+              quickServicePageSizes(n, itemsPerPage, reservesCell: reservesCell);
           expect(sizes.fold<int>(0, (a, b) => a + b), n,
               reason: 'n=$n perPage=$itemsPerPage lost or duplicated a '
                   'service: $sizes');
@@ -84,11 +88,13 @@ void main() {
                 reason: 'n=$n perPage=$itemsPerPage overfilled a page: '
                     '$sizes');
           }
-          // Page one must leave room for the tile exactly when it is shown.
+          // Page one leaves room for the tile exactly when the tile is DRAWN
+          // in the grid — placement, not merely "is there another page".
           if (sizes.isNotEmpty) {
-            final expectFirst = showsMoreTile(n, itemsPerPage)
-                ? itemsPerPage - 1
-                : (n < itemsPerPage ? n : itemsPerPage);
+            final expectFirst =
+                (reservesCell && showsMoreTile(n, itemsPerPage))
+                    ? itemsPerPage - 1
+                    : (n < itemsPerPage ? n : itemsPerPage);
             expect(sizes.first, expectFirst,
                 reason: 'n=$n perPage=$itemsPerPage mis-sized page one');
           }
@@ -138,10 +144,16 @@ void main() {
       // The property that actually matters for reorder: the mapping from
       // (page, cell) to service index is a bijection onto 0..n-1. Anything
       // else means some service cannot be dragged, or two cells claim one.
+      // Both placements again. The indexing stride is derived from the SAME
+      // placement the pages were built with — passing one answer to the pager
+      // and another to serviceIndexAt is precisely how a reorder drag comes to
+      // move the wrong service.
+      for (var reservesCell in [true, false])
       for (var itemsPerPage in [2, 3, 4, 12]) {
         for (var n = 1; n <= 40; n++) {
-          final sizes = quickServicePageSizes(n, itemsPerPage);
-          final more = showsMoreTile(n, itemsPerPage);
+          final sizes =
+              quickServicePageSizes(n, itemsPerPage, reservesCell: reservesCell);
+          final more = reservesCell && showsMoreTile(n, itemsPerPage);
           final seen = <int>[];
           for (var p = 0; p < sizes.length; p++) {
             for (var i = 0; i < sizes[p]; i++) {
@@ -160,6 +172,61 @@ void main() {
   });
 
   _navTilePlacement();
+  _indicatorRowArrangement();
+}
+
+/// THE INDICATOR-ROW ARRANGEMENT — the default, and the one that was broken.
+///
+/// The page-turn control has two placements. As a grid TILE it consumes a
+/// cell, so every page carries itemsPerPage - 1 services. As a PILL on the
+/// indicator row it consumes nothing, so every page must carry a full
+/// itemsPerPage.
+///
+/// Page sizes were computed from `showsMoreTile` alone, which only asks "is
+/// there another page" — it knows nothing about where the control is drawn.
+/// With the pill arrangement every page therefore still surrendered its last
+/// square to a tile that was never there: a 4x3 grid rendered ELEVEN services
+/// and one permanent blank, with "More 11" sitting in the bar underneath it.
+void _indicatorRowArrangement() {
+  group('page-turn control on the indicator row', () {
+    test('pages fill completely — no cell is held for an absent tile', () {
+      // The exact shape from the report: a 4x3 grid, control on the bar.
+      expect(quickServicePageSizes(23, 12, reservesCell: false), [12, 11]);
+      expect(quickServicePageSizes(12, 12, reservesCell: false), [12]);
+      expect(quickServicePageSizes(4, 4, reservesCell: false), [4]);
+      expect(quickServicePageSizes(9, 4, reservesCell: false), [4, 4, 1]);
+    });
+
+    test('the two arrangements disagree exactly where they should', () {
+      // Same service count, different placement, different geometry. If these
+      // two ever match, the placement is being ignored again.
+      expect(quickServicePageSizes(12, 12, reservesCell: true), [11, 1]);
+      expect(quickServicePageSizes(12, 12, reservesCell: false), [12]);
+    });
+
+    test('a count that fits on one page needs no control at all', () {
+      // 12 services with the pill arrangement is ONE page. The old rule asked
+      // showsMoreTile(12, 12) -> true and rendered a pill reading "More 0"
+      // that turned to a page which did not exist.
+      expect(quickServicePageSizes(12, 12, reservesCell: false).length, 1);
+      expect(quickServicePageSizes(11, 12, reservesCell: true).length, 1);
+    });
+
+    test('indexing follows the same stride the pages were built with', () {
+      // serviceIndexAt takes the placement through moreTileShown; passing a
+      // different answer than the pager used is how a reorder drag moves the
+      // wrong service.
+      expect(serviceIndexAt(1, 0, 12, moreTileShown: false), 12);
+      expect(serviceIndexAt(1, 0, 12, moreTileShown: true), 11);
+    });
+
+    test('an empty or single-service list is unchanged by placement', () {
+      for (final reserves in [true, false]) {
+        expect(quickServicePageSizes(0, 12, reservesCell: reserves), isEmpty);
+        expect(quickServicePageSizes(1, 12, reservesCell: reserves), [1]);
+      }
+    });
+  });
 }
 
 /// WHERE THE NAVIGATION TILE SITS.
@@ -224,3 +291,4 @@ void _navTilePlacement() {
     });
   });
 }
+

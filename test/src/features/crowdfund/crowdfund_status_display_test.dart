@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_entities.dart';
+import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_moderation.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/utils/crowdfund_status_display.dart';
 
 /// Completed, expired and cancelled are three different endings.
@@ -10,10 +11,26 @@ import 'package:lazervault/src/features/crowdfund/presentation/utils/crowdfund_s
 /// fixed (the proxy now derives a donation status instead of hardcoding
 /// COMPLETED); this covers the campaign side, where three separate copies
 /// of the status vocabulary disagreed with each other.
+/// APPROVED BY DEFAULT, and the default is the point.
+///
+/// `crowdfundAcceptsContributions` gained a second gate when campaign
+/// moderation shipped: a campaign must be both LIFECYCLE-open and
+/// MODERATION-fundable. The entity's own default is `unreviewed`, which reads
+/// as pending — correctly, because a campaign the backend said nothing about
+/// is not one the app should present as endorsed.
+///
+/// Every test in this file is about the LIFECYCLE gate, so the fixture states
+/// the moderation side explicitly rather than leaning on a default that now
+/// means "not fundable". The moderation gate has its own tests in
+/// crowdfund_moderation_test.dart, including the pairing with each lifecycle
+/// status.
 Crowdfund _c({
   required CrowdfundStatus status,
   DateTime? deadline,
   String? cancelReason,
+  CrowdfundModeration moderation = const CrowdfundModeration(
+    status: CrowdfundModerationState.approved,
+  ),
 }) =>
     Crowdfund(
       id: 'cf1',
@@ -36,6 +53,7 @@ Crowdfund _c({
       deadline: deadline,
       category: 'business',
       status: status,
+      moderation: moderation,
       donorCount: 0,
       progressPercentage: 0,
       createdAt: DateTime(2026, 9, 1),
@@ -316,6 +334,29 @@ void main() {
             false,
             reason: '$s must not offer a Contribute button');
       }
+    });
+
+    // THE SECOND GATE, asserted here as well as in the moderation suite.
+    //
+    // Named in this file deliberately: this is where somebody reading
+    // "accepts contributions" will look, and a reader who finds only
+    // lifecycle assertions would reasonably conclude the lifecycle is the
+    // whole test. It is not — an active, in-deadline campaign that nobody
+    // has reviewed takes no money.
+    test('an active campaign still refuses while it is under review', () {
+      expect(
+        crowdfundAcceptsContributions(_c(
+          status: CrowdfundStatus.active,
+          deadline: _future,
+          moderation: const CrowdfundModeration(
+            status: CrowdfundModerationState.pending,
+          ),
+        )),
+        false,
+        reason: 'a campaign awaiting review must not offer a Contribute '
+            'button — the backend refuses the contribution inside the row '
+            'lock, so offering it only fails the donor later',
+      );
     });
 
     test('a campaign with no deadline stays open', () {

@@ -32,14 +32,14 @@ void main() {
     test('completed is EVIDENCE of reaching target, not a label', () {
       // The deadline worker sets completed only when
       // CurrentAmount >= TargetAmount, so the status carries the fact.
-      final p = CrowdfundProgress.of(campaign(
-        id: 'x', current: 250, status: CrowdfundStatus.completed));
+      final p = CrowdfundProgress.of(
+          campaign(id: 'x', current: 250, status: CrowdfundStatus.completed));
       expect(p.raised, 1000);
     });
 
     test('an overfunded campaign is not trimmed back to the target', () {
-      final p = CrowdfundProgress.of(campaign(
-        id: 'x', current: 1500, status: CrowdfundStatus.completed));
+      final p = CrowdfundProgress.of(
+          campaign(id: 'x', current: 1500, status: CrowdfundStatus.completed));
       expect(p.raised, 1500);
       expect(p.percent, greaterThan(100));
       expect(p.fraction, 1.0, reason: 'the BAR still clamps');
@@ -49,24 +49,26 @@ void main() {
   group('every other status uses a floor, never an invention', () {
     test('refunded money was raised first', () {
       final p = CrowdfundProgress.of(campaign(
-        id: 'x', current: 0, refunded: 150,
-        status: CrowdfundStatus.cancelled));
+          id: 'x',
+          current: 0,
+          refunded: 150,
+          status: CrowdfundStatus.cancelled));
       expect(p.raised, 150);
     });
 
     test('an expired campaign that truly raised nothing still reads zero', () {
       // "Community building" on prod: 0 raised, 0 refunded. Showing 0 is
       // CORRECT here, and the fix must not inflate it.
-      final p = CrowdfundProgress.of(campaign(
-        id: 'x', current: 0, status: CrowdfundStatus.expired));
+      final p = CrowdfundProgress.of(
+          campaign(id: 'x', current: 0, status: CrowdfundStatus.expired));
       expect(p.raised, 0);
       expect(p.percent, 0);
       expect(p.wasFullyFunded, isFalse);
     });
 
     test('an active campaign is unchanged', () {
-      final p = CrowdfundProgress.of(campaign(
-        id: 'x', current: 400, status: CrowdfundStatus.active));
+      final p = CrowdfundProgress.of(
+          campaign(id: 'x', current: 400, status: CrowdfundStatus.active));
       expect(p.raised, 400);
       expect(p.percent, 40);
       expect(p.isFinished, isFalse);
@@ -80,20 +82,56 @@ void main() {
       id: 'x',
       creatorUserId: 1,
       creator: const CrowdfundCreator(
-        userId: 1, username: 'u', firstName: 'A', lastName: 'B',
-        verified: false, facialRecognitionEnabled: false),
-      title: 't', description: '', story: '', crowdfundCode: 'C',
-      targetAmount: 1000, currentAmount: 0, currency: 'NGN',
-      category: 'c', status: CrowdfundStatus.cancelled,
-      donorCount: 0, progressPercentage: 80,
-      createdAt: DateTime(2026, 1, 1), updatedAt: DateTime(2026, 1, 1),
+          userId: 1,
+          username: 'u',
+          firstName: 'A',
+          lastName: 'B',
+          verified: false,
+          facialRecognitionEnabled: false),
+      title: 't',
+      description: '',
+      story: '',
+      crowdfundCode: 'C',
+      targetAmount: 1000,
+      currentAmount: 0,
+      currency: 'NGN',
+      category: 'c',
+      status: CrowdfundStatus.cancelled,
+      donorCount: 0,
+      progressPercentage: 80,
+      createdAt: DateTime(2026, 1, 1),
+      updatedAt: DateTime(2026, 1, 1),
     );
     expect(CrowdfundProgress.of(c).percent, 80);
   });
 
   test('a zero target never divides by zero', () {
-    final p = CrowdfundProgress.of(campaign(
-      id: 'x', current: 50, status: CrowdfundStatus.active));
+    final p = CrowdfundProgress.of(
+        campaign(id: 'x', current: 50, status: CrowdfundStatus.active));
     expect(p.fraction, inInclusiveRange(0.0, 1.0));
+  });
+
+  group('the lifetime counter is the raised figure', () {
+    // THE DASHBOARD CASE (2026-11-11): "Trending crowdfunds" read
+    // current_amount — the live pot — so a campaign whose one donation was
+    // withdrawn showed "0 raised" beside one contributor.
+    test('a withdrawn campaign keeps what it raised', () {
+      final p =
+          CrowdfundProgress.of(campaign(id: 'c', current: 0, raised: 500));
+      expect(p.raised, 500);
+    });
+    test('the counter wins over pot-plus-refunds when both are present', () {
+      // pot 100 + refunded 50 = 150 says "ever raised"; the counter is the
+      // authority and already includes the withdrawn 350.
+      final p = CrowdfundProgress.of(
+          campaign(id: 'c', current: 100, refunded: 50, raised: 500));
+      expect(p.raised, 500);
+    });
+    test('without the field (older gateway) the old derivation still applies',
+        () {
+      final p =
+          CrowdfundProgress.of(campaign(id: 'c', current: 100, refunded: 50));
+      expect(p.raised, 150);
+    });
   });
 }

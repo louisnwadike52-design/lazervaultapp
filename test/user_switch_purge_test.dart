@@ -61,7 +61,26 @@ void main() {
       );
     });
 
-    test('a first-ever sign-in on a clean device is NOT a switch', () {
+    test('NO RECORD of a previous user MUST purge', () {
+      // THIS TEST USED TO ASSERT THE OPPOSITE — "a first-ever sign-in on a
+      // clean device is NOT a switch" — and that assumption caused a
+      // production data leak on 2026-11-10.
+      //
+      // The intent was sound: do not pay for a purge when there is nothing to
+      // purge. The flaw is that null/null does NOT mean "clean device". It is
+      // ALSO what a device looks like after a logout, because logging out
+      // clears stored_user_id and stored_email while leaving the SWR caches
+      // (balances, active account) in place. The two are indistinguishable
+      // from here.
+      //
+      // So the old rule let this happen: user A logs out, user B signs up on
+      // the same handset, and B's dashboard renders A's balance (₦4,435.54)
+      // and account number, correcting itself only on the next login.
+      //
+      // The trade is asymmetric and the file's own comment already says so:
+      // a spurious purge costs a cache re-fetch, a missed one shows one
+      // customer another's money. On a genuinely fresh install the purge is a
+      // no-op over empty caches.
       expect(
         isUserSwitch(
           previousUserId: null,
@@ -69,7 +88,7 @@ void main() {
           newUserId: newId,
           newEmail: newEmail,
         ),
-        isFalse,
+        isTrue,
       );
       expect(
         isUserSwitch(
@@ -78,7 +97,7 @@ void main() {
           newUserId: newId,
           newEmail: newEmail,
         ),
-        isFalse,
+        isTrue,
       );
     });
 

@@ -30,7 +30,8 @@ void main() {
 
   group('a wrapped business refusal survives to the user', () {
     test('the exact reported case is shown, not the generic retry line', () {
-      final shown = friendlyError(_Failure(belowMin), context: 'complete your transfer');
+      final shown =
+          friendlyError(_Failure(belowMin), context: 'complete your transfer');
       expect(shown, contains('minimum for a bank transfer'));
       expect(
         shown,
@@ -40,7 +41,8 @@ void main() {
     });
 
     test('a plain Exception carrying the same sentence also survives', () {
-      final shown = friendlyError(Exception(belowMin), context: 'complete your transfer');
+      final shown =
+          friendlyError(Exception(belowMin), context: 'complete your transfer');
       expect(shown, contains('minimum for a bank transfer'));
     });
 
@@ -48,11 +50,26 @@ void main() {
       for (final m in [
         'Insufficient balance',
         'cannot transfer to the same account',
-        'Daily transfer limit exceeded',
       ]) {
         expect(friendlyError(_Failure(m), context: 'complete your transfer'), m,
             reason: '$m is written for the user and should be shown as-is');
       }
+    });
+
+    test('a SPENDING LIMIT is the one refusal deliberately rewritten', () {
+      // The exception to "show the server's words". A limit refusal is
+      // actionable and the server does not say how to act on it, so
+      // spendingLimitMessage adds the remedy — and every money surface has to
+      // say the same thing, which is why it lives in friendlyError rather than
+      // in one cubit. The sentence it produces is itself still recognised by
+      // isTierCapRefusal, so the sheet that can lift the limit still appears;
+      // that pairing is pinned by tier_limit_refusal_test.dart.
+      final shown = friendlyError(_Failure('Daily transfer limit exceeded'),
+          context: 'complete your transfer');
+      expect(shown, contains('daily transfer limit'));
+      expect(shown, contains('Verification & Limits'));
+      expect(shown, isNot(contains('Please try again')),
+          reason: 'retrying into the same cap fails identically');
     });
   });
 
@@ -63,15 +80,18 @@ void main() {
         'type \'Null\' is not a subtype of type \'String\'',
         'HTTP connection completed with 502 instead of 200',
       ]) {
-        final shown = friendlyError(_Failure(m), context: 'complete your transfer');
+        final shown =
+            friendlyError(_Failure(m), context: 'complete your transfer');
         expect(shown, isNot(contains('SocketException')));
         expect(shown, isNot(contains('502')));
         expect(shown, isNot(contains('subtype')));
       }
     });
 
-    test('an error with no usable message falls back to the contextual line', () {
-      final shown = friendlyError(_Failure(''), context: 'complete your transfer');
+    test('an error with no usable message falls back to the contextual line',
+        () {
+      final shown =
+          friendlyError(_Failure(''), context: 'complete your transfer');
       expect(shown.toLowerCase(), contains('complete your transfer'));
     });
 

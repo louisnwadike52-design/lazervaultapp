@@ -85,8 +85,17 @@ void main() {
           'authenticated screen, which it is not when login lands on KYC, a '
           'forced update, or a fraud freeze',
     );
-    expect(main.contains('navigatorObservers: [appRouteObserver'), isTrue,
+    // MATCHED INSIDE THE LIST, NOT AS A PREFIX. The list is multi-line now
+    // (NavStackObserver joined it), so a prefix match asserted the
+    // FORMATTING rather than the wiring and failed on a reflow that changed
+    // nothing. What matters is that both observers are still on the
+    // navigator.
+    final at = main.indexOf('navigatorObservers:');
+    expect(at, greaterThan(-1));
+    final list = main.substring(at, main.indexOf(']', at));
+    expect(list.contains('appRouteObserver'), isTrue,
         reason: 'the existing observer must not be dropped to add the new one');
+    expect(list.contains('deepLinkReplayObserver'), isTrue);
   });
 
   test('the observer defers a frame before navigating', () {
@@ -139,7 +148,11 @@ void main() {
 
     test('sign-out clears persistence for a session-captured target', () {
       final at = navigator.indexOf('void clear() {');
-      final body = navigator.substring(at, at + 400);
+      // Read to the end of the METHOD rather than a byte count: the window
+      // was 400 characters and a comment added above the guard pushed the
+      // guard itself out of it, failing a test about behaviour on a change
+      // that was only prose.
+      final body = navigator.substring(at, navigator.indexOf('\n  }', at));
       expect(body.contains('PendingDeepLinkStore.clear()'), isTrue);
       expect(
         body.contains('if (!_stashedUnderSession) return'),

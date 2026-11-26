@@ -17,8 +17,9 @@ void main() {
           .where((c) => c.isAvailableForSignup)
           .map((c) => c.code)
           .toList();
-      expect(signup, ['NG'],
-          reason: 'signup offered $signup; only NG may open an account');
+      expect(signup, [
+        'NG',
+      ], reason: 'signup offered $signup; only NG may open an account');
     });
 
     test('the other countries stay ACTIVE for the features that need them', () {
@@ -27,9 +28,13 @@ void main() {
       // intl data/airtime.
       final active = CountryConfigs.activeCountries.map((c) => c.code).toSet();
       for (final code in ['GB', 'US', 'GH', 'KE', 'ZA']) {
-        expect(active.contains(code), isTrue,
-            reason: '$code was removed from activeCountries — that breaks '
-                'international transfers and intl data, not just signup');
+        expect(
+          active.contains(code),
+          isTrue,
+          reason:
+              '$code was removed from activeCountries — that breaks '
+              'international transfers and intl data, not just signup',
+        );
       }
     });
   });
@@ -57,7 +62,8 @@ void main() {
           src.contains('isAvailableForSignup') ||
               src.contains('_selectableCountries'),
           isTrue,
-          reason: '$path reads activeCountries without filtering to signup '
+          reason:
+              '$path reads activeCountries without filtering to signup '
               'countries, so it still offers every country',
         );
       });

@@ -12,27 +12,27 @@ import 'package:lazervault/src/features/authentication/domain/entities/user.dart
 import 'package:lazervault/src/features/authentication/presentation/utils/session_user_facts.dart';
 
 User _profileUser() => User(
-      id: 'u1',
-      firstName: 'Ada',
-      lastName: 'Obi',
-      email: 'ada@example.com',
-      verified: false,
-      isEmailVerified: false,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-    );
+  id: 'u1',
+  firstName: 'Ada',
+  lastName: 'Obi',
+  email: 'ada@example.com',
+  verified: false,
+  isEmailVerified: false,
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
+);
 
 User _authUser() => _profileUser().copyWith(
-      hasPasscode: true,
-      hasPassword: false,
-      verified: true,
-      isEmailVerified: true,
-      phoneNumber: '+2348012345678',
-      signupStatus: 'complete',
-      kycTier: 3,
-      kycStatus: 'approved',
-      preferredLoginMethod: 'phone_passcode',
-    );
+  hasPasscode: true,
+  hasPassword: false,
+  verified: true,
+  isEmailVerified: true,
+  phoneNumber: '+2348012345678',
+  signupStatus: 'complete',
+  kycTier: 3,
+  kycStatus: 'approved',
+  preferredLoginMethod: 'phone_passcode',
+);
 
 void main() {
   test('a live GetMe lays every routing fact over the profile user', () async {
@@ -128,54 +128,61 @@ void main() {
   group('cached facts first, backend in the background', () {
     LoginFacts facts() => LoginFacts.fromUser(_authUser());
 
-    test('a record for this user is applied at once, before GetMe answers',
-        () async {
-      final never = Completer<Either<Failure, User>>();
-      final writes = <User>[];
-      final u = await enrichSessionUser(
-        _profileUser(),
-        fetchMe: () => never.future, // the backend has not answered
-        fetchHasPin: () async => true,
-        readPasscodeMirror: () async => null,
-        readFacts: (_) async => facts(),
-        writeFacts: (user, {hasTransactionPin}) async => writes.add(user),
-      );
-      expect(u.hasPasscode, isTrue);
-      expect(u.kycTier, 3);
-      expect(u.signupStatus, 'complete');
-      expect(writes, isEmpty, reason: 'nothing live has arrived yet');
-    });
+    test(
+      'a record for this user is applied at once, before GetMe answers',
+      () async {
+        final never = Completer<Either<Failure, User>>();
+        final writes = <User>[];
+        final u = await enrichSessionUser(
+          _profileUser(),
+          fetchMe: () => never.future, // the backend has not answered
+          fetchHasPin: () async => true,
+          readPasscodeMirror: () async => null,
+          readFacts: (_) async => facts(),
+          writeFacts: (user, {hasTransactionPin}) async => writes.add(user),
+        );
+        expect(u.hasPasscode, isTrue);
+        expect(u.kycTier, 3);
+        expect(u.signupStatus, 'complete');
+        expect(writes, isEmpty, reason: 'nothing live has arrived yet');
+      },
+    );
 
-    test('the background refresh replaces the record when GetMe answers',
-        () async {
-      final writes = <User>[];
-      await enrichSessionUser(
-        _profileUser(),
-        fetchMe: () async => Right(_authUser().copyWith(kycTier: 2)),
-        fetchHasPin: () async => false,
-        readPasscodeMirror: () async => null,
-        readFacts: (_) async => facts(),
-        writeFacts: (user, {hasTransactionPin}) async => writes
-            .add(user.copyWith(hasTransactionPin: hasTransactionPin ?? true)),
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      expect(writes, hasLength(1));
-      expect(writes.single.kycTier, 2);
-      expect(writes.single.hasTransactionPin, isFalse);
-    });
+    test(
+      'the background refresh replaces the record when GetMe answers',
+      () async {
+        final writes = <User>[];
+        await enrichSessionUser(
+          _profileUser(),
+          fetchMe: () async => Right(_authUser().copyWith(kycTier: 2)),
+          fetchHasPin: () async => false,
+          readPasscodeMirror: () async => null,
+          readFacts: (_) async => facts(),
+          writeFacts: (user, {hasTransactionPin}) async => writes.add(
+            user.copyWith(hasTransactionPin: hasTransactionPin ?? true),
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        expect(writes, hasLength(1));
+        expect(writes.single.kycTier, 2);
+        expect(writes.single.hasTransactionPin, isFalse);
+      },
+    );
 
-    test('a record for ANOTHER user is not applied (store returns null)',
-        () async {
-      final u = await enrichSessionUser(
-        _profileUser(),
-        fetchMe: () async => Right(_authUser()),
-        fetchHasPin: () async => true,
-        readPasscodeMirror: () async => null,
-        readFacts: (_) async => null,
-        writeFacts: (user, {hasTransactionPin}) async {},
-      );
-      expect(u.kycTier, 3, reason: 'came from the live GetMe, awaited');
-    });
+    test(
+      'a record for ANOTHER user is not applied (store returns null)',
+      () async {
+        final u = await enrichSessionUser(
+          _profileUser(),
+          fetchMe: () async => Right(_authUser()),
+          fetchHasPin: () async => true,
+          readPasscodeMirror: () async => null,
+          readFacts: (_) async => null,
+          writeFacts: (user, {hasTransactionPin}) async {},
+        );
+        expect(u.kycTier, 3, reason: 'came from the live GetMe, awaited');
+      },
+    );
 
     test('no record → the live answer is recorded for next time', () async {
       final writes = <User>[];
@@ -212,24 +219,30 @@ void main() {
     // but recording it would make every unlock for the next 30 days believe a
     // PIN exists, and skip the setup screen for someone who has none.
     group('the fail-safe PIN is never recorded', () {
-      test('the previous record\'s answer is carried forward instead',
-          () async {
-        final recorded = <bool>[];
-        await enrichSessionUser(
-          _profileUser(),
-          fetchMe: () async => Right(_authUser()),
-          fetchHasPin: () async => throw Exception('pin service down'),
-          readPasscodeMirror: () async => null,
-          readFacts: (_) async =>
-              LoginFacts.fromUser(_authUser(), hasTransactionPin: false),
-          writeFacts: (user, {hasTransactionPin}) async =>
-              recorded.add(hasTransactionPin ?? user.hasTransactionPin),
-        );
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-        expect(recorded, [false],
-            reason: 'the last LIVE answer was "no PIN" — keep it, do not '
-                'overwrite it with this unlock\'s fail-safe');
-      });
+      test(
+        'the previous record\'s answer is carried forward instead',
+        () async {
+          final recorded = <bool>[];
+          await enrichSessionUser(
+            _profileUser(),
+            fetchMe: () async => Right(_authUser()),
+            fetchHasPin: () async => throw Exception('pin service down'),
+            readPasscodeMirror: () async => null,
+            readFacts: (_) async =>
+                LoginFacts.fromUser(_authUser(), hasTransactionPin: false),
+            writeFacts: (user, {hasTransactionPin}) async =>
+                recorded.add(hasTransactionPin ?? user.hasTransactionPin),
+          );
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+          expect(
+            recorded,
+            [false],
+            reason:
+                'the last LIVE answer was "no PIN" — keep it, do not '
+                'overwrite it with this unlock\'s fail-safe',
+          );
+        },
+      );
 
       test('with no previous record, nothing is written at all', () async {
         final writes = <User>[];
@@ -272,28 +285,34 @@ void main() {
         readFacts: (_) async => null,
         writeFacts: (user, {hasTransactionPin}) async {},
       );
-      expect(u.isSocialAccount, isTrue,
-          reason: 'the profile proto has no auth_type, and the passcode gate '
-              'turns on it');
+      expect(
+        u.isSocialAccount,
+        isTrue,
+        reason:
+            'the profile proto has no auth_type, and the passcode gate '
+            'turns on it',
+      );
     });
 
-    test('refreshInBackground:false skips the backend entirely on a hit',
-        () async {
-      var calls = 0;
-      await enrichSessionUser(
-        _profileUser(),
-        fetchMe: () async {
-          calls++;
-          return Right(_authUser());
-        },
-        fetchHasPin: () async => true,
-        readPasscodeMirror: () async => null,
-        readFacts: (_) async => facts(),
-        writeFacts: (user, {hasTransactionPin}) async {},
-        refreshInBackground: false,
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 10));
-      expect(calls, 0);
-    });
+    test(
+      'refreshInBackground:false skips the backend entirely on a hit',
+      () async {
+        var calls = 0;
+        await enrichSessionUser(
+          _profileUser(),
+          fetchMe: () async {
+            calls++;
+            return Right(_authUser());
+          },
+          fetchHasPin: () async => true,
+          readPasscodeMirror: () async => null,
+          readFacts: (_) async => facts(),
+          writeFacts: (user, {hasTransactionPin}) async {},
+          refreshInBackground: false,
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        expect(calls, 0);
+      },
+    );
   });
 }

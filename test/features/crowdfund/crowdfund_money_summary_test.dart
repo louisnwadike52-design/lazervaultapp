@@ -15,6 +15,7 @@ Crowdfund campaign({
   required String id,
   required double current,
   double refunded = 0,
+  double raised = 0,
   CrowdfundStatus status = CrowdfundStatus.active,
   String currency = 'NGN',
 }) =>
@@ -43,6 +44,7 @@ Crowdfund campaign({
       createdAt: DateTime(2026, 10, 1),
       updatedAt: DateTime(2026, 10, 1),
       totalRefunded: refunded,
+      totalRaised: raised,
     );
 
 CrowdfundDonation donation({
@@ -178,7 +180,8 @@ void main() {
 
   group('empty and currency', () {
     test('nothing at all reads as empty, with no currency invented', () {
-      final s = CrowdfundMoneySummary.from(created: const [], donations: const []);
+      final s =
+          CrowdfundMoneySummary.from(created: const [], donations: const []);
       expect(s.isEmpty, isTrue);
       expect(s.currency, '');
     });
@@ -208,9 +211,9 @@ void main() {
     // NGN500 to "Building".
     final s = CrowdfundMoneySummary.from(
       created: [
-        campaign(id: 'building', current: 500, status: CrowdfundStatus.completed),
         campaign(
-            id: 'community', current: 0, status: CrowdfundStatus.expired),
+            id: 'building', current: 500, status: CrowdfundStatus.completed),
+        campaign(id: 'community', current: 0, status: CrowdfundStatus.expired),
       ],
       donations: [donation(id: 'd1', campaignId: 'building', amount: 500)],
     );

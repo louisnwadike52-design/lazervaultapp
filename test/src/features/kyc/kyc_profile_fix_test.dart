@@ -80,7 +80,18 @@ void main() {
     test('it names the field rather than "Open Settings"', () {
       expect(kycProfileFixLabel(KycProfileField.phone), 'Update phone');
       expect(kycProfileFixLabel(KycProfileField.email), 'Update email');
-      expect(kycProfileFixLabel(KycProfileField.name), 'Update profile');
+      // "Update your name", not "Update profile".
+      //
+      // The destination changed and the label followed it. This used to open
+      // the Settings profile editor, which accepted a name and silently
+      // DISCARDED it — names were ignored by UpdateProfile outright — so the
+      // one action pointing at the problem led somewhere that could not fix
+      // it. It now opens KycUpdateDetailsScreen, which edits the name under
+      // the rule that an UNVERIFIED holder may correct their own.
+      //
+      // The group's point is unchanged and better served: the label names the
+      // field, and now names it exactly rather than as "profile".
+      expect(kycProfileFixLabel(KycProfileField.name), 'Update your name');
     });
 
     test('an unclassified failure keeps the ordinary retry', () {

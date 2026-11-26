@@ -104,18 +104,32 @@ void main() {
       // which is the exact failure the ordering above exists to prevent.
       expect(source, contains('await AccountUpdateAnnouncementService.instance'),
           reason: 'the broadcast must be awaited, or the KYC prompt stacks on it');
-      expect(source, contains('await KycLoginPrompt.maybeShow('),
-          reason: 'the verification prompt must be awaited like the others');
+      // The KYC prompt is NO LONGER IN THIS CHAIN (removed 2026-11-10), so
+      // there is nothing here to await. It fired on arrival at the dashboard
+      // — the one moment it cannot be acted on, because the customer has just
+      // finished signing up and has not tried to do anything yet. It now
+      // appears where the limit is actually met (send funds, batch transfer,
+      // PiggyVault all show KYCUpgradeModal on a tier-cap refusal), and below
+      // Tier 2 the dashboard is not reachable at all.
+      expect(source, isNot(contains('KycLoginPrompt.maybeShow(')),
+          reason: 'identity verification is prompted at the point of use, '
+              'not on arrival at the dashboard');
     });
 
-    test('identity verification is offered LAST', () {
-      // It is the only one of the three that can route the user somewhere
-      // else, so it must not pre-empt the two that merely inform.
-      final broadcast = source.indexOf('AccountUpdateAnnouncementService.instance');
-      final kyc = source.indexOf('KycLoginPrompt.maybeShow(');
-      expect(kyc, greaterThan(-1));
-      expect(broadcast, lessThan(kyc),
-          reason: 'the informational modals speak before the one that navigates');
+    test('no modal in the chain navigates the user away', () {
+      // This used to assert that identity verification came LAST, because it
+      // was the only one of the three that could route somewhere else and so
+      // must not pre-empt the two that merely inform.
+      //
+      // It is no longer in the chain at all, which removes the hazard rather
+      // than ordering around it: every remaining modal is informational, so
+      // none can steal the user mid-chain. Asserting its ABSENCE keeps the
+      // property — re-adding a navigating modal here would fail this test.
+      expect(source, isNot(contains('KycLoginPrompt.maybeShow(')));
+      final broadcast =
+          source.indexOf('AccountUpdateAnnouncementService.instance');
+      expect(broadcast, greaterThan(-1),
+          reason: 'the balance-change broadcast is still part of the chain');
     });
 
     test('the callback awaits, or the guard cannot work', () {

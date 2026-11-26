@@ -219,19 +219,61 @@ void main() {
       expect(t!.route, AppRoutes.transactionPinSetup);
     });
 
-    test('lands money events on the right service history', () {
+    test('lands an id-less money event on the GENERAL ledger', () {
+      // CHANGED DELIBERATELY, and this used to assert the opposite.
+      //
+      // An id-less money push used to open that service's own history
+      // screen, which must FETCH before it can render anything. Reached from
+      // a push on a cold start there is no active account yet — the dashboard
+      // carousel selects one and a deep link never passes it — so the fetch
+      // refused and the page was dead on arrival: "Something went wrong — we
+      // couldn't load transactions just now", with a Retry that could not
+      // help. Reported on build 543 against a deposit push.
+      //
+      // The deposit branch had been fixed for exactly this months earlier;
+      // the shared `_history` fallback every OTHER money service falls
+      // through had not. The general ledger paints from cache before it asks
+      // the network, so it renders either way.
+      for (final type in const ['transfer.received', 'transfer.reversed']) {
+        final t = NotificationRouteResolver.resolve(type, {})!;
+        expect(t.route, AppRoutes.dashboardTransactionHistory, reason: type);
+        expect(t.precision, TargetPrecision.serviceLanding);
+      }
+    });
+
+    test('the service is still narrowed when there is a record to open', () {
+      // The narrowing itself did not go away with the landing page — it is
+      // what the deep-link loader uses to find the row, and it is observable
+      // there. This is the coverage the assertion above used to carry.
+      final t = NotificationRouteResolver.resolve('transfer.received', {
+        'transaction_id': 'row-1',
+      })!;
+      expect(t.route, AppRoutes.transactionDeepLink);
       expect(
-        NotificationRouteResolver.resolve('transfer.received', {})!.arguments,
-        TransactionServiceType.transfer,
-      );
-      expect(
-        NotificationRouteResolver.resolve('deposit', {})!.arguments,
-        TransactionServiceType.deposit,
-      );
-      expect(
-        NotificationRouteResolver.resolve('transfer.reversed', {})!.arguments,
-        TransactionServiceType.reversal,
-      );
+          (t.arguments as Map)['serviceType'], TransactionServiceType.transfer);
+
+      final reversal = NotificationRouteResolver.resolve('transfer.reversed', {
+        'transaction_id': 'row-2',
+      })!;
+      expect((reversal.arguments as Map)['serviceType'],
+          TransactionServiceType.reversal);
+    });
+
+    test('a deposit with no reference lands on the GENERAL ledger', () {
+      // DEPOSIT IS DELIBERATELY NOT LIKE THE OTHERS, and this used to assert
+      // the opposite. A deposit push with no reference landed on the
+      // per-service Deposit history; that screen fetches the moment it
+      // mounts, and reached from a push on a cold start there is no active
+      // account yet — the dashboard carousel is what selects one, and a deep
+      // link never passes the dashboard. The fetch refused and the customer
+      // got "Something went wrong" over an empty Deposit tab, with a Retry
+      // that could not help.
+      //
+      // The general ledger paints from cache before it asks the network, so
+      // it shows the deposit even while the fetch is in flight.
+      final t = NotificationRouteResolver.resolve('deposit', {})!;
+      expect(t.route, AppRoutes.dashboardTransactionHistory);
+      expect(t.route, isNot(AppRoutes.serviceTransactionHistory));
     });
 
     test('a money event WITH a reference opens the receipt, not the list', () {
@@ -267,7 +309,10 @@ void main() {
         'entity_id': 'sb-1',
         'entity_type': 'split_bill',
       })!;
-      expect(notLedger.route, AppRoutes.serviceTransactionHistory);
+      // The LIST, immediately — and that list is the general ledger rather
+      // than the per-service screen, which cannot render from a cold push.
+      // See 'lands an id-less money event on the GENERAL ledger'.
+      expect(notLedger.route, AppRoutes.dashboardTransactionHistory);
       expect(notLedger.precision, TargetPrecision.serviceLanding);
 
       final ledger = NotificationRouteResolver.resolve('withdrawal', {
@@ -290,7 +335,10 @@ void main() {
       final t = NotificationRouteResolver.resolve('deposit', {
         'reference': 'DEP-9:appdl:2026-11-03',
       })!;
-      expect(t.route, AppRoutes.serviceTransactionHistory);
+      // Refused, so it never reaches the loader. Deposit's no-id destination
+      // is the general ledger (see the test above), not the Deposit tab.
+      expect(t.route, AppRoutes.dashboardTransactionHistory);
+      expect(t.route, isNot(AppRoutes.transactionDeepLink));
     });
 
     test('the generic payment type reaches a record with no service type', () {

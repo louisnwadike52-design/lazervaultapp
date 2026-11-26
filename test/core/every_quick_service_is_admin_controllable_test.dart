@@ -15,6 +15,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// Measured when this was written: 39 services, 39 dashboard rows, no
 /// difference either way.
 void main() {
+  _labelCapGuard();
+
   test('the dashboard can control every service in the app enum', () {
     // Resolved relative to the app package, which sits beside apps/ in the
     // umbrella checkout. Skipped rather than failed when the dashboard is not
@@ -59,5 +61,41 @@ void main() {
     expect(stale, isEmpty,
         reason: 'the dashboard offers switches for services that no longer '
             'exist: $stale. The rows would write keys nothing reads.');
+  });
+}
+
+/// THE LABEL CAP LIVES IN TWO REPOSITORIES AND MUST AGREE.
+///
+/// The app REJECTS an over-long override and falls back to its shipped word.
+/// The dashboard turns the counter red at its own constant. If the dashboard's
+/// is larger, an operator saves a label, sees it accepted, and the device
+/// silently shows the old word — a control that reports success and changes
+/// nothing, which is the exact failure the gates screen was built to avoid.
+void _labelCapGuard() {
+  test('the label cap agrees between the app and the dashboard', () {
+    final flagsFile = File('lib/core/config/feature_flags.dart');
+    final fieldFile = File(
+      '../apps/admin-dashboard/src/app/settings/page/QuickServiceLabelField.tsx',
+    );
+    if (!fieldFile.existsSync()) {
+      markTestSkipped('admin dashboard not in this checkout');
+      return;
+    }
+
+    final appCap = RegExp(r'quickServiceLabelMaxRunes\s*=\s*(\d+)')
+        .firstMatch(flagsFile.readAsStringSync())
+        ?.group(1);
+    final dashCap = RegExp(r'QUICK_SERVICE_LABEL_MAX\s*=\s*(\d+)')
+        .firstMatch(fieldFile.readAsStringSync())
+        ?.group(1);
+
+    expect(appCap, isNotNull,
+        reason: 'quickServiceLabelMaxRunes moved; re-point this guard');
+    expect(dashCap, isNotNull,
+        reason: 'QUICK_SERVICE_LABEL_MAX moved; re-point this guard');
+    expect(dashCap, appCap,
+        reason: 'the dashboard would accept a label the app rejects, so the '
+            'operator would see a successful save and the old word on the '
+            'device');
   });
 }

@@ -35,6 +35,63 @@ void main() {
     expect(t.route, isNot(contains('offer')));
   });
 
+  group('a campaign notification opens the CAMPAIGN', () {
+    // Every crowdfund notification is about ONE campaign — the goal was
+    // reached, the deadline arrived, somebody donated, a review decided
+    // something. Landing on the directory makes the user search for the thing
+    // they were just told about.
+    test('an ending notice carries the campaign id to the detail screen', () {
+      final t = NotificationRouteResolver.resolve(
+        'crowdfund.funded',
+        {
+          'crowdfund_id': 'cf-123',
+          'reference_type': 'crowdfund',
+          'reference_id': 'cf-123',
+          'role': 'creator',
+        },
+      );
+      expect(t, isNotNull);
+      expect(t!.route, AppRoutes.crowdfundDetails);
+      expect(t.arguments, isA<Map>());
+      expect((t.arguments as Map)['crowdfundId'], 'cf-123',
+          reason: 'the detail screen loads from this id alone');
+    });
+
+    test('a contributor notice opens the same campaign', () {
+      final t = NotificationRouteResolver.resolve(
+        'crowdfund.backed_ended',
+        {'crowdfund_id': 'cf-9', 'role': 'contributor'},
+      );
+      expect(t!.route, AppRoutes.crowdfundDetails);
+      expect((t.arguments as Map)['crowdfundId'], 'cf-9');
+    });
+
+    test('a moderation notice typed `account` still reaches the campaign', () {
+      // The moderation pushes publish `type: account` on purpose, so a
+      // marketing opt-out cannot suppress them — which used to drop "your
+      // campaign could not be published" on the account screen. The payload's
+      // own reference_type is what identifies it.
+      final t = NotificationRouteResolver.resolve(
+        'account',
+        {
+          'reference_type': 'crowdfund',
+          'reference_id': 'cf-77',
+          'action': 'crowdfund_blocked',
+        },
+      );
+      expect(t, isNotNull);
+      expect(t!.route, AppRoutes.crowdfundDetails);
+      expect((t.arguments as Map)['crowdfundId'], 'cf-77');
+    });
+
+    test('with no campaign id it falls back to the list, never to nothing',
+        () {
+      final t = NotificationRouteResolver.resolve('crowdfund', const {});
+      expect(t, isNotNull);
+      expect(t!.route, AppRoutes.crowdfundList);
+    });
+  });
+
   /// Route names registered by the app, including the parameterised ones.
   late Set<String> registered;
   late List<String> parameterised;
