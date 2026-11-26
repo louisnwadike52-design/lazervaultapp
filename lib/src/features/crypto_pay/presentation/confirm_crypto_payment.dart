@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/crypto/domain/crypto_order_floor.dart';
+import 'package:lazervault/src/features/crypto/cubit/crypto_config_cubit.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -95,13 +98,30 @@ Future<PaySource?> _confirm(
       balance: refreshed.source.assetBalance,
       stale: refreshed.stale,
     );
+    // THE FLOOR THE EXCHANGE ACTUALLY ENFORCES, per coin.
+    //
+    // A crypto-funded payment is a SELL, so it clears the same floor the sell
+    // sheet does — Quidax's minimum_order_size for THIS asset, converted to
+    // fiat at the indicative rate, with the flat fiat notional as a backstop.
+    // Both come from GetCryptoConfig's min_order_minor_units, which the server
+    // builds as max(our config, Quidax's live floor).
+    //
+    // This replaced a single admin-tuned naira figure that was wrong in the
+    // dangerous direction: it sat at ₦1,000 while Quidax wanted ₦1,253, so a
+    // payment passed our gate and failed at theirs.
+    final minFiatMinor = cryptoOrderFloorFiatMinor(
+          config: GetIt.I<CryptoConfigCubit>().config,
+          symbol: refreshed.source.asset!,
+          fiatCurrency: CurrencySymbols.currentCurrency,
+          unitPriceFiatMinor: preview.unitPriceMinor,
+        ) ??
+        0; // null = config not hydrated; the server remains the authority.
+
     final coverage = assessCoverage(
       amountMinor: totalMinor,
       coinValueMinor: refreshed.source.assetFiatValueMinor,
       walletMinor: wallet,
-      // The floor the server enforces, so the customer meets it here rather
-      // than after their PIN. See FeatureFlags.payWithCryptoMinFiatMinor.
-      minFiatMinor: FeatureFlags.payWithCryptoMinFiatMinor,
+      minFiatMinor: minFiatMinor,
     );
 
     // UNPRICEABLE IS NOT INSUFFICIENT. A coin with no market, or a provider
@@ -121,7 +141,7 @@ Future<PaySource?> _confirm(
       preview: preview,
       coverage: coverage,
       // So the sheet can NAME the floor rather than just refuse at it.
-      minFiatMinor: FeatureFlags.payWithCryptoMinFiatMinor,
+      minFiatMinor: minFiatMinor,
     );
     if (!context.mounted) return null;
 
