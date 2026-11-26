@@ -27,6 +27,7 @@ import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
 import 'package:lazervault/src/features/crypto/domain/trade_pricing.dart';
+import 'package:lazervault/src/features/crypto/domain/crypto_order_floor.dart';
 import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Streamlined BUY bottom sheet — the mirror of [SellCryptoSheet].
@@ -128,30 +129,29 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     try {
       final cfg = GetIt.I<CryptoConfigCubit>().config;
       final sym = widget.crypto.symbol.toLowerCase();
-      // Quidax's real min is on the CRYPTO leg (the received crypto must clear
-      // the swap floor). Convert it to fiat via the live rate so a fiat-input
-      // buy sheet can validate it. minOrderFor(sym) is now in the crypto's
-      // LEDGER minor units, so scale by decimalsFor(sym) (NOT a flat /100).
-      double minFromCrypto = 0;
-      final cryptoMinMinor = cfg.minOrderFor(sym);
-      final rate = _rate(); // fiat per 1 unit of crypto
-      if (cryptoMinMinor != null && cryptoMinMinor > 0 && rate > 0) {
-        final cryptoMin = cryptoMinMinor / math.pow(10, cfg.decimalsFor(sym));
-        minFromCrypto = cryptoMin * rate;
-      }
-      // Flat fiat notional floor (~$1 in the user's currency) as a backstop.
-      final fiatFloor =
-          (cfg.minOrderFor(CurrencySymbols.currentCurrency) ?? 0) / 100.0;
-      // Deliverability floor (Quidax's per-network minimum_withdrawal, synced
-      // server-side): the bought crypto must clear it or the buy executes and
-      // auto-refunds. +2%% headroom so rate drift between quote refreshes
-      // doesn't land the user just under the line at confirm.
+      final rate = _rate(); // fiat MAJOR per 1 unit of crypto
+      // THE SWAP FLOOR, shared with the sell sheet and Pay with Crypto — see
+      // crypto_order_floor.dart. It was written out longhand here and in the
+      // sell sheet, so the decimals-scaling correction had to be made twice.
+      final sharedMinor = cryptoOrderFloorFiatMinor(
+        config: cfg,
+        symbol: widget.crypto.symbol,
+        fiatCurrency: CurrencySymbols.currentCurrency,
+        unitPriceFiatMinor: rate > 0 ? rate * 100 : null,
+      );
+      final sharedFloor = sharedMinor == null ? 0.0 : sharedMinor / 100.0;
+      // BUY-ONLY, and the reason this is a max() rather than a replacement:
+      // the deliverability floor (Quidax's per-network minimum_withdrawal,
+      // synced server-side) applies to crypto being RECEIVED. A sell has no
+      // such leg, so it does not belong in the shared helper. Without it the
+      // buy executes and auto-refunds. +2% headroom so rate drift between
+      // quote refreshes does not land the user just under the line at confirm.
       double minFromDeliverable = 0;
       final deliverableMin = cfg.minDeliverableFor(sym);
       if (deliverableMin != null && rate > 0) {
         minFromDeliverable = deliverableMin * rate * 1.02;
       }
-      return math.max(math.max(minFromCrypto, fiatFloor), minFromDeliverable);
+      return math.max(sharedFloor, minFromDeliverable);
     } catch (_) {
       return 0;
     }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_config_cubit.dart';
 import 'package:lazervault/src/features/crypto/domain/crypto_order_floor.dart';
@@ -107,10 +109,13 @@ void main() {
       );
     });
 
-    test('an unpriceable coin falls back to the fiat notional, not to zero', () {
+    test('an unpriceable coin falls back to the fiat notional, not to zero',
+        () {
       expect(
         cryptoOrderFloorFiatMinor(
-          config: cfg(minOrders: {'usdt': 1000000, 'ngn': 130000}, decimals: {'usdt': 6}),
+          config: cfg(
+              minOrders: {'usdt': 1000000, 'ngn': 130000},
+              decimals: {'usdt': 6}),
           symbol: 'usdt',
           fiatCurrency: 'ngn',
           unitPriceFiatMinor: null,
@@ -130,5 +135,48 @@ void main() {
       unitPriceFiatMinor: 125319.7, // the ₦1,253.197 case, in kobo
     );
     expect(floor, 125320);
+  });
+
+  // ───────────────────────────────────────────────────────────────────────────
+
+  /// THE FLOOR HAS ONE IMPLEMENTATION.
+  ///
+  /// The crypto-leg conversion — minOrderFor(symbol) scaled by that coin's own
+  /// decimals, maxed against the flat fiat notional — was written out longhand
+  /// in the buy sheet and the sell sheet as well as here, so the correction
+  /// that the scaling is decimalsFor(symbol) and NEVER a flat /100 had to be
+  /// made in each of them. For an 8-dp coin, getting it wrong under-scales the
+  /// floor by six orders of magnitude, and a floor the app gets wrong in that
+  /// direction lets an order through that the exchange then refuses.
+  ///
+  /// Source-text, like the guards beside it: the mistake is not a behaviour a
+  /// widget test reaches, it is arithmetic someone types out again.
+  test('no sheet recomputes the crypto-leg floor itself', () {
+    const callers = <String>[
+      'lib/src/features/crypto/presentation/view/buy_crypto_sheet.dart',
+      'lib/src/features/crypto/presentation/view/sell_crypto_sheet.dart',
+      'lib/src/features/crypto_pay/presentation/confirm_crypto_payment.dart',
+    ];
+    final offenders = <String>[];
+    for (final path in callers) {
+      final f = File(path);
+      expect(f.existsSync(), isTrue,
+          reason: '$path is missing — update this guard');
+      final body = f
+          .readAsLinesSync()
+          .where((l) =>
+              !l.trimLeft().startsWith('//') && !l.trimLeft().startsWith('///'))
+          .join('\n');
+      if (!body.contains('cryptoOrderFloorFiatMinor(')) {
+        offenders.add('$path does not use the shared floor at all');
+        continue;
+      }
+      if (RegExp(r'math\.pow\(\s*10\s*,[^)]*decimalsFor').hasMatch(body)) {
+        offenders.add('$path scales the crypto leg itself');
+      }
+    }
+    expect(offenders, isEmpty,
+        reason: 'the floor must be resolved in one place:\n'
+            '  ${offenders.join('\n  ')}');
   });
 }

@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/crypto/presentation/utils/buy_limits_caption.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +25,7 @@ import '../../domain/trade_precision.dart';
 import 'package:lazervault/src/features/crypto/domain/trade_amounts.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
 import 'package:lazervault/src/features/crypto/domain/trade_pricing.dart';
+import 'package:lazervault/src/features/crypto/domain/crypto_order_floor.dart';
 import 'package:lazervault/core/widgets/app_bottom_sheet.dart';
 
 /// Streamlined SELL bottom sheet.
@@ -115,23 +114,23 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   /// (the backend still enforces Quidax's real floor on the quote).
   double _minFiat() {
     try {
-      final cfg = GetIt.I<CryptoConfigCubit>().config;
-      final sym = widget.crypto.symbol.toLowerCase();
-      // Quidax's real min is on the CRYPTO leg (the crypto sold must clear the
-      // swap floor). Convert to fiat via the live price so this fiat-input sell
-      // sheet can validate it. minOrderFor(sym) is in the crypto's LEDGER minor
-      // units → scale by decimalsFor(sym), NOT a flat /100.
-      double minFromCrypto = 0;
-      final cryptoMinMinor = cfg.minOrderFor(sym);
-      final price = _price(); // fiat per 1 unit of crypto
-      if (cryptoMinMinor != null && cryptoMinMinor > 0 && price > 0) {
-        final cryptoMin = cryptoMinMinor / math.pow(10, cfg.decimalsFor(sym));
-        minFromCrypto = cryptoMin * price;
-      }
-      // Flat fiat notional floor (~$1 in the user's currency) as a backstop.
-      final fiatFloor =
-          (cfg.minOrderFor(CurrencySymbols.currentCurrency) ?? 0) / 100.0;
-      return math.max(minFromCrypto, fiatFloor);
+      // ONE IMPLEMENTATION OF THE FLOOR, shared with the buy sheet and with
+      // Pay with Crypto — see crypto_order_floor.dart for which two floors
+      // are being maxed and why the crypto leg scales by the coin's own
+      // decimals rather than a flat /100. This sheet, the buy sheet and
+      // confirm_crypto_payment had three copies of that arithmetic; a
+      // correction to one of them (the decimals scaling) had to be made three
+      // times, which is how two of them came to disagree.
+      final price = _price(); // fiat MAJOR per 1 unit of crypto
+      final minor = cryptoOrderFloorFiatMinor(
+        config: GetIt.I<CryptoConfigCubit>().config,
+        symbol: widget.crypto.symbol,
+        fiatCurrency: CurrencySymbols.currentCurrency,
+        unitPriceFiatMinor: price > 0 ? price * 100 : null,
+      );
+      // null = config not hydrated. 0 keeps this sheet's existing contract
+      // ("unknown, let the server decide") rather than refusing everything.
+      return minor == null ? 0 : minor / 100.0;
     } catch (_) {
       return 0;
     }
