@@ -90,7 +90,23 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   // Drawing data
   final List<DrawingElement> _drawings = [];
   DrawingElement? _currentDrawing;
-  final bool _isDrawing = false;
+  /// True between touch-down on the chart with a drawing tool selected and
+  /// the lift that commits it.
+  ///
+  /// THIS WAS `final bool _isDrawing = false` — declared final, initialised to
+  /// false, and assigned nowhere. Both of its readers are gated on it, so both
+  /// were dead:
+  ///
+  ///   * the drag handler never ran, so a trendline or measure could never be
+  ///     extended from its start point;
+  ///   * _endDrawing never ran, so NO DRAWING WAS EVER COMMITTED to _drawings.
+  ///
+  /// The chart still showed the drawing, because the painter also renders
+  /// _currentDrawing — so a line appeared, the menu said "Clear drawings (0)"
+  /// because _drawings was empty, and placing a second line silently replaced
+  /// the first instead of adding to it. Reported from the ETH chart with an
+  /// H-Line visible above a "(0)".
+  bool _isDrawing = false;
 
   // Drawing selection and dragging
   DrawingElement? _selectedDrawing;
@@ -1813,6 +1829,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     if (visible.isEmpty) return;
     final coord = _projectToChartSpace(point, visible);
     setState(() {
+      // Raised here so the drag and lift handlers, which are both gated on
+      // it, actually run for this gesture.
+      _isDrawing = true;
       switch (_selectedDrawingTool) {
         case DrawingTool.horizontalLine:
           _currentDrawing = HorizontalLineElement(
@@ -1897,14 +1916,21 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     });
   }
 
+  /// Drawings the user can SEE, which is what a "Clear drawings (n)" label
+  /// has to count: the committed ones plus one still being placed.
+  int get _drawingCount => _drawings.length + (_currentDrawing == null ? 0 : 1);
+
   void _endDrawing() {
-    if (_currentDrawing != null) {
-      if (!mounted) return;
-      setState(() {
+    if (!mounted) return;
+    setState(() {
+      // Lowered even when there is nothing to commit, so an interrupted
+      // gesture cannot leave the flag raised and swallow the next pan.
+      _isDrawing = false;
+      if (_currentDrawing != null) {
         _drawings.add(_currentDrawing!);
         _currentDrawing = null;
-      });
-    }
+      }
+    });
   }
 
   /// Drag a selected drawing by translating ALL its anchor points by
@@ -2447,7 +2473,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                 ListTile(
                   leading: Icon(Icons.delete_outline,
                       color: Colors.red[300], size: 22.sp),
-                  title: Text('Clear all drawings (${_drawings.length})',
+                  title: Text('Clear all drawings ($_drawingCount)',
                       style: GoogleFonts.inter(
                           color: Colors.red[300], fontWeight: FontWeight.w600)),
                   onTap: () {
@@ -2607,7 +2633,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             ),
             ListTile(
               leading: Icon(Icons.brush_outlined, color: Colors.grey[300]),
-              title: Text('Clear drawings (${_drawings.length})',
+              title: Text('Clear drawings ($_drawingCount)',
                   style: GoogleFonts.inter(color: Colors.white)),
               onTap: () {
                 Navigator.of(sheetCtx).pop();
