@@ -290,6 +290,27 @@ class _SelectRecipientsState extends State<SelectRecipients>
     cubit.loadMoreRecipients(accessToken: accessToken);
   }
 
+  /// Pull every remaining page before a search decides there are no matches.
+  ///
+  /// The search box and the All / Bank / Lazervault pills both filter the list
+  /// ALREADY LOADED. On a long list that makes "no results" mean "not on the
+  /// pages you have scrolled", which is indistinguishable from the recipient
+  /// not existing — reported by a customer whose saved payee of several
+  /// transfers could not be found, while her row sat on a later page.
+  ///
+  /// Scrolling still loads pages one at a time; this is only for the moment a
+  /// query is typed, where the reader is asking a question about the WHOLE
+  /// list rather than browsing it.
+  void _loadAllSaved() {
+    final cubit = context.read<RecipientCubit>();
+    final st = cubit.state;
+    if (st is! RecipientLoaded || !st.hasMore) return;
+    final accessToken =
+        _getAccessTokenFromState(context.read<AuthenticationCubit>().state);
+    if (accessToken == null) return;
+    cubit.loadAllRecipients(accessToken: accessToken);
+  }
+
   String? _getAccessTokenFromState(AuthenticationState authState) {
     if (authState is AuthenticationSuccess) {
       return authState.profile.session.accessToken;
@@ -1997,6 +2018,29 @@ class _SelectRecipientsState extends State<SelectRecipients>
                         ),
                       ),
                       SizedBox(width: 6.w),
+                      // Layout toggle, next to the section it controls rather than
+                      // buried in settings — the same place the Lifestyle tab puts
+                      // its view switch, so the gesture is already learned.
+                      if (saved.isNotEmpty)
+                        InkWell(
+                          borderRadius: BorderRadius.circular(20.r),
+                          onTap: _toggleSavedView,
+                          child: Padding(
+                            padding: EdgeInsets.all(4.w),
+                            child: Icon(
+                              _savedView == SavedRecipientsView.rail
+                                  ? Icons.view_list_rounded
+                                  : Icons.view_carousel_rounded,
+                              size: 18.sp,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                      // SEARCH SITS RIGHT OF THE VIEW TOGGLE, and after it
+                      // rather than before: the magnifier is the control people
+                      // reach for on this rail, and tucked against the heading
+                      // it read as part of the label instead of a button.
+                      //
                       // SEARCH, not filter. The filter icon that used to sit
                       // here opened a second filter over the same list that
                       // "View all" already filters — so a Favourites choice
@@ -2011,27 +2055,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
                           onTap: () =>
                               _openSavedRecipientsSheet(focusSearch: true),
                           child: Padding(
-                            padding: EdgeInsets.all(4.w),
+                            padding: EdgeInsets.all(6.w),
                             child: Icon(
                               Icons.search,
-                              size: 18.sp,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ),
-                      // Layout toggle, next to the section it controls rather than
-                      // buried in settings — the same place the Lifestyle tab puts
-                      // its view switch, so the gesture is already learned.
-                      if (saved.isNotEmpty)
-                        InkWell(
-                          borderRadius: BorderRadius.circular(20.r),
-                          onTap: _toggleSavedView,
-                          child: Padding(
-                            padding: EdgeInsets.all(4.w),
-                            child: Icon(
-                              _savedView == SavedRecipientsView.rail
-                                  ? Icons.view_list_rounded
-                                  : Icons.view_carousel_rounded,
                               size: 18.sp,
                               color: Colors.grey[600],
                             ),
@@ -2125,6 +2151,17 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final ordered = _orderedSaved(state)
         .where((r) => _isInternalRecipient(r) == wantInternal)
         .toList();
+    // A TAB IS A FILTER OVER THE LOADED PAGE, NOT A QUERY. So "no saved
+    // recipients" here can mean "none of the rows fetched so far are this
+    // type", which is a different sentence and the wrong one to show. If the
+    // tab looks empty and the service still has pages, fetch them before
+    // saying so — otherwise a payer whose bank recipients all sit on page two
+    // is told they have none at all.
+    if (ordered.isEmpty && state is RecipientLoaded && state.hasMore) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadMoreSaved();
+      });
+    }
     if (ordered.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
@@ -2400,8 +2437,13 @@ class _SelectRecipientsState extends State<SelectRecipients>
                             Expanded(
                               child: TextField(
                                 autofocus: focusSearch,
-                                onChanged: (v) =>
-                                    setSheetState(() => query = v),
+                                onChanged: (v) {
+                                  setSheetState(() => query = v);
+                                  // Searching asks about the whole list, so
+                                  // fetch what has not been paged in yet
+                                  // before reporting "no matches".
+                                  if (v.trim().isNotEmpty) _loadAllSaved();
+                                },
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
                                   hintText: 'Search recipients...',

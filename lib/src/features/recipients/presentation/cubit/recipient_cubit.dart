@@ -42,7 +42,16 @@ class RecipientCubit extends Cubit<RecipientState> {
 
   // Pagination state
   int _currentPage = 1;
-  final int _pageSize = 20;
+  /// 100, which is the largest page the service will serve
+  /// (recipientRepository clamps pageSize to 100 and defaults it to 20).
+  ///
+  /// It was 20, and the screen splits the loaded page into the Bank and
+  /// Lazervault tabs CLIENT-SIDE, so each tab showed whatever fraction of
+  /// those 20 happened to be its type. A customer with 149 saved recipients
+  /// reported one they had transferred to repeatedly and saved — she was
+  /// there, saved twice, but sat past the first page and so appeared in
+  /// neither tab. At 100 that customer is two requests instead of eight.
+  final int _pageSize = 100;
   bool _hasMore = true;
   int _totalItems = 0;
   int _totalPages = 0;
@@ -195,6 +204,35 @@ class RecipientCubit extends Cubit<RecipientState> {
       } else {
         emit(RecipientError(e.toString()));
       }
+    }
+  }
+
+  /// Keep fetching until the service has no more pages.
+  ///
+  /// WHY A SEARCH NEEDS THIS. The search box and the Bank / Lazervault tabs
+  /// both filter the list the cubit has ALREADY loaded. Filtering one page and
+  /// calling the result "no matches" is a lie: the row is in the table, it is
+  /// simply on page two. So a search exhausts the pages first and then
+  /// filters, which is the difference between "nothing matched" and "nothing
+  /// matched yet".
+  ///
+  /// Safe to call repeatedly: it returns immediately once `_hasMore` is false,
+  /// and every page is deduped by id on append. [maxPages] is a stop so a
+  /// service that keeps reporting hasMore cannot spin forever — at 100 a page
+  /// it covers 2,000 recipients, far past any real list.
+  Future<void> loadAllRecipients({
+    required String accessToken,
+    int maxPages = 20,
+  }) async {
+    final seq = _loadSeq;
+    var guard = 0;
+    while (!isClosed && _hasMore && guard < maxPages) {
+      guard++;
+      if (state is! RecipientLoaded) return;
+      await loadMoreRecipients(accessToken: accessToken);
+      // A filter change or a reload landed while we were paging; the list we
+      // would keep appending to is no longer the one on screen.
+      if (seq != _loadSeq) return;
     }
   }
 
