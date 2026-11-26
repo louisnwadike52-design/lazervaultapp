@@ -1,0 +1,6 @@
+• Changing your phone number is rebuilt — pick your country, type the number with or without the leading 0, and the code submits itself
+• Quick services now fill the grid, with no empty square
+• Shared and notification links open the right sign-in screen
+• Transaction references are much shorter and easier to read out
+• The email verification screen tells you how long your code lasts
+• The identity screen no longer flashes dark while loading

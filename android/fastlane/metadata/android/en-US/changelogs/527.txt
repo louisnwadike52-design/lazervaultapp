@@ -1,0 +1,3 @@
+• The "code expires in" timer is gone — the resend countdown is the one that matters
+• Spacing on the verify-your-phone screen is tidier
+• Entering the last digit of a code now verifies it for you

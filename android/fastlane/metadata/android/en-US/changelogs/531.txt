@@ -1,0 +1,7 @@
+Events got a redesign: smaller cards with the flyer on the right, tap any image to view it full screen and swipe it away. Search events by venue or host, then open a host to see everything they are running.
+
+Support agents can now reach the ticket queue from the dashboard, view images customers send full screen, and hand a ticket to our technical team.
+
+Nova now tells you what it is actually doing while it works.
+
+Plus privacy controls for search, and faster recipient search.

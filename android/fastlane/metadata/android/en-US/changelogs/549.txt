@@ -1,0 +1,5 @@
+• Contributing to a campaign takes you straight to your receipt, which updates itself as the payment lands.
+• Campaign creators and everyone who contributed now hear when a campaign reaches its goal or its deadline.
+• Crowdfunds has one filter bar, with a clearer filter sheet.
+• During BVN verification you can correct your own name or date of birth and carry on.
+• The bottom navigation sits correctly above your phone's own buttons.

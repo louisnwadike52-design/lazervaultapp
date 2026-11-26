@@ -1,0 +1,10 @@
+Improvements and fixes:
+
+• Fixed a verification screen that counted down to "Resend" while telling you
+  you had requested too many codes
+• The resend wait is now the same wait the server actually applies, so the
+  button unlocks when a new code can really be sent
+• Fixed requesting a code twice at once, which could leave the code in your
+  last message already out of date
+
+Thank you for using Lazervault.

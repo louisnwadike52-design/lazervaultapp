@@ -1,0 +1,5 @@
+• Typing a verification code now works properly — digits no longer disappear as you enter them
+• The last digit of a login code is no longer dropped before it is checked
+• A half-finished signup can now be left to sign in as someone else
+• Event ticketing screens are readable again — back buttons, titles and buttons were invisible
+• More services now sits at the bottom of the quick services grid

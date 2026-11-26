@@ -1,0 +1,3 @@
+• Crypto wallets now open with their deposit address and network, and each wallet on the Secure Wallet card is tappable
+• Identity verification screen is easier to read: a smaller header, visible buttons, and the “Before you verify” checklist no longer shows white text on white
+• Crowdfund cards show the total ever raised, so a campaign that paid out no longer reads “0 raised”

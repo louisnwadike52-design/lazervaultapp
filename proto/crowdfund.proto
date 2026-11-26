@@ -88,6 +88,78 @@ message CrowdfundMessage {
   int32  refunds_completed = 27;
   int32  refunds_failed    = 28;
   uint64 total_refunded    = 29;
+  // Lifetime completed contributions in KOBO; monotonic (withdrawals/refunds never reduce it).
+  uint64 total_raised      = 30;
+
+  // ── Moderation ──────────────────────────────────────────────────────────
+  //
+  // Populated according to WHO IS ASKING (financial-products-service's
+  // crowdfundModelToProto):
+  //
+  //   moderation_status    everyone. A RESTRICTED campaign is meant to carry
+  //                        a badge a donor reads before giving, so the state
+  //                        has to be renderable by the public.
+  //   moderation_category  the creator and operators.
+  //   moderation_reason    the creator and operators. Written FOR the
+  //                        creator, in the operator's voice — this is the
+  //                        text the blocked-campaign screen shows.
+  //   moderation_note      OPERATORS ONLY. The classifier's rationale and
+  //                        admin remarks; arrives empty in the app and must
+  //                        never be rendered.
+  //   can_appeal           the creator only, and only while there is
+  //                        something to appeal and no appeal already open.
+  string moderation_status   = 31;
+  string moderation_category = 32;
+  string moderation_reason   = 33;
+  string moderation_note     = 34;
+  google.protobuf.Timestamp moderated_at = 35;
+  int32  appeal_count        = 36;
+  bool   can_appeal          = 37;
+}
+
+// ── Campaign moderation appeals ──────────────────────────────────────────
+
+message CrowdfundAppealMessage {
+  string id = 1;
+  string crowdfund_id = 2;
+  string user_id = 3;
+  string message = 4;                 // what the creator argued
+  string status = 5;                  // open|approved|rejected|withdrawn
+  string decision = 6;                // the operator's answer, shown to them
+  string reviewed_by = 7;
+  google.protobuf.Timestamp reviewed_at = 8;
+  string appealed_status = 9;         // the moderation state being appealed
+  string appealed_category = 10;
+  google.protobuf.Timestamp created_at = 11;
+  string crowdfund_title = 12;
+  string crowdfund_code = 13;
+}
+
+message SubmitCrowdfundAppealRequest {
+  string crowdfund_id = 1;
+  string message = 2;
+}
+
+message SubmitCrowdfundAppealResponse {
+  bool success = 1;
+  string message = 2;
+  CrowdfundAppealMessage appeal = 3;
+}
+
+message ListCrowdfundAppealsRequest {
+  // A creator's own appeals. There is no user_id here on purpose: the
+  // gateway always scopes a non-operator caller to their own id, so a field
+  // for it on the app-facing request could only ever be ignored — and a
+  // field that looks like it does something is worse than no field.
+  string status = 1;
+  string crowdfund_id = 2;
+  int32 limit = 3;
+}
+
+message ListCrowdfundAppealsResponse {
+  bool success = 1;
+  repeated CrowdfundAppealMessage appeals = 2;
+  int32 total = 3;
 }
 
 message CrowdfundDonorMessage {
@@ -725,6 +797,26 @@ service CrowdfundService {
   rpc ListCrowdfundWithdrawals(ListCrowdfundWithdrawalsRequest) returns (ListCrowdfundWithdrawalsResponse) {
     option (google.api.http) = {
       get: "/v1/crowdfunds/withdrawals"
+    };
+  }
+
+
+  // ── Campaign moderation appeals ────────────────────────────────────────
+
+  // A creator challenging a block on their own campaign. The caller's id
+  // comes from the JWT; the service refuses a campaign that is not theirs.
+  rpc SubmitCrowdfundAppeal(SubmitCrowdfundAppealRequest) returns (SubmitCrowdfundAppealResponse) {
+    option (google.api.http) = {
+      post: "/v1/crowdfunds/{crowdfund_id}/appeals"
+      body: "*"
+    };
+  }
+
+  // The caller's own appeals, so the blocked-campaign screen can show where
+  // an appeal stands and the decision when one has been made.
+  rpc ListCrowdfundAppeals(ListCrowdfundAppealsRequest) returns (ListCrowdfundAppealsResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/appeals"
     };
   }
 

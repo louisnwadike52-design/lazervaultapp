@@ -2,8 +2,41 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Permissions and features should be direct children of manifest -->
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <!-- OPTIONAL, like the NFC pair below, and for the same reason.
+         Declared WITHOUT android:required, these defaulted to REQUIRED and
+         Play refused to send the app for review: "android.hardware.camera.
+         autofocus affects Phone, Tablet, Desktop and Android XR users", who
+         could not install it at all.
+
+         The camera is used for QR scanning (ticket check-in, vendor scans,
+         QR pay) and KYC capture. Every one of those is a feature; none of
+         them is the product. Someone on a device without a camera — or
+         without an autofocus camera, which is most desktops and XR — can
+         still hold an account, move money and be paid. Requiring the
+         hardware removed those users to protect flows they simply would not
+         open.
+
+         The scanner screens already handle an unavailable camera (see
+         _CameraProblem on the vendor and ticketing scanners), so the
+         absence is a surface that degrades rather than an app that
+         crashes. -->
+    <!-- tools:replace IS LOAD-BEARING, not belt-and-braces.
+         The manifest merger ORs android:required across every manifest, so a
+         library that declares a feature as required (or omits the attribute,
+         which defaults to required) wins over our "false". Only an explicit
+         replace overrides it.
+
+         camera.any comes from camera_android_camerax, not from us — which is
+         why fixing only our two lines would have left the merged manifest
+         still restricting devices, and the next Play submission refused for a
+         feature nobody here declared. The merged manifest is what Play reads;
+         our source file is one input to it. -->
+    <uses-feature android:name="android.hardware.camera"
+        android:required="false" tools:replace="android:required" />
+    <uses-feature android:name="android.hardware.camera.autofocus"
+        android:required="false" tools:replace="android:required" />
+    <uses-feature android:name="android.hardware.camera.any"
+        android:required="false" tools:replace="android:required" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
     <uses-feature android:name="android.hardware.nfc.hce" android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -201,6 +234,22 @@
                      room was sending guests to a dead page. -->
                 <data android:scheme="https" android:host="lazervault.app"
                       android:pathPrefix="/lazerspray/join" />
+                <!-- Ticketed event share links: /tickets/<id>.
+                     EventShareService mints these and an organiser's shared
+                     link IS the distribution for a ticketed event — so an
+                     unclaimed path does not merely degrade, it means every
+                     event ever shared sent buyers to a web page instead of to
+                     the buy sheet.
+                     DELIBERATELY NOT /events/: the website serves its own
+                     marketing events at /events/[slug], so claiming that
+                     prefix would intercept THOSE links and drop the visitor on
+                     the dashboard, as well as 404ing every no-app tap of a
+                     ticketed event.
+                     Mirrored in public/.well-known/apple-app-site-association
+                     on the website for iOS; the entitlement claims the whole
+                     host, so that file is what restricts the paths there. -->
+                <data android:scheme="https" android:host="lazervault.app"
+                      android:pathPrefix="/tickets/" />
                 <!-- Group / joint-funds share links: /groups/<id>. Shared from
                      the group report screen; unclaimed until now, so a
                      contributor tapping one got a browser 404 instead of the

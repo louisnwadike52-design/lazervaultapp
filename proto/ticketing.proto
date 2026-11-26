@@ -1,0 +1,725 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "lazervaultGo/pb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// EVENT TICKETING — the app-facing surface.
+//
+// IMPORTANT — REGEN NOTE (do not remove):
+// This gateway links BOTH this gateway-local pb.TicketingService AND
+// financial-products-service/proto's financialproducts.TicketingService.
+// protobuf's registry is keyed on the DESCRIPTOR PATH, so this file must be
+// passed to protoc as `proto/ticketing.proto` FROM THE GATEWAY ROOT — the
+// descriptor then reads `proto/ticketing.proto` and does not collide with the
+// service's plain `ticketing.proto`. Passing it as `-I=proto ticketing.proto`
+// makes the process panic in init(), before a line of main runs, and a
+// successful `go build` does not catch it. See proto/REGENERATING.md.
+//
+// FIELD NUMBERS here and in financial-products' copy are maintained BY HAND
+// and the proxy maps field by field. A number that drifts between them is
+// SILENTLY DROPPED rather than failing to compile, so the two files are kept
+// identical except for the package, the go_package and the HTTP annotations.
+//
+// ROUTE SHAPES: no static segment sits under a param segment. "my-events" and
+// "my-tickets" are deliberately NOT "/v1/tickets/events/mine", which the
+// pattern /v1/tickets/events/{event_id} would match with event_id="mine" — the
+// same trap app_routes.dart documents on the Flutter side.
+//
+// AMOUNTS ARE int64 MINOR UNITS (kobo) END TO END, with no conversion at this
+// boundary: the proxy is a pure copy. (The crowdfund proxy beside it multiplies
+// and divides by 100 because crowdfund stores naira; ticketing does not.)
+//
+// NULLABLE MEANS SOMETHING AND IS MODELLED WITH REAL FIELD PRESENCE: absent
+// CAPACITY means UNLIMITED, never a zero — a zero capacity would read as
+// "sells nothing", the exact opposite.
+// ============================================================================
+
+enum TicketEventStatus {
+  TICKET_EVENT_STATUS_UNSPECIFIED = 0;
+  // Created, not sellable. The organiser has not confirmed the commission
+  // preview yet.
+  TICKET_EVENT_STATUS_DRAFT = 1;
+  TICKET_EVENT_STATUS_PUBLISHED = 2;
+  // No more buyers; the ledger is final and the organiser may withdraw.
+  // DISTINCT FROM CANCELLED: this keeps every purchase, cancelled refunds
+  // them. Conflating the two is how a sold-out event gets refunded because the
+  // organiser only wanted to stop selling.
+  TICKET_EVENT_STATUS_SALES_CLOSED = 3;
+  TICKET_EVENT_STATUS_CANCELLED = 4;
+  // Paid out in full.
+  TICKET_EVENT_STATUS_SETTLED = 5;
+}
+
+enum TicketFeePayer {
+  TICKET_FEE_PAYER_UNSPECIFIED = 0;
+  // Added on top of the ticket price.
+  TICKET_FEE_PAYER_BUYER = 1;
+  // Taken out of the organiser's net, and never allowed to exceed the price.
+  TICKET_FEE_PAYER_ORGANISER = 2;
+  // Halved, with the odd kobo going to the organiser's side so nothing is
+  // lost in the split.
+  TICKET_FEE_PAYER_SPLIT = 3;
+}
+
+enum TicketAdmissionStatus {
+  TICKET_ADMISSION_STATUS_UNSPECIFIED = 0;
+  TICKET_ADMISSION_STATUS_ISSUED = 1;
+  TICKET_ADMISSION_STATUS_USED = 2;
+}
+
+// TicketEvent is one sellable event.
+//
+// The money counters are carried on the event rather than summed from
+// purchases on every read: an organiser dashboard that SUMs a growing table on
+// each refresh is the query that falls over on the night it matters.
+// ONE OPTION ON A BROWSE AXIS — a category, or a Nigerian state.
+//
+// slug|label rather than a bare string, and that pairing is the whole point:
+// the SLUG is what an event stores and what a filter matches on, the LABEL is
+// what a person reads. Re-wording a label ("Concerts" -> "Live music") must
+// not orphan every event filed under it, which is exactly what happens when
+// the stored value and the displayed value are the same string.
+message TicketTaxonomyOption {
+  string slug = 1;
+  string label = 2;
+}
+
+message TicketEvent {
+  string id = 1;
+  string organiser_user_id = 2;
+
+  string title = 3;
+  string description = 4;
+  string venue = 5;
+  string flyer_url = 6;
+
+  // THE PUBLIC HOST, and its optional handles.
+  //
+  // A property of the EVENT, not of the account. Everywhere else in ticketing
+  // a user id is returned and the app resolves a display name through the
+  // payee lookup, so someone hidden from search stays hidden. A published
+  // event is the opposite case: the organiser is advertising, and what a buyer
+  // needs is the BRAND running the night — one person may run several.
+  //
+  // Field numbers 26/27: appended, never inserted. 1-25 are in use and a
+  // renumber would silently re-interpret every stored message.
+  string organiser_name = 26;
+  // platform -> handle. instagram/x/tiktok/facebook/youtube/whatsapp/website.
+  // Validated server-side before storage — the app renders these as links.
+  map<string, string> organiser_socials = 27;
+
+  string currency = 7;
+  int64 unit_price_minor = 8;
+
+  // See the header: absent = unlimited.
+  //
+  // `optional` rather than a companion has_capacity boolean. Real proto3 field
+  // presence removes the whole class of "the client set capacity and forgot the
+  // flag, so it silently became unlimited" — and the Dart generator mangled the
+  // companion into `hasCapacity_10`, because `hasCapacity()` is already the
+  // presence-checker for this very field.
+  optional int32 capacity = 9;
+  reserved 10;
+
+  int32 tickets_sold = 11;
+  int64 gross_collected_minor = 12;
+  int64 fee_collected_minor = 13;
+  int64 organiser_net_minor = 14;
+  int64 paid_out_minor = 15;
+  int64 refunded_minor = 16;
+
+  TicketFeePayer fee_payer = 17;
+  TicketEventStatus status = 18;
+
+  google.protobuf.Timestamp sales_open_at = 19;
+  google.protobuf.Timestamp sales_close_at = 20;
+  google.protobuf.Timestamp event_at = 21;
+  google.protobuf.Timestamp cancelled_at = 22;
+  string cancel_reason = 23;
+  google.protobuf.Timestamp created_at = 24;
+
+  // TICKETS STILL AVAILABLE, computed server-side. The app must not derive it
+  // from capacity − sold: the two are read at different moments under
+  // concurrency, and a negative or stale remainder on a buy sheet reads as a
+  // bug to the buyer. Meaningless (and left 0) when has_capacity is false.
+  int32 remaining = 25;
+
+  // Browse axes. Stored as SLUGS; the labels come from the config so a
+  // re-word never orphans an event. Empty means the organiser did not
+  // choose one, which is allowed.
+  string category = 28;
+
+  string state = 29;
+}
+
+// ── READS ─────────────────────────────────────────────────────────────────
+
+// Paging is page/size, not limit/offset, matching this service's other read
+// paths. A non-positive size is CLAMPED to a default rather than honoured:
+// GORM reads Limit(-1) as "no limit, and cancel any limit already set", so a
+// negative size once returned an entire table.
+message ListTicketEventsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  // Matches the title, the venue AND the host name. Empty = everything
+  // currently on sale.
+  string search = 3;
+  // EXACT host, case-insensitive. Set when the buyer has tapped a host name
+  // and wants that host's whole programme rather than a fuzzy match.
+  //
+  // Separate from `search` on purpose: a substring search for "Jazz Collective"
+  // also returns every OTHER host whose event title mentions jazz, which is
+  // right for a search box and wrong for a page titled with one host's name.
+  string organiser = 4;
+
+  // Filter by browse axis. Empty means "any".
+  string category = 5;
+
+  string state = 6;
+}
+message ListTicketEventsResponse {
+  repeated TicketEvent events = 1;
+  int64 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message GetTicketEventRequest {
+  string event_id = 1;
+}
+message GetTicketEventResponse {
+  TicketEvent event = 1;
+  // THE COMMISSION PREVIEW FOR ONE TICKET, resolved under the settings in
+  // force right now. Returned with the event so a buy sheet can show the total
+  // before the buyer commits, without a second round trip and without the app
+  // reimplementing the fee engine — which is the drift that makes a quote and
+  // a charge disagree.
+  int64 buyer_total_minor_per_ticket = 2;
+  int64 fee_minor_per_ticket = 3;
+}
+
+message ListMyTicketEventsRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+message ListMyTicketEventsResponse {
+  repeated TicketEvent events = 1;
+  int64 total = 2;
+}
+
+// MyTicket is one admission the holder has, with enough of its event to be
+// identifiable. Joined server-side: a QR code with no event name is a code the
+// holder cannot place, and the alternative is the app fetching an event per
+// ticket.
+message MyTicket {
+  string ticket_id = 1;
+  string code = 2;
+  TicketAdmissionStatus status = 3;
+  google.protobuf.Timestamp checked_in_at = 4;
+
+  string purchase_id = 5;
+  string event_id = 6;
+  string event_title = 7;
+  string venue = 8;
+  google.protobuf.Timestamp event_at = 9;
+  string currency = 10;
+  int64 unit_price_minor = 11;
+  TicketEventStatus event_status = 12;
+}
+
+message ListMyTicketsRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+message ListMyTicketsResponse {
+  repeated MyTicket tickets = 1;
+  int64 total = 2;
+
+  // WHICH BUYER ACTIONS ARE SWITCHED ON, so the screen can hide one rather
+  // than offering it into a refusal — the same reasoning that puts
+  // `withdrawable` + `withdrawable_reason` on GetEventEarnings. Both default
+  // OFF, so a settings read that fails hides the buttons.
+  bool refunds_enabled = 3;
+  bool transfers_enabled = 4;
+  // How long BEFORE the event refund requests close, so the app can say
+  // "until 24h before" rather than a bare switch. 0 = until sales close.
+  int32 refund_cutoff_hours = 5;
+}
+
+// ── LIFECYCLE ─────────────────────────────────────────────────────────────
+
+message CreateTicketEventRequest {
+  string organiser_user_id = 1;
+  string title = 2;
+  string description = 3;
+  string venue = 4;
+  string flyer_url = 5;
+  string currency = 6;
+  int64 unit_price_minor = 7;
+  // Absent = unlimited. See TicketEvent.capacity.
+  optional int32 capacity = 8;
+  reserved 9;
+  TicketFeePayer fee_payer = 10;
+  google.protobuf.Timestamp sales_open_at = 11;
+  google.protobuf.Timestamp sales_close_at = 12;
+  google.protobuf.Timestamp event_at = 13;
+
+  // Optional public host + handles. Empty name means "no separate brand" and
+  // the listing shows none — inventing one from the account holder would
+  // publish personal identity on a page the holder never chose to put it on.
+  // Appended at 14/15, never inserted among the fields already in use.
+  string organiser_name = 14;
+  map<string, string> organiser_socials = 15;
+
+  // Browse axes, as slugs from GetTicketingConfig.
+  string category = 16;
+
+  string state = 17;
+}
+message CreateTicketEventResponse {
+  TicketEvent event = 1;
+  // What the organiser would net on one ticket at this price, under the
+  // commission in force. This is the number step 2 of the creation sheet
+  // confirms.
+  int64 organiser_net_minor_per_ticket = 2;
+  int64 fee_minor_per_ticket = 3;
+}
+
+// UpdateTicketEventRequest — every field is paired with an update_* flag.
+//
+// WITHOUT THE FLAGS A CLIENT SENDING ONE FIELD BLANKS THE REST, because proto3
+// cannot tell "" from "not set". And blanking is not symmetric here: clearing
+// a title is refused, but clearing a flyer or a sales window is legitimate, so
+// "absent" and "deliberately empty" have to be distinguishable.
+//
+// Commercial terms (price, capacity, commission, dates) are refused outright
+// once a ticket has been sold — the purchase row carries its own price, so
+// changing the event's would leave the organiser's recorded net and the money
+// actually in the pool describing different events.
+message UpdateTicketEventRequest {
+  string event_id = 1;
+  string organiser_user_id = 2;
+
+  string title = 3;
+  bool update_title = 4;
+  string description = 5;
+  bool update_description = 6;
+  string venue = 7;
+  bool update_venue = 8;
+  string flyer_url = 9;
+  bool update_flyer_url = 10;
+
+  int64 unit_price_minor = 11;
+  bool update_unit_price = 12;
+  // THE THREE STATES, without a third field:
+  //   update_capacity = false            leave capacity alone
+  //   update_capacity = true,  capacity set    -> that number
+  //   update_capacity = true,  capacity absent -> unlimited
+  optional int32 capacity = 13;
+  reserved 14;
+  bool update_capacity = 15;
+  TicketFeePayer fee_payer = 16;
+  bool update_fee_payer = 17;
+  google.protobuf.Timestamp sales_open_at = 18;
+  bool update_sales_open_at = 19;
+  google.protobuf.Timestamp sales_close_at = 20;
+  bool update_sales_close_at = 21;
+  google.protobuf.Timestamp event_at = 22;
+  bool update_event_at = 23;
+
+  // THE PUBLIC HOST. Editable after sale, unlike the commercial terms: a
+  // misspelt brand name is a cosmetic mistake, and refusing to fix it would
+  // leave a typo on a page buyers are looking at. The socials map REPLACES
+  // whatever is stored when its flag is set — a merge would make removing a
+  // handle impossible, since proto3 cannot carry "this key is now absent".
+  string organiser_name = 24;
+  bool update_organiser_name = 25;
+  map<string, string> organiser_socials = 26;
+  bool update_organiser_socials = 27;
+
+  // Browse axes. The update_* flags are what let an organiser CLEAR an
+  // axis: without them an empty string is indistinguishable from "not
+  // supplied", so a cleared category would silently keep its old value.
+  //
+  // FIELD NUMBERS MATCH financial-products-service EXACTLY — category 28,
+  // update_category 29, state 30, update_state 31. They were briefly written
+  // in a different order here, which puts a STRING on the wire where the
+  // server expects a BOOL: the app's `state` would have been read as
+  // `update_category`. Nothing would error; an organiser editing a category
+  // would silently change a different field.
+  string category = 28;
+  bool update_category = 29;
+  string state = 30;
+  bool update_state = 31;
+}
+message UpdateTicketEventResponse {
+  TicketEvent event = 1;
+}
+
+message PublishTicketEventRequest {
+  string event_id = 1;
+  string organiser_user_id = 2;
+}
+message PublishTicketEventResponse {
+  TicketEvent event = 1;
+}
+
+message CloseTicketEventSalesRequest {
+  string event_id = 1;
+  string organiser_user_id = 2;
+}
+message CloseTicketEventSalesResponse {
+  TicketEvent event = 1;
+}
+
+message CancelTicketEventRequest {
+  string event_id = 1;
+  string organiser_user_id = 2;
+  string reason = 3;
+}
+message CancelTicketEventResponse {
+  // Cancelling does NOT move money. The reconciler refunds every buyer from
+  // the pool afterwards, under each buyer's own idempotency key, so a partial
+  // sweep resumes rather than double-refunding.
+  bool cancelled = 1;
+  string note = 2;
+}
+
+// ── MONEY ─────────────────────────────────────────────────────────────────
+
+message BuyTicketsRequest {
+  string event_id = 1;
+  string buyer_user_id = 2;
+  // The account the money comes FROM. Sent by the client because a user may
+  // hold several, and which one funds a purchase is their choice to make.
+  string buyer_account_id = 3;
+  int32 quantity = 4;
+  // REQUIRED. Without one a double tap is a double charge, and the transport
+  // retries on its own.
+  string idempotency_key = 5;
+  // SINGLE-USE TRANSACTION-PIN TOKEN, minted by the device after the holder
+  // enters their PIN.
+  //
+  // This RPC used to take none. The app validated the PIN locally and then
+  // called BuyTickets with a JWT alone — so the PIN was a client-side
+  // courtesy, not a control, and anything holding a session token could spend
+  // a user's money on tickets. Every other money RPC in this service
+  // (insurance, autosave, crowdfund) validates a token server-side; this one
+  // was the exception.
+  //
+  // Enforced when `ticket_buy_pin_required` is on. It is accepted and
+  // validated whenever supplied regardless, so a caller that sends one is
+  // always checked — the setting only governs whether an ABSENT token is
+  // refused, which is what lets already-installed app builds keep working
+  // until the release that sends one has rolled out.
+  string transaction_pin_token = 6;
+}
+message BuyTicketsResponse {
+  string purchase_id = 1;
+  string event_id = 2;
+  int32 quantity = 3;
+  int64 unit_price_minor = 4;
+  int64 fee_minor = 5;
+  int64 buyer_total_minor = 6;
+  string reference = 7;
+  string currency = 8;
+  google.protobuf.Timestamp purchased_at = 9;
+  // The codes just issued, one per head, so the receipt can show them without
+  // a second call.
+  repeated string ticket_codes = 10;
+  // TRUE when this idempotency key had already been used and the original
+  // order was returned rather than a second one made.
+  bool already_purchased = 11;
+}
+
+message GetEventEarningsRequest {
+  string event_id = 1;
+  string organiser_user_id = 2;
+}
+message GetEventEarningsResponse {
+  string event_id = 1;
+  string currency = 2;
+  int32 tickets_sold = 3;
+  int64 gross_collected_minor = 4;
+  int64 fee_collected_minor = 5;
+  int64 organiser_net_minor = 6;
+  int64 paid_out_minor = 7;
+  int64 refunded_minor = 8;
+  // Net minus paid — what is still owed, whether or not it can be taken yet.
+  int64 outstanding_minor = 9;
+
+  // Whether a withdrawal would succeed RIGHT NOW, and why not when it would
+  // not. Sent so the app can disable a button WITH an explanation instead of
+  // offering it and surfacing a refusal. Advice, not authority: the withdrawal
+  // re-checks.
+  bool withdrawable = 10;
+  string withdrawable_reason = 11;
+  google.protobuf.Timestamp withdrawable_at = 12;
+
+  // THE DOOR COUNTS, which are NOT tickets_sold.
+  //
+  // tickets_sold is an ORDER count and is what the money derives from.
+  // tickets_issued counts ADMISSION ROWS — a purchase of four is four people
+  // through a gate — and tickets_admitted counts the ones already scanned.
+  int32 tickets_issued = 13;
+  int32 tickets_admitted = 14;
+
+  // THE EVENT'S OWN STATE, so the organiser screen can reflect an action.
+  //
+  // This message is everything that screen renders, and without the status it
+  // could not tell an event still selling from one whose sales it had just
+  // closed. "Stop selling now" therefore stayed on screen after it had
+  // worked, the page simply reloaded into an identical page, and the only
+  // reading available to the organiser was that the button did nothing — so
+  // they pressed it again. The close itself was correct every time.
+  //
+  // Sent for the same reason `withdrawable` above is sent: the app should be
+  // able to show the true state of a money screen, not infer it. Advice, not
+  // authority — every mutation re-checks server-side.
+  TicketEventStatus status = 15;
+
+  // When sales close on their own, for an event still selling. Null when the
+  // organiser set no window, which is legal and means "until I stop it".
+  google.protobuf.Timestamp sales_close_at = 16;
+}
+
+message WithdrawEventEarningsRequest {
+  string event_id = 1;
+  string organiser_user_id = 2;
+}
+message WithdrawEventEarningsResponse {
+  string payout_id = 1;
+  int64 amount_minor = 2;
+  string currency = 3;
+  string reference = 4;
+  string status = 5;
+  google.protobuf.Timestamp paid_at = 6;
+  bool already_paid = 7;
+}
+
+// ── THE DOOR ──────────────────────────────────────────────────────────────
+
+// ── ATTENDEES (organiser's door list) ─────────────────────────────────────
+
+// One ADMISSION, not one order. Carries NO buyer contact details — only the
+// buyer's user id, which the app resolves through the same payee lookup, under
+// the same search-privacy rules, as anywhere else.
+message EventAttendee {
+  string ticket_id = 1;
+  string code = 2;
+  TicketAdmissionStatus status = 3;
+  google.protobuf.Timestamp checked_in_at = 4;
+  string checked_in_by = 5;
+
+  string purchase_id = 6;
+  string buyer_user_id = 7;
+  google.protobuf.Timestamp purchased_at = 8;
+  // Set when the ORDER was refunded. The row stays — it is the record of what
+  // was sold — so the list has to say which will not be let in.
+  google.protobuf.Timestamp refunded_at = 9;
+}
+
+message ListEventAttendeesRequest {
+  string event_id = 1;
+  // Populated for logging; the SERVICE takes the caller from the token.
+  string organiser_user_id = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+message ListEventAttendeesResponse {
+  repeated EventAttendee attendees = 1;
+  int64 total = 2;
+}
+
+// ── BUYER-INITIATED REFUND ────────────────────────────────────────────────
+
+message RequestTicketRefundRequest {
+  string purchase_id = 1;
+  string buyer_user_id = 2;
+}
+message RequestTicketRefundResponse {
+  string purchase_id = 1;
+  int64 amount_minor = 2;
+  // What the platform keeps, under ticket_refund_fee_policy.
+  int64 fee_kept_minor = 3;
+  string currency = 4;
+  string reference = 5;
+  google.protobuf.Timestamp refunded_at = 6;
+  // Already refunded; this call reported that rather than paying twice.
+  bool already_refunded = 7;
+}
+
+// ── TRANSFER / GIFTING ────────────────────────────────────────────────────
+
+// A transfer moves NO MONEY — hence no fee field and no settings key for one.
+message TransferTicketRequest {
+  string ticket_id = 1;
+  string from_user_id = 2;
+  string to_user_id = 3;
+}
+message TransferTicketResponse {
+  string ticket_id = 1;
+  string code = 2;
+  string event_id = 3;
+  string event_title = 4;
+  string to_user_id = 5;
+  google.protobuf.Timestamp transferred_at = 6;
+  int32 transfer_count = 7;
+}
+
+message CheckInTicketRequest {
+  string event_id = 1;
+  // Only the organiser admits people to their own event. Without this check
+  // any signed-in user could burn a stranger's ticket by scanning its code.
+  string organiser_user_id = 2;
+  string code = 3;
+  // Who scanned it, for the audit trail at a door with several stewards.
+  string checked_in_by = 4;
+}
+message CheckInTicketResponse {
+  bool admitted = 1;
+  TicketAdmissionStatus status = 2;
+  google.protobuf.Timestamp checked_in_at = 3;
+  // Says WHICH refusal it was. "Already used" and "not a ticket for this
+  // event" need different responses at a door.
+  string reason = 4;
+}
+
+// GetTicketingConfigRequest — no fields. The policy is global.
+message GetTicketingConfigRequest {}
+
+// THE CREATE FORM'S RULES, read from the operator's settings.
+//
+// EXISTS BECAUSE THE APP WAS DECIDING THEM. The form refused any price at or
+// below zero and imposed no ceiling, which meant free events were impossible
+// in the app however the operator set `ticket_free_events_enabled`, and a
+// price outside the band was only refused after a round trip, by an error
+// message, with the form already submitted.
+//
+// Returned as a message rather than plumbed through the app's settings
+// registry because it is read at exactly one moment — when the create form
+// opens — and the registry's transport needs a key wired in four places that
+// each fail silently when missed.
+message GetTicketingConfigResponse {
+  // Whether an organiser may list a ticket at zero.
+  bool free_events_enabled = 1;
+  // The band a PAID ticket must sit in. Minor units.
+  int64 min_price_minor = 2;
+  int64 max_price_minor = 3;
+  // Most tickets one buyer may hold for one event.
+  int32 max_per_buyer = 4;
+  // Who bears the commission by default: the value the app shows before the
+  // organiser chooses otherwise.
+  TicketFeePayer fee_payer_default = 5;
+  // Whether organiser withdrawals are open at all.
+  bool payout_enabled = 6;
+  // Buyer-initiated refunds and gifting, so the create form can describe to
+  // the organiser what buyers will be able to do.
+  bool refund_requests_enabled = 7;
+  bool transfers_enabled = 8;
+  // Whether a ticket purchase demands the transaction PIN.
+  bool buy_pin_required = 9;
+
+  // The browse axes an organiser may choose from, and a reader may filter
+  // by. Served from settings rather than compiled in, so adding a
+  // category does not need an app release.
+  repeated TicketTaxonomyOption categories = 10;
+
+  repeated TicketTaxonomyOption states = 11;
+}
+
+service TicketingService {
+  // Buyer-facing.
+  rpc GetTicketingConfig(GetTicketingConfigRequest) returns (GetTicketingConfigResponse) {
+    option (google.api.http) = { get: "/v1/tickets/config" };
+  }
+  rpc ListTicketEvents(ListTicketEventsRequest) returns (ListTicketEventsResponse) {
+    option (google.api.http) = { get: "/v1/tickets/events" };
+  }
+  rpc GetTicketEvent(GetTicketEventRequest) returns (GetTicketEventResponse) {
+    option (google.api.http) = { get: "/v1/tickets/events/{event_id}" };
+  }
+  rpc BuyTickets(BuyTicketsRequest) returns (BuyTicketsResponse) {
+    option (google.api.http) = {
+      post: "/v1/tickets/events/{event_id}/buy"
+      body: "*"
+    };
+  }
+  rpc ListMyTickets(ListMyTicketsRequest) returns (ListMyTicketsResponse) {
+    option (google.api.http) = { get: "/v1/tickets/my-tickets" };
+  }
+
+  // Organiser-facing.
+  rpc CreateTicketEvent(CreateTicketEventRequest) returns (CreateTicketEventResponse) {
+    option (google.api.http) = {
+      post: "/v1/tickets/events"
+      body: "*"
+    };
+  }
+  rpc UpdateTicketEvent(UpdateTicketEventRequest) returns (UpdateTicketEventResponse) {
+    option (google.api.http) = {
+      patch: "/v1/tickets/events/{event_id}"
+      body: "*"
+    };
+  }
+  rpc PublishTicketEvent(PublishTicketEventRequest) returns (PublishTicketEventResponse) {
+    option (google.api.http) = {
+      post: "/v1/tickets/events/{event_id}/publish"
+      body: "*"
+    };
+  }
+  rpc CloseTicketEventSales(CloseTicketEventSalesRequest) returns (CloseTicketEventSalesResponse) {
+    option (google.api.http) = {
+      post: "/v1/tickets/events/{event_id}/close"
+      body: "*"
+    };
+  }
+  rpc CancelTicketEvent(CancelTicketEventRequest) returns (CancelTicketEventResponse) {
+    option (google.api.http) = {
+      post: "/v1/tickets/events/{event_id}/cancel"
+      body: "*"
+    };
+  }
+  rpc ListMyTicketEvents(ListMyTicketEventsRequest) returns (ListMyTicketEventsResponse) {
+    option (google.api.http) = { get: "/v1/tickets/my-events" };
+  }
+  rpc GetEventEarnings(GetEventEarningsRequest) returns (GetEventEarningsResponse) {
+    option (google.api.http) = { get: "/v1/tickets/events/{event_id}/earnings" };
+  }
+  rpc WithdrawEventEarnings(WithdrawEventEarningsRequest) returns (WithdrawEventEarningsResponse) {
+    option (google.api.http) = {
+      post: "/v1/tickets/events/{event_id}/withdraw"
+      body: "*"
+    };
+  }
+  rpc CheckInTicket(CheckInTicketRequest) returns (CheckInTicketResponse) {
+    option (google.api.http) = {
+      post: "/v1/tickets/events/{event_id}/check-in"
+      body: "*"
+    };
+  }
+  rpc ListEventAttendees(ListEventAttendeesRequest) returns (ListEventAttendeesResponse) {
+    option (google.api.http) = { get: "/v1/tickets/events/{event_id}/attendees" };
+  }
+
+  // Buyer-facing, both behind admin switches that default OFF.
+  rpc RequestTicketRefund(RequestTicketRefundRequest) returns (RequestTicketRefundResponse) {
+    option (google.api.http) = {
+      post: "/v1/tickets/orders/{purchase_id}/refund"
+      body: "*"
+    };
+  }
+  rpc TransferTicket(TransferTicketRequest) returns (TransferTicketResponse) {
+    option (google.api.http) = {
+      post: "/v1/tickets/my-tickets/{ticket_id}/transfer"
+      body: "*"
+    };
+  }
+}

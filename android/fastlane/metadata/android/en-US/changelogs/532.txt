@@ -1,0 +1,11 @@
+Improvements and fixes:
+
+• Fixed a dashboard that could keep loading instead of showing your accounts
+• Fixed being stuck on the passcode screen when your email needs verifying
+• Search your saved recipients from the send-money screen
+• "Stop selling now" now confirms first and shows it worked
+• Support chats show the date and time of every message
+• Piggyvault shows who provides it, with the terms a tap away
+• Creating an event is tidier
+
+Thank you for using Lazervault.

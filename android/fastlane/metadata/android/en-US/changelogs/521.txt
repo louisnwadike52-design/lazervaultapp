@@ -1,0 +1,3 @@
+• Phone verification now appears as soon as it's available, without reopening the app
+• Choosing "use my phone instead" for a login code no longer offers to skip the step it just sent
+• Verification codes are sent over a new route with our provider, to fix texts not arriving

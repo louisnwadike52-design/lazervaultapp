@@ -1,0 +1,9 @@
+Improvements and fixes:
+
+• Pay with crypto: fund a transfer, airtime, data or a bill from your coins
+  instead of your wallet, and we convert just enough
+• Your receipt now says plainly what happened to a conversion, and where the
+  money is if a payment could not go through
+• A payment waiting on a conversion no longer shows as already sent
+
+Thank you for using Lazervault.

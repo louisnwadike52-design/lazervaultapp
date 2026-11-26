@@ -1,0 +1,4 @@
+• Identity verification now tells you which detail it couldn't accept — a date of birth that doesn't match your BVN no longer shows up as a wrong code
+• Picking your date of birth starts with the year and uses named months, so July and September can't be mixed up
+• Your date of birth now reads as "9 July 1999", and we ask you to confirm it before using one of your correction attempts
+• The messages icon in Quick Services opens your Financial Connections messages

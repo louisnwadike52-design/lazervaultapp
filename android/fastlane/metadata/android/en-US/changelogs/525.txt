@@ -1,0 +1,3 @@
+• Event ticketing screens are tiled properly now, with clearer cards and readable buttons
+• Vendors can see how many unique customers they have served, and search the list by name
+• A refunded ticket is clearer in the attendee list

@@ -207,4 +207,18 @@ protoc --dart_out=grpc:lib/src/generated \
   -I../microservices/shared/proto \
   ../services/products-gateway/proto/uplift.proto
 
+# ticketing.proto — Event Ticketing, served by products-gateway.
+#
+# GENERATED FROM THE GATEWAY'S COPY, not from a third copy under
+# lazervaultapp/proto, for the same reason uplift and rmb are: the app talks to
+# the gateway, so the gateway's proto IS the contract. A local copy would be a
+# second place for field numbers to drift, and a drifted field number is
+# SILENTLY DROPPED rather than failing to build.
+echo "Generating Dart code from ticketing.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -I../services/products-gateway/proto \
+  -Iproto \
+  -I../microservices/shared/proto \
+  ../services/products-gateway/proto/ticketing.proto
+
 echo "Dart code generation complete!"

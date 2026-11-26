@@ -1,0 +1,6 @@
+• If your deposit account number changes, we now show you the old and new number next time you open the app
+• Referral bonuses go straight to your wallet once your invitee finishes verification, and we tell you
+• "Support replied" now opens that ticket, not your account page
+• Financial Connections added to your dashboard
+• Verification no longer calls a correct code wrong — it names the detail that doesn't match
+• Bill receipts and alerts arrive even if you leave the screen

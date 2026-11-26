@@ -646,7 +646,79 @@ service BankingService {
             get: "/api/v1/card-acceptance/status"
         };
     }
+
+    // ── BVN Lookup: a THREE-STEP CONSENT FLOW ────────────────────────────
+    //
+    // Mono's BVN lookup is not a single call like NIN. BVN data is
+    // NIBSS-regulated and needs the holder's consent, so Mono sends them a
+    // one-time code and we exchange it for the record:
+    //
+    //   InitiateBVNLookup  -> opens a session, returns the delivery routes
+    //   SendBVNLookupOTP   -> Mono (not us) delivers the code by the chosen route
+    //   CompleteBVNLookup  -> exchanges the code for the identity record
+    //
+    // The Mono session id is deliberately ABSENT from every message here: it
+    // is bearer-like (session + otp is enough to read the holder's identity),
+    // so banking-service holds it server-side keyed by the caller's JWT. The
+    // app can only ever advance its own session.
+    rpc InitiateBVNLookup(InitiateBVNLookupRequest) returns (InitiateBVNLookupResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/kyc/bvn-lookup/initiate"
+            body: "*"
+        };
+    }
+    rpc SendBVNLookupOTP(SendBVNLookupOTPRequest) returns (SendBVNLookupOTPResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/kyc/bvn-lookup/send-otp"
+            body: "*"
+        };
+    }
+    rpc CompleteBVNLookup(CompleteBVNLookupRequest) returns (SignupIdentityVerificationResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/kyc/bvn-lookup/complete"
+            body: "*"
+        };
+    }
+
+    // ===== SUPPORT-ASSISTED BVN VERIFICATION =====
+    //
+    // The SAME consent flow as the three RPCs above, driven by an operator on
+    // behalf of a customer who cannot complete it themselves — a stuck
+    // onboarding, a customer on the phone, a device that will not render the
+    // screen.
+    //
+    // THIS IS VERIFICATION, NOT AN OVERRIDE. The OTP still goes to the
+    // BVN HOLDER's own registered email or phone, exactly as it does in the
+    // app, and the identity record still comes from Mono. An operator who
+    // cannot reach the customer cannot complete it, which is the point: BVN
+    // data is NIBSS-regulated and needs the holder's consent. No admin path
+    // writes a BVN directly, because a typed BVN is not a verified one and
+    // minting a bank account against it is a compliance failure.
+    //
+    // Separate RPCs rather than an optional user_id on the three above: a
+    // body field that can redirect whose identity is being verified is one
+    // misrouted call away from verifying the wrong person, and these are
+    // mounted on /internal/admin where the app cannot reach them.
+    rpc AdminInitiateBVNLookup(AdminInitiateBVNLookupRequest) returns (InitiateBVNLookupResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/internal/admin/kyc/bvn-lookup/initiate"
+            body: "*"
+        };
+    }
+    rpc AdminSendBVNLookupOTP(AdminSendBVNLookupOTPRequest) returns (SendBVNLookupOTPResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/internal/admin/kyc/bvn-lookup/send-otp"
+            body: "*"
+        };
+    }
+    rpc AdminCompleteBVNLookup(AdminCompleteBVNLookupRequest) returns (SignupIdentityVerificationResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/internal/admin/kyc/bvn-lookup/complete"
+            body: "*"
+        };
+    }
 }
+
 
 // =====================================================
 // CARD ACCEPTANCE MESSAGES
@@ -1327,6 +1399,18 @@ message InitiateProveKYCResponse {
     string reference = 5;    // pass back to CompleteProveKYC on redirect
     string session_id = 6;
     string status = 7;       // "pending"
+    // Seconds left before a NEW session can be minted, when error_code is
+    // SESSION_COOLDOWN.
+    //
+    // A session is billed per initiate and is reused for a configured window,
+    // so a customer who corrects a detail inside that window has to wait for a
+    // session carrying the corrected detail. The app shows a countdown, and it
+    // counts from THIS — the server's own clock — rather than from a window
+    // length the client hardcoded and would have to keep in step with the
+    // admin setting (kyc.mono.session_reuse_seconds).
+    //
+    // 0 on every other outcome.
+    int32 retry_after_seconds = 8;
 }
 
 message CompleteProveKYCRequest {
@@ -2690,4 +2774,85 @@ message CalculateMoveFeeResponse {
     repeated FeeItem breakdown = 12;           // Itemized fee breakdown
     int64 min_amount = 13;                     // Minimum transfer amount
     int64 max_amount = 14;                     // Maximum transfer amount
+}
+
+// =====================================================
+// BVN LOOKUP (3-step consent flow)
+// =====================================================
+
+// One OTP delivery route Mono will accept for a session.
+message BVNLookupMethod {
+    // "email" | "phone" | "alternate_phone" — send back verbatim on
+    // SendBVNLookupOTP.
+    string method = 1;
+    // Mono's OWN masked description, e.g. "An email with a verification code
+    // will be sent to loui***adike52@gmail.com". Already masked by Mono —
+    // display it as-is; we never see the real address.
+    string hint = 2;
+}
+
+message InitiateBVNLookupRequest {
+    // The holder's BVN. user_id is taken from the JWT, never the body.
+    string bvn = 1;
+}
+
+message InitiateBVNLookupResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    // The routes to offer. PER-BVN: a record with no registered email offers
+    // only phone, so these must be shown rather than assumed.
+    repeated BVNLookupMethod methods = 4;
+}
+
+message SendBVNLookupOTPRequest {
+    string method = 1;
+}
+
+message SendBVNLookupOTPResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+}
+
+message CompleteBVNLookupRequest {
+    string otp = 1;
+    // The typed name/DOB to reconcile against the registry record. The name is
+    // ADOPTED from the registry when the date of birth agrees; the date of
+    // birth is the hard check.
+    string first_name = 2;
+    string last_name = 3;
+    string date_of_birth = 4;    // YYYY-MM-DD
+}
+
+
+// =====================================================
+// SUPPORT-ASSISTED BVN VERIFICATION
+//
+// user_id is the CUSTOMER being verified, not the operator. actor_admin_id is
+// the operator, recorded so the action is attributable — a verification that
+// cannot be traced to who ran it is not an audit trail.
+// =====================================================
+
+message AdminInitiateBVNLookupRequest {
+    string user_id = 1;
+    string bvn = 2;
+    string actor_admin_id = 3;
+    // Why support is running this for the customer. Stored with the action.
+    string reason = 4;
+}
+
+message AdminSendBVNLookupOTPRequest {
+    string user_id = 1;
+    string method = 2;
+    string actor_admin_id = 3;
+}
+
+message AdminCompleteBVNLookupRequest {
+    string user_id = 1;
+    string otp = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string date_of_birth = 5;    // YYYY-MM-DD
+    string actor_admin_id = 6;
 }

@@ -177,6 +177,22 @@ message GetCountryRewardConfigResponse {
 message RecordReferralRequest {
   uint64 referee_user_id = 1;
   string referral_code = 2;
+  // Why this referral cannot pay, when the CALLER already knows.
+  //
+  // A bonus needs two things: the referee completed KYC, and they did it on a
+  // handset nobody else had signed up on. Only auth-service can see the
+  // second — device_owners / device_signup_audits live in its database, and
+  // the referral service has no visibility of them.
+  //
+  // So the referral is still RECORDED (the referrer must be able to see the
+  // person they referred) and this carries the reason it will not pay, which
+  // the service stores on referral_transactions.failure_reason — the field
+  // the app already renders. Without it the row reads "Joined - KYC not
+  // completed yet" to a referrer whose referee is plainly verified.
+  //
+  // EMPTY MEANS ELIGIBLE. An older caller that does not set it is unchanged,
+  // which is the whole reason this is an additive field rather than a new RPC.
+  string ineligibility_reason = 3;
 }
 
 message RecordReferralResponse {

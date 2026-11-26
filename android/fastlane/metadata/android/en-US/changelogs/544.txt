@@ -1,0 +1,8 @@
+Improvements and fixes:
+
+• Paying with crypto now spends your crypto, even when your wallet could cover the payment on its own
+• If your wallet already covers a payment, we say so before you enter your PIN
+• A payment we could not start no longer reads as "Failed" — nothing was converted and nothing charged
+• Airtime, data, electricity, cable TV, internet and water receipts now name the coin that paid, on screen and in the shared copy
+
+Thank you for using Lazervault.

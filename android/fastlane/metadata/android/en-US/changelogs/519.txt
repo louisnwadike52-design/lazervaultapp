@@ -1,0 +1,5 @@
+• Recovering a password or passcode now fills in your account for you
+• Wrong passcode no longer says we don't recognise your phone number
+• Group auto-debit now says why a change was refused, not just "failed"
+• Referral tabs now show the right people under Verified and On KYC
+• The phone field opens a number keypad, and a code that just arrived is no longer shown as expired

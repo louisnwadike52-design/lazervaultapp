@@ -37,6 +37,16 @@ message User {
     string address_state = 21;
     string address_postal_code = 22;
     string address_country = 23;
+    // OPTIONAL middle name, so a client can PREFILL a name editor with what
+    // is actually stored.
+    //
+    // Without it the editor opens blank over a stored value, and a form
+    // that saves what it shows would erase it. (The update path is guarded
+    // by update_middle_name for that reason, but a field a customer cannot
+    // see is a field they cannot correct — and after verification this
+    // holds the REGISTRY's middle name, which is exactly the one they may
+    // need to check.)
+    string middle_name = 24;
   }
   
   

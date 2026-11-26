@@ -271,6 +271,37 @@ platform :android do
   end
 
   desc "Upload ONLY the store-listing images (app icon) to Play — no build, no metadata text"
+  # Push ONLY the release notes for a build that is already uploaded.
+  #
+  # supply reads changelogs from
+  # fastlane/metadata/android/en-US/changelogs/<versionCode>.txt and falls back
+  # to default.txt when that file is missing. Build 517 shipped before its file
+  # existed, so Play served it the generic notes from an older release — to
+  # real users, because 517 was promoted to production.
+  #
+  # Nothing is rebuilt and no binary is re-uploaded: this attaches text to a
+  # release that already exists.
+  #
+  #   bundle exec fastlane android changelog_only version_code:517 track:production
+  lane :changelog_only do |options|
+    code = options[:version_code] or UI.user_error!("version_code: is required")
+    track = options[:track] || "production"
+    UI.important("Updating release notes ONLY for versionCode #{code} on '#{track}'")
+    upload_to_play_store(
+      package_name:            "com.lazervault.app",
+      json_key:                play_store_json_key_path,
+      track:                   track,
+      version_code:            code.to_i,
+      # Everything else is left exactly as it is on the release.
+      skip_upload_aab:         true,
+      skip_upload_apk:         true,
+      skip_upload_metadata:    true,
+      skip_upload_changelogs:  false,
+      skip_upload_images:      true,
+      skip_upload_screenshots: true,
+    )
+  end
+
   lane :listing_images do |options|
     # Deliberately separate from the build lanes.
     #
@@ -344,6 +375,43 @@ platform :android do
       skip_upload_images:         true,
       skip_upload_screenshots:    true,
       release_status:             "draft",  # Manual gate — flip in Play Console when ready
+    )
+  end
+
+  desc "Make an already-uploaded production DRAFT live to all users"
+  # THE MANUAL GATE, AUTOMATED — deliberately as its OWN lane.
+  #
+  # The `production` lane uploads with release_status "draft" on purpose: the
+  # final flip to live is a decision, not a build step, and nobody wants a
+  # routine deploy to reach every user the moment it compiles. That gate stays
+  # exactly where it is.
+  #
+  # What was missing is a way to perform the flip once the decision IS made,
+  # without clicking through the Play Console — which is error-prone in the
+  # other direction (the wrong release promoted, or a rollout fraction typed by
+  # hand). This promotes a SPECIFIC version code, so it cannot pick up whatever
+  # happens to be sitting in the track.
+  #
+  # version_code is REQUIRED. Defaulting it to "the newest draft" would make
+  # this lane do something different every time it runs.
+  lane :release_production_live do |options|
+    code = options[:version_code]
+    UI.user_error!("version_code is required, e.g. fastlane release_production_live version_code:498") if code.nil?
+    fraction = (options[:rollout] || "1.0").to_s
+    UI.important("Releasing version code #{code} to production at #{(fraction.to_f * 100).round}% of users")
+    upload_to_play_store(
+      package_name:               "com.lazervault.app",
+      json_key:                   play_store_json_key_path,
+      track:                      "production",
+      version_code:               code.to_i,
+      skip_upload_apk:            true,
+      skip_upload_aab:            true,
+      skip_upload_metadata:       true,
+      skip_upload_changelogs:     true,
+      skip_upload_images:         true,
+      skip_upload_screenshots:    true,
+      release_status:             fraction.to_f >= 1.0 ? "completed" : "inProgress",
+      rollout:                    fraction.to_f >= 1.0 ? nil : fraction,
     )
   end
 

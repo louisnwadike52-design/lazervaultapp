@@ -1,0 +1,5 @@
+• Saved recipients now appear as you type an account number
+• OPay, PalmPay and Moniepoint numbers starting with 0 now work
+• A new-device sign-in code can go to your phone instead of email
+• Sign-in remembers you after a password or passcode reset
+• A code that just arrived is no longer shown as expired

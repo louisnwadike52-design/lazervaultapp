@@ -1,0 +1,3 @@
+• Fixed: on Android, SMS codes could not be typed into the verification boxes. The code entry screen now works the same way on Android and iPhone
+• Codes still fill themselves in automatically when your SMS arrives — and never overwrite digits you are already typing
+• The sign-in code screen can no longer get stuck mid-verification

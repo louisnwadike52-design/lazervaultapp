@@ -253,6 +253,20 @@ message BillPayment {
   // `auto_released`, `vtpass_failed`, `reloadly_refunded_upstream`,
   // `admin_manual`, `pre_charge_release`). Empty = no refund recorded.
   string refund_source = 27;
+  // HOW THE PAYMENT WAS FUNDED, and everything else the row records.
+  //
+  // The raw `bill_payments.metadata` JSON. The receipt needs it for ONE
+  // thing it cannot otherwise answer: when a customer paid with crypto,
+  // utility-payments writes `funding_source` / `funding_asset` /
+  // `funding_crypto_minor` / `funding_fiat_minor` onto this column at the
+  // moment the conversion's outcome meets the payment, and without the
+  // column on the wire the electricity receipt can only show a bare naira
+  // total. Every other bill already surfaces the split; this one could not,
+  // because `electricity_bill.proto` carried no metadata field at all.
+  //
+  // A STRING, not a map: it is passed through verbatim and parsed at the
+  // edge, which is what every other bill receipt in the app already does.
+  string metadata = 28;
 }
 
 message BillBeneficiary {

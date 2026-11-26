@@ -1,0 +1,8 @@
+Improvements and fixes:
+
+• Verification now asks for your date of birth when it needs one to check your BVN or NIN
+• Saving a correction shows progress and keeps going on a slow network
+• A corrected date of birth is used straight away for your next check
+• Airtime receipts now name the coin that paid, on screen and in the shared copy
+• Settings shows your real two-factor state
+• Changing your phone number no longer stalls on "Sending…"

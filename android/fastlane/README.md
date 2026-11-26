@@ -23,13 +23,21 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Dev → Play Console internal track (PROD build: prod backend/Firebase, auto-rolls to internal testers)
 
+### android changelog_only
+
+```sh
+[bundle exec] fastlane android changelog_only
+```
+
+Upload ONLY the store-listing images (app icon) to Play — no build, no metadata text
+
 ### android listing_images
 
 ```sh
 [bundle exec] fastlane android listing_images
 ```
 
-Upload ONLY the store-listing images (app icon) to Play — no build, no metadata text
+
 
 ### android staging
 
@@ -46,6 +54,14 @@ Staging → Play Console closed (alpha) track (PROD build: prod backend/Firebase
 ```
 
 Production → Play Console production track (release-signed AAB, HOLDS rollout in draft)
+
+### android release_production_live
+
+```sh
+[bundle exec] fastlane android release_production_live
+```
+
+Make an already-uploaded production DRAFT live to all users
 
 ### android promote_to_production
 

@@ -1,0 +1,10 @@
+Improvements and fixes:
+
+• The back button no longer closes the app from a receipt or confirmation screen
+• The bottom bar no longer sits behind your phone's navigation buttons
+• A shared crowdfund, escrow or invite link now survives signing in
+• Crowdfund contributions hand you a receipt straight away, which updates itself
+• Choose a Basic or Advanced home page, and add or remove sections
+• Tag pay and invoice lists move between pages instantly
+
+Thank you for using Lazervault.

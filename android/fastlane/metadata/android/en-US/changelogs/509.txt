@@ -1,0 +1,4 @@
+• If you can't reach the email or phone a code was sent to, you can now switch to a different account instead of being stuck on the verification screen
+• Crypto wallets open with their deposit address and network, and each wallet on the Secure Wallet card is tappable
+• Clearer identity verification screen — smaller header, readable buttons, and a checklist that is no longer white text on white
+• Crowdfund cards show the total ever raised, so a campaign that paid out no longer reads "0 raised"

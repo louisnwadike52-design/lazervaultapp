@@ -1,0 +1,5 @@
+• Paying with crypto now works. Your receipt shows which coin paid, how much was sold, and what your wallet covered.
+• If a crypto payment can't go ahead you stay on the amount screen to adjust it, and we say plainly when nothing was converted.
+• Signing in when your email still needs verifying now takes you to that step and back.
+• Your username now appears in the side menu with your profile code.
+• Piggyvault disclosures open in a sheet.

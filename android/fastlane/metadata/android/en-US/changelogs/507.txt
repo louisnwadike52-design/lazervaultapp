@@ -1,0 +1,3 @@
+• Verification is far less likely to reject a name that is correct — we now match your full name the way the official records hold it, middle name included
+• Add your middle name when you sign up (optional), and correct it if verification asks you to
+• If your date of birth doesn't match your BVN, we now tell you how many tries you have left instead of sending you round in circles
