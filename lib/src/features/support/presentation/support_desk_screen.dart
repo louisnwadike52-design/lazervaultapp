@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:lazervault/src/features/widgets/full_screen_image_viewer.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -51,7 +52,14 @@ class _SupportDeskScreenState extends State<SupportDeskScreen> {
   List<DeskTicket> _tickets = const [];
   bool _loading = true;
   String? _error;
-  String _status = 'open';
+  /// EVERYTHING BY DEFAULT.
+  ///
+  /// This opened on `open` only, so a responder arriving at the desk saw a
+  /// filtered queue without having chosen a filter — and a ticket that had
+  /// just been resolved, or was sitting pending, was simply absent with
+  /// nothing on screen explaining why. A filter the user did not set should
+  /// not be hiding their work from them.
+  String _status = '';
 
   /// Which audience's queue is on screen.
   ///
@@ -173,6 +181,16 @@ class _SupportDeskScreenState extends State<SupportDeskScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
+        // THE CLOCK AND THE SIGNAL BARS HAVE TO BE READABLE.
+        //
+        // No overlay style was set, so the status bar kept whatever the
+        // previous route left behind — dark icons over a dark bar, which is
+        // how the clock disappeared. Derived from the bar's OWN colour rather
+        // than hardcoded, so it stays correct in both themes and if the
+        // app-bar colour is ever retuned.
+        systemOverlayStyle: _overlayFor(
+          theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+        ),
         title: const Text('Support desk'),
         actions: [
           if (_access.canUse)
@@ -197,6 +215,26 @@ class _SupportDeskScreenState extends State<SupportDeskScreen> {
     );
   }
 
+  /// Light icons on a dark bar, dark icons on a light one.
+  ///
+  /// ThemeData.estimateBrightnessForColor applies the same luminance rule the
+  /// framework uses, so this cannot disagree with Flutter about what "dark"
+  /// means.
+  static SystemUiOverlayStyle _overlayFor(Color barColor) {
+    final dark = ThemeData.estimateBrightnessForColor(barColor) == Brightness.dark;
+    return dark
+        ? SystemUiOverlayStyle.light.copyWith(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+          )
+        : SystemUiOverlayStyle.dark.copyWith(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.dark,
+            statusBarBrightness: Brightness.light,
+          );
+  }
+
   Widget _buildBody(ThemeData theme) {
     if (_loading && _tickets.isEmpty) {
       return const Center(child: CircularProgressIndicator());
@@ -205,8 +243,7 @@ class _SupportDeskScreenState extends State<SupportDeskScreen> {
 
     return Column(
       children: [
-        _statusFilter(theme),
-        if (_canSeeTechnical) _escalationFilter(theme),
+        _filterBar(theme),
         if (_error != null) _errorBanner(theme, _error!),
         Expanded(
           child: RefreshIndicator(
@@ -216,7 +253,7 @@ class _SupportDeskScreenState extends State<SupportDeskScreen> {
                 : ListView.separated(
                     padding: EdgeInsets.symmetric(vertical: 8.h),
                     itemCount: _tickets.length,
-                    separatorBuilder: (_, __) => Divider(height: 1.h),
+                    separatorBuilder: (_, __) => SizedBox(height: 8.h),
                     itemBuilder: (_, i) => _row(theme, _tickets[i]),
                   ),
           ),
@@ -249,64 +286,123 @@ class _SupportDeskScreenState extends State<SupportDeskScreen> {
         ),
       );
 
-  Widget _statusFilter(ThemeData theme) => SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-        child: Row(
-          children: [
-            for (final s in const [
-              ('open', 'Open'),
-              ('pending', 'Pending'),
-              ('resolved', 'Resolved'),
-              ('', 'All'),
-            ])
-              Padding(
-                padding: EdgeInsets.only(right: 8.w),
-                child: ChoiceChip(
-                  label: Text(s.$2),
-                  selected: _status == s.$1,
-                  onSelected: (_) {
-                    if (_status == s.$1) return;
-                    setState(() => _status = s.$1);
-                    _load();
-                  },
-                ),
-              ),
-          ],
-        ),
-      );
-
-  /// WHOSE QUEUE. Only rendered for a responder who may actually open the
-  /// technical one — a filter that refuses when tapped is worse than no
-  /// filter.
-  Widget _escalationFilter(ThemeData theme) => SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 10.h),
-        child: Row(
-          children: [
+  /// ONE FILTER BAR, not two stacked scrolling rows.
+  ///
+  /// Status and queue were separate horizontal scrollers, so on a narrow
+  /// handset the chips ran off the edge in two directions and the selected
+  /// one could be off-screen — a filter you cannot see is a filter you cannot
+  /// tell is on. They wrap now, as rounded pills, and the whole bar sits on
+  /// its own surface with a divider so it reads as a control strip rather
+  /// than as the first row of the list.
+  Widget _filterBar(ThemeData theme) {
+    final cs = theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 10.h),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.withValues(alpha: 0.35),
+        border: Border(bottom: BorderSide(color: cs.outlineVariant, width: 0.6)),
+      ),
+      child: Wrap(
+        spacing: 8.w,
+        runSpacing: 8.h,
+        children: [
+          for (final f in const [
+            ('', 'All'),
+            ('open', 'Open'),
+            ('pending', 'Pending'),
+            ('resolved', 'Resolved'),
+          ])
+            _pill(
+              theme,
+              label: f.$2,
+              selected: _status == f.$1,
+              onTap: () {
+                if (_status == f.$1) return;
+                setState(() => _status = f.$1);
+                _load();
+              },
+            ),
+          // The queue split is a different question from the status, so it is
+          // separated rather than mixed into the same run of pills.
+          if (_canSeeTechnical) ...[
+            SizedBox(
+              height: 28.h,
+              child: VerticalDivider(width: 12.w, color: cs.outlineVariant),
+            ),
             for (final e in const [
               ('', 'Everything'),
               ('none', 'Support desk'),
               ('technical', 'Technical'),
             ])
-              Padding(
-                padding: EdgeInsets.only(right: 8.w),
-                child: ChoiceChip(
-                  avatar: e.$1 == 'technical'
-                      ? Icon(Icons.engineering_outlined, size: 15.w)
-                      : null,
-                  label: Text(e.$2),
-                  selected: _escalation == e.$1,
-                  onSelected: (_) {
-                    if (_escalation == e.$1) return;
-                    setState(() => _escalation = e.$1);
-                    _load();
-                  },
-                ),
+              _pill(
+                theme,
+                label: e.$2,
+                icon: e.$1 == 'technical' ? Icons.engineering_outlined : null,
+                selected: _escalation == e.$1,
+                onTap: () {
+                  if (_escalation == e.$1) return;
+                  setState(() => _escalation = e.$1);
+                  _load();
+                },
               ),
           ],
+        ],
+      ),
+    );
+  }
+
+  /// A rounded filter pill.
+  ///
+  /// Selection is carried by FILL AND WEIGHT, not by a tick — a chip that
+  /// only differs by a check mark reads as unselected at a glance on a bar
+  /// with six of them.
+  Widget _pill(
+    ThemeData theme, {
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+    IconData? icon,
+  }) {
+    final cs = theme.colorScheme;
+    return Material(
+      color: selected ? cs.primary : cs.surface,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: _loading ? null : onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected ? cs.primary : cs.outlineVariant,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon,
+                    size: 14.w,
+                    color: selected ? cs.onPrimary : cs.onSurfaceVariant),
+                SizedBox(width: 5.w),
+              ],
+              Text(
+                label,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: selected ? cs.onPrimary : cs.onSurfaceVariant,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
-      );
+      ),
+    );
+  }
+
 
   Widget _errorBanner(ThemeData theme, String msg) => Container(
         width: double.infinity,
@@ -347,7 +443,27 @@ class _SupportDeskScreenState extends State<SupportDeskScreen> {
 
   Widget _row(ThemeData theme, DeskTicket t) {
     final waiting = t.unreadForAdmin > 0;
-    return ListTile(
+    final cs = theme.colorScheme;
+    // A CARD PER TICKET, not a hairline-separated list. These rows carry a
+    // name, a status, a queue and an unread count, and run to two lines —
+    // divided only by a 1px rule they ran together, and the one state that
+    // matters (somebody is waiting) was carried by the avatar colour alone.
+    // The surface and border now carry it too, so a waiting ticket is
+    // identifiable without reading anything.
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 12.w),
+      decoration: BoxDecoration(
+        color: waiting ? cs.primaryContainer.withValues(alpha: 0.28) : cs.surface,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(
+          color: waiting ? cs.primary.withValues(alpha: 0.45) : cs.outlineVariant,
+          width: waiting ? 1.2 : 0.7,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
       onTap: () => _openThread(t.id),
       leading: CircleAvatar(
         backgroundColor: waiting
@@ -427,6 +543,7 @@ class _SupportDeskScreenState extends State<SupportDeskScreen> {
           SizedBox(height: 3.h),
           Text(_ago(t.lastMessageAt), style: theme.textTheme.labelSmall),
         ],
+      ),
       ),
     );
   }
