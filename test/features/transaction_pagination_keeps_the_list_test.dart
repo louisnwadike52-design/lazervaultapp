@@ -51,8 +51,7 @@ void main() {
           reason: 'it must stay Loaded, or the list unmounts and the '
               'listener that would fetch page three stops running');
       expect(appending.isLoadingMore, isTrue);
-      expect(loaded.isLoadingMore, isFalse,
-          reason: 'not appending by default');
+      expect(loaded.isLoadingMore, isFalse, reason: 'not appending by default');
     });
 
     test('an arrived page clears the flag without the caller saying so', () {
@@ -82,6 +81,7 @@ void main() {
             'cubit/transaction_history_cubit.dart')
         .readAsStringSync();
     final body = code(src);
+
     /// JUST loadMoreTransactions. The rest of the cubit emits
     /// TransactionHistoryLoading and TransactionHistoryError perfectly
     /// correctly, so a file-wide search would pass on the initial loaders and
@@ -194,16 +194,16 @@ void main() {
     // mistakes and names ScrollController while doing so, so a raw search
     // would match the explanation rather than the code — which is how a
     // source test comes to assert the opposite of what it means.
-    final footer =
-        code(File('lib/core/shared_widgets/load_more_footer.dart')
-            .readAsStringSync());
+    final footer = code(File('lib/core/shared_widgets/load_more_footer.dart')
+        .readAsStringSync());
 
     test('the trigger uses a notification, not a shared ScrollController', () {
       // ScrollController.position is _positions.single and THROWS the moment
       // a second view attaches — which is what happens when a sheet opens
       // over a list that is still mounted. A notification listener has no
       // such state and cannot be mis-shared.
-      expect(footer.contains('NotificationListener<ScrollNotification>'), isTrue);
+      expect(
+          footer.contains('NotificationListener<ScrollNotification>'), isTrue);
       expect(footer.contains('ScrollController'), isFalse,
           reason: 'owning one here would reintroduce the double-attach throw');
     });
@@ -229,6 +229,50 @@ void main() {
       // A RefreshIndicator or an outer listener upstream is entitled to the
       // same event.
       expect(footer.contains('return false;'), isTrue);
+    });
+  });
+
+  group('hasMore describes the SERVER, not the assembled list', () {
+    final repo = code(File('lib/src/features/transaction_history/data/'
+            'repository/transaction_history_repository_grpc.dart')
+        .readAsStringSync());
+
+    test('neither page builder decides hasMore from the local list length', () {
+      // THE BUG, reported 2026-11-26: a customer's dashboard history stopped
+      // in early November though he had 567 ledger rows going back to August,
+      // and "scroll down to load more" did nothing at all.
+      //
+      // `hasMore = transactions.length == limit` compared the ASSEMBLED list
+      // against the page size. By that point the list is not the server's
+      // page: on page 1 up to 200 external transfers are merged in from
+      // core-payments, and three local filters can drop rows from any page.
+      // His 310 core-payments rows made page one ~200 long, `200 == 20` was
+      // false, and hasMore was false on the FIRST page.
+      //
+      // Nothing degrades gracefully from there: _onScroll requires
+      // state.hasMore, loadMoreTransactions() returns early without it, and
+      // itemCount only adds the LoadMoreFooter when it is true. No trigger,
+      // no button.
+      // Every `transactions.length == limit` left in the file must be reading
+      // the SERVER's page (`response.transactions`). A bare one is the defect.
+      final bare = RegExp(r'(^|[^.\w])transactions\.length == limit')
+          .allMatches(repo)
+          .length;
+      expect(bare, 0,
+          reason: 'hasMore must not be derived from the list after the '
+              'external-transfer merge and the local filters have changed it');
+    });
+
+    test('it compares what was asked for against the server total', () {
+      expect(repo, contains('requested < response.total'),
+          reason: 'response.total is the server count for this filtered query '
+              '(it already feeds totalPages); page * limit is what we have '
+              'asked for');
+      // The fallback for a server that reports no total must read the RAW
+      // page, never the mutated local list.
+      expect(repo, contains('response.transactions.length == limit'),
+          reason: 'the no-total fallback must count the server page, not the '
+              'merged and filtered one');
     });
   });
 }

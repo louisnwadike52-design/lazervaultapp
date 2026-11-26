@@ -1,8 +1,7 @@
 Improvements and fixes:
 
-• Every screen that asks for a verification code now shows how long that code lasts, alongside when you can ask for another
+• Every screen that asks for a verification code now shows how long that code lasts, as well as when you can ask for another
 • Two-factor codes at sign-in can now be re-sent, so a code that arrives late no longer means starting over
-• If you have asked for more codes than your limit allows, we now say so and tell you how long to wait, instead of appearing to send one
-• Changing your phone number shows the same countdown as every other code screen
+• If you have asked for more codes than your limit allows, we now say so and tell you how long to wait
 
 Thank you for using Lazervault.

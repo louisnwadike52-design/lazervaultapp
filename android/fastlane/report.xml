@@ -5,17 +5,17 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.00031">
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000279">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: flutter build appbundle --flavor prod --dart-define=FLAVOR=prod --dart-define=FLUTTER_FLAVOR=prod --release --tree-shake-icons --obfuscate --split-debug-info=/Users/lazervaultserver/Applications/stack/lazervault-app-platform/lazervaultapp/build/symbols/android --shrink --target-platform android-arm,android-arm64" time="667.90995">
+      <testcase classname="fastlane.lanes" name="1: flutter build appbundle --flavor prod --dart-define=FLAVOR=prod --dart-define=FLUTTER_FLAVOR=prod --release --tree-shake-icons --obfuscate --split-debug-info=/Users/lazervaultserver/Applications/stack/lazervault-app-platform/lazervaultapp/build/symbols/android --shrink --target-platform android-arm,android-arm64" time="609.934849">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: upload_to_play_store" time="136.799654">
+      <testcase classname="fastlane.lanes" name="2: upload_to_play_store" time="125.383694">
         
       </testcase>
     

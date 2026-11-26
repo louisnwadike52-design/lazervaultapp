@@ -438,8 +438,32 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         }
       }
 
-      // Determine if there are more pages
-      final hasMore = transactions.length == limit;
+      // HOW MANY ROWS THE SERVER STILL HOLDS — not how long this list ended up.
+      //
+      // This read `transactions.length == limit`, and by this point
+      // `transactions` is nothing like the server's page: on page 1 the block
+      // above merges in up to 200 external transfers from core-payments, and
+      // three local filters (service, currency, search) can drop rows from any
+      // page. So for any customer with external transfers the merged page 1
+      // came back ~200 long, `200 == 20` was false, and hasMore was FALSE ON
+      // THE FIRST PAGE.
+      //
+      // That kills the feature outright rather than degrading it: _onScroll
+      // requires state.hasMore, loadMoreTransactions() returns early without
+      // it, and itemCount adds the LoadMoreFooter only when it is true — so
+      // there was no scroll trigger AND no button. Reported 2026-11-26 as
+      // history stopping in early November for a customer with 567 ledger rows
+      // going back to August; 310 core-payments rows were what made his page
+      // one oversized.
+      //
+      // `total` is the server's own count for this filtered query (it already
+      // feeds totalPages below), so compare against what we have ASKED for.
+      // The fallback is the RAW page length — response.transactions, before the
+      // merge and the local filters — for a server that reports no total.
+      final requested = page * limit;
+      final hasMore = response.total > 0
+          ? requested < response.total
+          : response.transactions.length == limit;
       final totalPages = (response.total / limit).ceil();
 
       return TransactionListResponse(
@@ -534,8 +558,15 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         }
       }
 
-      // Determine if there are more pages
-      final hasMore = transactions.length == limit;
+      // Same rule as fetchAllTransactions: paging is about what the SERVER
+      // still holds. Nothing filters locally on this path today, so the old
+      // length check happened to be right — which is exactly why it should not
+      // be left as a length check. One added filter here and this page would
+      // have terminated the list the same way.
+      final requested = page * limit;
+      final hasMore = response.total > 0
+          ? requested < response.total
+          : response.transactions.length == limit;
       final totalPages = (response.total / limit).ceil();
 
       return TransactionListResponse(

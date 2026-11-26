@@ -1,0 +1,6 @@
+Improvements and fixes:
+
+• Transaction history now loads your full record again — scrolling down keeps pulling in older transactions instead of stopping part-way
+• Pages of history can no longer repeat one transaction while skipping another
+
+Thank you for using Lazervault.
